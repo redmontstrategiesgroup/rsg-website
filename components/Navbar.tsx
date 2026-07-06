@@ -1,0 +1,134 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
+import { trackEvent } from "@/lib/events";
+
+const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services" },
+  { label: "Process", href: "/process" },
+  { label: "Industries", href: "/industries" },
+  { label: "Contact", href: "/contact" },
+];
+
+export function Navbar() {
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  return (
+    <header
+      className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${
+        scrolled
+          ? "border-b border-white/10 bg-base/85 backdrop-blur"
+          : "border-b border-transparent"
+      }`}
+    >
+      <nav className="container-px relative flex h-20 items-center justify-between">
+        <Link
+          href="/"
+          aria-label="Redmont Strategies Group home"
+          className="flex items-center"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/rsg-wordmark.png"
+            alt="Redmont Strategies Group"
+            className="h-10 w-auto sm:h-11"
+          />
+        </Link>
+
+        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 lg:flex">
+          {NAV_LINKS.map((link) => {
+            const active = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm transition-colors ${
+                  active ? "text-white" : "text-white/60 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="hidden lg:block">
+          <Link
+            href="/contact"
+            onClick={() => trackEvent("book_strategy_call_click", { location: "nav" })}
+            className="btn-primary px-6 py-3 text-[0.82rem]"
+          >
+            Book a Strategy Call
+          </Link>
+        </div>
+
+        <button
+          className="inline-flex h-11 w-11 items-center justify-center border border-white/15 text-white lg:hidden"
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </nav>
+
+      {mobileOpen && (
+        <div className="h-[calc(100dvh-5rem)] overflow-y-auto border-t border-white/10 bg-base lg:hidden">
+          <div className="container-px flex flex-col py-4">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="border-b border-white/[0.06] px-1 py-4 text-base text-white/70 transition-colors hover:text-white"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <Link
+              href="/login"
+              onClick={() => setMobileOpen(false)}
+              className="border-b border-white/[0.06] px-1 py-4 text-base text-white/70 transition-colors hover:text-white"
+            >
+              Client Login
+            </Link>
+            <Link
+              href="/contact"
+              onClick={() => {
+                setMobileOpen(false);
+                trackEvent("book_strategy_call_click", { location: "nav_mobile" });
+              }}
+              className="btn-primary mt-5 w-full"
+            >
+              Book a Strategy Call
+            </Link>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}

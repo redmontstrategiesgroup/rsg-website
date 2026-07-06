@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    /* Smooth scrolling is handled by Lenis (components/SmoothScroll.tsx);
+       native smooth-behavior would fight it. scroll-padding covers the
+       reduced-motion / no-JS fallback for anchor jumps. */
+    scroll-padding-top: 5.5rem;
+  }
+
+  body {
+    @apply bg-base text-white/90 antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-crimson/30 text-white;
+  }
+
+  /* No visible scrollbars anywhere — the page scrolls, the chrome doesn't. */
+  html {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+
+@layer components {
+  .container-px {
+    @apply mx-auto w-full max-w-content px-6 sm:px-10 lg:px-14;
+  }
+
+  /* Quiet small-caps section eyebrow */
+  .label {
+    @apply inline-flex items-center gap-3 text-[0.68rem] font-medium uppercase tracking-[0.22em] text-white/40;
+  }
+
+  /* Editorial 12-column section grid */
+  .section-grid {
+    @apply grid gap-y-12 lg:grid-cols-12 lg:gap-x-8;
+  }
+
+  /* Display heading, geometric + tight, gradient-able */
+  .display {
+    @apply font-display font-medium tracking-[-0.02em] text-white;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-b from-white via-white to-white/55 bg-clip-text text-transparent;
+  }
+
+  /* Primary — solid deep ruby, sharp corners, no glow */
+  .btn-primary {
+    @apply inline-flex items-center justify-center bg-crimson px-8 py-4 text-sm font-medium tracking-wide text-white transition-colors duration-200 hover:bg-crimson-light focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2 focus-visible:ring-offset-base;
+  }
+
+  /* Ghost — plain hairline border, sharp corners */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center border border-white/20 px-8 py-4 text-sm font-medium tracking-wide text-white/85 transition-colors duration-200 hover:border-white/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20;
+  }
+
+  /* Quiet underlined text link */
+  .link-underline {
+    @apply text-sm font-medium text-white/80 underline decoration-white/25 underline-offset-8 transition-colors hover:text-white hover:decoration-white/60;
+  }
+
+  /* Flat dark surface card */
+  .card {
+    @apply rounded-xl border border-white/10 bg-white/[0.02] transition-colors duration-200;
+  }
+
+  .hairline {
+    @apply h-px w-full bg-white/10;
+  }
+}
+
+/* Hero systems-visual motion (disabled for reduced-motion users) */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -72;
+  }
+}
+@keyframes core-pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.flow-line {
+  stroke-dasharray: 3 9;
+  animation: dash-flow 7s linear infinite;
+}
+.core-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: core-pulse 4.5s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-line,
+  .core-pulse {
+    animation: none;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Technical grid background */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(
+      rgba(255, 255, 255, 0.07) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+  }
+
+  /* Masked fade for backgrounds */
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+
+  .gradient-border {
+    background:
+      linear-gradient(#0b0b0f, #0b0b0f) padding-box,
+      linear-gradient(135deg, rgba(179, 36, 58, 0.5), rgba(255, 255, 255, 0.06))
+        border-box;
+    border: 1px solid transparent;
+  }
+
+  /* Subtle metallic hairline for section rules */
+  .hairline-metal {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(232, 230, 227, 0.22),
+      transparent
+    );
+  }
+}
