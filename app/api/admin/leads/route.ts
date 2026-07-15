@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth";
+import { isAdminContext, requireAdmin } from "@/lib/admin-auth";
 import { getLeads } from "@/lib/store";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const admin = await getAdminSession();
-  if (!admin) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
+  const ctx = await requireAdmin("manage_leads");
+  if (!isAdminContext(ctx)) return ctx;
   const leads = await getLeads();
   return NextResponse.json({ leads });
 }

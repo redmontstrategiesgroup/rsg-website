@@ -8,11 +8,17 @@
        native smooth-behavior would fight it. scroll-padding covers the
        reduced-motion / no-JS fallback for anchor jumps. */
     scroll-padding-top: 5.5rem;
+    /* Dark native form chrome (select menus, date pickers, scrollbars). */
+    color-scheme: dark;
   }
 
   body {
     @apply bg-base text-white/90 antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    /* Force a new production CSS asset hash (Cloudflare was serving a
+       poisoned 403 for the previous hashed stylesheet URL). */
+    -webkit-tap-highlight-color: transparent;
   }
 
   ::selection {
@@ -29,6 +35,16 @@
     height: 0;
     display: none;
   }
+}
+
+/*
+  Keep outside @layer so this wins over Tailwind [&>option] utilities.
+  Native menus on Windows often stay light while inheriting text-white.
+*/
+select option,
+select optgroup {
+  background-color: #ffffff;
+  color: #111111;
 }
 
 @layer components {
@@ -128,38 +144,6 @@
       linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
     background-size: 56px 56px;
   }
-
-  .bg-dots {
-    background-image: radial-gradient(
-      rgba(255, 255, 255, 0.07) 1px,
-      transparent 1px
-    );
-    background-size: 24px 24px;
-  }
-
-  /* Masked fade for backgrounds */
-  .mask-fade-b {
-    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-    mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  }
-
-  .gradient-border {
-    background:
-      linear-gradient(#0b0b0f, #0b0b0f) padding-box,
-      linear-gradient(135deg, rgba(179, 36, 58, 0.5), rgba(255, 255, 255, 0.06))
-        border-box;
-    border: 1px solid transparent;
-  }
-
-  /* Subtle metallic hairline for section rules */
-  .hairline-metal {
-    height: 1px;
-    width: 100%;
-    background: linear-gradient(
-      to right,
-      transparent,
-      rgba(232, 230, 227, 0.22),
-      transparent
-    );
-  }
 }
+
+

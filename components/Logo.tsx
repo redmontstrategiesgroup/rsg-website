@@ -13,10 +13,10 @@ export function Logo({ showWordmark = true }: LogoProps) {
     <img
       src="/brand/rsg-wordmark.png"
       alt="Redmont Strategies Group"
-      className="h-9 w-auto sm:h-10"
+      className="h-10 w-auto sm:h-11"
     />
   ) : (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src="/brand/rsg-mark.png" alt="RSG" className="h-10 w-auto" />
+    <img src="/brand/rsg-mark.png" alt="RSG" className="h-11 w-auto" />
   );
 }

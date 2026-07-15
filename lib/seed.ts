@@ -1,9 +1,14 @@
 import type { ClientRecord, ClientPublic } from "./types";
 
-/**
- * Demo portal accounts. Passwords are hashed at first run (see store.ts).
- * Shared demo password for every seeded account: `redmont2026`.
- */
+/* ======================================================================
+ * DEVELOPMENT-ONLY DEMO DATA — never reaches production.
+ *
+ * `SEED_CLIENTS` / `DEMO_PASSWORD` are consumed ONLY by store.ts's
+ * fileClients(), which loads them exclusively when isDemoDataEnabled()
+ * (dev + NEXT_PUBLIC_ENABLE_DEMO_DATA=true). In production these are never
+ * read — real client accounts live in Supabase. Do not import these
+ * elsewhere. `toPublic` below is real, shared functionality.
+ * ==================================================================== */
 export const DEMO_PASSWORD = "redmont2026";
 
 export const SEED_CLIENTS: ClientRecord[] = [

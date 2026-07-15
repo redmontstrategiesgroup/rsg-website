@@ -8,31 +8,14 @@ already verified passing.
 
 ## Phase 1 — Get the site live (~30 minutes)
 
-### 1.1 Push the code to GitHub
-
-The project is not in git yet. Open PowerShell in the project folder and run:
+### 1.1 Push the latest code to GitHub
 
 ```powershell
 cd "C:\Users\josep\OneDrive\Desktop\basic website"
-git init
 git add .
-git commit -m "RSG website"
+git commit -m "Prepare launch"
+git push
 ```
-
-Then:
-
-1. Go to https://github.com/new (sign in or create an account).
-2. Repository name: `rsg-website`. Visibility: **Private**. Do NOT check
-   "Add a README". Click **Create repository**.
-3. Back in PowerShell (replace YOUR-USERNAME):
-
-```powershell
-git remote add origin https://github.com/YOUR-USERNAME/rsg-website.git
-git branch -M main
-git push -u origin main
-```
-
-Windows will pop up a browser sign-in the first time (Git Credential Manager).
 
 > Note: `.gitignore` already excludes `data/` and `.env*` — no secrets or
 > lead data are committed.
@@ -85,12 +68,16 @@ in production. Supabase is where production leads live.
 3. Left sidebar → **SQL Editor** → **New query**.
 4. Open `supabase/migrations/001_create_leads.sql` from this project, paste
    the whole file, click **Run**. You should see "Success".
-5. Left sidebar → **Table Editor** → confirm a `leads` table exists.
-6. Get the credentials: **Project Settings (gear) → API**:
+5. Also run `supabase/migrations/20260714060000_lead_management_fields.sql`
+   (adds status, notes, owner, and archive fields for the admin Leads tab).
+6. Also run `supabase/migrations/20260714120000_connect_page.sql`
+   (Connect / link-in-bio settings, links, and analytics events).
+7. Left sidebar → **Table Editor** → confirm a `leads` table exists.
+7. Get the credentials: **Project Settings (gear) → API**:
    - "Project URL" → env var `SUPABASE_URL`
    - Under "Project API keys", reveal the **service_role** key → env var
      `SUPABASE_SERVICE_ROLE_KEY`
-7. Add both in Vercel → Settings → Environment Variables → Redeploy.
+8. Add both in Vercel → Settings → Environment Variables → Redeploy.
 
 ⚠️ The service_role key bypasses all security rules. It lives ONLY in Vercel
 env vars — never in code, never in the browser, never in git.
@@ -98,16 +85,17 @@ env vars — never in code, never in the browser, never in git.
 ### 2.2 Resend (lead notification emails + auto-replies)
 
 1. Go to https://resend.com → sign up (free tier: 100 emails/day).
-2. **Domains → Add Domain** → enter your domain (e.g.
-   `redmontstrategies.com`).
+2. **Domains → Add Domain** → enter your domain
+   (`redmontstrategiesgroup.com`).
 3. Resend shows 2–3 DNS records (DKIM/SPF). Add them wherever your domain's
    DNS is managed (registrar dashboard → DNS settings → add record, copy
    type/name/value exactly). Click **Verify** in Resend — can take up to an
    hour.
 4. **API Keys → Create API Key** (full access) → env var `RESEND_API_KEY`.
-5. Set two more env vars:
-   - `CONTACT_TO_EMAIL` — where lead notifications go (your inbox)
-   - `CONTACT_FROM_EMAIL` — e.g. `RSG <leads@redmontstrategies.com>`
+# Set two more env vars:
+   - `CONTACT_TO_EMAIL` — defaults to `contact@redmontstrategiesgroup.com`
+     if unset; set explicitly in production
+   - `CONTACT_FROM_EMAIL` — e.g. `RSG Website <contact@redmontstrategiesgroup.com>`
      (must use the verified domain)
 6. Redeploy.
 
@@ -116,16 +104,15 @@ env vars — never in code, never in the browser, never in git.
 > can only deliver to the email you signed up with. Fine for testing, not
 > for launch.
 
-### 2.3 Anthropic API key (chatbot)
+### 2.3 Chat provider API key (site assistant)
 
 1. Go to https://platform.claude.com → sign in → **Settings → API Keys →
    Create Key**.
 2. Add billing under Settings → Billing (buy a small credit block, e.g. $20
-   — chat runs on Claude Sonnet 5 and light traffic costs dollars/month;
-   there's a 20-messages-per-5-minutes rate limit per visitor).
+   — light chat traffic costs dollars/month; there's a 20-messages-per-5-minutes
+   rate limit per visitor).
 3. Env var `ANTHROPIC_API_KEY` → Redeploy.
-4. **Tell Claude Code the key is set** — the ten scripted persona
-   conversations still need to be run against the live model and tuned.
+4. Smoke-test the live assistant with a few real questions before driving traffic.
 
 ### 2.4 Booking link (activates every "Book a Strategy Call" CTA)
 
@@ -158,22 +145,24 @@ env vars — never in code, never in the browser, never in git.
 1. If you don't own one yet: buy at Cloudflare Registrar or Namecheap
    (~$10–15/year).
 2. Vercel → your project → **Settings → Domains** → **Add** → enter
-   `redmontstrategies.com` (and add `www.redmontstrategies.com`; set the
-   apex as primary redirect target).
+   `redmontstrategiesgroup.com` (and add `www.redmontstrategiesgroup.com`;
+   set the apex as primary redirect target).
 3. Vercel shows you exactly what to add at your DNS provider — typically:
    - `A` record, name `@`, value `76.76.21.21`
    - `CNAME` record, name `www`, value `cname.vercel-dns.com`
 4. Wait for the checkmarks (minutes to hours). HTTPS is automatic.
-5. If your live domain is NOT redmontstrategies.com, ask Claude Code to
-   update `metadataBase` in `app/layout.tsx` (one line).
+5. If your live domain is NOT redmontstrategiesgroup.com, set the
+   `NEXT_PUBLIC_SITE_URL` env var to your real URL (e.g.
+   `https://yourdomain.com`). It drives the canonical URL, sitemap, robots,
+   and OpenGraph tags — no code change needed.
 
 ### 3.2 Analytics provider
 
 The site fires 7 conversion events (`book_strategy_call_click`,
 `business_systems_audit_click`, `contact_form_start`, `contact_form_submit`,
 `chatbot_open`, `chatbot_qualified_lead`, `thank_you_page_view`) through a
-provider-agnostic dispatcher. Pick ONE provider, then ask Claude Code to add
-its snippet — events flow with no other changes:
+provider-agnostic dispatcher. Pick ONE provider, then wire its snippet —
+events flow with no other changes:
 
 - **Plausible** (simple, private, ~$9/mo)
 - **GA4** (free) — create a property at https://analytics.google.com, note
@@ -212,19 +201,16 @@ On the LIVE site (not localhost):
 1. **Admin console tabs (Leads / Subscribers / Analytics) are empty in
    production** — they read the local file store. Real data: leads in
    Supabase + email; analytics in your provider. Fix: point the admin
-   console at Supabase (ask Claude Code).
+   console at Supabase.
 2. **Email-popup subscribers are NOT durably stored in production** — the
    subscribe endpoint currently writes only to the file store. Fix before
-   promoting the popup: add a `subscribers` table + Supabase write
-   (~10 minutes for Claude Code), or wire it to an email platform.
+   promoting the popup: add a `subscribers` table + Supabase write, or wire
+   it to an email platform.
 3. **The client portal has no accounts in production** — demo data is
    file-based and gitignored. It's a dev/demo feature until the portal store
    moves to Supabase.
-4. **Chatbot persona tests not yet run against the live model** — run them
-   right after the API key is set, before driving traffic.
-5. **Homepage upgrade is half-built** — Audit + Revenue Leaks sections exist
-   in code but are not on the page yet. Launch with the current homepage or
-   finish the upgrade first.
+4. **Chatbot should be smoke-tested against the live model** — do this right
+   after the API key is set, before driving traffic.
 
 ## Rough monthly costs
 
@@ -234,7 +220,7 @@ On the LIVE site (not localhost):
 | Domain | ~$1/mo |
 | Supabase | Free tier |
 | Resend | Free to 100 emails/day |
-| Anthropic API (chat) | Usage-based; light traffic ≈ $5–20/mo |
+| Chat provider API | Usage-based; light traffic ≈ $5–20/mo |
 | Turnstile | Free |
 | Calendly | Free tier |
 | GA4 / PostHog free tier | Free |

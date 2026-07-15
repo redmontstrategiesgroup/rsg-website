@@ -20,14 +20,14 @@ const AUDIT_AREAS = [
 export function AuditSection() {
   return (
     <section id="audit" className="scroll-mt-24">
-      <div className="container-px py-24 sm:py-32">
+      <div className="container-px py-20 sm:py-28">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <Reveal y={12}>
               <p className="label">Business Systems Audit</p>
             </Reveal>
             <Reveal y={12} delay={0.08}>
-              <h2 className="display mt-9 text-[2.1rem] leading-[1.08] sm:text-[2.8rem]">
+              <h2 className="display mt-6 text-[2.1rem] leading-[1.08] sm:text-[2.8rem]">
                 Start with a Business Systems Audit
               </h2>
             </Reveal>
@@ -39,11 +39,11 @@ export function AuditSection() {
             </Reveal>
             <Reveal y={12} delay={0.22}>
               <Link
-                href="/contact"
+                href="/book"
                 onClick={() =>
                   trackEvent("business_systems_audit_click", { location: "audit_section" })
                 }
-                className="btn-primary mt-10"
+                className="btn-primary mt-8"
               >
                 Get a Business Systems Audit
               </Link>

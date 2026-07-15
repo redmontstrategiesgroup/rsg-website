@@ -1,49 +1,58 @@
 "use client";
 
+import Link from "next/link";
 import { Reveal } from "../Reveal";
-import { ContactForm } from "../ContactForm";
+import { trackEvent } from "@/lib/events";
+import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/site";
 
-export function FinalCTA() {
+export function FinalCTA({
+  headingAs: Heading = "h2",
+}: {
+  headingAs?: "h1" | "h2";
+}) {
   return (
     <section id="contact" className="scroll-mt-24">
-      <div className="container-px py-32 sm:py-44">
-        <div className="section-grid">
-          <div className="lg:col-span-5">
-            <div className="lg:sticky lg:top-36">
-              <Reveal y={12}>
-                <p className="label">Contact</p>
-              </Reveal>
-              <Reveal y={12} delay={0.08}>
-                <h2 className="display mt-9 text-[2.3rem] leading-[1.04] sm:text-[3.2rem]">
-                  Build a smarter business
-                  <br />
-                  <span className="text-white/40">
-                    before your competitors do.
-                  </span>
-                </h2>
-              </Reveal>
-              <Reveal y={12} delay={0.16}>
-                <p className="mt-9 max-w-md text-[1.02rem] leading-relaxed text-white/55">
-                  Work with Redmont Strategies Group to modernize your
-                  operations, improve lead conversion, and implement AI with a
-                  real business purpose.
-                </p>
-              </Reveal>
-              <Reveal y={12} delay={0.22}>
-                <p className="mt-10 max-w-md border-t border-white/10 pt-7 text-sm leading-relaxed text-white/45">
-                  Every engagement starts with a strategy call. We review the
-                  business first, so the conversation is about your operation,
-                  not our pitch.
-                </p>
-              </Reveal>
+      <div className="container-px py-20 sm:py-28">
+        <div className="max-w-3xl">
+          <Reveal y={12}>
+            <p className="label">Next step</p>
+          </Reveal>
+          <Reveal y={12} delay={0.08}>
+            <Heading className="display mt-6 text-[2.3rem] leading-[1.04] sm:text-[3.2rem]">
+              Start with a strategy call
+            </Heading>
+          </Reveal>
+          <Reveal y={12} delay={0.16}>
+            <p className="mt-6 max-w-md text-[1.02rem] leading-relaxed text-white/55">
+              Every engagement starts with a strategy call. We review the
+              business first, so the conversation is about your operation, not
+              our pitch.
+            </p>
+          </Reveal>
+          <Reveal y={12} delay={0.22}>
+            <div className="mt-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-9">
+              <Link
+                href="/book"
+                onClick={() =>
+                  trackEvent("book_strategy_call_click", {
+                    location: "final_cta",
+                  })
+                }
+                className="btn-primary"
+              >
+                Book a Strategy Call
+              </Link>
+              <p className="text-sm text-white/45">
+                Prefer to call?{" "}
+                <a
+                  href={`tel:${PHONE_TEL}`}
+                  className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+                >
+                  {PHONE_DISPLAY}
+                </a>
+              </p>
             </div>
-          </div>
-
-          <div className="lg:col-span-6 lg:col-start-7">
-            <Reveal y={12} delay={0.12}>
-              <ContactForm />
-            </Reveal>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

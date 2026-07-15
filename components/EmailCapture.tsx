@@ -8,7 +8,7 @@ import { postJson } from "@/lib/api";
 
 /**
  * One-time email capture for the marketing list. Appears once per visitor
- * (after a delay or meaningful scroll), never on the contact page, and stays
+ * (after a delay or meaningful scroll), never on the booking funnel, and stays
  * gone once subscribed or dismissed (30-day snooze on dismiss).
  */
 
@@ -48,7 +48,8 @@ export function EmailCapture() {
   const inputRef = useRef<HTMLInputElement>(null);
   const firedRef = useRef(false);
 
-  const suppressedRoute = pathname === "/contact";
+  const suppressedRoute =
+    pathname === "/book" || pathname.startsWith("/book/");
 
   useEffect(() => {
     if (suppressedRoute || isSuppressed()) return;
@@ -186,16 +187,16 @@ export function EmailCapture() {
                   <span className="text-white/45">once a month.</span>
                 </h2>
                 <p className="mt-5 text-sm leading-relaxed text-white/55">
-                  One short email on lead conversion, follow-up systems, and
+                  One short email on business systems, follow-up, and
                   practical AI implementation for service businesses. No fluff,
                   unsubscribe anytime.
                 </p>
 
-                <form onSubmit={subscribe} className="mt-7">
-                  {/* Honeypot — visually hidden, humans never fill it */}
+                <form onSubmit={subscribe} className="relative mt-7">
+                  {/* Honeypot — clipped in-place so it cannot widen the page */}
                   <div
                     aria-hidden="true"
-                    className="absolute -left-[9999px] top-0 h-px w-px overflow-hidden"
+                    className="pointer-events-none absolute left-0 top-0 h-0 w-0 overflow-hidden opacity-0"
                   >
                     <label>
                       Confirm email
@@ -216,7 +217,7 @@ export function EmailCapture() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@business.com"
+                      placeholder="Email address"
                       maxLength={254}
                       className="w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-none"
                     />

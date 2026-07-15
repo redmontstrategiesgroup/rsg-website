@@ -74,11 +74,23 @@ export type ClientRecord = ClientPublic & {
   passwordHash?: string;
 };
 
+export type AdminRole =
+  | "owner"
+  | "administrator"
+  | "scheduler"
+  | "consultant"
+  | "sales"
+  | "viewer";
+
 export type AdminRecord = {
   id: string;
   name: string;
   email: string;
   passwordHash: string;
+  role: AdminRole;
+  mfaEnabled: boolean;
+  /** Present only when MFA setup/verify is needed — never send to client. */
+  mfaSecret?: string | null;
 };
 
 /** Fields an admin may edit on a client. */
@@ -99,7 +111,59 @@ export type ClientPatch = {
   }[];
 };
 
+/** Admin pipeline status for inbound leads. */
+export type LeadStatus =
+  | "new"
+  | "contacted"
+  | "qualified"
+  | "meeting_scheduled"
+  | "won"
+  | "lost"
+  | "spam"
+  | "archived"
+  | "intake_started"
+  | "intake_abandoned"
+  | "submitted"
+  | "qualified_not_booked"
+  | "appointment_booked"
+  | "manual_review"
+  | "not_eligible"
+  | "rescheduled"
+  | "cancelled"
+  | "no_show"
+  | "completed"
+  | "follow_up_required"
+  | "converted"
+  | "closed";
+
+export const LEAD_STATUSES: LeadStatus[] = [
+  "new",
+  "contacted",
+  "intake_started",
+  "intake_abandoned",
+  "submitted",
+  "qualified",
+  "qualified_not_booked",
+  "manual_review",
+  "not_eligible",
+  "appointment_booked",
+  "meeting_scheduled",
+  "rescheduled",
+  "cancelled",
+  "no_show",
+  "completed",
+  "follow_up_required",
+  "converted",
+  "won",
+  "closed",
+  "lost",
+  "spam",
+  "archived",
+];
+
 export type Lead = {
+  /** Stable id when loaded from Supabase or assigned locally. */
+  id?: string;
   name: string;
   company: string;
   email: string;
@@ -115,6 +179,8 @@ export type Lead = {
   preferredContact?: string;
   bestTime?: string;
   timeline?: string;
+  /** Approximate yearly revenue band (connect form). */
+  yearlyRevenue?: string;
   /** Attribution (hidden tracking fields). */
   pageUrl?: string;
   referrer?: string;
@@ -127,6 +193,14 @@ export type Lead = {
   score?: number;
   /** Where the lead was captured: website_contact_form | website_chat. */
   source?: string;
+  /** Admin pipeline status. */
+  status?: LeadStatus;
+  /** Free-form admin notes. */
+  notes?: string;
+  /** Assigned owner email or name. */
+  owner?: string;
+  /** Soft-archive timestamp (ISO). */
+  archivedAt?: string;
 };
 
 /** Marketing email list entry (captured by the email popup). */

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getAdminSession } from "@/lib/auth";
+import { requireLiveAdminSession } from "@/lib/auth";
 import { getClients, getLeads, getSubscribers, getPageViews } from "@/lib/store";
 import { toPublic } from "@/lib/seed";
 import { summarizeAnalytics } from "@/lib/analytics";
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  const admin = await getAdminSession();
+  const admin = await requireLiveAdminSession();
   if (!admin) redirect("/admin/login");
 
   const [clients, leads, subscribers, pageViews] = await Promise.all([

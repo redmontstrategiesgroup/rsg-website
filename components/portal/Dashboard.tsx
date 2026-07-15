@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowUpRight,
   LogOut,
   Activity,
   Boxes,
@@ -66,16 +66,24 @@ export function Dashboard({ client }: { client: ClientPublic }) {
   );
 
   // Session keepalive: while the portal is open, ping /api/auth/me so the
-  // sliding session cookie keeps renewing and active users stay signed in.
+  // sliding session cookie keeps renewing. A 401 means the session was
+  // revoked or expired — bounce to the login screen.
   useEffect(() => {
     const id = setInterval(
       () => {
-        fetch("/api/auth/me").catch(() => {});
+        fetch("/api/auth/me")
+          .then((res) => {
+            if (res.status === 401) {
+              router.push("/login");
+              router.refresh();
+            }
+          })
+          .catch(() => {});
       },
       10 * 60 * 1000
     );
     return () => clearInterval(id);
-  }, []);
+  }, [router]);
 
   async function logout() {
     setLoggingOut(true);
@@ -95,9 +103,9 @@ export function Dashboard({ client }: { client: ClientPublic }) {
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-white/10 bg-base/70 backdrop-blur-xl">
         <div className="container-px flex h-20 items-center justify-between gap-4">
-          <a href="/" aria-label="Redmont Strategies Group home">
+          <Link href="/" aria-label="Redmont Strategies Group home">
             <Logo />
-          </a>
+          </Link>
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium text-white">{client.name}</p>
@@ -138,8 +146,14 @@ export function Dashboard({ client }: { client: ClientPublic }) {
             Welcome back, {firstName(client.name)}
           </h1>
           <p className="mt-4 max-w-2xl text-white/55">
-            {liveCount} AI system{liveCount === 1 ? "" : "s"} live · client since{" "}
-            {client.since} · managed by {client.strategist}
+            {[
+              client.systems.length > 0 &&
+                `${liveCount} AI system${liveCount === 1 ? "" : "s"} live`,
+              client.since && `client since ${client.since}`,
+              client.strategist && `managed by ${client.strategist}`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         </motion.div>
 
@@ -194,9 +208,24 @@ export function Dashboard({ client }: { client: ClientPublic }) {
 /* ------------------------------- Overview ------------------------------ */
 
 function Overview({ client }: { client: ClientPublic }) {
+  const isEmpty =
+    client.metrics.length === 0 &&
+    client.systems.length === 0 &&
+    client.activity.length === 0;
+
+  if (isEmpty) {
+    return (
+      <EmptyState
+        title="Nothing here yet."
+        copy="Your metrics, systems, and activity will appear here once your account is active and RSG begins work."
+      />
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* KPI grid */}
+      {client.metrics.length > 0 && (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {client.metrics.map((m, i) => (
           <motion.div
@@ -227,6 +256,7 @@ function Overview({ client }: { client: ClientPublic }) {
           </motion.div>
         ))}
       </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
         {/* Systems snapshot */}
@@ -239,11 +269,18 @@ function Overview({ client }: { client: ClientPublic }) {
               {client.systems.length} deployed
             </span>
           </div>
-          <div className="mt-5 space-y-3">
-            {client.systems.map((s) => (
-              <SystemRow key={s.name} system={s} compact />
-            ))}
-          </div>
+          {client.systems.length > 0 ? (
+            <div className="mt-5 space-y-3">
+              {client.systems.map((s) => (
+                <SystemRow key={s.name} system={s} compact />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-5 text-sm text-white/40">
+              No systems deployed yet. Systems RSG builds for you will appear
+              here.
+            </p>
+          )}
         </div>
 
         {/* Activity feed */}
@@ -252,11 +289,18 @@ function Overview({ client }: { client: ClientPublic }) {
             <h2 className="font-display text-lg font-semibold text-white">
               Live activity
             </h2>
-            <span className="flex items-center gap-1.5 font-mono text-[0.58rem] uppercase tracking-label text-emerald-300">
-              <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-emerald-400" />
-              streaming
-            </span>
+            {client.activity.length > 0 && (
+              <span className="flex items-center gap-1.5 font-mono text-[0.58rem] uppercase tracking-label text-emerald-300">
+                <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-emerald-400" />
+                streaming
+              </span>
+            )}
           </div>
+          {client.activity.length === 0 ? (
+            <p className="mt-5 text-sm text-white/40">
+              No activity yet. Updates will appear here once work is underway.
+            </p>
+          ) : (
           <ol className="mt-5 space-y-4">
             {client.activity.map((a, i) => {
               const Icon = ACTIVITY_ICON[a.kind];
@@ -281,6 +325,7 @@ function Overview({ client }: { client: ClientPublic }) {
               );
             })}
           </ol>
+          )}
         </div>
       </div>
     </div>
@@ -290,6 +335,14 @@ function Overview({ client }: { client: ClientPublic }) {
 /* ------------------------------- Systems ------------------------------- */
 
 function Systems({ systems }: { systems: PortalSystem[] }) {
+  if (systems.length === 0) {
+    return (
+      <EmptyState
+        title="No systems yet."
+        copy="The AI systems and automations RSG builds for your business will appear here once they are deployed."
+      />
+    );
+  }
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {systems.map((s, i) => (
@@ -354,9 +407,22 @@ function SystemRow({ system, compact }: { system: PortalSystem; compact?: boolea
 const PHASE_ORDER = ["Discovery", "Build", "Launch", "Optimize", "Complete"];
 
 function Projects({ client }: { client: ClientPublic }) {
+  if (client.projects.length === 0 && client.deliverables.length === 0) {
+    return (
+      <EmptyState
+        title="No projects yet."
+        copy="Your active projects, roadmap, and deliverables will appear here once work begins."
+      />
+    );
+  }
   return (
     <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
       <div className="space-y-4">
+        {client.projects.length === 0 && (
+          <div className="card p-6 text-sm text-white/40">
+            No active projects yet.
+          </div>
+        )}
         {client.projects.map((p, i) => (
           <motion.div
             key={p.name}
@@ -420,6 +486,11 @@ function Projects({ client }: { client: ClientPublic }) {
         <h2 className="font-display text-lg font-semibold text-white">
           Deliverables
         </h2>
+        {client.deliverables.length === 0 && (
+          <p className="mt-5 text-sm text-white/40">
+            No deliverables yet.
+          </p>
+        )}
         <ul className="mt-5 space-y-3">
           {client.deliverables.map((d) => (
             <li
@@ -467,18 +538,25 @@ function Billing({ client }: { client: ClientPublic }) {
           {client.plan}
         </h2>
         <p className="mt-2 text-sm text-white/55">
-          Client since {client.since}. Managed by {client.strategist}.
+          {client.since ? `Client since ${client.since}. ` : ""}
+          Managed by {client.strategist}.
         </p>
-        <a href="/contact" className="btn-ghost mt-6 w-full">
+        <Link href="/book" className="btn-ghost mt-6 w-full">
           Talk to your strategist
           <ChevronRight size={15} />
-        </a>
+        </Link>
       </div>
 
       <div className="card p-6">
         <h2 className="font-display text-lg font-semibold text-white">
           Invoices
         </h2>
+        {client.invoices.length === 0 ? (
+          <p className="mt-5 text-sm text-white/40">
+            No invoices yet. Invoices will appear here once billing is
+            configured for your account.
+          </p>
+        ) : (
         <div className="mt-5 overflow-hidden rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
@@ -522,11 +600,31 @@ function Billing({ client }: { client: ClientPublic }) {
             </tbody>
           </table>
         </div>
-        <p className="mt-4 flex items-center gap-2 text-xs text-white/35">
-          <ArrowUpRight size={13} />
-          Demo billing data — no real charges are made.
-        </p>
+        )}
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------ empty state ---------------------------- */
+
+function EmptyState({
+  title,
+  copy,
+  className,
+}: {
+  title: string;
+  copy: string;
+  className?: string;
+}) {
+  return (
+    <div className={`card p-8 text-center sm:p-10 ${className ?? ""}`}>
+      <p className="font-display text-base font-semibold text-white/85">
+        {title}
+      </p>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-white/45">
+        {copy}
+      </p>
     </div>
   );
 }

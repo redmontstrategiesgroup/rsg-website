@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth";
+import {
+  isAdminContext,
+  rateLimitAdminMutator,
+  requireAdmin,
+} from "@/lib/admin-auth";
 import { updateClient } from "@/lib/store";
 import { toPublic } from "@/lib/seed";
 import { Validator, toStr, isEmail, LIMITS } from "@/lib/validate";
@@ -11,10 +15,11 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const admin = await getAdminSession();
-  if (!admin) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
+  const ctx = await requireAdmin("manage_clients");
+  if (!isAdminContext(ctx)) return ctx;
+
+  const limited = await rateLimitAdminMutator(request, ctx.admin.id);
+  if (limited) return limited;
 
   const { id } = await params;
 

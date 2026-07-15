@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { PHONE_TEL, SITE_URL } from "@/lib/site";
 
 // Body / UI
 const inter = Inter({
@@ -23,27 +24,72 @@ const jetbrains = JetBrains_Mono({
   variable: "--font-mono",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
+// og:image and twitter:image come from the file conventions
+// app/opengraph-image.png and app/twitter-image.png, which apply to every
+// route and survive per-page openGraph overrides.
 export const metadata: Metadata = {
-  metadataBase: new URL("https://redmontstrategies.com"),
-  title: "Redmont Strategies Group | Business Consulting for the AI Era",
+  metadataBase: new URL(SITE_URL),
+  title:
+    "Redmont Strategies Group | Business & AI Consulting in Plymouth County, MA",
   description:
-    "Redmont Strategies Group helps service businesses modernize operations, improve lead conversion, and build smarter systems for growth. Strategy first. Technology second. Execution always.",
-  keywords: [
-    "business consulting",
-    "AI strategy",
-    "operations consulting",
-    "lead conversion",
-    "business systems",
-    "AI implementation",
-    "CRM systems",
-    "service business growth",
-  ],
+    "Redmont Strategies Group is a business consulting and AI strategy firm serving service businesses across Plymouth County and the South Shore of Massachusetts.",
+  // NOTE: no `alternates.canonical` here — Next.js inherits layout metadata,
+  // which would canonicalize every page to the homepage. Each page sets its own.
+  robots: { index: true, follow: true },
   openGraph: {
-    title: "Redmont Strategies Group | Business Consulting for the AI Era",
+    title:
+      "Redmont Strategies Group | Business & AI Consulting in Plymouth County, MA",
     description:
-      "Strategy first. Technology second. Execution always. RSG helps service businesses modernize operations, improve lead conversion, and implement AI with a real business purpose.",
+      "Business consulting and AI strategy for service businesses across Plymouth County and the South Shore of Massachusetts.",
+    url: SITE_URL,
+    siteName: "Redmont Strategies Group",
+    locale: "en_US",
     type: "website",
   },
+  // Card type only: twitter:title/description deliberately unset so each
+  // page's og:title/og:description are used, instead of one site-wide title.
+  twitter: {
+    card: "summary_large_image",
+  },
+};
+
+// Organization schema. Publishes the phone number and service area only —
+// deliberately no PostalAddress and no openingHours (RSG keeps its street
+// address and business hours private).
+const ORG_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Redmont Strategies Group",
+  url: SITE_URL,
+  logo: `${SITE_URL}/brand/rsg-mark.png`,
+  description:
+    "Business consulting and AI strategy for service businesses across Plymouth County and the South Shore of Massachusetts.",
+  telephone: PHONE_TEL,
+  areaServed: [
+    { "@type": "AdministrativeArea", name: "Plymouth County, Massachusetts" },
+    { "@type": "AdministrativeArea", name: "South Shore, Massachusetts" },
+  ],
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: PHONE_TEL,
+    contactType: "sales",
+    areaServed: "US",
+    availableLanguage: "English",
+  },
+};
+
+const WEBSITE_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Redmont Strategies Group",
+  url: SITE_URL,
+  publisher: { "@type": "Organization", name: "Redmont Strategies Group" },
 };
 
 export default function RootLayout({
@@ -56,7 +102,17 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrains.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_SCHEMA) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_SCHEMA) }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

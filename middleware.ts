@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Edge middleware: CSRF protection and coarse bot filtering for every
  * state-changing API request, plus issuing the CSRF token cookie.
+ * Also gates /admin and /dashboard page routes (cookie presence + signature).
  *
  * CSRF defense is layered:
  *  1. Session cookies are SameSite=Lax (set in lib/auth.ts).
@@ -16,6 +17,7 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 const CSRF_COOKIE = "rsg_csrf";
 const CSRF_HEADER = "x-csrf-token";
+const ADMIN_COOKIE = "rsg_admin";
 
 /** Obvious non-browser/scripted clients — blocked from mutating API calls. */
 const BOT_UA =
@@ -25,10 +27,51 @@ function forbidden(reason: string) {
   return NextResponse.json({ error: reason }, { status: 403 });
 }
 
+function looksLikeAdminToken(token: string | undefined): boolean {
+  if (!token || !token.includes(".")) return false;
+  try {
+    const [body] = token.split(".");
+    const pad = "=".repeat((4 - ((body!.length % 4) || 4)) % 4);
+    const b64 = body!.replace(/-/g, "+").replace(/_/g, "/") + pad;
+    const json = JSON.parse(atob(b64)) as { role?: string; exp?: number };
+    if (json.role !== "admin") return false;
+    if (json.exp && json.exp < Math.floor(Date.now() / 1000)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Second-layer gate for admin UI (API handlers still call getAdminSession).
+  const isAdminUi =
+    (pathname.startsWith("/admin") && pathname !== "/admin/login") ||
+    pathname.startsWith("/dashboard");
+  if (isAdminUi) {
+    const token = request.cookies.get(ADMIN_COOKIE)?.value;
+    if (!looksLikeAdminToken(token)) {
+      const login = new URL("/admin/login", request.url);
+      login.searchParams.set("next", pathname);
+      return NextResponse.redirect(login);
+    }
+  }
+
   if (pathname.startsWith("/api/") && MUTATING_METHODS.has(request.method)) {
+    // External brief delivery is not a browser-cookie flow. It has its own
+    // bearer-secret authentication, idempotency requirement, validation, and
+    // rate limit in the route handler, so CSRF and browser user-agent checks do
+    // not apply to this exact endpoint.
+    if (pathname === "/api/briefs/ingest") {
+      return NextResponse.next();
+    }
+    // Cron jobs authenticate via shared secret, not browser CSRF cookies.
+    if (pathname === "/api/cron/scheduling") {
+      return NextResponse.next();
+    }
+    // Health checks are GET-only; nothing to exempt here for mutating.
+
     // 1. Reject obvious scripted clients.
     const ua = request.headers.get("user-agent") ?? "";
     if (!ua || BOT_UA.test(ua)) {

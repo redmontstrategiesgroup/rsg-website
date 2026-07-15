@@ -14,11 +14,15 @@
 export type EventName =
   | "book_strategy_call_click"
   | "business_systems_audit_click"
+  | "service_page_cta_click"
+  | "demo_cta_click"
   | "contact_form_start"
   | "contact_form_submit"
   | "chatbot_open"
   | "chatbot_qualified_lead"
-  | "thank_you_page_view";
+  | "thank_you_page_view"
+  | "demo_launch_click"
+  | "demo_cta_click";
 
 type EventProps = Record<string, string>;
 

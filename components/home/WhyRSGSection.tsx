@@ -14,14 +14,14 @@ const PRINCIPLES = [
 export function WhyRSGSection() {
   return (
     <section id="why" className="scroll-mt-24 border-y border-white/10 bg-base-900">
-      <div className="container-px py-32 sm:py-44">
+      <div className="container-px py-20 sm:py-28">
         <div className="section-grid">
           <div className="lg:col-span-6">
             <Reveal y={12}>
               <p className="label">Why RSG</p>
             </Reveal>
             <Reveal y={12} delay={0.08}>
-              <h2 className="display mt-9 text-[2.1rem] leading-[1.08] sm:text-[2.8rem]">
+              <h2 className="display mt-6 text-[2.1rem] leading-[1.08] sm:text-[2.8rem]">
                 Not another AI agency.
                 <br />
                 <span className="text-white/40">
@@ -30,7 +30,7 @@ export function WhyRSGSection() {
               </h2>
             </Reveal>
             <Reveal y={12} delay={0.16}>
-              <div className="mt-10 max-w-lg space-y-5 text-[1.02rem] leading-relaxed text-white/55">
+              <div className="mt-8 max-w-lg space-y-5 text-[1.02rem] leading-relaxed text-white/55">
                 <p>
                   RSG does not push random AI tools or generic automation
                   packages. We diagnose the business first, identify the weak
@@ -44,7 +44,7 @@ export function WhyRSGSection() {
             </Reveal>
           </div>
 
-          <div className="lg:col-span-4 lg:col-start-9 lg:pt-24">
+          <div className="lg:col-span-4 lg:col-start-9 lg:pt-12">
             <Reveal y={12} delay={0.12}>
               <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
                 Principles

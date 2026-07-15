@@ -1,6 +1,7 @@
 import {
   scryptSync,
   randomBytes,
+  randomUUID,
   timingSafeEqual,
   createHmac,
 } from "node:crypto";
@@ -73,6 +74,7 @@ type SessionPayload = {
   sub: string; // client id (or admin id)
   email: string;
   role?: "admin";
+  sid?: string; // session id — links the cookie to a revocable DB record
   iat?: number; // unix seconds (issued at)
   exp: number; // unix seconds
 };
@@ -88,13 +90,15 @@ function sign(data: string): string {
 export function createSessionToken(
   sub: string,
   email: string,
-  role?: "admin"
+  role?: "admin",
+  sid?: string
 ): string {
   const now = Math.floor(Date.now() / 1000);
   const payload: SessionPayload = {
     sub,
     email,
     ...(role ? { role } : {}),
+    ...(sid ? { sid } : {}),
     iat: now,
     exp: now + SESSION_TTL_SECONDS,
   };
@@ -126,8 +130,19 @@ export function verifySessionToken(token: string): SessionPayload | null {
 
 /* --------------------------- Cookie helpers -------------------------- */
 
-export async function setSessionCookie(clientId: string, email: string) {
-  const token = createSessionToken(clientId, email);
+/**
+ * Set (or renew) the client session cookie. Pass an existing `sid` to keep
+ * the same server-side session record across sliding renewals; omit it on a
+ * fresh login to mint a new session id. Returns the session id so the login
+ * route can create the matching DB record.
+ */
+export async function setSessionCookie(
+  clientId: string,
+  email: string,
+  sid?: string
+): Promise<string> {
+  const sessionId = sid ?? randomUUID();
+  const token = createSessionToken(clientId, email, undefined, sessionId);
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
@@ -136,6 +151,7 @@ export async function setSessionCookie(clientId: string, email: string) {
     path: "/",
     maxAge: SESSION_TTL_SECONDS,
   });
+  return sessionId;
 }
 
 export async function clearSessionCookie() {
@@ -152,8 +168,17 @@ export async function getSession(): Promise<SessionPayload | null> {
 
 /* ---------------------------- Admin cookie --------------------------- */
 
-export async function setAdminSessionCookie(adminId: string, email: string) {
-  const token = createSessionToken(adminId, email, "admin");
+/**
+ * Set (or renew) the admin session cookie. Pass an existing `sid` to keep
+ * the same revocable DB record across sliding renewals.
+ */
+export async function setAdminSessionCookie(
+  adminId: string,
+  email: string,
+  sid?: string
+): Promise<string> {
+  const sessionId = sid ?? randomUUID();
+  const token = createSessionToken(adminId, email, "admin", sessionId);
   const store = await cookies();
   store.set(ADMIN_COOKIE, token, {
     httpOnly: true,
@@ -162,6 +187,7 @@ export async function setAdminSessionCookie(adminId: string, email: string) {
     path: "/",
     maxAge: SESSION_TTL_SECONDS,
   });
+  return sessionId;
 }
 
 export async function clearAdminSessionCookie() {
@@ -174,7 +200,24 @@ export async function getAdminSession(): Promise<SessionPayload | null> {
   const token = store.get(ADMIN_COOKIE)?.value;
   if (!token) return null;
   const payload = verifySessionToken(token);
-  return payload?.role === "admin" ? payload : null;
+  if (payload?.role !== "admin") return null;
+  // Revocation check is done in requireAdminSession / page loaders that
+  // call isAdminSessionLive — keep this fast for API hot paths that already
+  // verified recently. Callers that need hard revoke should use
+  // requireLiveAdminSession().
+  return payload;
+}
+
+/**
+ * Admin session that also checks the revocable DB record when a sid is present.
+ */
+export async function requireLiveAdminSession(): Promise<SessionPayload | null> {
+  const payload = await getAdminSession();
+  if (!payload) return null;
+  if (!payload.sid) return payload; // legacy cookies until re-login
+  const { isAdminSessionLive } = await import("@/lib/store");
+  const live = await isAdminSessionLive(payload.sid);
+  return live ? payload : null;
 }
 
 /* ------------------------- Sliding expiration ------------------------- */
@@ -194,7 +237,8 @@ export async function renewSession(): Promise<void> {
   if (!payload) return;
   const age = Math.floor(Date.now() / 1000) - issuedAt(payload);
   if (age < RENEW_AFTER_SECONDS) return;
-  await setSessionCookie(payload.sub, payload.email);
+  // Reuse the existing session id so the DB record stays linked.
+  await setSessionCookie(payload.sub, payload.email, payload.sid);
 }
 
 /** Same sliding renewal for the admin console session. */
@@ -203,5 +247,5 @@ export async function renewAdminSession(): Promise<void> {
   if (!payload) return;
   const age = Math.floor(Date.now() / 1000) - issuedAt(payload);
   if (age < RENEW_AFTER_SECONDS) return;
-  await setAdminSessionCookie(payload.sub, payload.email);
+  await setAdminSessionCookie(payload.sub, payload.email, payload.sid);
 }

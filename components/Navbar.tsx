@@ -11,7 +11,9 @@ const NAV_LINKS = [
   { label: "Services", href: "/services" },
   { label: "Process", href: "/process" },
   { label: "Industries", href: "/industries" },
-  { label: "Contact", href: "/contact" },
+  { label: "Demos", href: "/demos" },
+  { label: "FAQ", href: "/faq" },
+  { label: "Book", href: "/book" },
 ];
 
 export function Navbar() {
@@ -39,23 +41,23 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${
-        scrolled
-          ? "border-b border-white/10 bg-base/85 backdrop-blur"
+      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
+        scrolled || mobileOpen
+          ? "border-b border-white/10 bg-base/95 backdrop-blur"
           : "border-b border-transparent"
       }`}
     >
-      <nav className="container-px relative flex h-20 items-center justify-between">
+      <nav className="container-px relative flex h-16 items-center justify-between sm:h-20">
         <Link
           href="/"
           aria-label="Redmont Strategies Group home"
-          className="flex items-center"
+          className="flex min-w-0 items-center"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/brand/rsg-wordmark.png"
             alt="Redmont Strategies Group"
-            className="h-10 w-auto sm:h-11"
+            className="h-9 w-auto sm:h-11"
           />
         </Link>
 
@@ -78,8 +80,10 @@ export function Navbar() {
 
         <div className="hidden lg:block">
           <Link
-            href="/contact"
-            onClick={() => trackEvent("book_strategy_call_click", { location: "nav" })}
+            href="/book"
+            onClick={() =>
+              trackEvent("book_strategy_call_click", { location: "nav" })
+            }
             className="btn-primary px-6 py-3 text-[0.82rem]"
           >
             Book a Strategy Call
@@ -87,7 +91,8 @@ export function Navbar() {
         </div>
 
         <button
-          className="inline-flex h-11 w-11 items-center justify-center border border-white/15 text-white lg:hidden"
+          type="button"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-white/15 text-white lg:hidden"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
@@ -97,7 +102,7 @@ export function Navbar() {
       </nav>
 
       {mobileOpen && (
-        <div className="h-[calc(100dvh-5rem)] overflow-y-auto border-t border-white/10 bg-base lg:hidden">
+        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-white/10 bg-base sm:max-h-[calc(100dvh-5rem)] lg:hidden">
           <div className="container-px flex flex-col py-4">
             {NAV_LINKS.map((link) => (
               <Link
@@ -117,10 +122,12 @@ export function Navbar() {
               Client Login
             </Link>
             <Link
-              href="/contact"
+              href="/book"
               onClick={() => {
                 setMobileOpen(false);
-                trackEvent("book_strategy_call_click", { location: "nav_mobile" });
+                trackEvent("book_strategy_call_click", {
+                  location: "nav_mobile",
+                });
               }}
               className="btn-primary mt-5 w-full"
             >

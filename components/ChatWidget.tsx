@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { postJson } from "@/lib/api";
@@ -11,8 +12,6 @@ const QUALIFIED_LEAD_SENTINEL = "⁣";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
-const BOOKING_URL = process.env.NEXT_PUBLIC_BOOKING_URL;
-
 const GREETING: ChatMessage = {
   role: "assistant",
   content:
@@ -22,9 +21,7 @@ const GREETING: ChatMessage = {
 const QUICK_REPLIES = [
   "What does RSG do?",
   "I want a Business Systems Audit",
-  "My business is losing leads",
-  "I need better follow-up",
-  "I want to use AI but do not know where",
+  "Book a strategy call",
 ];
 
 /** Render assistant text with bare URLs as links (e.g. the booking link). */
@@ -71,6 +68,20 @@ export function ChatWidget() {
   async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed || busy) return;
+
+    // Mirror of the server's conversation cap — save the round trip.
+    if (messages.length > 40) {
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content:
+            "This conversation has reached its limit. The best next step is the contact form in the Contact section. Share your details there and RSG will review your business directly.",
+        },
+      ]);
+      setInput("");
+      return;
+    }
 
     const history = [...messages, { role: "user" as const, content: trimmed }];
     setMessages(history);
@@ -149,7 +160,7 @@ export function ChatWidget() {
             setOpen(true);
             trackEvent("chatbot_open");
           }}
-          className="fixed bottom-5 right-5 z-40 border border-white/20 bg-base-900 px-5 py-3 text-[0.65rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white sm:bottom-6 sm:right-6"
+          className="fixed bottom-5 right-5 z-50 border border-white/20 bg-base-900 px-5 py-3 text-[0.65rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white"
           aria-label="Open chat with Redmont Strategies Group"
         >
           Chat
@@ -165,7 +176,7 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-4 right-4 z-40 flex h-[min(620px,calc(100dvh-5rem))] w-[min(400px,calc(100vw-2rem))] flex-col border border-white/15 bg-base-900 shadow-lift sm:bottom-6 sm:right-6"
+            className="fixed bottom-4 right-4 z-50 flex h-[min(620px,calc(100dvh-5rem))] w-[min(400px,calc(100%-2rem))] flex-col border border-white/15 bg-base-900 shadow-lift sm:bottom-6 sm:right-6"
           >
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div className="flex items-center gap-3">
@@ -257,24 +268,16 @@ export function ChatWidget() {
                 </button>
               </div>
               <p className="mt-2.5 text-center text-[0.6rem] text-white/25">
-                {BOOKING_URL ? (
-                  <>
-                    Ready to talk?{" "}
-                    <a
-                      href={BOOKING_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() =>
-                        trackEvent("book_strategy_call_click", { location: "chat" })
-                      }
-                      className="text-white/50 underline decoration-white/25 underline-offset-2 transition-colors hover:text-white"
-                    >
-                      Book a strategy call
-                    </a>
-                  </>
-                ) : (
-                  "For anything detailed, use the contact form."
-                )}
+                Ready to talk?{" "}
+                <Link
+                  href="/book"
+                  onClick={() =>
+                    trackEvent("book_strategy_call_click", { location: "chat" })
+                  }
+                  className="text-white/50 underline decoration-white/25 underline-offset-2 transition-colors hover:text-white"
+                >
+                  Book a Strategy Call
+                </Link>
               </p>
             </form>
           </motion.div>

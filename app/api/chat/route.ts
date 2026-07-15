@@ -15,26 +15,60 @@ import type { Lead } from "@/lib/types";
 export const runtime = "nodejs";
 
 /**
- * RSG consulting intake assistant. Claude Sonnet 5 via the official SDK —
- * the API key, system prompt, and knowledge base all stay server-side.
- * Streams plain text; the submit_lead tool hands qualified visitors into the
- * same lead pipeline as the contact form (file store / Supabase / Resend).
+ * RSG consulting intake assistant. Model calls stay server-side via the
+ * official SDK — API key, system prompt, and knowledge base never reach the
+ * browser. Streams plain text; the submit_lead tool hands qualified visitors
+ * into the same lead pipeline as the contact form.
  */
 
 const MODEL = process.env.CHAT_MODEL ?? "claude-sonnet-5";
-const MAX_MESSAGES = 24;
+
+/* ------------------------- Cost / abuse controls ------------------------ */
+/** Max history messages sent to the model per request (older turns drop). */
+const MAX_MESSAGES = 12;
+/** Max characters per message. */
 const MAX_MESSAGE_CHARS = 2_000;
+/** Total character budget for the history sent to the model. */
+const MAX_TOTAL_CHARS = 8_000;
+/** Hard cap on conversation length — after this, visitors go to the form. */
+const MAX_CONVERSATION_MESSAGES = 40;
+/** Max output tokens per reply (the bot is instructed to be concise). */
+const MAX_OUTPUT_TOKENS = 800;
+/** Agentic tool rounds per request. */
 const MAX_TOOL_ROUNDS = 3;
+/** Per-IP: short burst window + a daily ceiling. */
+const BURST_LIMIT = 20; // per 5 minutes
+const DAILY_IP_LIMIT = 60; // per 24 hours
+/** Site-wide daily request ceiling (env-overridable safety valve). */
+const DAILY_GLOBAL_LIMIT = Number(process.env.CHAT_DAILY_LIMIT ?? 400);
+
+/** Global day counter (per server process — resets on deploy/restart). */
+const globalCounter = { day: "", count: 0 };
+function underGlobalDailyLimit(): boolean {
+  const today = new Date().toISOString().slice(0, 10);
+  if (globalCounter.day !== today) {
+    globalCounter.day = today;
+    globalCounter.count = 0;
+  }
+  if (globalCounter.count >= DAILY_GLOBAL_LIMIT) return false;
+  globalCounter.count += 1;
+  return true;
+}
+
+const LIMIT_MESSAGE =
+  "The assistant is at capacity right now. Please use the contact form in the Contact section — we'll follow up directly.";
+const CONVERSATION_END_MESSAGE =
+  "This conversation has reached its limit. The best next step is the contact form in the Contact section — share your details there and RSG will review your business directly.";
 
 const SYSTEM_PROMPT = `You are the intake assistant on the website of Redmont Strategies Group (RSG). You act like a calm, sharp, premium consulting intake assistant — not a generic AI helper, not a chatbot salesperson, not a hype-heavy AI agency bot.
 
 # What RSG is
-RSG is a business consulting and strategy company FIRST. AI automation, AI marketing, web development, CRM systems, booking systems, dashboards, and digital infrastructure are execution tools used to improve business operations and growth — never the identity.
+RSG is a business consulting and strategy company FIRST. AI automation, web development, CRM systems, booking systems, dashboards, and digital infrastructure are execution tools used to improve business operations and growth — never the identity. RSG does not offer marketing or lead generation as a service.
 
 Core message: RSG helps businesses find the leaks, fix the systems, and build the infrastructure needed to operate sharper.
 
 When a visitor asks what RSG does, answer with:
-"Redmont Strategies Group is a business consulting and AI strategy company. We help service businesses improve operations, lead conversion, follow-up, websites, CRM systems, and automation. We start with the business problem first, then build the right systems around it."
+"Redmont Strategies Group is a business consulting and AI strategy company. We help service businesses improve operations, follow-up, websites, CRM systems, and automation. We start with the business problem first, then build the right systems around it."
 
 # Knowledge base (canonical — treat as the only source of company facts)
 ${RSG_KNOWLEDGE_BASE}
@@ -176,6 +210,14 @@ function sanitizeMessages(raw: unknown): IncomingMessage[] | null {
     cleaned.push({ role, content: content.trim().slice(0, MAX_MESSAGE_CHARS) });
   }
 
+  // Total character budget: drop oldest turns until the history fits, so
+  // input tokens per request stay bounded no matter how long the chat runs.
+  let total = cleaned.reduce((sum, m) => sum + m.content.length, 0);
+  while (cleaned.length > 1 && total > MAX_TOTAL_CHARS) {
+    total -= cleaned[0].content.length;
+    cleaned.shift();
+  }
+
   // The API requires the conversation to start with a user turn.
   while (cleaned.length && cleaned[0].role !== "user") cleaned.shift();
   if (!cleaned.length || cleaned[cleaned.length - 1].role !== "user") {
@@ -187,8 +229,36 @@ function sanitizeMessages(raw: unknown): IncomingMessage[] | null {
 /* -------------------------------- Route -------------------------------- */
 
 export async function POST(request: Request) {
-  if (!rateLimit(`chat:${clientIp(request)}`, 20, 5 * 60_000)) {
+  const ip = clientIp(request);
+
+  // Layered limits: short burst, per-IP daily ceiling, site-wide daily cap.
+  if (!(await rateLimit(`chat:${ip}`, BURST_LIMIT, 5 * 60_000))) {
     return rateLimitResponse();
+  }
+  if (!(await rateLimit(`chat-day:${ip}`, DAILY_IP_LIMIT, 24 * 60 * 60_000))) {
+    return NextResponse.json({ error: LIMIT_MESSAGE }, { status: 429 });
+  }
+  if (!underGlobalDailyLimit()) {
+    console.warn("[/api/chat] site-wide daily chat limit reached");
+    return NextResponse.json({ error: LIMIT_MESSAGE }, { status: 429 });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
+
+  // Hard stop for marathon conversations (based on full history length,
+  // before trimming) — the visitor is politely handed to the contact form.
+  if (Array.isArray(body.messages) && body.messages.length > MAX_CONVERSATION_MESSAGES) {
+    return NextResponse.json({ error: CONVERSATION_END_MESSAGE }, { status: 429 });
+  }
+
+  const incoming = sanitizeMessages(body.messages);
+  if (!incoming) {
+    return NextResponse.json({ error: "Invalid messages." }, { status: 400 });
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -199,18 +269,6 @@ export async function POST(request: Request) {
       },
       { status: 503 }
     );
-  }
-
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-  }
-
-  const incoming = sanitizeMessages(body.messages);
-  if (!incoming) {
-    return NextResponse.json({ error: "Invalid messages." }, { status: 400 });
   }
 
   const bookingUrl = process.env.BOOKING_URL;
@@ -229,10 +287,18 @@ export async function POST(request: Request) {
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
           const stream = client.messages.stream({
             model: MODEL,
-            max_tokens: 1024,
+            max_tokens: MAX_OUTPUT_TOKENS,
             thinking: { type: "adaptive" },
             output_config: { effort: "low" },
-            system,
+            // Prompt caching: the tools + system prefix is identical on every
+            // request, so cache reads cut its input cost ~90% within the TTL.
+            system: [
+              {
+                type: "text",
+                text: system,
+                cache_control: { type: "ephemeral" },
+              },
+            ],
             tools: [SUBMIT_LEAD_TOOL],
             messages: convo,
           });

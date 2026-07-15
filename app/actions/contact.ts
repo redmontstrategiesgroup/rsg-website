@@ -65,8 +65,8 @@ const ContactSchema = z.object({
   utm_term: text(200).optional().default(""),
   /** Honeypot — hidden field, humans never fill it. */
   company_site: z.string().max(300).optional().default(""),
-  /** Time from form mount to submit (bot heuristic). */
-  elapsedMs: z.number().finite().optional(),
+  /** Time from form mount to submit (bot heuristic). Required from the client. */
+  elapsedMs: z.number().finite().min(0).max(3_600_000),
   /** Cloudflare Turnstile response token (when the widget is enabled). */
   turnstileToken: z.string().max(4000).optional().default(""),
 });
@@ -77,7 +77,15 @@ export type ContactResult =
 
 async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true; // not configured — skip
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  // Fail closed when the public widget is enabled but the secret is missing.
+  if (siteKey && !secret) {
+    console.error(
+      "[contact] NEXT_PUBLIC_TURNSTILE_SITE_KEY is set but TURNSTILE_SECRET_KEY is missing."
+    );
+    return false;
+  }
+  if (!secret) return true; // Turnstile not configured — skip
   if (!token) return false;
   try {
     const res = await fetch(
@@ -105,7 +113,10 @@ async function autoReply(lead: Lead): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return;
 
-  const bookingUrl = process.env.BOOKING_URL;
+  const bookingUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")
+      ? `${process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")}/book`
+      : "https://redmontstrategiesgroup.com/book";
   const firstName = lead.name.split(" ")[0] || lead.name;
 
   const html = `
@@ -120,17 +131,10 @@ async function autoReply(lead: Lead): Promise<void> {
         and where you told us things are breaking down — before we respond.
       </p>
       <p style="margin: 0 0 16px;">
-        You can expect to hear from us shortly. ${
-          bookingUrl
-            ? `If you're ready to talk now, you can book a strategy call directly:`
-            : `If anything changes in the meantime, just reply to this email.`
-        }
+        You can expect to hear from us shortly. If you're ready to talk now,
+        you can complete our consultation intake and book a strategy call:
       </p>
-      ${
-        bookingUrl
-          ? `<p style="margin: 0 0 24px;"><a href="${bookingUrl}" style="display: inline-block; background: #b3243a; color: #ffffff; text-decoration: none; padding: 12px 24px; font-size: 14px;">Book a strategy call</a></p>`
-          : ""
-      }
+      <p style="margin: 0 0 24px;"><a href="${bookingUrl}" style="display: inline-block; background: #b3243a; color: #ffffff; text-decoration: none; padding: 12px 24px; font-size: 14px;">Book a strategy call</a></p>
       <p style="margin: 0; color: #555;">— Redmont Strategies Group<br/>
       <span style="font-size: 12px; color: #999;">Business Consulting &amp; AI Strategy</span></p>
     </div>`;
@@ -169,7 +173,7 @@ export async function submitContactForm(raw: unknown): Promise<ContactResult> {
     hdrs.get("x-real-ip")?.slice(0, 64) ??
     "local";
 
-  if (!rateLimit(`contact:${ip}`, 5, 10 * 60_000)) {
+  if (!(await rateLimit(`contact:${ip}`, 5, 10 * 60_000))) {
     return {
       ok: false,
       error: "Too many requests. Please wait a few minutes and try again.",
@@ -194,7 +198,7 @@ export async function submitContactForm(raw: unknown): Promise<ContactResult> {
   // Honeypot: pretend success, store nothing.
   if (data.company_site) return { ok: true };
   // Instant submissions are scripted, not typed.
-  if (typeof data.elapsedMs === "number" && data.elapsedMs < 1500) {
+  if (data.elapsedMs < 1500) {
     return {
       ok: false,
       error: "That was quick — please review your details and submit again.",
@@ -228,23 +232,30 @@ export async function submitContactForm(raw: unknown): Promise<ContactResult> {
     utmContent: data.utm_content,
     utmTerm: data.utm_term,
     source: "website_contact_form",
+    status: "new",
     submittedAt: new Date().toISOString(),
   };
   lead.score = scoreLead(lead);
 
   // Persist everywhere configured (file store, Supabase) + notify the owner.
-  const { storedLocally, storedRemotely, emailed } = await processLead(lead);
+  const { storedLocally, storedRemotely, emailed, duplicate } =
+    await processLead(lead);
 
-  if (!storedLocally && !storedRemotely && !emailed) {
+  // Success requires at least one durable capture path OR email delivery.
+  // Duplicates of a recent successful submit also count as success.
+  if (!duplicate && !storedLocally && !storedRemotely && !emailed) {
     return {
       ok: false,
       error:
-        "We couldn't process your submission right now. Please try again, or email us directly.",
+        "We couldn't process your submission right now. Please try again, or email us directly at contact@redmontstrategiesgroup.com.",
     };
   }
 
   // Confirmation to the lead — best-effort, after the lead is secured.
-  await autoReply(lead);
+  // Skip auto-reply on near-duplicate submits to avoid inbox spam.
+  if (!duplicate) {
+    await autoReply(lead);
+  }
 
   return { ok: true };
 }

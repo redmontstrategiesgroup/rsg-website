@@ -1,6 +1,10 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import os from "node:os";
+import { randomUUID } from "node:crypto";
 import { hashPassword } from "./auth";
+import { getSupabase } from "./supabase";
+import { isDemoDataEnabled } from "./demo";
 import { SEED_CLIENTS, DEMO_PASSWORD } from "./seed";
 import type {
   ClientRecord,
@@ -12,19 +16,46 @@ import type {
 } from "./types";
 
 /**
- * Tiny file-backed store. Good enough for a demo/portfolio portal — swap the
- * read/write helpers for a real database (Postgres, Supabase, etc.) later
- * without touching the callers.
+ * File-backed store for local development only. Production fails closed
+ * without Supabase — file/tmp paths are never treated as durable there.
  */
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const IS_PROD = process.env.NODE_ENV === "production";
+
+const DATA_DIR =
+  process.env.DATA_DIR ??
+  (IS_PROD
+    ? path.join(os.tmpdir(), "rsg-data")
+    : path.join(process.cwd(), "data"));
 const CLIENTS_FILE = path.join(DATA_DIR, "clients.json");
 const LEADS_FILE = path.join(DATA_DIR, "leads.json");
-const ADMINS_FILE = path.join(DATA_DIR, "admins.json");
 const SUBSCRIBERS_FILE = path.join(DATA_DIR, "subscribers.json");
 
 async function ensureDir() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
+  if (IS_PROD) return;
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+  } catch {
+    /* read-only filesystem — writes will no-op below */
+  }
+}
+
+/** Write JSON for local/dev only. Production always returns false. */
+async function writeJson(file: string, data: unknown): Promise<boolean> {
+  if (IS_PROD) {
+    console.error(
+      `[store] refusing file write in production (${path.basename(file)}). Configure Supabase.`
+    );
+    return false;
+  }
+  try {
+    await ensureDir();
+    await fs.writeFile(file, JSON.stringify(data, null, 2), "utf8");
+    return true;
+  } catch {
+    console.warn(`[store] could not write ${path.basename(file)} (read-only fs).`);
+    return false;
+  }
 }
 
 async function readJson<T>(file: string, fallback: T): Promise<T> {
@@ -36,37 +67,127 @@ async function readJson<T>(file: string, fallback: T): Promise<T> {
   }
 }
 
-/** Seed the clients file on first run, hashing the shared demo password. */
-async function ensureSeed(): Promise<ClientRecord[]> {
-  await ensureDir();
+/*
+ * Client accounts: Supabase when configured, local file store otherwise.
+ * Every Supabase read is wrapped so that a missing table or a transient error
+ * falls back to the file store (in dev) rather than locking anyone out — the
+ * app is never left broken while the migration is pending.
+ */
+
+type ClientRow = {
+  id: string;
+  email: string;
+  password_hash: string;
+  name: string;
+  company: string;
+  plan: string;
+  member_since: string | null;
+  strategist: string | null;
+  metrics: ClientRecord["metrics"] | null;
+  systems: ClientRecord["systems"] | null;
+  projects: ClientRecord["projects"] | null;
+  activity: ClientRecord["activity"] | null;
+  deliverables: ClientRecord["deliverables"] | null;
+  invoices: ClientRecord["invoices"] | null;
+};
+
+function rowToClient(row: ClientRow): ClientRecord {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    company: row.company,
+    plan: row.plan,
+    since: row.member_since ?? "",
+    strategist: row.strategist ?? "Redmont Strategies Group",
+    metrics: row.metrics ?? [],
+    systems: row.systems ?? [],
+    projects: row.projects ?? [],
+    activity: row.activity ?? [],
+    deliverables: row.deliverables ?? [],
+    invoices: row.invoices ?? [],
+    passwordHash: row.password_hash,
+  };
+}
+
+/**
+ * Local file-store clients. Returns whatever has been written to disk (e.g.
+ * clients created via the admin while Supabase is unconfigured). Demo/sample
+ * clients are seeded ONLY when isDemoDataEnabled() — never in production and
+ * never in dev unless NEXT_PUBLIC_ENABLE_DEMO_DATA=true.
+ */
+async function fileClients(): Promise<ClientRecord[]> {
   const existing = await readJson<ClientRecord[] | null>(CLIENTS_FILE, null);
   if (existing && Array.isArray(existing) && existing.length) return existing;
-
+  if (!isDemoDataEnabled()) return [];
   const hash = hashPassword(DEMO_PASSWORD);
   const seeded: ClientRecord[] = SEED_CLIENTS.map((c) => ({
     ...c,
     passwordHash: hash,
   }));
-  await fs.writeFile(CLIENTS_FILE, JSON.stringify(seeded, null, 2), "utf8");
+  await writeJson(CLIENTS_FILE, seeded);
   return seeded;
 }
 
 export async function getClients(): Promise<ClientRecord[]> {
-  return ensureSeed();
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data as ClientRow[]).map(rowToClient);
+    } catch (err) {
+      console.warn("[store] clients read from Supabase failed — using file store.", err);
+    }
+  }
+  return fileClients();
 }
 
 export async function findClientByEmail(
   email: string
 ): Promise<ClientRecord | null> {
-  const clients = await getClients();
   const target = email.trim().toLowerCase();
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .ilike("email", target)
+        .limit(1);
+      if (error) throw error;
+      const row = (data as ClientRow[])[0];
+      return row ? rowToClient(row) : null;
+    } catch (err) {
+      console.warn("[store] client lookup from Supabase failed — using file store.", err);
+    }
+  }
+  const clients = await fileClients();
   return clients.find((c) => c.email.toLowerCase() === target) ?? null;
 }
 
 export async function getClientById(
   id: string
 ): Promise<ClientRecord | null> {
-  const clients = await getClients();
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("id", id)
+        .limit(1);
+      if (error) throw error;
+      const row = (data as ClientRow[])[0];
+      return row ? rowToClient(row) : null;
+    } catch (err) {
+      console.warn("[store] client-by-id from Supabase failed — using file store.", err);
+    }
+  }
+  const clients = await fileClients();
   return clients.find((c) => c.id === id) ?? null;
 }
 
@@ -75,11 +196,9 @@ export async function updateClient(
   id: string,
   patch: ClientPatch
 ): Promise<ClientRecord | null> {
-  const clients = await getClients();
-  const idx = clients.findIndex((c) => c.id === id);
-  if (idx === -1) return null;
+  const current = await getClientById(id);
+  if (!current) return null;
 
-  const current = clients[idx];
   const next: ClientRecord = { ...current };
 
   // Whitelisted profile fields only.
@@ -113,39 +232,415 @@ export async function updateClient(
     });
   }
 
-  // Optional password reset.
-  if (typeof patch.password === "string" && patch.password.length >= 6) {
-    next.passwordHash = hashPassword(patch.password);
+  // Optional password reset — also revoke any active sessions for this client.
+  const passwordChanged =
+    typeof patch.password === "string" && patch.password.length >= 6;
+  if (passwordChanged) {
+    next.passwordHash = hashPassword(patch.password!);
+    await revokeClientSessions(id);
   }
 
-  clients[idx] = next;
-  await fs.writeFile(CLIENTS_FILE, JSON.stringify(clients, null, 2), "utf8");
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase
+        .from("clients")
+        .update({
+          name: next.name,
+          email: next.email,
+          company: next.company,
+          plan: next.plan,
+          member_since: next.since,
+          strategist: next.strategist,
+          metrics: next.metrics,
+          password_hash: next.passwordHash,
+        })
+        .eq("id", id);
+      if (error) throw error;
+      return next;
+    } catch (err) {
+      console.warn("[store] client update to Supabase failed — using file store.", err);
+    }
+  }
+
+  const clients = await fileClients();
+  const idx = clients.findIndex((c) => c.id === id);
+  if (idx !== -1) {
+    clients[idx] = next;
+    await writeJson(CLIENTS_FILE, clients);
+  }
   return next;
 }
 
-export async function saveLead(lead: Lead): Promise<void> {
-  await ensureDir();
-  const leads = await readJson<Lead[]>(LEADS_FILE, []);
-  leads.unshift(lead);
-  await fs.writeFile(LEADS_FILE, JSON.stringify(leads, null, 2), "utf8");
+/** Provision a new client account. Caller should reject duplicate emails
+ * first via findClientByEmail for a clean error message. */
+export async function createClient(input: {
+  name: string;
+  company: string;
+  email: string;
+  password: string;
+  plan?: string;
+  since?: string;
+  strategist?: string;
+}): Promise<ClientRecord> {
+  const record: ClientRecord = {
+    id: randomUUID(),
+    name: input.name.trim(),
+    email: input.email.trim().toLowerCase(),
+    company: input.company.trim(),
+    plan: input.plan?.trim() || "Strategy Audit",
+    since: input.since?.trim() || "",
+    strategist: input.strategist?.trim() || "Redmont Strategies Group",
+    metrics: [],
+    systems: [],
+    projects: [],
+    activity: [],
+    deliverables: [],
+    invoices: [],
+    passwordHash: hashPassword(input.password),
+  };
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("clients")
+        .insert({
+          email: record.email,
+          password_hash: record.passwordHash,
+          name: record.name,
+          company: record.company,
+          plan: record.plan,
+          member_since: record.since,
+          strategist: record.strategist,
+        })
+        .select("*")
+        .limit(1);
+      if (error) throw error;
+      const row = (data as ClientRow[])[0];
+      if (row) return rowToClient(row);
+    } catch (err) {
+      console.warn("[store] client create to Supabase failed — using file store.", err);
+    }
+  }
+
+  const clients = await fileClients();
+  clients.unshift(record);
+  await writeJson(CLIENTS_FILE, clients);
+  return record;
 }
 
+/* ------------------------- Client portal sessions ---------------------- */
+
+/**
+ * DB-backed session records enable revocation. They are checked only on
+ * full portal page loads and the keepalive ping — normal in-page browsing
+ * relies on the fast local cookie-signature check and never touches the DB.
+ * Every call degrades safely: if Supabase isn't configured (or the table is
+ * missing), sessions behave like the previous stateless-cookie model.
+ */
+
+export async function createSessionRecord(params: {
+  sessionId: string;
+  clientId: string;
+  expiresAt: Date;
+  userAgent?: string;
+  ip?: string;
+}): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  try {
+    const { error } = await supabase.from("sessions").insert({
+      id: params.sessionId,
+      client_id: params.clientId,
+      expires_at: params.expiresAt.toISOString(),
+      user_agent: params.userAgent?.slice(0, 400) ?? null,
+      ip: params.ip?.slice(0, 64) ?? null,
+    });
+    if (error) throw error;
+  } catch (err) {
+    console.warn("[store] could not record session (revocation disabled for it).", err);
+  }
+}
+
+/**
+ * True if the session id is live (exists, not revoked, not expired). When
+ * Supabase isn't available this returns true — enforcement degrades to the
+ * cookie signature + expiry, never a lockout.
+ */
+export async function isSessionLive(sessionId: string): Promise<boolean> {
+  const supabase = getSupabase();
+  if (!supabase) return true;
+  try {
+    const { data, error } = await supabase
+      .from("sessions")
+      .select("revoked_at, expires_at")
+      .eq("id", sessionId)
+      .limit(1);
+    if (error) throw error;
+    const row = data[0] as { revoked_at: string | null; expires_at: string } | undefined;
+    if (!row) return false; // recorded sessions that vanish are revoked
+    if (row.revoked_at) return false;
+    if (new Date(row.expires_at).getTime() < Date.now()) return false;
+    return true;
+  } catch (err) {
+    console.warn("[store] session check failed — allowing on signature only.", err);
+    return true;
+  }
+}
+
+export async function revokeSession(sessionId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  try {
+    await supabase
+      .from("sessions")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("id", sessionId);
+  } catch (err) {
+    console.warn("[store] could not revoke session.", err);
+  }
+}
+
+/** Revoke every session for a client (e.g. after a password change). */
+export async function revokeClientSessions(clientId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  try {
+    await supabase
+      .from("sessions")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("client_id", clientId)
+      .is("revoked_at", null);
+  } catch (err) {
+    console.warn("[store] could not revoke client sessions.", err);
+  }
+}
+
+/** Persist a lead to the local file store. Returns false on write failure. */
+export async function saveLead(lead: Lead): Promise<boolean> {
+  const leads = await readJson<Lead[]>(LEADS_FILE, []);
+  const withId: Lead = {
+    ...lead,
+    id: lead.id ?? randomUUID(),
+    status: lead.status ?? "new",
+  };
+  leads.unshift(withId);
+  return writeJson(LEADS_FILE, leads);
+}
+
+type LeadRow = {
+  id: string;
+  name: string;
+  business_name: string;
+  website: string | null;
+  email: string;
+  phone: string | null;
+  industry: string | null;
+  biggest_problem: string | null;
+  improvement_goal: string | null;
+  preferred_contact: string | null;
+  best_time: string | null;
+  timeline: string | null;
+  page_url: string | null;
+  referrer: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+  lead_score: number | null;
+  source: string | null;
+  status: string | null;
+  notes: string | null;
+  owner: string | null;
+  archived_at: string | null;
+  created_at: string;
+};
+
+function rowToLead(row: LeadRow): Lead {
+  return {
+    id: row.id,
+    name: row.name,
+    company: row.business_name,
+    website: row.website ?? "",
+    email: row.email,
+    phone: row.phone ?? "",
+    industry: row.industry ?? "",
+    problem: row.biggest_problem ?? "",
+    improve: row.improvement_goal ?? "",
+    preferredContact: row.preferred_contact ?? "",
+    bestTime: row.best_time ?? "",
+    timeline: row.timeline ?? "",
+    pageUrl: row.page_url ?? "",
+    referrer: row.referrer ?? "",
+    utmSource: row.utm_source ?? "",
+    utmMedium: row.utm_medium ?? "",
+    utmCampaign: row.utm_campaign ?? "",
+    utmContent: row.utm_content ?? "",
+    utmTerm: row.utm_term ?? "",
+    score: row.lead_score ?? 0,
+    source: row.source ?? "website_contact_form",
+    status: (row.status as Lead["status"]) ?? "new",
+    notes: row.notes ?? "",
+    owner: row.owner ?? "",
+    archivedAt: row.archived_at ?? undefined,
+    submittedAt: row.created_at,
+  };
+}
+
+/**
+ * Leads for the admin console. Prefer Supabase (durable production storage),
+ * then merge any file-store-only leads so local/dev submissions still appear.
+ */
 export async function getLeads(): Promise<Lead[]> {
-  return readJson<Lead[]>(LEADS_FILE, []);
+  const fileLeads = await readJson<Lead[]>(LEADS_FILE, []);
+  const supabase = getSupabase();
+  if (!supabase) return fileLeads;
+
+  try {
+    const { data, error } = await supabase
+      .from("leads")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    const remote = ((data as LeadRow[]) ?? []).map(rowToLead);
+    // Prefer remote records; append file-only leads that aren't already present.
+    const remoteEmails = new Set(
+      remote.map((l) => `${l.email.toLowerCase()}|${l.submittedAt}`)
+    );
+    const extras = fileLeads.filter(
+      (l) => !remoteEmails.has(`${l.email.toLowerCase()}|${l.submittedAt}`)
+    );
+    return [...remote, ...extras].sort(
+      (a, b) =>
+        new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+    );
+  } catch (err) {
+    console.warn("[store] leads read from Supabase failed — using file store.", err);
+    return fileLeads;
+  }
+}
+
+/** True if the same email submitted within the last `windowMs` (dedupe). */
+export async function findRecentLeadByEmail(
+  email: string,
+  windowMs = 10 * 60_000
+): Promise<Lead | null> {
+  const target = email.trim().toLowerCase();
+  if (!target) return null;
+  const since = new Date(Date.now() - windowMs).toISOString();
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .ilike("email", target)
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      const row = (data as LeadRow[])?.[0];
+      if (row) return rowToLead(row);
+    } catch (err) {
+      console.warn("[store] recent lead lookup failed.", err);
+    }
+  }
+
+  const fileLeads = await readJson<Lead[]>(LEADS_FILE, []);
+  return (
+    fileLeads.find(
+      (l) =>
+        l.email.toLowerCase() === target &&
+        new Date(l.submittedAt).getTime() >= Date.now() - windowMs
+    ) ?? null
+  );
+}
+
+export type LeadPatch = {
+  status?: Lead["status"];
+  notes?: string;
+  owner?: string;
+  archivedAt?: string | null;
+};
+
+/** Update lead pipeline fields. Prefers Supabase; falls back to file store. */
+export async function updateLead(
+  id: string,
+  patch: LeadPatch
+): Promise<Lead | null> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (patch.status) updates.status = patch.status;
+      if (typeof patch.notes === "string") updates.notes = patch.notes.slice(0, 8000);
+      if (typeof patch.owner === "string") updates.owner = patch.owner.slice(0, 200);
+      if (patch.archivedAt === null) updates.archived_at = null;
+      else if (typeof patch.archivedAt === "string") updates.archived_at = patch.archivedAt;
+      if (patch.status === "archived" && !patch.archivedAt) {
+        updates.archived_at = new Date().toISOString();
+      }
+
+      const { data, error } = await supabase
+        .from("leads")
+        .update(updates)
+        .eq("id", id)
+        .select("*")
+        .limit(1);
+      if (error) throw error;
+      const row = (data as LeadRow[])?.[0];
+      if (row) return rowToLead(row);
+    } catch (err) {
+      console.warn("[store] lead update to Supabase failed — trying file store.", err);
+    }
+  }
+
+  const leads = await readJson<Lead[]>(LEADS_FILE, []);
+  const idx = leads.findIndex((l) => l.id === id);
+  if (idx === -1) return null;
+  const current = leads[idx];
+  const next: Lead = {
+    ...current,
+    status: patch.status ?? current.status,
+    notes: typeof patch.notes === "string" ? patch.notes.slice(0, 8000) : current.notes,
+    owner: typeof patch.owner === "string" ? patch.owner.slice(0, 200) : current.owner,
+    archivedAt:
+      patch.archivedAt === null
+        ? undefined
+        : typeof patch.archivedAt === "string"
+          ? patch.archivedAt
+          : patch.status === "archived"
+            ? new Date().toISOString()
+            : current.archivedAt,
+  };
+  leads[idx] = next;
+  await writeJson(LEADS_FILE, leads);
+  return next;
 }
 
 /* ---------------------------- Subscribers ------------------------------ */
 
-/** Add an email to the marketing list. De-duplicates by email. */
-export async function saveSubscriber(sub: Subscriber): Promise<void> {
-  await ensureDir();
+/**
+ * Add an email to the marketing list. De-duplicates by email.
+ * Returns: "created" | "duplicate" | "failed".
+ */
+export async function saveSubscriber(
+  sub: Subscriber
+): Promise<"created" | "duplicate" | "failed"> {
   const subs = await readJson<Subscriber[]>(SUBSCRIBERS_FILE, []);
   const exists = subs.some(
     (s) => s.email.toLowerCase() === sub.email.toLowerCase()
   );
-  if (exists) return;
+  if (exists) return "duplicate";
   subs.unshift(sub);
-  await fs.writeFile(SUBSCRIBERS_FILE, JSON.stringify(subs, null, 2), "utf8");
+  const ok = await writeJson(SUBSCRIBERS_FILE, subs);
+  return ok ? "created" : "failed";
 }
 
 export async function getSubscribers(): Promise<Subscriber[]> {
@@ -159,14 +654,9 @@ const ANALYTICS_FILE = path.join(DATA_DIR, "analytics.json");
 const MAX_ANALYTICS_EVENTS = 20_000;
 
 export async function recordPageView(view: PageView): Promise<void> {
-  await ensureDir();
   const events = await readJson<PageView[]>(ANALYTICS_FILE, []);
   events.unshift(view);
-  await fs.writeFile(
-    ANALYTICS_FILE,
-    JSON.stringify(events.slice(0, MAX_ANALYTICS_EVENTS)),
-    "utf8"
-  );
+  await writeJson(ANALYTICS_FILE, events.slice(0, MAX_ANALYTICS_EVENTS));
 }
 
 export async function getPageViews(): Promise<PageView[]> {
@@ -175,37 +665,187 @@ export async function getPageViews(): Promise<PageView[]> {
 
 /* -------------------------------- Admins ------------------------------- */
 
-async function ensureAdminSeed(): Promise<AdminRecord[]> {
-  await ensureDir();
-  const existing = await readJson<AdminRecord[] | null>(ADMINS_FILE, null);
-  if (existing && Array.isArray(existing) && existing.length) return existing;
+type AdminRow = {
+  id: string;
+  email: string;
+  name: string;
+  password_hash: string;
+  role: string;
+  mfa_secret: string | null;
+  mfa_enabled: boolean;
+  active: boolean;
+};
 
-  // No default credentials: an admin account only exists if the operator
-  // explicitly provides both env vars. Anything else fails closed.
-  const email = process.env.ADMIN_EMAIL;
-  const password = process.env.ADMIN_PASSWORD;
-  if (!email || !password || password.length < 8) {
-    console.warn(
-      "[auth] No admin account seeded. Set ADMIN_EMAIL and ADMIN_PASSWORD (8+ chars) in the environment to create one."
-    );
-    return [];
-  }
-  const seeded: AdminRecord[] = [
-    {
-      id: "rsg-admin",
-      name: "RSG Administrator",
-      email,
-      passwordHash: hashPassword(password),
-    },
-  ];
-  await fs.writeFile(ADMINS_FILE, JSON.stringify(seeded, null, 2), "utf8");
-  return seeded;
+function mapAdminRow(row: AdminRow): AdminRecord {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    passwordHash: row.password_hash,
+    role: (row.role as AdminRecord["role"]) || "administrator",
+    mfaEnabled: Boolean(row.mfa_enabled),
+    mfaSecret: row.mfa_secret,
+  };
 }
 
+/** Cached env-admin password hash (stable salt across lookups in-process). */
+let envAdminHash: { email: string; hash: string } | null = null;
+
+function envAdminRecord(): AdminRecord | null {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminEmail || !adminPassword || adminPassword.length < 8) {
+    return null;
+  }
+  const email = adminEmail.trim().toLowerCase();
+  if (!envAdminHash || envAdminHash.email !== email) {
+    envAdminHash = { email, hash: hashPassword(adminPassword) };
+  }
+  return {
+    id: "rsg-env-admin",
+    name: "RSG Administrator",
+    email: adminEmail.trim(),
+    passwordHash: envAdminHash.hash,
+    role: "owner",
+    mfaEnabled: false,
+    mfaSecret: null,
+  };
+}
+
+/**
+ * Resolve an admin by email: DB admins first, then env bootstrap owner.
+ * Fails closed when neither is configured.
+ */
 export async function findAdminByEmail(
   email: string
 ): Promise<AdminRecord | null> {
-  const admins = await ensureAdminSeed();
-  const target = email.trim().toLowerCase();
-  return admins.find((a) => a.email.toLowerCase() === target) ?? null;
+  const normalized = email.trim().toLowerCase();
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("admins")
+        .select("*")
+        .eq("active", true)
+        .limit(20);
+      if (!error && data) {
+        const match = (data as AdminRow[]).find(
+          (r) => r.email.trim().toLowerCase() === normalized
+        );
+        if (match) return mapAdminRow(match);
+      }
+    } catch (err) {
+      console.warn("[store] admin lookup failed", err);
+    }
+  }
+
+  const envAdmin = envAdminRecord();
+  if (!envAdmin) {
+    console.warn(
+      "[auth] Admin login disabled — set ADMIN_EMAIL and ADMIN_PASSWORD (8+ chars), or seed public.admins."
+    );
+    return null;
+  }
+  if (envAdmin.email.trim().toLowerCase() !== normalized) return null;
+  return envAdmin;
+}
+
+export async function getAdminById(id: string): Promise<AdminRecord | null> {
+  if (id === "rsg-env-admin" || id === "rsg-admin") return envAdminRecord();
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from("admins")
+      .select("*")
+      .eq("id", id)
+      .eq("active", true)
+      .limit(1);
+    if (error) throw error;
+    const row = data?.[0] as AdminRow | undefined;
+    return row ? mapAdminRow(row) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function createAdminSessionRecord(params: {
+  sessionId: string;
+  adminId: string;
+  expiresAt: Date;
+  userAgent?: string;
+  ip?: string;
+}): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  try {
+    const { error } = await supabase.from("admin_sessions").insert({
+      id: params.sessionId,
+      admin_id: params.adminId,
+      expires_at: params.expiresAt.toISOString(),
+      user_agent: params.userAgent?.slice(0, 400) ?? null,
+      ip: params.ip?.slice(0, 64) ?? null,
+    });
+    if (error) throw error;
+  } catch (err) {
+    console.warn("[store] could not record admin session.", err);
+  }
+}
+
+export async function isAdminSessionLive(sessionId: string): Promise<boolean> {
+  const supabase = getSupabase();
+  if (!supabase) return true;
+  try {
+    const { data, error } = await supabase
+      .from("admin_sessions")
+      .select("revoked_at, expires_at")
+      .eq("id", sessionId)
+      .limit(1);
+    if (error) throw error;
+    const row = data?.[0] as
+      | { revoked_at: string | null; expires_at: string }
+      | undefined;
+    if (!row) return false;
+    if (row.revoked_at) return false;
+    if (new Date(row.expires_at).getTime() < Date.now()) return false;
+    return true;
+  } catch (err) {
+    console.warn("[store] admin session check failed — allowing on signature.", err);
+    return true;
+  }
+}
+
+export async function revokeAdminSession(sessionId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  try {
+    await supabase
+      .from("admin_sessions")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("id", sessionId);
+  } catch (err) {
+    console.warn("[store] could not revoke admin session.", err);
+  }
+}
+
+export async function updateAdminMfa(params: {
+  adminId: string;
+  secret?: string | null;
+  enabled: boolean;
+}): Promise<boolean> {
+  if (params.adminId === "rsg-env-admin" || params.adminId === "rsg-admin") {
+    console.warn("[store] MFA for env admin requires a DB admin row.");
+    return false;
+  }
+  const supabase = getSupabase();
+  if (!supabase) return false;
+  const { error } = await supabase
+    .from("admins")
+    .update({
+      mfa_secret: params.secret ?? null,
+      mfa_enabled: params.enabled,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", params.adminId);
+  return !error;
 }

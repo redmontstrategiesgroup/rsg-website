@@ -7,13 +7,21 @@ import { EngagementOptions } from "@/components/home/EngagementOptions";
 export const metadata: Metadata = {
   title: "Services | Redmont Strategies Group",
   description:
-    "Business consulting, AI strategy and implementation, marketing and lead conversion, and web development. Strategy first. Technology second. Execution always.",
+    "Business consulting, AI strategy and implementation, operations consulting, and web development. Strategy first. Technology second. Execution always.",
+  alternates: { canonical: "/services" },
+  openGraph: {
+    title: "Services | Redmont Strategies Group",
+    description:
+      "Business consulting, AI strategy and implementation, operations consulting, and web development. Strategy first. Technology second. Execution always.",
+    url: "/services",
+    images: ["/og.png"],
+  },
 };
 
 export default function ServicesPage() {
   return (
     <PageShell>
-      <Capabilities />
+      <Capabilities headingAs="h1" />
       <OperatingModel />
       <EngagementOptions />
     </PageShell>

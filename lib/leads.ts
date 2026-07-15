@@ -1,105 +1,107 @@
 import { Resend } from "resend";
-import { createClient } from "@supabase/supabase-js";
-import { saveLead } from "./store";
+import { randomUUID } from "node:crypto";
+import { saveLead, findRecentLeadByEmail } from "./store";
+import { getSupabase } from "./supabase";
+import { DEFAULT_CONTACT_TO_EMAIL } from "./lead-score";
 import type { Lead } from "./types";
+
+export { scoreLead, DEFAULT_CONTACT_TO_EMAIL } from "./lead-score";
 
 /**
  * Shared lead pipeline, used by the contact-form server action and the
  * chatbot's lead handoff. Server-side only — holds Resend/Supabase secrets.
  */
 
-/**
- * Basic lead scoring (0–100): buying timeline is the strongest signal,
- * followed by industry fit and how concretely the problem is described.
- */
-export function scoreLead(lead: Lead): number {
-  let score = 0;
-
-  switch (lead.timeline) {
-    case "Immediately":
-      score += 40;
-      break;
-    case "This month":
-      score += 30;
-      break;
-    case "Next 90 days":
-      score += 15;
-      break;
-  }
-
-  if (lead.industry) {
-    score += /med spa|aesthetic|dental|high-ticket/i.test(lead.industry)
-      ? 20
-      : 10;
-  }
-
-  const narrative = `${lead.problem} ${lead.improve}`;
-  if (lead.problem.length >= 80) score += 10;
-  if (/lead|follow.?up|missed call|booking|convert|no.?show/i.test(narrative)) {
-    score += 10;
-  }
-
-  if (lead.phone) score += 5;
-  if (lead.website) score += 5;
-  if (lead.preferredContact === "Call" || lead.preferredContact === "Text") {
-    score += 5;
-  }
-  if (lead.utmSource) score += 5;
-
-  return Math.min(100, score);
-}
-
-async function storeInSupabase(lead: Lead): Promise<boolean> {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return false;
+async function storeInSupabase(lead: Lead): Promise<{ ok: boolean; id?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) return { ok: false };
   try {
-    const supabase = createClient(url, key, {
-      auth: { persistSession: false },
-    });
-    const { error } = await supabase.from("leads").insert({
-      name: lead.name,
-      business_name: lead.company,
-      website: lead.website,
-      email: lead.email,
-      phone: lead.phone,
-      industry: lead.industry,
-      biggest_problem: lead.problem,
-      improvement_goal: lead.improve,
-      preferred_contact: lead.preferredContact ?? "",
-      best_time: lead.bestTime ?? "",
-      timeline: lead.timeline ?? "",
-      page_url: lead.pageUrl ?? "",
-      referrer: lead.referrer ?? "",
-      utm_source: lead.utmSource ?? "",
-      utm_medium: lead.utmMedium ?? "",
-      utm_campaign: lead.utmCampaign ?? "",
-      utm_content: lead.utmContent ?? "",
-      utm_term: lead.utmTerm ?? "",
-      lead_score: lead.score ?? 0,
-      source: lead.source ?? "website_contact_form",
-    });
+    const { data, error } = await supabase
+      .from("leads")
+      .insert({
+        id: lead.id,
+        name: lead.name,
+        business_name: lead.company,
+        website: lead.website,
+        email: lead.email,
+        phone: lead.phone,
+        industry: lead.industry,
+        biggest_problem: lead.problem,
+        improvement_goal: lead.improve,
+        preferred_contact: lead.preferredContact ?? "",
+        best_time: lead.bestTime ?? "",
+        timeline: lead.timeline ?? "",
+        page_url: lead.pageUrl ?? "",
+        referrer: lead.referrer ?? "",
+        utm_source: lead.utmSource ?? "",
+        utm_medium: lead.utmMedium ?? "",
+        utm_campaign: lead.utmCampaign ?? "",
+        utm_content: lead.utmContent ?? "",
+        utm_term: lead.utmTerm ?? "",
+        lead_score: lead.score ?? 0,
+        source: lead.source ?? "website_contact_form",
+        status: lead.status ?? "new",
+        notes: lead.notes ?? "",
+        owner: lead.owner ?? "",
+      })
+      .select("id")
+      .limit(1);
     if (error) {
+      // Older schemas may lack status/notes/owner — retry with core columns.
+      if (/status|notes|owner|column/i.test(error.message)) {
+        const { data: fallback, error: fallbackError } = await supabase
+          .from("leads")
+          .insert({
+            id: lead.id,
+            name: lead.name,
+            business_name: lead.company,
+            website: lead.website,
+            email: lead.email,
+            phone: lead.phone,
+            industry: lead.industry,
+            biggest_problem: lead.problem,
+            improvement_goal: lead.improve,
+            preferred_contact: lead.preferredContact ?? "",
+            best_time: lead.bestTime ?? "",
+            timeline: lead.timeline ?? "",
+            page_url: lead.pageUrl ?? "",
+            referrer: lead.referrer ?? "",
+            utm_source: lead.utmSource ?? "",
+            utm_medium: lead.utmMedium ?? "",
+            utm_campaign: lead.utmCampaign ?? "",
+            utm_content: lead.utmContent ?? "",
+            utm_term: lead.utmTerm ?? "",
+            lead_score: lead.score ?? 0,
+            source: lead.source ?? "website_contact_form",
+          })
+          .select("id")
+          .limit(1);
+        if (fallbackError) {
+          console.error("[leads] Supabase insert failed:", fallbackError.message);
+          return { ok: false };
+        }
+        return { ok: true, id: (fallback as { id: string }[] | null)?.[0]?.id };
+      }
       console.error("[leads] Supabase insert failed:", error.message);
-      return false;
+      return { ok: false };
     }
-    return true;
+    return { ok: true, id: (data as { id: string }[] | null)?.[0]?.id };
   } catch (err) {
     console.error("[leads] Supabase error:", err);
-    return false;
+    return { ok: false };
   }
+}
+
+function contactToEmail(): string {
+  return (
+    process.env.CONTACT_TO_EMAIL?.trim() || DEFAULT_CONTACT_TO_EMAIL
+  );
 }
 
 async function emailOwner(lead: Lead): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.CONTACT_TO_EMAIL;
   if (!apiKey) return false;
-  if (!to) {
-    console.warn(
-      "[leads] RESEND_API_KEY is set but CONTACT_TO_EMAIL is not — no email sent."
-    );
-    return false;
-  }
+  const to = contactToEmail();
 
   const attribution = [
     lead.utmSource && `source: ${lead.utmSource}`,
@@ -113,7 +115,14 @@ async function emailOwner(lead: Lead): Promise<boolean> {
 
   const rows: [string, string][] = [
     ["Lead score", `${lead.score ?? 0} / 100`],
-    ["Captured via", lead.source === "website_chat" ? "Site chat assistant" : "Contact form"],
+    [
+      "Captured via",
+      lead.source === "website_chat"
+        ? "Site chat assistant"
+        : lead.source === "website_connect_page"
+          ? "RSG Connect Page"
+          : "Contact form",
+    ],
     ["Name", lead.name],
     ["Business name", lead.company || "—"],
     ["Website", lead.website || "—"],
@@ -123,6 +132,7 @@ async function emailOwner(lead: Lead): Promise<boolean> {
     ["Preferred contact", lead.preferredContact || "—"],
     ["Best time", lead.bestTime || "—"],
     ["Timeline", lead.timeline || "—"],
+    ["Yearly revenue", lead.yearlyRevenue || "—"],
     ["Biggest problem", lead.problem || "—"],
     ["Wants to improve", lead.improve || "—"],
     ["Submitted from", lead.pageUrl || "—"],
@@ -149,6 +159,9 @@ async function emailOwner(lead: Lead): Promise<boolean> {
           )
           .join("")}
       </table>
+      <p style="margin: 24px 0 0; font-size: 13px; color: #888;">
+        Review this lead in the <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "https://redmontstrategiesgroup.com"}/admin">admin console</a>.
+      </p>
     </div>`;
 
   const textBody = rows.map(([label, value]) => `${label}: ${value}`).join("\n");
@@ -159,17 +172,39 @@ async function emailOwner(lead: Lead): Promise<boolean> {
       from: process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
       to,
       ...(lead.email ? { replyTo: lead.email } : {}),
-      subject: "New RSG Strategy Call Lead",
+      subject: `New RSG lead: ${lead.name}${lead.company ? ` — ${lead.company}` : ""}`,
       html,
       text: textBody,
     });
     if (error) {
       console.error("[leads] Resend send failed:", error.message);
+      const { enqueueEmailJob } = await import("@/lib/email-jobs");
+      await enqueueEmailJob("contact_notification", {
+        to,
+        from:
+          process.env.CONTACT_FROM_EMAIL ??
+          "RSG Website <onboarding@resend.dev>",
+        replyTo: lead.email || undefined,
+        subject: `New RSG lead: ${lead.name}${lead.company ? ` — ${lead.company}` : ""}`,
+        html,
+        text: textBody,
+      });
       return false;
     }
     return true;
   } catch (err) {
     console.error("[leads] Resend error:", err);
+    const { enqueueEmailJob } = await import("@/lib/email-jobs");
+    await enqueueEmailJob("contact_notification", {
+      to,
+      from:
+        process.env.CONTACT_FROM_EMAIL ??
+        "RSG Website <onboarding@resend.dev>",
+      replyTo: lead.email || undefined,
+      subject: `New RSG lead: ${lead.name}${lead.company ? ` — ${lead.company}` : ""}`,
+      html,
+      text: textBody,
+    });
     return false;
   }
 }
@@ -178,24 +213,60 @@ export type ProcessLeadResult = {
   storedLocally: boolean;
   storedRemotely: boolean;
   emailed: boolean;
+  duplicate: boolean;
+  leadId?: string;
 };
 
-/** Persist a lead everywhere configured and notify the owner. */
+  /** Persist a lead everywhere configured and notify the owner. */
 export async function processLead(lead: Lead): Promise<ProcessLeadResult> {
-  // 1. Local file store (feeds the admin console; may be read-only on Vercel).
-  let storedLocally = false;
-  try {
-    await saveLead(lead);
-    storedLocally = true;
-  } catch (err) {
-    console.error("[leads] File store write failed:", err);
+  // Deduplicate accidental double-submits within 10 minutes.
+  const recent = await findRecentLeadByEmail(lead.email, 10 * 60_000);
+  if (recent) {
+    return {
+      storedLocally: true,
+      storedRemotely: Boolean(recent.id),
+      emailed: true, // prior submission already notified
+      duplicate: true,
+      leadId: recent.id,
+    };
   }
 
-  // 2. Supabase (durable production storage, when configured).
-  const storedRemotely = await storeInSupabase(lead);
+  const leadId = lead.id ?? randomUUID();
+  const prepared: Lead = {
+    ...lead,
+    id: leadId,
+    status: lead.status ?? "new",
+  };
 
-  // 3. Email notification (when configured).
-  const emailed = await emailOwner(lead);
+  // 1. Local file store (dev only — production refuses file writes).
+  const storedLocally = await saveLead(prepared);
 
-  return { storedLocally, storedRemotely, emailed };
+  // 2. Supabase (required for durable production storage).
+  const remote = await storeInSupabase(prepared);
+  const storedRemotely = remote.ok;
+
+  if (process.env.NODE_ENV === "production" && !storedRemotely) {
+    console.error(
+      "[leads] Production lead not stored in Supabase — check configuration.",
+      { email: prepared.email }
+    );
+  }
+
+  // 3. Email notification (when Resend is configured); failures enqueue retry.
+  const emailed = await emailOwner(prepared);
+
+  if (!storedLocally && !storedRemotely) {
+    console.error(
+      "[leads] Lead was not persisted to file store or Supabase.",
+      { email: prepared.email, emailed }
+    );
+  }
+
+  return {
+    storedLocally,
+    storedRemotely,
+    emailed,
+    duplicate: false,
+    leadId: remote.id ?? leadId,
+  };
 }

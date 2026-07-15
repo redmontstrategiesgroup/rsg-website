@@ -11,30 +11,26 @@ export function Hero() {
       <div className="container-px grid items-center gap-16 pb-28 pt-40 sm:pt-52 lg:grid-cols-12 lg:gap-8 lg:pb-36">
         <div className="lg:col-span-7">
           <Reveal y={12}>
-            <h1 className="display text-[3.1rem] leading-[0.99] sm:text-[4.4rem] lg:text-[5.2rem]">
+            <h1 className="display text-[2.35rem] leading-[1.02] sm:text-[4.4rem] sm:leading-[0.99] lg:text-[5.2rem]">
               Business Consulting
               <br />
-              <span className="text-white/40">for the AI Era</span>
+              <span className="text-white/40">for Service Businesses</span>
             </h1>
           </Reveal>
           <Reveal y={12} delay={0.1}>
-            <p className="mt-10 max-w-xl text-lg leading-relaxed text-white/55">
-              Redmont Strategies Group helps service businesses modernize
-              operations, improve lead conversion, and build smarter systems
-              for growth.
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/55">
+              Redmont Strategies Group helps service businesses fix lead flow,
+              follow-up, and operations — then builds the systems to run them.
             </p>
           </Reveal>
           <Reveal y={12} delay={0.18}>
-            <div className="mt-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-9">
+            <div className="mt-12">
               <Link
-                href="/contact"
+                href="/book"
                 onClick={() => trackEvent("book_strategy_call_click", { location: "hero" })}
                 className="btn-primary"
               >
                 Book a Strategy Call
-              </Link>
-              <Link href="/services" className="link-underline">
-                View services
               </Link>
             </div>
           </Reveal>
@@ -49,25 +45,9 @@ export function Hero() {
           <SystemsModel />
         </motion.div>
       </div>
-
-      {/* One serious statement, set off by rules */}
-      <div className="border-y border-white/[0.08]">
-        <div className="container-px py-12 sm:py-16">
-          <p className="display max-w-4xl text-xl leading-snug text-white/75 sm:text-[1.7rem]">
-            RSG helps business owners find the leaks, fix the systems, and
-            build the infrastructure needed to operate sharper.
-          </p>
-        </div>
-      </div>
     </section>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/*  Executive systems model — a structural elevation, read top-down:  */
-/*  direction sets the frame, four functions hang off one spine, and  */
-/*  everything lands on the execution layer. Thin lines, no chrome.   */
-/* ------------------------------------------------------------------ */
 
 const MID_NODES = [
   { label: "Operations", x: 120, y: 176, side: "left" },
@@ -107,7 +87,7 @@ export function SystemsModel() {
         STRATEGY
       </text>
 
-      {/* Spine — the through-line from direction to execution */}
+      {/* Spine: the through-line from direction to execution */}
       <line
         x1={280}
         y1={98}

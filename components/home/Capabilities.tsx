@@ -1,65 +1,73 @@
 "use client";
 
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Reveal } from "../Reveal";
 
 const CAPABILITIES = [
   {
-    index: "01",
     name: "Business Consulting",
-    body: "We identify bottlenecks in operations, sales, lead flow, offers, customer communication, and internal processes.",
+    body: "We find the bottlenecks across operations, sales, and lead flow, then fix them.",
+    href: "/business-consulting-plymouth-county-ma",
   },
   {
-    index: "02",
     name: "AI Strategy & Implementation",
-    body: "We find where AI actually makes sense, then implement it to support staff, reduce repetitive work, and improve execution.",
+    body: "We use AI only where it removes real work and speeds up execution.",
+    href: "/ai-strategy-implementation-plymouth-county-ma",
   },
   {
-    index: "03",
-    name: "Marketing & Lead Conversion",
-    body: "We improve how businesses capture, follow up with, and convert opportunities across websites, calls, forms, messages, and campaigns.",
-  },
-  {
-    index: "04",
     name: "Web Development & Digital Infrastructure",
-    body: "We build the websites, landing pages, CRM systems, booking flows, dashboards, and automations that support a sharper business.",
+    body: "We build the websites, CRMs, booking flows, and dashboards the business runs on.",
+    href: "/web-development-digital-infrastructure-plymouth-county-ma",
   },
 ];
 
-export function Capabilities() {
+export function Capabilities({
+  headingAs: Heading = "h2",
+}: {
+  headingAs?: "h1" | "h2";
+}) {
   return (
     <section id="services" className="scroll-mt-24">
-      <div className="container-px py-32 sm:py-44">
+      <div className="container-px py-20 sm:py-28">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">What RSG Does</p>
           </Reveal>
           <Reveal y={12} delay={0.08}>
-            <h2 className="display mt-9 text-[2.1rem] leading-[1.08] sm:text-[3rem]">
+            <Heading className="display mt-6 text-[2.1rem] leading-[1.08] sm:text-[3rem]">
               <span className="text-white/40">
                 Strategy first. Technology second.
               </span>{" "}
               Execution always.
-            </h2>
+            </Heading>
           </Reveal>
         </div>
 
         <div className="mt-24 grid border-t border-white/[0.08] sm:grid-cols-2">
           {CAPABILITIES.map((c, i) => (
-            <Reveal key={c.index} y={12} delay={(i % 2) * 0.08} className="h-full">
+            <Reveal key={c.name} y={12} delay={(i % 2) * 0.08} className="h-full">
               <div
                 className={`flex h-full flex-col border-b border-white/[0.08] py-14 sm:py-16 ${
                   i % 2 === 1 ? "sm:border-l sm:border-white/[0.08] sm:pl-14" : "sm:pr-14"
                 }`}
               >
-                <span className="font-display text-6xl font-medium text-white/[0.11]">
-                  {c.index}
-                </span>
-                <h3 className="display mt-10 max-w-sm text-2xl text-white">
+                <h3 className="display max-w-sm text-2xl text-white">
                   {c.name}
                 </h3>
                 <p className="mt-5 max-w-md text-[0.98rem] leading-relaxed text-white/50">
                   {c.body}
                 </p>
+                <Link
+                  href={c.href}
+                  className="group mt-7 inline-flex items-center gap-2.5 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light"
+                >
+                  Learn more
+                  <ArrowRight
+                    size={15}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
+                </Link>
               </div>
             </Reveal>
           ))}

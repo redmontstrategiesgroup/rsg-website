@@ -177,11 +177,12 @@ export function ContactForm() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             onSubmit={onSubmit}
+            className="relative"
           >
-            {/* Honeypot — visually hidden, humans never fill it */}
+            {/* Honeypot — clipped in-place so it cannot widen the page */}
             <div
               aria-hidden="true"
-              className="absolute -left-[9999px] top-0 h-px w-px overflow-hidden"
+              className="pointer-events-none absolute left-0 top-0 h-0 w-0 overflow-hidden opacity-0"
             >
               <label>
                 Company site
@@ -198,19 +199,19 @@ export function ContactForm() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Name" required>
-                <input required value={form.name} onChange={update("name")} className={input} placeholder="Jane Doe" autoComplete="name" />
+                <input required value={form.name} onChange={update("name")} className={input} placeholder="Full name" autoComplete="name" />
               </Field>
               <Field label="Business name" required>
-                <input required value={form.company} onChange={update("company")} className={input} placeholder="Acme Aesthetics" autoComplete="organization" />
+                <input required value={form.company} onChange={update("company")} className={input} placeholder="Business name" autoComplete="organization" />
               </Field>
               <Field label="Email" required>
-                <input type="email" required value={form.email} onChange={update("email")} className={input} placeholder="jane@business.com" autoComplete="email" />
+                <input type="email" required value={form.email} onChange={update("email")} className={input} placeholder="Email address" autoComplete="email" />
               </Field>
               <Field label="Phone">
-                <input type="tel" value={form.phone} onChange={update("phone")} className={input} placeholder="(555) 123-4567" autoComplete="tel" />
+                <input type="tel" value={form.phone} onChange={update("phone")} className={input} placeholder="Phone number" autoComplete="tel" />
               </Field>
               <Field label="Website">
-                <input value={form.website} onChange={update("website")} className={input} placeholder="www.yourbusiness.com" autoComplete="url" />
+                <input value={form.website} onChange={update("website")} className={input} placeholder="Website" autoComplete="url" />
               </Field>
               <Field label="Industry">
                 <select value={form.industry} onChange={update("industry")} className={select}>
@@ -306,7 +307,7 @@ export function ContactForm() {
 
 const input =
   "w-full border border-white/15 bg-transparent px-4 py-3.5 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-none";
-const select = `${input} appearance-none pr-9 [&>option]:bg-base-800`;
+const select = `${input} appearance-none pr-9`;
 
 function Field({
   label,

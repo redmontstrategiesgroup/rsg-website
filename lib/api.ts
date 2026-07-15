@@ -35,3 +35,15 @@ export function patchJson(url: string, data: unknown): Promise<Response> {
     body: JSON.stringify(data),
   });
 }
+
+/** PUT JSON with the CSRF header attached. */
+export function putJson(url: string, data: unknown): Promise<Response> {
+  return fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "x-csrf-token": getCsrfToken(),
+    },
+    body: JSON.stringify(data),
+  });
+}

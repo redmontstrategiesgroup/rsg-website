@@ -5,6 +5,14 @@ export const metadata: Metadata = {
   title: "Privacy Policy | Redmont Strategies Group",
   description:
     "How Redmont Strategies Group collects, uses, and protects the information you share with us.",
+  alternates: { canonical: "/privacy" },
+  openGraph: {
+    title: "Privacy Policy | Redmont Strategies Group",
+    description:
+      "How Redmont Strategies Group collects, uses, and protects the information you share with us.",
+    url: "/privacy",
+    images: ["/og.png"],
+  },
 };
 
 export default function PrivacyPage() {
@@ -50,7 +58,7 @@ export default function PrivacyPage() {
               </h2>
               <p className="mt-3">
                 If you subscribe to our email list, we send occasional emails
-                about business systems, lead conversion, and AI implementation.
+                about business systems, operations, and AI implementation.
                 Every email includes an unsubscribe link, and you can ask to be
                 removed at any time. We never sell or share the list.
               </p>
@@ -84,8 +92,24 @@ export default function PrivacyPage() {
               </h2>
               <p className="mt-3">
                 You can request a copy of the information we hold about you, ask
-                us to correct it, or ask us to delete it by contacting us at any
-                time through the contact form on this site.
+                us to correct it, or ask us to delete it by contacting us at
+                contact@redmontstrategiesgroup.com. We process data-subject
+                requests for lead records through our admin DSAR tools and
+                retain spam/archived leads for up to 24 months unless a shorter
+                period is required.
+              </p>
+            </div>
+            <div>
+              <h2 className="text-base font-medium text-white">
+                Subprocessors
+              </h2>
+              <p className="mt-3">
+                We use a small set of infrastructure providers to operate the
+                site: Vercel (hosting), Supabase (database), Resend (transactional
+                email), Anthropic (optional site chat), Cloudflare Turnstile
+                (optional bot protection), Upstash (optional rate limiting), and
+                Sentry (optional error monitoring). We do not sell personal
+                information.
               </p>
             </div>
           </div>

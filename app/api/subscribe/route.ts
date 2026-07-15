@@ -2,12 +2,31 @@ import { NextResponse } from "next/server";
 import { saveSubscriber } from "@/lib/store";
 import { isEmail, toStr, LIMITS } from "@/lib/validate";
 import { rateLimit, rateLimitResponse, clientIp } from "@/lib/security";
+import { DEFAULT_CONTACT_TO_EMAIL } from "@/lib/leads";
 import type { Subscriber } from "@/lib/types";
+import { Resend } from "resend";
 
 export const runtime = "nodejs";
 
+async function notifyOwner(sub: Subscriber): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return;
+  const to = process.env.CONTACT_TO_EMAIL?.trim() || DEFAULT_CONTACT_TO_EMAIL;
+  try {
+    const resend = new Resend(apiKey);
+    await resend.emails.send({
+      from: process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
+      to,
+      subject: `New email signup: ${sub.email}`,
+      text: `A visitor subscribed via the website (${sub.source}) at ${sub.subscribedAt}.\n\nEmail: ${sub.email}`,
+    });
+  } catch (err) {
+    console.error("[subscribe] owner notification failed:", err);
+  }
+}
+
 export async function POST(request: Request) {
-  if (!rateLimit(`subscribe:${clientIp(request)}`, 6, 10 * 60_000)) {
+  if (!(await rateLimit(`subscribe:${clientIp(request)}`, 6, 10 * 60_000))) {
     return rateLimitResponse();
   }
 
@@ -37,6 +56,16 @@ export async function POST(request: Request) {
     subscribedAt: new Date().toISOString(),
   };
 
-  await saveSubscriber(sub);
+  const result = await saveSubscriber(sub);
+  if (result === "failed") {
+    return NextResponse.json(
+      { error: "We couldn't save your email right now. Please try again." },
+      { status: 503 }
+    );
+  }
+  if (result === "created") {
+    await notifyOwner(sub);
+  }
+
   return NextResponse.json({ ok: true });
 }

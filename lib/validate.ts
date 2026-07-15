@@ -11,7 +11,7 @@ export const LIMITS = {
   website: 200,
   short: 80,
   message: 4000,
-  passwordMin: 6,
+  passwordMin: 8,
   passwordMax: 200,
   metricValueMax: 1_000_000_000_000, // 1e12 sanity cap
 } as const;

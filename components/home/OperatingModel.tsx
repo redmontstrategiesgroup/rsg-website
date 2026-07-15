@@ -6,7 +6,7 @@ const PILLARS = [
   {
     group: "Demand",
     caption: "How the business gets found",
-    items: ["Marketing Systems", "Lead Flow", "Website Conversion", "Reviews"],
+    items: ["Lead Flow", "Website Conversion", "Reviews"],
   },
   {
     group: "Conversion",
@@ -23,19 +23,19 @@ const PILLARS = [
 export function OperatingModel() {
   return (
     <section className="border-y border-white/10 bg-base-900">
-      <div className="container-px py-32 sm:py-44">
+      <div className="container-px py-20 sm:py-28">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <Reveal y={12}>
               <p className="label">Operating Model</p>
             </Reveal>
             <Reveal y={12} delay={0.08}>
-              <h2 className="display mt-9 text-[2.1rem] leading-[1.08] sm:text-[2.8rem]">
+              <h2 className="display mt-6 text-[2.1rem] leading-[1.08] sm:text-[2.8rem]">
                 A business is only as strong as the systems underneath it.
               </h2>
             </Reveal>
             <Reveal y={12} delay={0.16}>
-              <p className="mt-9 max-w-md text-[1.02rem] leading-relaxed text-white/55">
+              <p className="mt-6 max-w-md text-[1.02rem] leading-relaxed text-white/55">
                 Most businesses run on scattered pieces. RSG connects the core
                 parts of the operation into one model, so leads, customers,
                 staff, and data move through the same system instead of around

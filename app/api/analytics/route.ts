@@ -11,7 +11,7 @@ export const runtime = "nodejs";
  * accepted cookies (rsg_consent=all) and carries the anonymous rsg_vid id.
  */
 export async function POST(request: Request) {
-  if (!rateLimit(`analytics:${clientIp(request)}`, 120, 10 * 60_000)) {
+  if (!(await rateLimit(`analytics:${clientIp(request)}`, 120, 10 * 60_000))) {
     return rateLimitResponse();
   }
 

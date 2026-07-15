@@ -61,7 +61,7 @@ export function CookieConsent() {
     <div
       role="region"
       aria-label="Cookie notice"
-      className="fixed bottom-4 left-4 z-40 w-[min(380px,calc(100vw-6.5rem))] border border-white/15 bg-base-900 p-6 shadow-lift sm:bottom-6 sm:left-6"
+      className="fixed bottom-4 left-4 z-40 w-[min(380px,calc(100%-6.5rem))] border border-white/15 bg-base-900 p-6 shadow-lift sm:bottom-6 sm:left-6"
     >
       <p className="text-[0.62rem] font-medium uppercase tracking-[0.22em] text-white/40">
         Cookies

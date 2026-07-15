@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -13,12 +14,6 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { postJson } from "@/lib/api";
-
-const DEMO_ACCOUNTS = [
-  { label: "Med Spa", email: "demo@glowaesthetics.com" },
-  { label: "Multi-location Dental", email: "client@apexdental.com" },
-];
-const DEMO_PASSWORD = "redmont2026";
 
 export function LoginForm() {
   const router = useRouter();
@@ -47,12 +42,6 @@ export function LoginForm() {
     }
   }
 
-  function fill(demoEmail: string) {
-    setEmail(demoEmail);
-    setPassword(DEMO_PASSWORD);
-    setError(null);
-  }
-
   return (
     <div className="relative grid min-h-screen lg:grid-cols-2">
       {/* Left — brand / story */}
@@ -62,9 +51,9 @@ export function LoginForm() {
           <div className="absolute left-1/3 top-1/4 h-[420px] w-[520px] rounded-full bg-crimson/[0.12] blur-[130px]" />
         </div>
         <div className="relative flex h-full flex-col justify-between p-12">
-          <a href="/" aria-label="Redmont Strategies Group home">
+          <Link href="/" aria-label="Redmont Strategies Group home">
             <Logo />
-          </a>
+          </Link>
           <div>
             <p className="label">
               <span className="relative flex h-1.5 w-1.5">
@@ -78,7 +67,7 @@ export function LoginForm() {
             </h1>
             <p className="mt-5 max-w-md leading-relaxed text-white/55">
               Track every booked consult, monitor your automations in real time,
-              review deliverables, and see the revenue your AI is influencing —
+              review deliverables, and see the revenue your AI is influencing,
               all in one place.
             </p>
             <ul className="mt-8 space-y-3">
@@ -97,7 +86,7 @@ export function LoginForm() {
             </ul>
           </div>
           <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/25">
-            RSG · Secured session · AI Automation & Marketing
+            RSG · Secured session · Business Consulting & AI Strategy
           </p>
         </div>
       </div>
@@ -115,13 +104,13 @@ export function LoginForm() {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="relative w-full max-w-sm"
         >
-          <a
+          <Link
             href="/"
             className="mb-8 inline-flex items-center gap-2 text-sm text-white/45 transition-colors hover:text-white lg:hidden"
           >
             <ArrowLeft size={15} />
             Back to site
-          </a>
+          </Link>
 
           <div className="lg:hidden">
             <Logo showWordmark={false} />
@@ -151,7 +140,7 @@ export function LoginForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-lg border border-white/12 bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20"
-                  placeholder="you@company.com"
+                  placeholder="Email address"
                 />
               </div>
             </label>
@@ -209,33 +198,12 @@ export function LoginForm() {
             </button>
           </form>
 
-          {/* Demo accounts */}
-          <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-            <p className="font-mono text-[0.56rem] uppercase tracking-label text-crimson-light">
-              // Demo accounts — click to fill
-            </p>
-            <div className="mt-3 space-y-2">
-              {DEMO_ACCOUNTS.map((a) => (
-                <button
-                  key={a.email}
-                  type="button"
-                  onClick={() => fill(a.email)}
-                  className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-left transition-colors hover:border-white/25 hover:bg-white/[0.04]"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs text-white/75">{a.email}</span>
-                    <span className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
-                      {a.label}
-                    </span>
-                  </span>
-                  <ArrowUpRight size={14} className="shrink-0 text-white/40" />
-                </button>
-              ))}
-            </div>
-            <p className="mt-3 font-mono text-[0.56rem] uppercase tracking-label text-white/40">
-              Password · {DEMO_PASSWORD}
-            </p>
-          </div>
+          <p className="mt-8 text-center text-xs text-white/35">
+            Access is provisioned by Redmont Strategies Group.{" "}
+            <Link href="/book" className="text-white/60 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white">
+              Not a client yet?
+            </Link>
+          </p>
         </motion.div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Legacy route from a previous version of the site. */
+/** Legacy route: the audit now has a dedicated local service page. */
 export default function AuditPage() {
-  redirect("/services");
+  redirect("/business-systems-audit-plymouth-county-ma");
 }

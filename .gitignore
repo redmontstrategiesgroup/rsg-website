@@ -29,3 +29,6 @@ next-env.d.ts
 
 # local file-backed store (seeded demo clients + captured leads)
 /data
+
+.vercel
+.env*

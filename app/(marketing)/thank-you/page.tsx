@@ -11,8 +11,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const BOOKING_URL = process.env.NEXT_PUBLIC_BOOKING_URL;
-
 export default function ThankYouPage() {
   return (
     <PageShell>
@@ -27,24 +25,42 @@ export default function ThankYouPage() {
             Redmont Strategies Group will review your business details and the
             systems you want to improve.
           </p>
-          {!BOOKING_URL && (
-            <p className="mt-5 max-w-lg text-[0.95rem] leading-relaxed text-white/45">
-              A confirmation is on its way to your inbox, and we&rsquo;ll reach
-              out shortly to schedule your strategy call.
+          <p className="mt-5 max-w-lg text-[0.95rem] leading-relaxed text-white/45">
+            Prefer to lock a time now? Complete our consultation intake and
+            book a qualified strategy session.
+          </p>
+
+          <div className="mt-10 max-w-lg space-y-4 border-t border-white/10 pt-8">
+            <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+              What happens next
             </p>
-          )}
+            <ol className="space-y-3 text-sm leading-relaxed text-white/55">
+              <li>
+                <span className="text-white/80">1.</span> We review your intake
+                details, website, and where follow-up is breaking down.
+              </li>
+              <li>
+                <span className="text-white/80">2.</span> You receive a short
+                confirmation email — or book a time below if you prefer to lock
+                a slot now.
+              </li>
+              <li>
+                <span className="text-white/80">3.</span> We reply with next
+                steps for a focused strategy conversation — no pitch deck, no
+                generic audit PDF.
+              </li>
+            </ol>
+          </div>
 
           <div className="mt-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-9">
-            {BOOKING_URL && (
-              <TrackedLink
-                href={BOOKING_URL}
-                event="book_strategy_call_click"
-                eventProps={{ location: "thank_you" }}
-                className="btn-primary"
-              >
-                Book a Strategy Call
-              </TrackedLink>
-            )}
+            <TrackedLink
+              href="/book"
+              event="book_strategy_call_click"
+              eventProps={{ location: "thank_you" }}
+              className="btn-primary"
+            >
+              Book a Strategy Call
+            </TrackedLink>
             <Link href="/" className="link-underline">
               Return to Homepage
             </Link>

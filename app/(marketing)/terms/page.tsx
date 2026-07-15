@@ -5,6 +5,14 @@ export const metadata: Metadata = {
   title: "Terms of Service | Redmont Strategies Group",
   description:
     "The terms that govern use of the Redmont Strategies Group website and client portal.",
+  alternates: { canonical: "/terms" },
+  openGraph: {
+    title: "Terms of Service | Redmont Strategies Group",
+    description:
+      "The terms that govern use of the Redmont Strategies Group website and client portal.",
+    url: "/terms",
+    images: ["/og.png"],
+  },
 };
 
 export default function TermsPage() {
