@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE FORGE — Describe the problem. Manufacture the solution.</title>
+<link rel="stylesheet" href="css/forge.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/controls/OrbitControls.js": "./vendor/OrbitControls.js"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header id="header">
+  <div class="brand">
+    <div class="brand-mark">⚒</div>
+    <div class="brand-text">
+      <h1>THE&nbsp;FORGE</h1>
+      <span class="brand-tag">From one sentence to a manufacturable product.</span>
+    </div>
+  </div>
+  <nav class="mode-tabs" id="mode-tabs">
+    <button class="mode-tab active" data-mode="product">⌨ Product</button>
+    <button class="mode-tab" data-mode="part">🔩 Part</button>
+    <button class="mode-tab" data-mode="enclosure">📦 Enclosure</button>
+    <button class="mode-tab" data-mode="electronics">⚡ Electronics</button>
+    <button class="mode-tab" data-mode="woodworking">🪵 Wood</button>
+    <button class="mode-tab" data-mode="repair">🔧 Repair</button>
+    <button class="mode-tab" data-mode="access">♿ Access</button>
+  </nav>
+  <div class="header-actions">
+    <span id="cx-chip" class="cx-chip" title="Design Complexity Rating">L–</span>
+    <span id="ai-status" class="ai-status offline" title="Claude API status">OFFLINE ENGINE</span>
+    <button id="btn-settings" class="icon-btn" title="Settings">⚙</button>
+  </div>
+</header>
+
+<!-- ============ COMMAND BAR ============ -->
+<section id="command-bar">
+  <div class="command-inner">
+    <textarea id="prompt-input" rows="1" spellcheck="false"
+      placeholder="Design a one-handed control deck that lets me operate two computers, three monitors, voice commands, foot pedals, and a PiKVM."></textarea>
+    <button id="btn-forge" class="forge-btn"><span class="forge-btn-icon">⚒</span> FORGE&nbsp;IT</button>
+  </div>
+  <div class="example-chips" id="example-chips"></div>
+</section>
+
+<!-- ============ MAIN LAYOUT ============ -->
+<main id="main">
+
+  <!-- LEFT: pipeline + configuration -->
+  <aside id="sidebar">
+    <div class="panel" id="pipeline-panel">
+      <h3 class="panel-title">FORGE PIPELINE</h3>
+      <ol id="pipeline-stages" class="pipeline"></ol>
+    </div>
+
+    <div class="panel" id="ability-panel">
+      <h3 class="panel-title">PHYSICAL-ABILITY SETUP</h3>
+      <div class="field-row">
+        <label>Hand</label>
+        <div class="seg" id="seg-hand">
+          <button data-v="left">Left</button>
+          <button data-v="right" class="active">Right</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Usable fingers</label>
+        <div class="finger-picker" id="finger-picker">
+          <button data-f="thumb"  class="active" title="Thumb">👍</button>
+          <button data-f="index"  class="active" title="Index">☝</button>
+          <button data-f="middle" class="active" title="Middle">🖕</button>
+          <button data-f="ring"   class="active" title="Ring">💍</button>
+          <button data-f="pinky"  class="active" title="Pinky">🤙</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Comfortable reach <span id="reach-val" class="mono">90 mm</span></label>
+        <input type="range" id="reach-range" min="55" max="130" value="90">
+      </div>
+      <p class="hint">The Forge re-arranges the physical hardware layout around your hand before generating the enclosure.</p>
+    </div>
+
+    <div class="panel" id="modules-panel">
+      <h3 class="panel-title">MODULES</h3>
+      <div id="module-toggles"></div>
+    </div>
+
+    <div class="panel" id="params-panel">
+      <h3 class="panel-title">PARAMETERS</h3>
+      <div id="param-rows"></div>
+    </div>
+
+    <div class="panel" id="edit-panel">
+      <h3 class="panel-title">CONVERSATIONAL EDIT</h3>
+      <div class="field-row">
+        <input type="text" id="edit-input" placeholder='"make it 20mm wider", "wall 3mm", "jacks on the side"'>
+      </div>
+      <button id="edit-apply" class="bar-btn" style="width:100%">Apply edit</button>
+      <p class="hint">Edits update the specification, regenerate affected geometry, rerun validation and create a revision.</p>
+    </div>
+
+    <!-- Part-mode inputs -->
+    <div class="panel mode-panel hidden" id="part-panel">
+      <h3 class="panel-title">PART TYPE</h3>
+      <div class="field-row">
+        <select id="part-type"></select>
+      </div>
+      <div id="part-params"></div>
+      <p class="hint" id="part-meta"></p>
+    </div>
+
+    <!-- Enclosure-mode inputs -->
+    <div class="panel mode-panel hidden" id="enclosure-panel">
+      <h3 class="panel-title">ENCLOSURE</h3>
+      <div class="field-row"><label>Preset</label>
+        <select id="enc-preset">
+          <option value="custom">Custom</option>
+          <option value="pinode">Raspberry Pi control node</option>
+          <option value="sensorbox">Weather-resistant sensor housing</option>
+          <option value="panel">Desktop button panel shell</option>
+        </select>
+      </div>
+      <div class="field-row triple">
+        <div><label>Int. W</label><input type="number" id="enc-w" value="105"></div>
+        <div><label>D</label><input type="number" id="enc-d" value="76"></div>
+        <div><label>H</label><input type="number" id="enc-h" value="40"></div>
+      </div>
+      <div class="field-row"><label>Wall (mm)</label><input type="number" id="enc-wall" value="2.4" step="0.2"></div>
+      <div class="field-row"><label>Board fittings</label>
+        <select id="enc-board">
+          <option value="none">None</option>
+          <option value="pi4" selected>Raspberry Pi 4B</option>
+          <option value="pizero">Pi Zero 2 W</option>
+          <option value="esp32">ESP32-S3 DevKitC</option>
+          <option value="sensor">Sensor module</option>
+        </select>
+      </div>
+      <div class="field-row"><label class="chk"><input type="checkbox" id="enc-vents" checked> Vent slots</label>
+        <label class="chk"><input type="checkbox" id="enc-wallmount" checked> Wall-mount tabs</label>
+        <label class="chk"><input type="checkbox" id="enc-gland"> M12 cable gland (bottom)</label>
+      </div>
+      <div class="field-row"><label>Fan</label>
+        <select id="enc-fan"><option value="0">None</option><option value="30">30 mm</option><option value="40" selected>40 mm</option></select>
+      </div>
+    </div>
+
+    <!-- Woodworking-mode inputs -->
+    <div class="panel mode-panel hidden" id="wood-panel">
+      <h3 class="panel-title">STOCK / SPACE</h3>
+      <div class="field-row"><label>Design</label>
+        <select id="wood-type">
+          <option value="desk">Live-edge desk</option>
+          <option value="shelf">Wall shelf unit</option>
+          <option value="table">Coffee table</option>
+          <option value="bench">Entry bench</option>
+          <option value="jig">Drilling / routing jig</option>
+        </select>
+      </div>
+      <div class="field-row triple">
+        <div><label>Slab L (mm)</label><input type="number" id="wood-l" value="1800"></div>
+        <div><label>W (mm)</label><input type="number" id="wood-w" value="700"></div>
+        <div><label>T (mm)</label><input type="number" id="wood-t" value="45"></div>
+      </div>
+      <div class="field-row"><label>Species</label>
+        <select id="wood-species">
+          <option value="walnut">Black walnut</option>
+          <option value="oak">White oak</option>
+          <option value="maple">Hard maple</option>
+          <option value="cherry">Cherry</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label class="file-label">📷 Upload slab photo / room scan
+          <input type="file" id="wood-photo" accept="image/*" hidden>
+        </label>
+        <span id="wood-photo-name" class="hint"></span>
+      </div>
+    </div>
+
+    <!-- Repair-mode inputs -->
+    <div class="panel mode-panel hidden" id="repair-panel">
+      <h3 class="panel-title">BROKEN PART</h3>
+      <div class="field-row">
+        <label class="file-label">📷 Show me the broken object
+          <input type="file" id="repair-photo" accept="image/*" hidden>
+        </label>
+        <span id="repair-photo-name" class="hint"></span>
+      </div>
+      <div class="field-row"><label>Part type</label>
+        <select id="repair-type">
+          <option value="knob">Appliance knob</option>
+          <option value="gear">Gear / sprocket</option>
+          <option value="bracket">L-bracket / mount</option>
+          <option value="hinge">Hinge pin / barrel</option>
+          <option value="clip">Snap clip / clamp</option>
+        </select>
+      </div>
+      <div id="repair-dims"></div>
+      <div class="field-row"><label>Reference dimension (mm) — measure any feature with calipers</label>
+        <input type="number" id="repair-ref" value="30" step="0.1">
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTER: workspace -->
+  <section id="workspace">
+    <nav id="ws-tabs" class="ws-tabs">
+      <button class="ws-tab active" data-tab="overview">Overview</button>
+      <button class="ws-tab" data-tab="requirements">Requirements</button>
+      <button class="ws-tab" data-tab="model">3D Model</button>
+      <button class="ws-tab" data-tab="engineering">Engineering</button>
+      <button class="ws-tab" data-tab="electronics">Schematic</button>
+      <button class="ws-tab" data-tab="pcb">PCB</button>
+      <button class="ws-tab" data-tab="firmware">Firmware</button>
+      <button class="ws-tab" data-tab="bom">BOM</button>
+      <button class="ws-tab" data-tab="assembly">Assembly</button>
+      <button class="ws-tab" data-tab="versions">Versions</button>
+    </nav>
+
+    <div id="ws-content">
+      <div class="ws-pane active" id="pane-overview"></div>
+      <div class="ws-pane" id="pane-requirements"></div>
+      <div class="ws-pane" id="pane-engineering"></div>
+
+      <div class="ws-pane" id="pane-model">
+        <div id="viewer-wrap">
+          <canvas id="viewer-canvas"></canvas>
+          <div id="viewer-hud">
+            <div class="hud-row">
+              <label>EXPLODE</label>
+              <input type="range" id="explode-range" min="0" max="100" value="0">
+            </div>
+            <div class="hud-row hud-btns">
+              <button id="btn-view-solid" class="hud-btn active">Solid</button>
+              <button id="btn-view-xray" class="hud-btn">X-Ray</button>
+              <button id="btn-view-wire" class="hud-btn">Wireframe</button>
+              <button id="btn-view-spin" class="hud-btn">Turntable</button>
+            </div>
+          </div>
+          <div id="viewer-dims" class="viewer-dims mono"></div>
+        </div>
+      </div>
+
+      <div class="ws-pane" id="pane-electronics"></div>
+      <div class="ws-pane" id="pane-pcb"></div>
+      <div class="ws-pane" id="pane-firmware"></div>
+      <div class="ws-pane" id="pane-bom"></div>
+      <div class="ws-pane" id="pane-assembly"></div>
+      <div class="ws-pane" id="pane-versions"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ FOOTER ACTION BAR ============ -->
+<footer id="action-bar">
+  <div class="ver-strip" id="ver-strip"></div>
+  <div class="action-btns">
+    <button id="btn-inspect" class="bar-btn accent">📷 Inspect Prototype</button>
+    <div class="dropdown">
+      <button id="btn-export" class="bar-btn">⬇ Export</button>
+      <div class="dropdown-menu" id="export-menu">
+        <button data-x="stl">STL — print geometry</button>
+        <button data-x="3mf">3MF — print package</button>
+        <button data-x="step">STEP — AP242 tessellated</button>
+        <button data-x="dxf">DXF — flat pattern / plate</button>
+        <button data-x="drawing">Dimensioned drawing — .svg</button>
+        <button data-x="gerber">Gerber — PCB fab files</button>
+        <button data-x="firmware">Firmware — .ino sketch</button>
+        <button data-x="bom">BOM — .csv parts list</button>
+        <button data-x="manual">Assembly + test manual — .html</button>
+        <button data-x="wiring">Wiring diagram — .svg</button>
+        <button data-x="schematic">Schematic — .svg</button>
+        <button data-x="site">Product website — .html</button>
+        <button data-x="all">⬇ Manufacturing package (gated)</button>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SETTINGS MODAL ============ -->
+<dialog id="settings-modal">
+  <h2>⚙ Settings</h2>
+  <p class="hint">Add a Claude API key to power invention generation and visual prototype
+  inspection with a frontier model. Without a key, The Forge runs on its built-in
+  offline parametric engine. The key is stored only in this browser (localStorage)
+  and sent only to <span class="mono">api.anthropic.com</span>.</p>
+  <div class="field-row"><label>Claude API key</label>
+    <input type="password" id="set-apikey" placeholder="sk-ant-…" autocomplete="off">
+  </div>
+  <div class="field-row"><label>Model</label>
+    <select id="set-model">
+      <option value="claude-fable-5">Claude Fable 5 (recommended)</option>
+      <option value="claude-opus-4-8">Claude Opus 4.8</option>
+      <option value="claude-sonnet-5">Claude Sonnet 5</option>
+    </select>
+  </div>
+  <p class="hint">Fable 5 requests automatically include a server-side fallback to Opus 4.8, so a
+  safety-classifier refusal is transparently re-served by Opus.</p>
+  <div class="modal-btns">
+    <button id="set-cancel" class="bar-btn">Cancel</button>
+    <button id="set-save" class="bar-btn accent">Save</button>
+  </div>
+</dialog>
+
+<!-- ============ INSPECTION MODAL ============ -->
+<dialog id="inspect-modal">
+  <h2>📷 Prototype Inspection</h2>
+  <p class="hint">Point your phone camera at the manufactured prototype (or upload a photo).
+  The Forge visually examines the physical object against the CAD model and proposes the next revision.</p>
+  <div class="inspect-drop" id="inspect-drop">
+    <input type="file" id="inspect-file" accept="image/*" capture="environment" hidden>
+    <div id="inspect-preview">Drop a photo here, or tap to open the camera</div>
+  </div>
+  <div id="inspect-report" class="inspect-report hidden"></div>
+  <div class="modal-btns">
+    <button id="inspect-close" class="bar-btn">Close</button>
+    <button id="inspect-run" class="bar-btn" disabled>🔍 Inspect</button>
+    <button id="inspect-rev" class="bar-btn accent hidden">⚒ Generate Revision</button>
+  </div>
+</dialog>
+
+<div id="toasts"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

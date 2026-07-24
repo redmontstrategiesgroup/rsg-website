@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GHOST // Systems Terminal</title>
+  <meta name="description" content="GHOST — General Hardware Orchestration and Systems Terminal. Tell GHOST what needs to happen; it plans, gets approval, executes, verifies, and shows exactly what happened." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%91%BB%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles/core.css" />
+  <link rel="stylesheet" href="styles/app.css" />
+  <link rel="stylesheet" href="styles/views.css" />
+</head>
+<body>
+  <!-- Ambient background layers -->
+  <canvas id="starfield" class="fx-starfield" aria-hidden="true"></canvas>
+  <div class="fx-grid" aria-hidden="true"></div>
+  <div class="fx-vignette" aria-hidden="true"></div>
+  <div class="fx-scanlines" aria-hidden="true"></div>
+  <div class="fx-aurora" aria-hidden="true"></div>
+
+  <!-- Boot sequence overlay -->
+  <div id="boot" class="boot"></div>
+
+  <!-- ===================== APP ===================== -->
+  <div id="app" hidden>
+    <header id="appbar" class="appbar"></header>
+
+    <div id="viewport" class="viewport">
+
+      <!-- LIVE OPS view: the cinematic command center -->
+      <section id="view-ops" class="view" data-view="ops">
+        <div id="shell" class="shell">
+          <header id="topbar" class="topbar"></header>
+          <aside id="moderail" class="moderail"></aside>
+          <main class="stage">
+            <section id="machinegrid" class="panel machinegrid"></section>
+            <section class="midrow">
+              <div id="timeline" class="panel timeline"></div>
+              <div id="systemmap" class="panel systemmap"></div>
+            </section>
+          </main>
+          <aside id="rightrail" class="rightrail">
+            <div id="agentfeed" class="panel agentfeed"></div>
+            <div id="anomaly" class="panel anomaly"></div>
+            <div id="controls" class="panel controls"></div>
+          </aside>
+          <footer id="deck" class="deck"></footer>
+        </div>
+      </section>
+
+      <!-- Real operational views (built by shell.js) -->
+      <section id="view-command"   class="view" data-view="command"   hidden></section>
+      <section id="view-world"     class="view" data-view="world"     hidden></section>
+      <section id="view-devices"   class="view" data-view="devices"   hidden></section>
+      <section id="view-approvals" class="view" data-view="approvals" hidden></section>
+      <section id="view-audit"     class="view" data-view="audit"     hidden></section>
+    </div>
+  </div>
+
+  <!-- Overlays -->
+  <div id="homelab" class="overlay homelab-overlay" hidden></div>
+  <div id="launcher" class="overlay launcher-overlay" hidden></div>
+  <div id="toast" class="toast-stack" aria-live="polite"></div>
+
+  <!-- Classic scripts — load order matters (no bundler) -->
+  <script src="js/lib.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/planner.js"></script>
+  <script src="js/orchestrator.js"></script>
+  <script src="js/onehand.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/viz.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

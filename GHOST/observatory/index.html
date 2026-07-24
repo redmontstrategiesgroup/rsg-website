@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS Observatory — The World That Remembers</title>
+  <meta name="description" content="NEXUS Observatory: build a living model of a real system, change one decision, and observe the likely consequences across time — with assumptions, uncertainty and causal traces exposed." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%AD%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/observatory.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><b>NEXUS</b> OBSERVATORY <span class="tag-line">the world that remembers</span></div>
+    <div class="world-chip">🔭 Harborview District <span class="syn-chip">SYNTHETIC</span></div>
+    <div class="spacer"></div>
+    <div class="freshness" title="Data freshness — all demo values are synthetic defaults dated 2026-07-23 unless imported">data: synthetic defaults · 2026-07-23</div>
+    <button class="btn small" id="theme-btn">◐ dark</button>
+  </header>
+
+  <div class="layout">
+    <nav class="nav">
+      <div class="nav-item active" data-view="overview"><span>◈</span> Overview</div>
+      <div class="nav-item" data-view="map"><span>🗺</span> World view</div>
+      <div class="nav-item" data-view="scenarios"><span>⑃</span> Scenarios</div>
+      <div class="nav-item" data-view="timeline"><span>―</span> Timeline</div>
+      <div class="nav-item" data-view="entities"><span>▤</span> Entities</div>
+      <div class="nav-item" data-view="graph"><span>◇</span> Graph</div>
+      <div class="nav-item" data-view="data"><span>⇥</span> Data & calibration</div>
+      <div class="nav-item" data-view="reports"><span>▣</span> Reports</div>
+      <div class="nav-item" data-view="audit"><span>✓</span> Audit</div>
+      <div class="nav-item" data-view="settings"><span>⚙</span> Settings</div>
+    </nav>
+
+    <main class="main">
+      <section id="view-overview" class="view active"></section>
+      <section id="view-map" class="view">
+        <div class="map-flex">
+          <div class="map-hold"><canvas id="map-canvas"></canvas><div id="map-tip" class="map-tip" hidden></div></div>
+          <div id="map-side" class="map-side"></div>
+        </div>
+      </section>
+      <section id="view-scenarios" class="view"></section>
+      <section id="view-timeline" class="view"></section>
+      <section id="view-entities" class="view"></section>
+      <section id="view-graph" class="view"></section>
+      <section id="view-data" class="view"></section>
+      <section id="view-reports" class="view"></section>
+      <section id="view-audit" class="view"></section>
+      <section id="view-settings" class="view"></section>
+    </main>
+
+    <aside id="inspector" class="inspector">
+      <div class="insp-head"><span>INSPECTOR</span><button class="btn small" id="insp-close">✕</button></div>
+      <div id="insp-body" class="insp-body"></div>
+    </aside>
+  </div>
+
+  <div id="toasts" class="toasts"></div>
+
+  <!-- classic scripts, load order matters, no build step -->
+  <script src="js/core.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/scenario.js"></script>
+  <script src="js/copilot.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/mapview.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

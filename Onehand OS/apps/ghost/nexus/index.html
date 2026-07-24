@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS — The City That Remembers</title>
+  <meta name="description" content="A living AI city. Every person has a life. Every action becomes history. The world continues without you." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%86%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/nexus.css" />
+</head>
+<body>
+  <div id="boot" class="boot">
+    <div class="boot-inner">
+      <div class="boot-logo">NEXUS</div>
+      <div class="boot-tag">The City That Remembers</div>
+      <div class="boot-line" id="bootline">initializing residents…</div>
+    </div>
+  </div>
+
+  <div id="shell" class="shell" hidden>
+    <header class="topbar">
+      <div class="brand">NEXUS<span class="brand-sub">v0.1 · Rusthook District</span></div>
+      <div class="clock"><span id="clock-day">DAY 1</span><span id="clock-time">06:00</span><span id="clock-phase" class="phase">dawn</span></div>
+      <div class="speed">
+        <button id="spd-pause" class="spd" title="Pause">⏸</button>
+        <button id="spd-1" class="spd active" title="Normal speed">▶</button>
+        <button id="spd-4" class="spd" title="Fast">▶▶</button>
+        <button id="spd-day" class="spd wide" title="Simulate to next morning">SKIP DAY ⤳</button>
+      </div>
+      <div class="wallet" title="Your money">$<span id="player-money">600</span></div>
+      <div class="ticker"><span id="ticker-text">A new stranger arrives in Rusthook…</span></div>
+    </header>
+
+    <main class="stage">
+      <div class="mapwrap">
+        <canvas id="map"></canvas>
+        <div id="map-tip" class="map-tip" hidden></div>
+        <div class="map-legend">
+          <span><i class="dot dot-you"></i>you</span>
+          <span><i class="dot dot-res"></i>resident</span>
+          <span><i class="dot dot-cop"></i>police</span>
+          <span><i class="dot dot-gang"></i>red knives</span>
+          <span class="hint">click a person to talk · drag to pan · wheel to zoom</span>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <nav class="tabs">
+          <button data-tab="city" class="tab active">CITY</button>
+          <button data-tab="people" class="tab">PEOPLE</button>
+          <button data-tab="talk" class="tab">TALK</button>
+          <button data-tab="feed" class="tab">PULSE</button>
+          <button data-tab="news" class="tab">NEWS</button>
+          <button data-tab="god" class="tab god">GOD</button>
+          <button data-tab="settings" class="tab">⚙</button>
+        </nav>
+        <section id="tab-city" class="tabpane active"></section>
+        <section id="tab-people" class="tabpane"></section>
+        <section id="tab-talk" class="tabpane"></section>
+        <section id="tab-feed" class="tabpane"></section>
+        <section id="tab-news" class="tabpane"></section>
+        <section id="tab-god" class="tabpane"></section>
+        <section id="tab-settings" class="tabpane"></section>
+      </aside>
+    </main>
+
+    <div id="away-modal" class="modal" hidden>
+      <div class="modal-card">
+        <h2>WHILE YOU WERE AWAY</h2>
+        <div id="away-body" class="away-body"></div>
+        <button id="away-close" class="btn primary">RETURN TO THE CITY</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast-stack" aria-live="polite"></div>
+  </div>
+
+  <!-- Classic scripts — load order matters, no build step -->
+  <script src="js/util.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/social.js"></script>
+  <script src="js/economy.js"></script>
+  <script src="js/feed.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/dialogue.js"></script>
+  <script src="js/claude.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
