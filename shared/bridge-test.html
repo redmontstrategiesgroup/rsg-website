@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>claude-bridge tests</title>
+<style>
+  body{background:#0a0e16;color:#dce6ff;font:14px/1.5 "Segoe UI",system-ui,sans-serif;margin:0;padding:28px}
+  h1{font-size:16px;letter-spacing:.14em;font-weight:600}
+  #sum{font-size:15px;margin:14px 0 20px;padding:12px 16px;border-radius:10px;border:1px solid #2a3a5f;background:#0e1420}
+  #sum.pass{border-color:#3ddc97;color:#3ddc97} #sum.fail{border-color:#ff6b7a;color:#ff6b7a}
+  .case{padding:9px 14px;border-left:3px solid #2a3a5f;margin:6px 0;background:#0e1420;border-radius:0 8px 8px 0;font-variant-numeric:tabular-nums}
+  .case.ok{border-left-color:#3ddc97} .case.no{border-left-color:#ff6b7a}
+  .case .n{color:#8593b5} .case.no .n{color:#ff6b7a}
+  code{color:#4da3ff}
+</style>
+</head>
+<body>
+  <h1>CLAUDE-BRIDGE · regression tests</h1>
+  <div id="sum">running…</div>
+  <div id="out"></div>
+
+<!-- unit under test -->
+<script src="claude-bridge.js"></script>
+<script>
+(async function(){
+  var B = window.RSGClaude;
+  var out = document.getElementById("out"), results = [];
+  function pass(name){ results.push({name:name,ok:true}); }
+  function fail(name,detail){ results.push({name:name,ok:false,detail:detail}); }
+  function check(name, cond, detail){ cond ? pass(name) : fail(name, detail||""); }
+  function eq(a,b){ return JSON.stringify(a)===JSON.stringify(b); }
+
+  // ---- 0. bridge present ----
+  check("bridge loads (window.RSGClaude)", !!B, "script not loaded");
+  if(!B){ render(); return; }
+
+  var wm = B.windowMessages.bind(B);
+
+  // ---- 1. windowMessages: empty prior → single user turn ----
+  check("empty prior → [user:currentText]",
+    eq(wm([], "hi", {max:12}), [{role:"user",content:"hi"}]));
+
+  // ---- 2. de-dup the in-flight user turn (the double-send half of H4) ----
+  var r2 = wm([{role:"user",content:"a"},{role:"assistant",content:"b"},{role:"user",content:"now"}], "now", {max:12});
+  check("in-flight message not duplicated",
+    r2.filter(function(m){return m.content==="now";}).length===1, JSON.stringify(r2));
+
+  // ---- 3. array always starts with a user turn (the API-400 half of H4) ----
+  var prior3=[]; for(var i=0;i<15;i++) prior3.push({role:i%2===0?"assistant":"user",content:"x"+i});
+  var r3 = wm(prior3, "q", {max:12});
+  check("windowed array starts with a user turn", r3[0].role==="user", r3[0].role);
+
+  // ---- 4. length capped at max+1 ----
+  var prior4=[]; for(var j=0;j<40;j++) prior4.push({role:j%2===0?"user":"assistant",content:"m"+j});
+  var r4 = wm(prior4, "final", {max:12});
+  check("length capped at max+1 (13)", r4.length<=13, "len="+r4.length);
+
+  // ---- 5. the exact H4 scenario: 16 exchanges, app pre-appends in-flight ----
+  var convo=[], allUserFirst=true, everDup=false, maxLen=0;
+  for(var ex=0; ex<16; ex++){
+    var text="u"+ex; convo.push({role:"user",content:text});     // app pre-appends (the bug pattern)
+    var m = wm(convo, text, {max:12});
+    if(m[0].role!=="user") allUserFirst=false;
+    if(m.filter(function(x){return x.content===text;}).length>1) everDup=true;
+    maxLen=Math.max(maxLen,m.length);
+    convo.push({role:"assistant",content:"r"+ex});
+  }
+  check("16-exchange conversation stays user-first", allUserFirst);
+  check("16-exchange conversation never duplicates in-flight", !everDup);
+  check("16-exchange conversation length stays bounded", maxLen<=13, "maxLen="+maxLen);
+
+  // ---- 6. getKey precedence: shared-first, legacy-second, else "" ----
+  localStorage.removeItem("rsg.anthropic_key");
+  check("getKey → legacy fallback when no shared key", B.getKey("legacy-k")==="legacy-k");
+  check("getKey → '' when neither present", B.getKey("")==="" && B.getKey()==="");
+  localStorage.setItem("rsg.anthropic_key","shared-k");
+  check("getKey → shared key wins over legacy", B.getKey("legacy-k")==="shared-k");
+  localStorage.removeItem("rsg.anthropic_key");
+
+  // ---- 7. request() rejects with no key (error path) ----
+  var threw=false;
+  try{ await B.request({key:"", messages:[{role:"user",content:"x"}]}); }
+  catch(e){ threw = /no-key/.test(e.message); }
+  check("request() rejects when key is missing", threw);
+
+  // ---- 8. request() aborts a hung fetch (timeout failure path) ----
+  var origFetch = window.fetch;
+  window.fetch = function(_url, opts){
+    return new Promise(function(_res, rej){
+      // never resolves; reject when the bridge aborts
+      if(opts && opts.signal) opts.signal.addEventListener("abort", function(){
+        var err=new Error("aborted"); err.name="AbortError"; rej(err);
+      });
+    });
+  };
+  var timedOut=false, t0=Date.now();
+  try{ await B.request({key:"k", messages:[{role:"user",content:"x"}], timeoutMs:120}); }
+  catch(e){ timedOut = /timed out/i.test(e.message); }
+  window.fetch = origFetch;
+  check("request() aborts a hung fetch (timeout path)", timedOut && (Date.now()-t0) < 2000);
+
+  render();
+
+  function render(){
+    var passed=results.filter(function(r){return r.ok;}).length, total=results.length;
+    var sum=document.getElementById("sum");
+    sum.textContent = passed+" / "+total+" passed" + (passed===total ? "  ✓ all green" : "  ✗ FAILURES");
+    sum.className = passed===total ? "pass" : "fail";
+    results.forEach(function(r,i){
+      var d=document.createElement("div");
+      d.className="case "+(r.ok?"ok":"no");
+      d.innerHTML='<span class="n">'+(i+1<10?"0":"")+(i+1)+'</span> '+(r.ok?"✓":"✗")+' '+r.name+(r.detail?' — <code>'+r.detail+'</code>':"");
+      out.appendChild(d);
+    });
+    window.__results = {passed:passed, total:total, cases:results};
+  }
+})();
+</script>
+</body>
+</html>

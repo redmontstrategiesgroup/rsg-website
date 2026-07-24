@@ -367,6 +367,15 @@
   var $$=function(s){return [].slice.call(document.querySelectorAll(s))};
   var boot=$("#boot"), stage=$("#stage"), settings=$("#settings");
 
+  /* Guarded localStorage write. Returns true on success; false if the write
+     threw (e.g. QuotaExceededError when another app's save has filled storage,
+     or storage disabled in private mode). Callers must report failure honestly
+     rather than showing a false "saved". */
+  function safeSet(key, val){
+    try{ localStorage.setItem(key, val); return true; }
+    catch(e){ return false; }
+  }
+
   /* boot splash */
   setTimeout(function(){ boot.classList.add("gone"); }, 1200);
 
@@ -397,7 +406,7 @@
   var hand=profile.hand;
   function setHand(h){
     hand=h; profile.hand=h; document.body.setAttribute("data-hand",h);
-    localStorage.setItem("ohos.hand",h);
+    safeSet("ohos.hand",h);   /* dock still updates even if the write is refused */
     $("#sHandL").classList.toggle("on",h==="left");
     $("#sHandR").classList.toggle("on",h==="right");
     $("#handQuickL").textContent = h==="left" ? "L" : "R";
@@ -424,8 +433,10 @@
   $("#keySave").onclick=function(){
     var v=keyInput.value.trim();
     if(!v){ keyNote.innerHTML='<span class="warn">Paste a key first, or use Clear.</span>'; keyInput.focus(); return; }
-    localStorage.setItem(KEY,v);
-    keyNote.innerHTML='<span class="ok">✓ saved</span> ('+v.length+' chars) — apps use it on next launch.';
+    if(safeSet(KEY,v))
+      keyNote.innerHTML='<span class="ok">✓ saved</span> ('+v.length+' chars) — apps use it on next launch.';
+    else
+      keyNote.innerHTML='<span class="warn">Couldn\'t save — browser storage is full or blocked.</span> Free up space (close a heavy app tab) and try again.';
   };
   $("#keyClear").onclick=function(){
     localStorage.removeItem(KEY); keyInput.value="";
@@ -452,9 +463,11 @@
     var grip=segVal("grip","moderate"), fatigue=segVal("fatigue","low"), reachMM=parseInt($("#reach").value,10);
     var targetScale = fatigue==="high" ? 1.6 : grip==="weak" ? 1.5 : 1.4;
     profile=Object.assign(profile,{ v:1, hand:hand, fingers:fingers, reachMM:reachMM, grip:grip, fatigue:fatigue, inputs:inputs, targetScale:targetScale });
-    localStorage.setItem(ABILITY, JSON.stringify(profile));
     var count=Object.keys(fingers).filter(function(k){return fingers[k];}).length;
-    $("#profNote").innerHTML='<span class="ok">✓ saved</span> — '+hand+' hand · '+count+' finger'+(count===1?"":"s")+' · '+reachMM+' mm. Apps adapt on next launch.';
+    if(safeSet(ABILITY, JSON.stringify(profile)))
+      $("#profNote").innerHTML='<span class="ok">✓ saved</span> — '+hand+' hand · '+count+' finger'+(count===1?"":"s")+' · '+reachMM+' mm. Apps adapt on next launch.';
+    else
+      $("#profNote").innerHTML='<span class="warn">Couldn\'t save — browser storage is full or blocked.</span> Free up space and try again.';
   };
 
   /* file:// notice — THE FORGE and NEXUS voice need http */

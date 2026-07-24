@@ -46,8 +46,10 @@
      structured outputs, the browser-access header, the Fable-5 server-side
      refusal fallback beta, and refusal detection.
 
-     req: { key, model, system, messages, schema, maxTokens, effort }
-     Returns { text, msg } (text = first text block) or throws Error. */
+     req: { key, model, system, messages, schema, maxTokens, effort, timeoutMs }
+     Returns { text, msg } (text = first text block) or throws Error.
+     A hung request is aborted after timeoutMs (default 60s) so callers'
+     catch/fallback paths engage instead of hanging forever. */
   async function request(req) {
     var key = req.key;
     var model = req.model || "claude-fable-5";
@@ -76,9 +78,20 @@
       body.fallbacks = [{ model: "claude-opus-4-8" }];
     }
 
-    var res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST", headers: headers, body: JSON.stringify(body),
-    });
+    // Abort a hung request so the caller's fallback engages instead of hanging.
+    var ctl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function () { ctl.abort(); }, req.timeoutMs || 60000) : null;
+    var res;
+    try {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST", headers: headers, body: JSON.stringify(body),
+        signal: ctl ? ctl.signal : undefined,
+      });
+    } catch (e) {
+      if (timer) clearTimeout(timer);
+      throw new Error(e && e.name === "AbortError" ? "Request timed out" : (e && e.message) || "Network error");
+    }
+    if (timer) clearTimeout(timer);
     if (!res.ok) {
       var err = await res.json().catch(function () { return {}; });
       throw new Error((err && err.error && err.error.message) || ("API error " + res.status));
