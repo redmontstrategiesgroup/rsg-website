@@ -73,39 +73,62 @@ RULES
 - Never break character, never mention being an AI, never use lists or markdown.`;
   };
 
+  // Map NEXUS chat turns → API roles, without the in-flight message.
+  function priorMessages(history) {
+    return (history || []).map((t) => ({ role: t.who === "you" ? "user" : "assistant", content: t.text }));
+  }
+  // Correct history windowing: de-dup the in-flight turn, keep the last 12,
+  // and guarantee the array starts with a `user` turn (API requirement).
+  // Uses the shared bridge when present; the inline copy keeps standalone
+  // NEXUS correct too. (Fixes the silent-fallback-after-~6-exchanges bug.)
+  function buildMessages(history, text) {
+    if (window.RSGClaude) return window.RSGClaude.windowMessages(priorMessages(history), text, { max: 12 });
+    const turns = priorMessages(history);
+    while (turns.length && turns[turns.length - 1].role === "user" && turns[turns.length - 1].content === text) turns.pop();
+    const w = turns.slice(-12);
+    while (w.length && w[0].role !== "user") w.shift();
+    w.push({ role: "user", content: text });
+    return w;
+  }
+
   C.respond = async function (state, r, text, history) {
     const key = C.getKey();
-    const messages = [];
-    for (const turn of (history || []).slice(-12)) {
-      messages.push({ role: turn.who === "you" ? "user" : "assistant", content: turn.text });
-    }
-    messages.push({ role: "user", content: text });
+    const messages = buildMessages(history, text);
+    const system = C.buildSystem(state, r);
 
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": key,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
-      body: JSON.stringify({
-        model: C.getModel(),
-        max_tokens: 600,
-        system: C.buildSystem(state, r),
-        messages,
-        output_config: { format: { type: "json_schema", schema: SCHEMA } },
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `API error ${res.status}`);
+    let textBlock;
+    if (window.RSGClaude) {
+      const out0 = await window.RSGClaude.request({
+        key, model: C.getModel(), system, messages, schema: SCHEMA, maxTokens: 600,
+      });
+      textBlock = { text: out0.text };
+      if (!out0.text) throw new Error("empty response");
+    } else {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify({
+          model: C.getModel(),
+          max_tokens: 600,
+          system,
+          messages,
+          output_config: { format: { type: "json_schema", schema: SCHEMA } },
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `API error ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.stop_reason === "refusal") throw new Error("model declined");
+      textBlock = (data.content || []).find((b) => b.type === "text");
+      if (!textBlock) throw new Error("empty response");
     }
-    const data = await res.json();
-    if (data.stop_reason === "refusal") throw new Error("model declined");
-    const textBlock = (data.content || []).find((b) => b.type === "text");
-    if (!textBlock) throw new Error("empty response");
     const out = JSON.parse(textBlock.text);
 
     const fx = {
