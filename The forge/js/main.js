@@ -1,5 +1,5 @@
 // ============ THE FORGE v2 — bounded invention platform (application shell) ============
-import { defaultSpec, interpretOffline, SPEC_SCHEMA, specFromAI, EXAMPLES, deckConcepts } from "./spec.js";
+import { defaultSpec, interpretOffline, SPEC_SCHEMA, specFromAI, EXAMPLES, deckConcepts, sharedAbility } from "./spec.js";
 import { layoutSpec } from "./layout.js";
 import { buildDeckModel, buildRepairPart, buildWoodModel } from "./geometry.js";
 import { initViewer, setModel, getModel, setExplode, setSpin, isSpin, setMode as setViewMode, snapshot, onPick } from "./viewer.js";
@@ -1094,6 +1094,15 @@ function wireUI() {
   });
   $("#finger-picker").querySelectorAll("button").forEach(b => b.onclick = () => { b.classList.toggle("active"); liveRelayout(); });
   $("#reach-range").oninput = () => { $("#reach-val").textContent = $("#reach-range").value + " mm"; liveRelayoutDebounced(); };
+
+  // Seed the ability panel from the shared Onehand OS profile (rsg.ability.v1)
+  // so the first forge already fits the user's hand. Panel stays editable.
+  const sa = sharedAbility();
+  if (sa) {
+    $("#seg-hand").querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.v === sa.hand));
+    $("#finger-picker").querySelectorAll("button").forEach(b => b.classList.toggle("active", !!sa.fingers[b.dataset.f]));
+    $("#reach-range").value = sa.reachMM; $("#reach-val").textContent = sa.reachMM + " mm";
+  }
 
   // wood / repair / enclosure inputs
   $("#wood-photo").onchange = e => $("#wood-photo-name").textContent = e.target.files[0]?.name || "";

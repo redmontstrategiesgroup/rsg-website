@@ -2,13 +2,33 @@
 // A "spec" is the single source of truth every generator consumes:
 // layout, geometry, electronics, firmware, BOM, docs all derive from it.
 
+// Shared Onehand OS ability profile (rsg.ability.v1). Returns a Forge-shaped
+// ability {hand, fingers, reachMM} when the shell has written one, else null.
+export function sharedAbility() {
+  try {
+    const p = JSON.parse(localStorage.getItem("rsg.ability.v1") || "null");
+    if (!p || p.v !== 1) return null;
+    return {
+      hand: p.hand === "left" ? "left" : "right",
+      fingers: {
+        thumb: !!(p.fingers && p.fingers.thumb),
+        index: !!(p.fingers && p.fingers.index),
+        middle: !!(p.fingers && p.fingers.middle),
+        ring: !!(p.fingers && p.fingers.ring),
+        pinky: !!(p.fingers && p.fingers.pinky),
+      },
+      reachMM: typeof p.reachMM === "number" ? p.reachMM : 90,
+    };
+  } catch (e) { return null; }
+}
+
 export function defaultSpec() {
   return {
     name: "OneHand Command Deck",
     tagline: "A one-handed control deck for two computers, three monitors, voice, foot pedals and a PiKVM.",
     mode: "product",
     rev: 1,
-    ability: {
+    ability: sharedAbility() || {
       hand: "right",
       fingers: { thumb: true, index: true, middle: true, ring: true, pinky: true },
       reachMM: 90,
