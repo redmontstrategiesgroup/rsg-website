@@ -123,6 +123,14 @@
   };
 
   CP.request = async function (system, userContent, schema, maxTokens = 2500) {
+    const model = OBS.store.data.settings.copilotModel || "claude-opus-4-8";
+    const messages = [{ role: "user", content: userContent }];
+    // Shared portfolio bridge when present (Fable-5 fallback beta, refusal
+    // detection, structured outputs); inline fetch keeps standalone working.
+    if (window.RSGClaude) {
+      const { text } = await window.RSGClaude.request({ key: CP.getKey(), model, system, messages, schema, maxTokens });
+      return JSON.parse(text);
+    }
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -130,9 +138,9 @@
         "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true",
       },
       body: JSON.stringify({
-        model: OBS.store.data.settings.copilotModel || "claude-opus-4-8",
+        model,
         max_tokens: maxTokens, system,
-        messages: [{ role: "user", content: userContent }],
+        messages,
         output_config: { format: { type: "json_schema", schema } },
       }),
     });

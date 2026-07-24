@@ -24,6 +24,12 @@ async function callClaude({ system, messages, schema, maxTokens = 4096, effort =
   const { apiKey, model } = getSettings();
   if (!apiKey) throw new Error("no-key");
 
+  // Shared portfolio bridge when present (identical semantics — this is where
+  // they were copied from). Inline path below keeps Forge working standalone.
+  if (window.RSGClaude) {
+    return window.RSGClaude.request({ key: apiKey, model, system, messages, schema, maxTokens, effort });
+  }
+
   const body = {
     model,
     max_tokens: maxTokens,
