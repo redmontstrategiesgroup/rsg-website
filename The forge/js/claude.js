@@ -7,8 +7,15 @@
 const LS_KEY = "forge.settings.v1";
 
 export function getSettings() {
-  try { return { apiKey: "", model: "claude-fable-5", ...JSON.parse(localStorage.getItem(LS_KEY) || "{}") }; }
-  catch { return { apiKey: "", model: "claude-fable-5" }; }
+  // Shared Onehand OS key (rsg.anthropic_key) takes precedence over the
+  // Forge-local key so the key is pasted once; model stays Forge-local.
+  const shared = localStorage.getItem("rsg.anthropic_key") || "";
+  try {
+    const s = { apiKey: "", model: "claude-fable-5", ...JSON.parse(localStorage.getItem(LS_KEY) || "{}") };
+    if (shared) s.apiKey = shared;
+    return s;
+  }
+  catch { return { apiKey: shared, model: "claude-fable-5" }; }
 }
 export function saveSettings(s) { localStorage.setItem(LS_KEY, JSON.stringify(s)); }
 export function hasKey() { return !!getSettings().apiKey; }

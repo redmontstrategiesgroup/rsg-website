@@ -109,6 +109,38 @@
   #dock button:active{transform:scale(.96)}
   #dock .lbl{position:absolute;pointer-events:none;opacity:0}
 
+  /* settings */
+  #gear{background:var(--panel);border:1px solid var(--line);color:var(--dim);
+    width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:18px;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;transition:all .15s;flex:none}
+  #gear:hover{color:var(--txt);border-color:var(--acc);box-shadow:var(--glow)}
+  #settings{position:fixed;inset:0;z-index:55;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(4,6,10,.72);backdrop-filter:blur(3px)}
+  #settings.open{display:flex}
+  body[data-hand="left"] #settings{justify-content:flex-start}
+  body[data-hand="right"] #settings{justify-content:flex-end}
+  .sheet{width:min(440px,100%);max-height:82vh;overflow-y:auto;margin:0 12px max(20px,env(safe-area-inset-bottom));
+    background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line2);
+    border-radius:22px 22px 20px 20px;padding:22px 22px 26px;box-shadow:0 -10px 40px rgba(0,0,0,.6),var(--glow)}
+  .sheet h2{font-size:15px;letter-spacing:.16em;font-weight:600;text-transform:uppercase;color:var(--txt)}
+  .sheet .close{float:right;background:none;border:0;color:var(--dim);font-size:22px;cursor:pointer;line-height:1;font-family:inherit}
+  .sheet .grp{margin-top:22px}
+  .sheet label{display:block;font-size:12px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-bottom:9px}
+  .keyrow{display:flex;gap:8px}
+  .keyrow input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--txt);
+    padding:14px 14px;font-size:15px;font-family:inherit;min-width:0}
+  .keyrow input:focus{outline:none;border-color:var(--acc)}
+  .keyrow button,.sheet .save{background:var(--panel);border:1px solid var(--line2);color:var(--txt);
+    border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;font-family:inherit;font-size:14px;transition:all .15s}
+  .sheet .save{width:100%;margin-top:14px;min-height:52px;letter-spacing:.14em}
+  .sheet .save:hover,.keyrow button:hover{border-color:var(--acc);box-shadow:var(--glow)}
+  .sheet .note{color:var(--faint);font-size:11.5px;line-height:1.55;margin-top:10px}
+  .sheet .ok{color:var(--good)}
+  .handseg{display:flex;gap:8px}
+  .handseg button{flex:1;min-height:52px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
+    color:var(--dim);font-family:inherit;font-size:14px;letter-spacing:.14em;cursor:pointer;transition:all .15s}
+  .handseg button.on{color:var(--txt);border-color:var(--acc);box-shadow:var(--glow)}
+
   @media (prefers-reduced-motion: reduce){
     *{transition:none!important;animation:none!important}
   }
@@ -130,6 +162,7 @@
         <div id="clock">--:--</div>
         <div id="date"></div>
       </div>
+      <button id="gear" title="Settings" aria-label="Settings">⚙</button>
     </header>
 
     <section class="apps" aria-label="Applications">
@@ -175,6 +208,32 @@
     <button id="homeBtn" title="Home (Esc)" aria-label="Home">⌂</button>
   </nav>
 
+  <div id="settings" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="sheet">
+      <button class="close" id="setClose" aria-label="Close settings">✕</button>
+      <h2>Settings</h2>
+
+      <div class="grp">
+        <label for="apiKey">Anthropic API key</label>
+        <div class="keyrow">
+          <input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+          <button id="keyShow" type="button" aria-label="Show or hide key">👁</button>
+        </div>
+        <button class="save" id="keySave">Save key</button>
+        <div class="note" id="keyNote">Stored only in this browser; sent only to api.anthropic.com. Shared by THE FORGE, NEXUS and OBSERVATORY — paste it once.</div>
+      </div>
+
+      <div class="grp">
+        <label>Hand</label>
+        <div class="handseg" role="group" aria-label="Hand preference">
+          <button id="sHandL" type="button">LEFT</button>
+          <button id="sHandR" type="button">RIGHT</button>
+        </div>
+        <div class="note">Moves the controls to your thumb's side. (More profile options coming next.)</div>
+      </div>
+    </div>
+  </div>
+
 <script>
 (function(){
   var $=function(s){return document.querySelector(s)};
@@ -198,10 +257,40 @@
     localStorage.setItem("ohos.hand",h);
     $("#hl").classList.toggle("on",h==="left");
     $("#hr").classList.toggle("on",h==="right");
+    $("#sHandL").classList.toggle("on",h==="left");
+    $("#sHandR").classList.toggle("on",h==="right");
   }
   $("#hl").onclick=function(){setHand("left")};
   $("#hr").onclick=function(){setHand("right")};
+  $("#sHandL").onclick=function(){setHand("left")};
+  $("#sHandR").onclick=function(){setHand("right")};
   setHand(hand);
+
+  /* ---- settings: shared Anthropic key (rsg.anthropic_key) ---- */
+  var KEY="rsg.anthropic_key";
+  var settings=$("#settings"), keyInput=$("#apiKey"), keyNote=$("#keyNote");
+  function maskLen(k){ return k ? k.length : 0; }
+  function openSettings(){
+    keyInput.value=localStorage.getItem(KEY)||"";
+    keyInput.type="password";
+    var n=maskLen(keyInput.value);
+    keyNote.innerHTML = n
+      ? '<span class="ok">✓ key saved ('+n+' chars)</span> — shared by THE FORGE, NEXUS and OBSERVATORY.'
+      : 'Stored only in this browser; sent only to api.anthropic.com. Shared by THE FORGE, NEXUS and OBSERVATORY — paste it once.';
+    settings.classList.add("open");
+  }
+  function closeSettings(){ settings.classList.remove("open"); }
+  $("#gear").onclick=openSettings;
+  $("#setClose").onclick=closeSettings;
+  settings.addEventListener("click",function(e){ if(e.target===settings) closeSettings(); });
+  $("#keyShow").onclick=function(){ keyInput.type = keyInput.type==="password" ? "text" : "password"; };
+  $("#keySave").onclick=function(){
+    var v=keyInput.value.trim();
+    if(v) localStorage.setItem(KEY,v); else localStorage.removeItem(KEY);
+    keyNote.innerHTML = v
+      ? '<span class="ok">✓ saved ('+v.length+' chars)</span> — apps will use it on next launch.'
+      : '<span class="ok">✓ cleared.</span> Apps fall back to their own key fields / offline mode.';
+  };
 
   /* file:// notice — THE FORGE and NEXUS voice need http */
   if(location.protocol==="file:") $("#srv").style.display="inline";
@@ -248,7 +337,11 @@
   }).catch(function(){});
 
   homeBtn.onclick=goHome;
-  window.addEventListener("keydown",function(e){ if(e.key==="Escape") goHome(); });
+  window.addEventListener("keydown",function(e){
+    if(e.key!=="Escape") return;
+    if(settings.classList.contains("open")){ closeSettings(); return; }
+    goHome();
+  });
 })();
 </script>
 </body>

@@ -5,7 +5,9 @@
   const LS_KEY = "nexus_api_key";
   const LS_MODEL = "nexus_npc_model";
 
-  C.getKey = () => localStorage.getItem(LS_KEY) || "";
+  // Shared Onehand OS key (rsg.anthropic_key) takes precedence; the NEXUS-local
+  // key remains a fallback so the app still works when run standalone.
+  C.getKey = () => localStorage.getItem("rsg.anthropic_key") || localStorage.getItem(LS_KEY) || "";
   C.setKey = (k) => (k ? localStorage.setItem(LS_KEY, k.trim()) : localStorage.removeItem(LS_KEY));
   C.getModel = () => localStorage.getItem(LS_MODEL) || "claude-haiku-4-5";
   C.setModel = (m) => localStorage.setItem(LS_MODEL, m);

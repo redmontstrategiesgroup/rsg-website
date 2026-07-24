@@ -6,7 +6,9 @@
 (function () {
   const CP = (OBS.copilot = {});
   const KEY = "obs_api_key";
-  CP.getKey = () => localStorage.getItem(KEY) || "";
+  // Shared Onehand OS key (rsg.anthropic_key) takes precedence; the local
+  // obs_api_key remains a fallback for standalone use.
+  CP.getKey = () => localStorage.getItem("rsg.anthropic_key") || localStorage.getItem(KEY) || "";
   CP.setKey = (k) => (k ? localStorage.setItem(KEY, k.trim()) : localStorage.removeItem(KEY));
   CP.enabled = () => !!CP.getKey();
   CP.lastError = null;
