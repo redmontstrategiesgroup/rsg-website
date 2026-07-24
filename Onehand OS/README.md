@@ -1,47 +1,53 @@
 # 🖐 ONEHAND OS
 
-**One hand, full control.** The RSG umbrella shell that boots into a launcher and
-runs every RSG app full-screen — designed so everything important stays inside
-one thumb's reach.
+**One hand, full control.** The RSG umbrella shell: a launcher that runs every
+RSG app full-screen — designed so everything important stays inside one
+thumb's reach.
 
 ## Run it
+
+From the **RSG folder** (one level up):
 
 ```bash
 python serve.py
 ```
 
-Open **http://127.0.0.1:8100**. No build step, no dependencies beyond Python and
-a browser.
+Open **http://127.0.0.1:8100** — it lands on the shell. No build step, no
+dependencies beyond Python and a browser.
 
-(Double-clicking `index.html` also works, but THE FORGE and NEXUS voice input
-need the http server — the shell will show a warning when opened from `file://`.)
+## How apps are wired
 
-## Apps
+Apps are **referenced, never copied.** [apps.json](apps.json) is the manifest:
+each entry points at an app's original folder (`../GHOST/`, `../The forge/`,
+`../GHOST/nexus/`, `../GHOST/observatory/`). The shell builds its tiles from
+it; the static tiles in `index.html` are only a fallback for when the manifest
+can't be fetched. To add an app, add a manifest entry — do not copy the app in.
 
 | App | What it is |
 |---|---|
-| **👻 GHOST** | AI command center — a cinematic control room that runs whole missions across a simulated fleet and visually verifies its own work. Includes the voice-first **OneHand** mission mode. |
-| **⚒ THE FORGE** | Describe the problem, manufacture the solution — 3D model, schematic, PCB, firmware, BOM and assembly docs generated from one sentence, laid out around your physical-ability profile. |
-| **🌆 NEXUS** | The city that remembers — a living-city simulation with 30 persistent residents, spreading rumors, a real economy, and a Day-7 election. |
+| **👻 GHOST** | AI command center — plans, approval gates, fleet screens, world model, audit, and the PHANTOM HAND one-handed subsystem. |
+| **⚒ THE FORGE** | One sentence → manufacturing package: requirements, 3D model, PCB, firmware, BOM, drawings, validation gates. |
+| **🌆 NEXUS** | The city that remembers — a living-city simulation with persistent residents, rumors, an economy and an election. |
+| **🔭 OBSERVATORY** | Decision-analysis simulator — change one decision in a modeled world and observe the consequences. |
 
-Each app is untouched upstream code living in `apps/` — see each app's own
-README for its full documentation.
+Each app is untouched upstream code in its own folder with its own README.
 
 ## Shell features
 
-- **Boot screen → home** with clock and app tiles.
-- **Full-screen app stage** — apps run in an iframe with a floating **⌂ home**
-  button placed in the thumb zone; **Esc** also returns home.
-- **L / R hand toggle** (bottom-right of home) moves the dock to whichever
-  thumb you use; the preference persists in `localStorage`.
-- Zero dependencies, fully offline, respects `prefers-reduced-motion`.
+- Boot screen → home with clock and app tiles.
+- Full-screen app stage (iframe) with a floating **⌂ home** button in the
+  thumb zone; **Esc** also returns home while the shell has focus.
+- **L / R hand toggle** moves the dock to whichever thumb you use; persists
+  in `localStorage` (`ohos.*` keys).
+- Zero dependencies, respects `prefers-reduced-motion`.
 
 ## Layout
 
 ```
-index.html        the OS shell (boot, home screen, app stage, dock)
-serve.py          static server for the whole OS on :8100
-apps/ghost/       GHOST — AI command center      (also: apps/ghost/ghost.html single-file build)
-apps/ghost/nexus/ NEXUS — living-city simulation
-apps/forge/       THE FORGE — invention fabricator
+index.html   the shell (boot, home, app stage, dock, manifest loader)
+apps.json    app manifest — the only place apps are registered
+../serve.py  one static server for the whole RSG portfolio on :8100
 ```
+
+See `../ecosystem-architecture.md` for the portfolio architecture and
+migration plan, and `../onehand-os-audit.md` for the 2026-07-24 audit.
