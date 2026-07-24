@@ -37,7 +37,7 @@
       "icon": "🔭",
       "tag": "analyze",
       "desc": "The world that remembers — a persistent multi-agent reality simulator for decision analysis. Change one decision, observe the consequences.",
-      "path": "../GHOST/observatory/",
+      "path": "../Observatory/",
       "entry": "index.html",
       "needsServer": false
     }
