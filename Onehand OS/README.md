@@ -49,5 +49,18 @@ apps.json    app manifest — the only place apps are registered
 ../serve.py  one static server for the whole RSG portfolio on :8100
 ```
 
+## Shared contracts
+
+The shell owns two shared localStorage contracts that the apps consume:
+
+- **`rsg.ability.v1`** — your ability profile (hand, fingers, reach, grip,
+  fatigue, input aids). Set it once in ⚙ Settings; THE FORGE and GHOST adapt
+  their layouts to it.
+- **`rsg.anthropic_key`** — your Anthropic API key. Paste it once; THE FORGE,
+  NEXUS and Observatory all use it.
+
+See [`../CONTRACTS.md`](../CONTRACTS.md) for the full schema, the single-writer
+rule, and the shared `claude-bridge.js` library.
+
 See `../ecosystem-architecture.md` for the portfolio architecture and
 migration plan, and `../onehand-os-audit.md` for the 2026-07-24 audit.
