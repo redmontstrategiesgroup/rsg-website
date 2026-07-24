@@ -6,146 +6,218 @@
 <title>ONEHAND OS</title>
 <style>
   :root{
+    /* neutrals */
     --bg:#06080d; --bg2:#0a0e16; --panel:#0e1420; --panel2:#131b2b;
-    --line:#1d2740; --line2:#2a3a5f;
-    --txt:#dbe6ff; --dim:#7d8db0; --faint:#4a5878;
-    --acc:#4da3ff; --acc2:#8b5cf6; --good:#3ddc97; --warn:#ffb454;
-    --glow:0 0 24px rgba(77,163,255,.25);
-    --r:18px;
-    --dock-side:right;
+    --line:#1c2740; --line2:#2a3a5f;
+    --txt:#dce6ff; --dim:#8593b5; --faint:#54628a;
+    /* accents (one primary, one secondary used sparingly) + semantics */
+    --acc:#4da3ff; --acc-ink:#04121f; --acc2:#8b5cf6;
+    --good:#3ddc97; --warn:#ffb454; --danger:#ff6b7a;
+    /* form */
+    --r:16px; --r-sm:11px; --r-pill:999px;
+    --shadow-1:0 2px 10px rgba(0,0,0,.35);
+    --shadow-2:0 -14px 44px rgba(0,0,0,.6);
+    --ring:0 0 0 2px var(--bg), 0 0 0 4px var(--acc);
+    --thumb:58px;      /* thumb target size */
+    --dur:170ms;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{height:100%}
   body{
     background:var(--bg); color:var(--txt); overflow:hidden;
     font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
-    -webkit-font-smoothing:antialiased; user-select:none;
+    -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
   }
-  /* ambient backdrop */
+  :focus-visible{outline:none; box-shadow:var(--ring)}
+  button{font-family:inherit}
+
+  /* ambient backdrop — subtle, not decoration-heavy */
   .sky{position:fixed;inset:0;pointer-events:none;z-index:0}
   .sky::before{content:"";position:absolute;inset:0;
     background:
-      radial-gradient(1100px 600px at 78% -10%, rgba(77,163,255,.10), transparent 60%),
-      radial-gradient(900px 700px at 12% 110%, rgba(139,92,246,.10), transparent 60%);
-  }
-  .sky::after{content:"";position:absolute;inset:0;opacity:.5;
+      radial-gradient(1100px 620px at 82% -12%, rgba(77,163,255,.08), transparent 62%),
+      radial-gradient(880px 680px at 10% 112%, rgba(139,92,246,.07), transparent 60%);}
+  .sky::after{content:"";position:absolute;inset:0;opacity:.42;
     background-image:
-      linear-gradient(rgba(77,163,255,.045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(77,163,255,.045) 1px, transparent 1px);
-    background-size:44px 44px;
-    mask-image:radial-gradient(ellipse at 50% 40%, #000 30%, transparent 75%);
-  }
+      linear-gradient(rgba(77,163,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77,163,255,.04) 1px, transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(ellipse at 50% 38%, #000 28%, transparent 74%);
+    mask-image:radial-gradient(ellipse at 50% 38%, #000 28%, transparent 74%);}
 
   /* ---------- boot ---------- */
   #boot{position:fixed;inset:0;z-index:60;background:var(--bg);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-    transition:opacity .55s ease, visibility .55s;}
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+    transition:opacity .5s ease, visibility .5s;}
   #boot.gone{opacity:0;visibility:hidden}
-  .boot-mark{font-size:52px;letter-spacing:.28em;font-weight:200;text-indent:.28em}
+  .boot-mark{font-size:clamp(34px,7vw,52px);letter-spacing:.28em;font-weight:200;text-indent:.28em}
   .boot-mark b{font-weight:700;color:var(--acc)}
   .boot-sub{color:var(--dim);letter-spacing:.42em;font-size:11px;text-transform:uppercase;text-indent:.42em}
-  .boot-bar{width:210px;height:2px;background:var(--line);border-radius:2px;overflow:hidden}
+  .boot-bar{width:200px;height:2px;background:var(--line);border-radius:2px;overflow:hidden}
   .boot-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));
-    animation:load 1.1s ease forwards}
+    animation:load 1.05s ease forwards}
   @keyframes load{to{width:100%}}
 
-  /* ---------- home ---------- */
-  #home{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;
-    padding:clamp(18px,4vh,44px) clamp(18px,4vw,56px);}
-  header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
-  .brand{font-size:clamp(20px,2.6vw,30px);letter-spacing:.24em;font-weight:200}
+  /* ---------- home (scrolls on small screens; controls stay fixed) ---------- */
+  #home{position:relative;z-index:1;height:100%;overflow-y:auto;overflow-x:hidden;
+    display:flex;flex-direction:column;
+    padding:clamp(20px,4vh,46px) clamp(18px,4vw,56px);
+    padding-bottom:calc(var(--thumb) + 64px);   /* clear the fixed thumb cluster */
+    scrollbar-width:thin;}
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex:none}
+  .brand{font-size:clamp(19px,2.4vw,28px);letter-spacing:.22em;font-weight:200}
   .brand b{font-weight:700;color:var(--acc)}
-  .brand small{display:block;margin-top:6px;font-size:10px;letter-spacing:.4em;color:var(--faint);text-transform:uppercase}
-  .clockbox{text-align:right}
-  #clock{font-size:clamp(26px,3.4vw,40px);font-weight:200;letter-spacing:.06em;font-variant-numeric:tabular-nums}
-  #date{color:var(--dim);font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
+  .brand small{display:block;margin-top:7px;font-size:10px;letter-spacing:.38em;color:var(--faint);text-transform:uppercase}
+  .clockbox{text-align:right;flex:none}
+  #clock{font-size:clamp(24px,3.2vw,38px);font-weight:200;letter-spacing:.04em;font-variant-numeric:tabular-nums;line-height:1}
+  #date{color:var(--dim);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;margin-top:5px}
 
-  .apps{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 0}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,300px));gap:clamp(14px,2vw,26px);
-    width:100%;max-width:1060px;justify-content:center}
+  /* grow-and-center when the tiles fit; keep natural height (so #home scrolls)
+     when they don't — this is what keeps the launcher usable one-handed on a phone */
+  .apps{flex:1 0 auto;display:flex;align-items:center;justify-content:center;padding:clamp(18px,4vh,40px) 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:clamp(14px,1.8vw,20px);
+    width:100%;max-width:1080px}
+
   .tile{position:relative;text-align:left;cursor:pointer;border-radius:var(--r);
-    background:linear-gradient(160deg,var(--panel2),var(--panel));
-    border:1px solid var(--line);padding:22px 22px 18px;color:var(--txt);
-    min-height:168px;display:flex;flex-direction:column;gap:10px;
-    transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-    font-family:inherit}
-  .tile:hover,.tile:focus-visible{transform:translateY(-4px);border-color:var(--line2);box-shadow:var(--glow);outline:none}
-  .tile:active{transform:translateY(-1px) scale(.99)}
-  .tile .ico{font-size:30px;line-height:1;filter:drop-shadow(0 0 12px rgba(77,163,255,.35))}
-  .tile h2{font-size:17px;letter-spacing:.14em;font-weight:600}
+    background:var(--panel);border:1px solid var(--line);
+    padding:20px 20px 16px;color:var(--txt);min-height:172px;
+    display:flex;flex-direction:column;gap:9px;
+    transition:transform var(--dur) ease, border-color var(--dur) ease, background var(--dur) ease;}
+  .tile:hover{transform:translateY(-3px);border-color:var(--line2);background:var(--panel2)}
+  .tile:focus-visible{transform:translateY(-3px);border-color:var(--acc)}
+  .tile:active{transform:translateY(0) scale(.995)}
+  .tile .ico{font-size:28px;line-height:1}
+  .tile h2{font-size:16px;letter-spacing:.13em;font-weight:600}
   .tile p{color:var(--dim);font-size:12.5px;line-height:1.55;flex:1}
-  .tile .go{align-self:flex-end;font-size:11px;letter-spacing:.22em;color:var(--acc);text-transform:uppercase;opacity:0;transition:opacity .18s}
-  .tile:hover .go,.tile:focus-visible .go{opacity:1}
-  .tile .tag{position:absolute;top:16px;right:16px;font-size:9px;letter-spacing:.2em;color:var(--faint);
-    border:1px solid var(--line);border-radius:99px;padding:3px 9px;text-transform:uppercase}
+  .tile .go{display:flex;align-items:center;gap:6px;align-self:flex-start;
+    font-size:11px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;
+    transition:color var(--dur) ease, gap var(--dur) ease}
+  .tile:hover .go,.tile:focus-visible .go{color:var(--acc);gap:10px}
+  .tile .tag{position:absolute;top:15px;right:15px;font-size:9px;letter-spacing:.2em;color:var(--faint);
+    border:1px solid var(--line);border-radius:var(--r-pill);padding:3px 9px;text-transform:uppercase}
 
-  footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--faint);font-size:11px;letter-spacing:.14em}
-  .hand{display:flex;gap:6px;align-items:center}
-  .hand button{background:var(--panel);border:1px solid var(--line);color:var(--dim);
-    padding:8px 14px;border-radius:99px;cursor:pointer;font-size:11px;letter-spacing:.14em;font-family:inherit;
-    transition:all .15s}
-  .hand button.on{color:var(--txt);border-color:var(--acc);box-shadow:var(--glow)}
-  #srv{color:var(--warn);display:none}
+  /* skeleton loading tiles */
+  .tile.skel{pointer-events:none;min-height:172px}
+  .tile.skel .bar{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--panel2),#1a2438,var(--panel2));
+    background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+  .tile.skel .bar.ico{height:28px;width:28px;border-radius:8px;margin-bottom:6px}
+  .tile.skel .bar.t{width:46%;margin-bottom:10px}
+  .tile.skel .bar.l1{width:92%} .tile.skel .bar.l2{width:78%;margin-top:8px}
+  @keyframes shimmer{to{background-position:-200% 0}}
+
+  /* empty state */
+  .empty{grid-column:1/-1;text-align:center;color:var(--dim);padding:40px 20px}
+  .empty b{display:block;color:var(--txt);font-size:15px;letter-spacing:.06em;margin-bottom:8px}
+
+  #srv{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--thumb) + 24px);z-index:6;
+    display:none;color:var(--warn);font-size:11px;letter-spacing:.06em;
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--r-pill);padding:7px 14px}
 
   /* ---------- app stage ---------- */
   #stage{position:fixed;inset:0;z-index:40;background:var(--bg);display:none}
   #stage.open{display:block}
   #stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+  #stageErr{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+    gap:16px;text-align:center;padding:24px;background:var(--bg)}
+  #stageErr.show{display:flex}
+  #stageErr .em{font-size:34px}
+  #stageErr h3{font-weight:600;letter-spacing:.08em;font-size:17px}
+  #stageErr p{color:var(--dim);font-size:13px;max-width:340px;line-height:1.55}
 
-  /* one-thumb dock — floats in the thumb zone, side switchable */
-  #dock{position:fixed;z-index:50;bottom:max(20px, env(safe-area-inset-bottom));
-    display:none;flex-direction:column;gap:10px}
+  /* ---------- thumb cluster / dock — fixed in the reachable zone ---------- */
+  .cluster{position:fixed;z-index:50;bottom:max(20px, env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:10px;align-items:center}
+  body[data-hand="right"] .cluster{right:18px}
+  body[data-hand="left"]  .cluster{left:18px}
+  #homeCluster{display:flex}
+  #dock{display:none}
   #stage.open ~ #dock{display:flex}
-  body[data-hand="right"] #dock{right:18px}
-  body[data-hand="left"]  #dock{left:18px}
-  #dock button{
-    width:58px;height:58px;border-radius:50%;cursor:pointer;font-family:inherit;
-    background:rgba(14,20,32,.85);backdrop-filter:blur(10px);
-    border:1px solid var(--line2);color:var(--txt);font-size:20px;
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 6px 24px rgba(0,0,0,.5), var(--glow);
-    transition:transform .15s, border-color .15s}
-  #dock button:hover{transform:scale(1.07);border-color:var(--acc)}
-  #dock button:active{transform:scale(.96)}
-  #dock .lbl{position:absolute;pointer-events:none;opacity:0}
+  #stage.open ~ #homeCluster{display:none}
+  .tbtn{width:var(--thumb);height:var(--thumb);border-radius:50%;cursor:pointer;
+    background:rgba(14,20,32,.9);backdrop-filter:blur(10px);
+    border:1px solid var(--line2);color:var(--txt);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    box-shadow:var(--shadow-1);transition:transform var(--dur) ease, border-color var(--dur) ease}
+  .tbtn:hover{transform:scale(1.06);border-color:var(--acc)}
+  .tbtn:active{transform:scale(.96)}
+  .tbtn .ic{font-size:20px;line-height:1}
+  .tbtn .mini{font-size:8.5px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+  .tbtn.hand .ic{font-size:16px}
+  .tbtn.hand b{font-size:13px;font-weight:700;color:var(--acc);line-height:1}
 
-  /* settings */
-  #gear{background:var(--panel);border:1px solid var(--line);color:var(--dim);
-    width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:18px;font-family:inherit;
-    display:flex;align-items:center;justify-content:center;transition:all .15s;flex:none}
-  #gear:hover{color:var(--txt);border-color:var(--acc);box-shadow:var(--glow)}
-  #settings{position:fixed;inset:0;z-index:55;display:none;align-items:flex-end;justify-content:center;
-    background:rgba(4,6,10,.72);backdrop-filter:blur(3px)}
+  /* ---------- settings sheet ---------- */
+  #settings{position:fixed;inset:0;z-index:55;display:none;align-items:flex-end;
+    background:rgba(4,6,10,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
   #settings.open{display:flex}
   body[data-hand="left"] #settings{justify-content:flex-start}
   body[data-hand="right"] #settings{justify-content:flex-end}
-  .sheet{width:min(440px,100%);max-height:82vh;overflow-y:auto;margin:0 12px max(20px,env(safe-area-inset-bottom));
-    background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line2);
-    border-radius:22px 22px 20px 20px;padding:22px 22px 26px;box-shadow:0 -10px 40px rgba(0,0,0,.6),var(--glow)}
-  .sheet h2{font-size:15px;letter-spacing:.16em;font-weight:600;text-transform:uppercase;color:var(--txt)}
-  .sheet .close{float:right;background:none;border:0;color:var(--dim);font-size:22px;cursor:pointer;line-height:1;font-family:inherit}
-  .sheet .grp{margin-top:22px}
-  .sheet label{display:block;font-size:12px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-bottom:9px}
-  .keyrow{display:flex;gap:8px}
-  .keyrow input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--txt);
-    padding:14px 14px;font-size:15px;font-family:inherit;min-width:0}
-  .keyrow input:focus{outline:none;border-color:var(--acc)}
-  .keyrow button,.sheet .save{background:var(--panel);border:1px solid var(--line2);color:var(--txt);
-    border-radius:12px;padding:0 16px;min-height:48px;cursor:pointer;font-family:inherit;font-size:14px;transition:all .15s}
-  .sheet .save{width:100%;margin-top:14px;min-height:52px;letter-spacing:.14em}
-  .sheet .save:hover,.keyrow button:hover{border-color:var(--acc);box-shadow:var(--glow)}
-  .sheet .note{color:var(--faint);font-size:11.5px;line-height:1.55;margin-top:10px}
-  .sheet .ok{color:var(--good)}
-  .handseg{display:flex;gap:8px}
-  .handseg button{flex:1;min-height:52px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
-    color:var(--dim);font-family:inherit;font-size:14px;letter-spacing:.14em;cursor:pointer;transition:all .15s}
-  .handseg button.on{color:var(--txt);border-color:var(--acc);box-shadow:var(--glow)}
-  .fingers{display:flex;flex-wrap:wrap;gap:8px}
-  .fingers button{flex:1 1 30%;min-height:48px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;
-    color:var(--dim);font-family:inherit;font-size:12.5px;cursor:pointer;transition:all .15s}
-  .fingers button.on{color:var(--txt);border-color:var(--acc);box-shadow:var(--glow)}
-  #reach{accent-color:var(--acc)}
+  .sheet{width:min(452px,100%);max-height:88vh;overflow-y:auto;
+    margin:0 12px max(16px,env(safe-area-inset-bottom));
+    background:var(--panel);border:1px solid var(--line2);
+    border-radius:22px;padding:6px 22px 24px;box-shadow:var(--shadow-2);
+    animation:rise var(--dur) ease}
+  @keyframes rise{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet-h{position:sticky;top:0;background:var(--panel);z-index:2;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 0 12px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .sheet-h h2{font-size:14px;letter-spacing:.16em;font-weight:600;text-transform:uppercase}
+  .sheet .close{width:40px;height:40px;border-radius:50%;background:none;border:1px solid var(--line);
+    color:var(--dim);font-size:17px;cursor:pointer;transition:all var(--dur) ease}
+  .sheet .close:hover{color:var(--txt);border-color:var(--line2)}
+  .grp{margin-top:20px}
+  .grp > label,.grp .ttl{display:block;font-size:11px;letter-spacing:.14em;color:var(--dim);
+    text-transform:uppercase;margin-bottom:10px}
 
+  .keyrow{display:flex;gap:8px}
+  .keyrow input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-sm);
+    color:var(--txt);padding:0 14px;min-height:50px;font-size:15px;font-family:inherit;min-width:0;
+    letter-spacing:.02em;transition:border-color var(--dur) ease}
+  .keyrow input::placeholder{color:var(--faint)}
+  .keyrow input:focus{outline:none;border-color:var(--acc)}
+  .keyrow .icobtn{width:50px;min-height:50px;background:var(--bg2);border:1px solid var(--line);
+    border-radius:var(--r-sm);color:var(--dim);font-size:16px;cursor:pointer;transition:all var(--dur) ease}
+  .keyrow .icobtn:hover{color:var(--txt);border-color:var(--line2)}
+  .btn-row{display:flex;gap:8px;margin-top:12px}
+  .btn{flex:1;min-height:50px;border-radius:var(--r-sm);cursor:pointer;font-family:inherit;
+    font-size:13px;letter-spacing:.1em;transition:all var(--dur) ease;border:1px solid var(--line2);
+    background:var(--panel2);color:var(--txt)}
+  .btn.primary{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:transparent;color:var(--dim);flex:0 0 auto;padding:0 16px}
+  .btn.ghost:hover{color:var(--danger);border-color:var(--danger)}
+  .btn:hover{border-color:var(--line2)}
+
+  .note{color:var(--faint);font-size:11.5px;line-height:1.6;margin-top:11px}
+  .note .ok{color:var(--good)} .note .warn{color:var(--warn)}
+
+  /* segmented control */
+  .seg{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-sm);padding:3px;gap:3px}
+  .seg button{flex:1;min-height:44px;border:0;background:transparent;border-radius:9px;
+    color:var(--dim);font-family:inherit;font-size:13px;letter-spacing:.1em;cursor:pointer;
+    transition:background var(--dur) ease, color var(--dur) ease}
+  .seg button.on{background:var(--panel2);color:var(--txt);box-shadow:var(--shadow-1)}
+  .seg.hand button.on{color:var(--acc)}
+
+  /* chips (fingers / inputs) */
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips button{flex:1 1 30%;min-height:46px;background:var(--bg2);border:1px solid var(--line);
+    border-radius:var(--r-sm);color:var(--dim);font-family:inherit;font-size:12.5px;cursor:pointer;
+    transition:all var(--dur) ease;display:flex;align-items:center;justify-content:center;gap:5px}
+  .chips button.on{color:var(--txt);border-color:var(--acc);background:var(--panel2)}
+  .chips.two button{flex:1 1 45%}
+
+  /* reach slider */
+  .reach-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .reach-head .ttl{margin-bottom:0}
+  .reach-head b{font-size:15px;font-weight:600;color:var(--acc);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--acc);height:44px;cursor:pointer}
+
+  @media (max-width:560px){
+    .grid{grid-template-columns:1fr}
+    header{flex-direction:row;align-items:center}
+    .brand{font-size:18px}
+    .clockbox{text-align:right}
+  }
   @media (prefers-reduced-motion: reduce){
     *{transition:none!important;animation:none!important}
   }
@@ -167,78 +239,80 @@
         <div id="clock">--:--</div>
         <div id="date"></div>
       </div>
-      <button id="gear" title="Settings" aria-label="Settings">⚙</button>
     </header>
 
     <section class="apps" aria-label="Applications">
-      <div class="grid">
-        <button class="tile" data-app="../GHOST/index.html" data-name="GHOST">
-          <span class="tag">command</span>
-          <span class="ico">👻</span>
-          <h2>GHOST</h2>
-          <p>AI command center. Watch a fleet of machines run whole missions — build, research, ops, war-room — with visual self-correction. Includes the voice-first OneHand mode.</p>
-          <span class="go">Launch →</span>
-        </button>
-
-        <button class="tile" data-app="../The forge/index.html" data-name="THE FORGE">
-          <span class="tag">fabricate</span>
-          <span class="ico">⚒</span>
-          <h2>THE FORGE</h2>
-          <p>Describe the problem, manufacture the solution: 3D model, PCB, firmware, BOM and build docs from one sentence — laid out around your hand.</p>
-          <span class="go">Launch →</span>
-        </button>
-
-        <button class="tile" data-app="../GHOST/nexus/index.html" data-name="NEXUS">
-          <span class="tag">simulate</span>
-          <span class="ico">🌆</span>
-          <h2>NEXUS</h2>
-          <p>The city that remembers. Thirty persistent residents with jobs, rumors, an economy and an election — Rusthook keeps living while you're away.</p>
-          <span class="go">Launch →</span>
-        </button>
+      <div class="grid" id="grid" aria-busy="true">
+        <!-- skeletons until the manifest resolves -->
+        <div class="tile skel"><div class="bar ico"></div><div class="bar t"></div><div class="bar l1"></div><div class="bar l2"></div></div>
+        <div class="tile skel"><div class="bar ico"></div><div class="bar t"></div><div class="bar l1"></div><div class="bar l2"></div></div>
+        <div class="tile skel"><div class="bar ico"></div><div class="bar t"></div><div class="bar l1"></div><div class="bar l2"></div></div>
       </div>
     </section>
-
-    <footer>
-      <span id="srv">⚠ open via serve.py — file:// blocks some app features</span>
-      <span id="hint">tap a tile · esc closes an app</span>
-      <div class="hand" role="group" aria-label="Hand preference">
-        <button id="hl" aria-label="Left-hand mode">L</button>
-        <button id="hr" aria-label="Right-hand mode">R</button>
-      </div>
-    </footer>
   </main>
 
-  <div id="stage" role="region" aria-label="Running app"></div>
-  <nav id="dock" aria-label="System dock">
-    <button id="homeBtn" title="Home (Esc)" aria-label="Home">⌂</button>
+  <div id="srv">⚠ Open via <b>serve.py</b> — <code>file://</code> blocks some app features</div>
+
+  <!-- home thumb cluster: Settings + hand toggle, anchored to the reachable side -->
+  <nav id="homeCluster" class="cluster" aria-label="Controls">
+    <button id="gear" class="tbtn" title="Settings" aria-label="Settings">
+      <span class="ic">⚙</span><span class="mini">setup</span>
+    </button>
+    <button id="handQuick" class="tbtn hand" title="Switch hand" aria-label="Switch hand">
+      <span class="ic">✋</span><b id="handQuickL">R</b>
+    </button>
   </nav>
 
+  <!-- in-app dock: Home + Settings -->
+  <nav id="dock" class="cluster" aria-label="App controls">
+    <button id="homeBtn" class="tbtn" title="Home (Esc)" aria-label="Home">
+      <span class="ic">⌂</span><span class="mini">home</span>
+    </button>
+    <button id="gear2" class="tbtn" title="Settings" aria-label="Settings">
+      <span class="ic">⚙</span><span class="mini">setup</span>
+    </button>
+  </nav>
+
+  <div id="stage" role="region" aria-label="Running app">
+    <div id="stageErr">
+      <div class="em">⚠</div>
+      <h3 id="stageErrName">Couldn't load the app</h3>
+      <p id="stageErrMsg">The app didn't respond. Make sure the RSG server is running, then try again.</p>
+      <button id="stageErrHome" class="btn primary" style="max-width:200px">← Back home</button>
+    </div>
+  </div>
+
   <div id="settings" role="dialog" aria-modal="true" aria-label="Settings">
-    <div class="sheet">
-      <button class="close" id="setClose" aria-label="Close settings">✕</button>
-      <h2>Settings</h2>
+    <div class="sheet" role="document">
+      <div class="sheet-h">
+        <h2>Settings</h2>
+        <button class="close" id="setClose" aria-label="Close settings">✕</button>
+      </div>
 
       <div class="grp">
         <label for="apiKey">Anthropic API key</label>
         <div class="keyrow">
           <input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
-          <button id="keyShow" type="button" aria-label="Show or hide key">👁</button>
+          <button id="keyShow" class="icobtn" type="button" aria-label="Show or hide key">👁</button>
         </div>
-        <button class="save" id="keySave">Save key</button>
-        <div class="note" id="keyNote">Stored only in this browser; sent only to api.anthropic.com. Shared by THE FORGE, NEXUS and OBSERVATORY — paste it once.</div>
+        <div class="btn-row">
+          <button class="btn primary" id="keySave" type="button">Save key</button>
+          <button class="btn ghost" id="keyClear" type="button">Clear</button>
+        </div>
+        <div class="note" id="keyNote">Stored only in this browser; sent only to <code>api.anthropic.com</code>. Shared by THE FORGE, NEXUS and Observatory — paste it once.</div>
       </div>
 
       <div class="grp">
-        <label>Hand</label>
-        <div class="handseg" role="group" aria-label="Hand preference">
+        <span class="ttl">Which hand</span>
+        <div class="seg hand" id="handSeg" role="group" aria-label="Hand preference">
           <button id="sHandL" type="button">LEFT</button>
           <button id="sHandR" type="button">RIGHT</button>
         </div>
       </div>
 
       <div class="grp">
-        <label>Usable fingers</label>
-        <div class="fingers" id="fingers" role="group" aria-label="Usable fingers">
+        <span class="ttl">Usable fingers</span>
+        <div class="chips" id="fingers" role="group" aria-label="Usable fingers">
           <button type="button" data-f="thumb">👍 thumb</button>
           <button type="button" data-f="index">☝ index</button>
           <button type="button" data-f="middle">🖕 middle</button>
@@ -248,13 +322,16 @@
       </div>
 
       <div class="grp">
-        <label>Comfortable reach — <span id="reachVal">95</span> mm</label>
-        <input id="reach" type="range" min="50" max="140" step="5" value="95" style="width:100%">
+        <div class="reach-head">
+          <span class="ttl">Comfortable reach</span>
+          <b><span id="reachVal">95</span> mm</b>
+        </div>
+        <input id="reach" type="range" min="50" max="140" step="5" value="95" aria-label="Comfortable reach in millimetres">
       </div>
 
       <div class="grp">
-        <label>Grip</label>
-        <div class="handseg" id="grip" role="group" aria-label="Grip strength">
+        <span class="ttl">Grip</span>
+        <div class="seg" id="grip" role="group" aria-label="Grip strength">
           <button type="button" data-v="weak">WEAK</button>
           <button type="button" data-v="moderate">MODERATE</button>
           <button type="button" data-v="strong">STRONG</button>
@@ -262,8 +339,8 @@
       </div>
 
       <div class="grp">
-        <label>Fatigue</label>
-        <div class="handseg" id="fatigue" role="group" aria-label="Fatigue level">
+        <span class="ttl">Fatigue</span>
+        <div class="seg" id="fatigue" role="group" aria-label="Fatigue level">
           <button type="button" data-v="low">LOW</button>
           <button type="button" data-v="med">MED</button>
           <button type="button" data-v="high">HIGH</button>
@@ -271,13 +348,15 @@
       </div>
 
       <div class="grp">
-        <label>Input aids</label>
-        <div class="fingers" id="inputs" role="group" aria-label="Input aids">
+        <span class="ttl">Input aids</span>
+        <div class="chips two" id="inputs" role="group" aria-label="Input aids">
           <button type="button" data-i="voice">🎙️ voice</button>
           <button type="button" data-i="foot">🦶 foot pedal</button>
         </div>
-        <button class="save" id="profSave">Save profile</button>
-        <div class="note" id="profNote">Every RSG app adapts to this: THE FORGE lays out hardware around your hand, GHOST builds its one-handed dock from it.</div>
+        <div class="btn-row">
+          <button class="btn primary" id="profSave" type="button">Save profile</button>
+        </div>
+        <div class="note" id="profNote">Every RSG app adapts to this: THE FORGE lays its hardware out around your hand, GHOST builds its one-handed dock from it.</div>
       </div>
     </div>
   </div>
@@ -286,10 +365,10 @@
 (function(){
   var $=function(s){return document.querySelector(s)};
   var $$=function(s){return [].slice.call(document.querySelectorAll(s))};
-  var boot=$("#boot"), stage=$("#stage"), homeBtn=$("#homeBtn");
+  var boot=$("#boot"), stage=$("#stage"), settings=$("#settings");
 
   /* boot splash */
-  setTimeout(function(){ boot.classList.add("gone"); }, 1250);
+  setTimeout(function(){ boot.classList.add("gone"); }, 1200);
 
   /* clock */
   function tick(){
@@ -307,8 +386,7 @@
       reachMM:95, grip:"moderate", fatigue:"low", inputs:[], targetScale:1.4 };
   }
   function loadProfile(){
-    try{
-      var p=JSON.parse(localStorage.getItem(ABILITY)||"null");
+    try{ var p=JSON.parse(localStorage.getItem(ABILITY)||"null");
       if(p && p.v===1) return Object.assign(defaultProfile(), p);
     }catch(e){}
     return defaultProfile();
@@ -320,55 +398,50 @@
   function setHand(h){
     hand=h; profile.hand=h; document.body.setAttribute("data-hand",h);
     localStorage.setItem("ohos.hand",h);
-    $("#hl").classList.toggle("on",h==="left");
-    $("#hr").classList.toggle("on",h==="right");
     $("#sHandL").classList.toggle("on",h==="left");
     $("#sHandR").classList.toggle("on",h==="right");
+    $("#handQuickL").textContent = h==="left" ? "L" : "R";
   }
-  $("#hl").onclick=function(){setHand("left")};
-  $("#hr").onclick=function(){setHand("right")};
   $("#sHandL").onclick=function(){setHand("left")};
   $("#sHandR").onclick=function(){setHand("right")};
+  $("#handQuick").onclick=function(){ setHand(hand==="right"?"left":"right"); };
   setHand(hand);
 
   /* ---- settings: shared Anthropic key (rsg.anthropic_key) ---- */
-  var KEY="rsg.anthropic_key";
-  var settings=$("#settings"), keyInput=$("#apiKey"), keyNote=$("#keyNote");
-  function maskLen(k){ return k ? k.length : 0; }
-  function openSettings(){
-    keyInput.value=localStorage.getItem(KEY)||"";
-    keyInput.type="password";
-    var n=maskLen(keyInput.value);
+  var KEY="rsg.anthropic_key", keyInput=$("#apiKey"), keyNote=$("#keyNote");
+  function keyMsg(){
+    var n=(localStorage.getItem(KEY)||"").length;
     keyNote.innerHTML = n
-      ? '<span class="ok">✓ key saved ('+n+' chars)</span> — shared by THE FORGE, NEXUS and OBSERVATORY.'
-      : 'Stored only in this browser; sent only to api.anthropic.com. Shared by THE FORGE, NEXUS and OBSERVATORY — paste it once.';
-    paintProfile();
-    settings.classList.add("open");
+      ? '<span class="ok">✓ key saved</span> ('+n+' chars) — shared by THE FORGE, NEXUS and Observatory.'
+      : 'Stored only in this browser; sent only to <code>api.anthropic.com</code>. Shared by THE FORGE, NEXUS and Observatory — paste it once.';
   }
+  function openSettings(){ keyInput.value=localStorage.getItem(KEY)||""; keyInput.type="password"; keyMsg(); paintProfile(); settings.classList.add("open"); }
   function closeSettings(){ settings.classList.remove("open"); }
-  $("#gear").onclick=openSettings;
+  $("#gear").onclick=openSettings; $("#gear2").onclick=openSettings;
   $("#setClose").onclick=closeSettings;
   settings.addEventListener("click",function(e){ if(e.target===settings) closeSettings(); });
   $("#keyShow").onclick=function(){ keyInput.type = keyInput.type==="password" ? "text" : "password"; };
   $("#keySave").onclick=function(){
     var v=keyInput.value.trim();
-    if(v) localStorage.setItem(KEY,v); else localStorage.removeItem(KEY);
-    keyNote.innerHTML = v
-      ? '<span class="ok">✓ saved ('+v.length+' chars)</span> — apps will use it on next launch.'
-      : '<span class="ok">✓ cleared.</span> Apps fall back to their own key fields / offline mode.';
+    if(!v){ keyNote.innerHTML='<span class="warn">Paste a key first, or use Clear.</span>'; keyInput.focus(); return; }
+    localStorage.setItem(KEY,v);
+    keyNote.innerHTML='<span class="ok">✓ saved</span> ('+v.length+' chars) — apps use it on next launch.';
+  };
+  $("#keyClear").onclick=function(){
+    localStorage.removeItem(KEY); keyInput.value="";
+    keyNote.innerHTML='<span class="ok">✓ cleared.</span> Apps fall back to their own key field / offline mode.';
   };
 
   /* ---- profile editor ---- */
   function setSeg(id,val){ $$("#"+id+" button").forEach(function(b){ b.classList.toggle("on", b.dataset.v===val); }); }
   function paintProfile(){
-    // hand handled by setHand's toggles; paint the rest from `profile`
-    $$("#fingers button").forEach(function(b){ b.classList.toggle("on", !!profile.fingers[b.dataset.f]); });
+    $$("#fingers button").forEach(function(b){ b.classList.toggle("on", !!profile.fingers[b.dataset.f]); b.setAttribute("aria-pressed", !!profile.fingers[b.dataset.f]); });
     $("#reach").value=profile.reachMM; $("#reachVal").textContent=profile.reachMM;
     setSeg("grip", profile.grip); setSeg("fatigue", profile.fatigue);
-    $$("#inputs button").forEach(function(b){ b.classList.toggle("on", profile.inputs.indexOf(b.dataset.i)>=0); });
+    $$("#inputs button").forEach(function(b){ var on=profile.inputs.indexOf(b.dataset.i)>=0; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
   }
-  $$("#fingers button").forEach(function(b){ b.onclick=function(){ b.classList.toggle("on"); }; });
-  $$("#inputs button").forEach(function(b){ b.onclick=function(){ b.classList.toggle("on"); }; });
+  $$("#fingers button").forEach(function(b){ b.setAttribute("aria-pressed","false"); b.onclick=function(){ b.classList.toggle("on"); b.setAttribute("aria-pressed", b.classList.contains("on")); }; });
+  $$("#inputs button").forEach(function(b){ b.setAttribute("aria-pressed","false"); b.onclick=function(){ b.classList.toggle("on"); b.setAttribute("aria-pressed", b.classList.contains("on")); }; });
   $("#reach").addEventListener("input",function(){ $("#reachVal").textContent=this.value; });
   $$("#grip button").forEach(function(b){ b.onclick=function(){ setSeg("grip", b.dataset.v); }; });
   $$("#fatigue button").forEach(function(b){ b.onclick=function(){ setSeg("fatigue", b.dataset.v); }; });
@@ -376,63 +449,94 @@
   $("#profSave").onclick=function(){
     var fingers={}; $$("#fingers button").forEach(function(b){ fingers[b.dataset.f]=b.classList.contains("on"); });
     var inputs=[]; $$("#inputs button").forEach(function(b){ if(b.classList.contains("on")) inputs.push(b.dataset.i); });
-    var grip=segVal("grip","moderate"), fatigue=segVal("fatigue","low");
-    var reachMM=parseInt($("#reach").value,10);
+    var grip=segVal("grip","moderate"), fatigue=segVal("fatigue","low"), reachMM=parseInt($("#reach").value,10);
     var targetScale = fatigue==="high" ? 1.6 : grip==="weak" ? 1.5 : 1.4;
     profile=Object.assign(profile,{ v:1, hand:hand, fingers:fingers, reachMM:reachMM, grip:grip, fatigue:fatigue, inputs:inputs, targetScale:targetScale });
     localStorage.setItem(ABILITY, JSON.stringify(profile));
     var count=Object.keys(fingers).filter(function(k){return fingers[k];}).length;
-    $("#profNote").innerHTML='<span class="ok">✓ saved</span> — '+hand+' hand · '+count+' fingers · '+reachMM+' mm. Apps adapt on next launch.';
+    $("#profNote").innerHTML='<span class="ok">✓ saved</span> — '+hand+' hand · '+count+' finger'+(count===1?"":"s")+' · '+reachMM+' mm. Apps adapt on next launch.';
   };
 
   /* file:// notice — THE FORGE and NEXUS voice need http */
-  if(location.protocol==="file:") $("#srv").style.display="inline";
+  if(location.protocol==="file:") $("#srv").style.display="block";
 
-  /* app launching */
-  var frame=null;
+  /* ---- app launching ---- */
+  var frame=null, loadTimer=null;
+  var stageErr=$("#stageErr");
+  function showErr(name){
+    if(frame){ frame.style.display="none"; }
+    $("#stageErrName").textContent="Couldn't load "+(name||"the app");
+    stageErr.classList.add("show");
+  }
   function launch(src,name){
+    stageErr.classList.remove("show");
     frame=document.createElement("iframe");
-    frame.src=src; frame.title=name;
-    stage.innerHTML=""; stage.appendChild(frame);
+    frame.title=name;
+    frame.addEventListener("error",function(){ showErr(name); });
+    frame.addEventListener("load",function(){
+      clearTimeout(loadTimer);
+      try{
+        var doc=frame.contentDocument;
+        if(doc){
+          var probe=(doc.title||"")+" "+(doc.body?doc.body.textContent.slice(0,120):"");
+          if(/Error response|Error code:\s*(40|50)/i.test(probe)){ showErr(name); return; }
+          /* same-origin: make Esc inside the app return home (fixes the claim) */
+          doc.addEventListener("keydown",function(e){ if(e.key==="Escape") goHome(); });
+        }
+      }catch(e){/* cross-origin — assume it loaded */}
+    });
+    stage.insertBefore(frame, stageErr);
+    frame.src=src;
     stage.classList.add("open");
     document.title=name+" — ONEHAND OS";
+    loadTimer=setTimeout(function(){ showErr(name); }, 9000);
   }
   function goHome(){
-    stage.classList.remove("open"); stage.innerHTML=""; frame=null;
+    clearTimeout(loadTimer);
+    stage.classList.remove("open"); stageErr.classList.remove("show");
+    if(frame){ frame.remove(); frame=null; }
     document.title="ONEHAND OS";
   }
-  function bindTile(t){
-    t.addEventListener("click",function(){ launch(t.dataset.app, t.dataset.name); });
-  }
-  document.querySelectorAll(".tile").forEach(bindTile);
+  $("#homeBtn").onclick=goHome;
+  $("#stageErrHome").onclick=goHome;
 
-  /* app manifest (apps.json) — points at the original app folders.
-     On any failure (file://, missing, malformed) the static tiles above
-     remain as the fallback. */
-  fetch("apps.json").then(function(r){ return r.json(); }).then(function(m){
-    if(!m || m.v!==1 || !Array.isArray(m.apps) || !m.apps.length) return;
-    var grid=document.querySelector(".grid");
-    grid.innerHTML="";
-    m.apps.forEach(function(a){
+  function bindTile(t){ t.addEventListener("click",function(){ launch(t.dataset.app, t.dataset.name); }); }
+
+  /* ---- manifest (apps.json) → tiles; skeletons until it resolves ---- */
+  var STATIC=[
+    {icon:"👻",tag:"command",name:"GHOST",desc:"AI command center — plans, approval gates, fleet screens and the PHANTOM HAND one-handed subsystem.",path:"../GHOST/",entry:"index.html"},
+    {icon:"⚒",tag:"fabricate",name:"THE FORGE",desc:"Describe the problem, manufacture the solution: 3D model, PCB, firmware, BOM and build docs from one sentence.",path:"../The forge/",entry:"index.html"},
+    {icon:"🌆",tag:"simulate",name:"NEXUS",desc:"The city that remembers — persistent residents, spreading rumors, a settling economy and a Day-7 election.",path:"../GHOST/nexus/",entry:"index.html"}
+  ];
+  function renderTiles(apps){
+    var grid=$("#grid"); grid.innerHTML=""; grid.setAttribute("aria-busy","false");
+    if(!apps.length){
+      grid.innerHTML='<div class="empty"><b>No apps registered</b>Add one to <code>apps.json</code> to see it here.</div>';
+      return;
+    }
+    apps.forEach(function(a){
       var b=document.createElement("button");
-      b.className="tile";
-      b.dataset.app=a.path+a.entry;
-      b.dataset.name=a.name;
-      b.innerHTML='<span class="tag"></span><span class="ico"></span><h2></h2><p></p><span class="go">Launch →</span>';
+      b.className="tile"; b.dataset.app=(a.path||"")+(a.entry||"index.html"); b.dataset.name=a.name;
+      b.setAttribute("aria-label","Launch "+a.name);
+      b.innerHTML='<span class="tag"></span><span class="ico"></span><h2></h2><p></p>'+
+                  '<span class="go">Launch <span aria-hidden="true">→</span></span>';
       b.querySelector(".tag").textContent=a.tag||"";
       b.querySelector(".ico").textContent=a.icon||"▣";
       b.querySelector("h2").textContent=a.name;
       b.querySelector("p").textContent=a.desc||"";
-      bindTile(b);
-      grid.appendChild(b);
+      bindTile(b); grid.appendChild(b);
     });
-  }).catch(function(){});
+  }
+  fetch("apps.json").then(function(r){ return r.json(); }).then(function(m){
+    if(m && m.v===1 && Array.isArray(m.apps) && m.apps.length) renderTiles(m.apps);
+    else renderTiles(STATIC);
+  }).catch(function(){ renderTiles(STATIC); });
 
-  homeBtn.onclick=goHome;
+  /* Esc: close settings first, else close an open app */
   window.addEventListener("keydown",function(e){
     if(e.key!=="Escape") return;
     if(settings.classList.contains("open")){ closeSettings(); return; }
-    goHome();
+    if(stage.classList.contains("open")) goHome();
   });
 })();
 </script>
