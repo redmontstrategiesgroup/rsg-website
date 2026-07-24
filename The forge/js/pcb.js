@@ -98,6 +98,7 @@ function L(from, to, busY) {
 }
 
 // ---------------------------------------------------------------- SVG preview
+const esc = t => String(t ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 export function pcbSVG(spec) {
   const { board: B, pads, traces, holes, silk } = spec.derived.pcb;
   const S = 4.4, pad = 30;
@@ -105,7 +106,7 @@ export function pcbSVG(spec) {
   const X = x => pad + (x - B.x0) * S;
   const Y = y => pad + (B.y1 - y) * S;
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H + 30}" style="background:#0b0d10">`;
-  s += `<text x="${pad}" y="18" fill="#ffb143" font-family="monospace" font-size="13" font-weight="bold">${spec.name} — PCB rev ${spec.rev} · 2-layer · ${B.w.toFixed(0)}×${B.h.toFixed(0)} mm</text>`;
+  s += `<text x="${pad}" y="18" fill="#ffb143" font-family="monospace" font-size="13" font-weight="bold">${esc(spec.name)} — PCB rev ${spec.rev} · 2-layer · ${B.w.toFixed(0)}×${B.h.toFixed(0)} mm</text>`;
   s += `<g transform="translate(0,26)">`;
   s += `<rect x="${X(B.x0)}" y="${Y(B.y1)}" width="${B.w * S}" height="${B.h * S}" rx="10" fill="#0e2a1a" stroke="#d9c46a" stroke-width="1.6"/>`;
   for (const t of traces) {

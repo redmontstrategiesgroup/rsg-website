@@ -175,7 +175,8 @@
   }
   function redirect(text) {
     if (!text) return;
-    pushFeed("ORCH", `Redirect received: “${text}”. Re-planning next phase.`, "system");
+    const safe = String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    pushFeed("ORCH", `Redirect received: “${safe}”. Re-planning next phase.`, "system");
     G.bus.emit("redirect", text);
   }
   function terminate() {

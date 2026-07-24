@@ -20,7 +20,7 @@ import { BOARDS, ENCLOSURE_PRESETS, buildEnclosure, enclosurePlan, enclosureBOM,
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const esc = t => String(t ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const esc = t => String(t ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
 // ================================================================ state
 const state = {
