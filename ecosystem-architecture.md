@@ -136,7 +136,7 @@ Every phase ships alone, breaks nothing, and rolls back with `git revert` (Phase
 
 **Phase 2 — Delete the copies (30 min).** Remove `Onehand OS/apps/` and the redundant `serve.py`s; remove the fallback branch. *Gate:* same smoke script green. *Rollback:* `git revert` restores copies instantly.
 
-**Phase 3 — Un-nest NEXUS and Observatory (half day, do while their sessions are idle).** `git mv GHOST/nexus NEXUS` and `git mv GHOST/observatory Observatory`; update two manifest paths; grep-verify GHOST has no references to either (audit already confirmed zero for nexus; verify for observatory). *Gate:* smoke script + one NEXUS save/load cycle (its localStorage is origin-scoped, not path-scoped — saves survive the move; verify anyway). *Rollback:* `git revert` the move commit.
+**Phase 3 — Un-nest NEXUS and Observatory — ✅ DONE (2026-07-24, commits `8c1fd47`, `aaff019`).** Moved to top-level `RSG/NEXUS/` and `RSG/Observatory/`; bridge paths and manifest updated; sentinel saves confirmed surviving (origin-scoped). See `docs/plans/un-nest-nexus-observatory.md`. *Rollback if ever needed:* `git revert` the two move commits.
 
 **Phase 4 — Shared contracts (1–2 days, expand/contract).** *Expand:* shell settings panel writes `rsg.ability.v1` + `rsg.anthropic_key`; Forge/NEXUS/GHOST read shared-key-first-then-legacy; Forge's `layout.js` and GHOST's `onehand.js` read the ability profile with their current inputs as fallback. *Contract (later, separate commit each):* retire legacy key reads once observed unused. *Gate per app:* behavior identical with no shared keys present (fallback path). *Rollback:* each app's adoption is one commit.
 

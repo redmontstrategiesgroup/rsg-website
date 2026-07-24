@@ -19,9 +19,9 @@ dependencies beyond Python and a browser.
 
 Apps are **referenced, never copied.** [apps.json](apps.json) is the manifest:
 each entry points at an app's original folder (`../GHOST/`, `../The forge/`,
-`../GHOST/nexus/`, `../GHOST/observatory/`). The shell builds its tiles from
-it; the static tiles in `index.html` are only a fallback for when the manifest
-can't be fetched. To add an app, add a manifest entry — do not copy the app in.
+`../NEXUS/`, `../Observatory/`). The shell builds its tiles from it; the static
+tiles in `index.html` are only a fallback for when the manifest can't be
+fetched. To add an app, add a manifest entry — do not copy the app in.
 
 | App | What it is |
 |---|---|
