@@ -12,8 +12,29 @@
   let active = null;   // active profile
   let dock = null;
 
+  // Shared Onehand OS profile (rsg.ability.v1) → GHOST's count-based shape.
+  // Returns null when the shell hasn't written one.
+  function sharedProfile() {
+    try {
+      const p = JSON.parse(localStorage.getItem("rsg.ability.v1") || "null");
+      if (!p || p.v !== 1) return null;
+      const count = ["thumb", "index", "middle", "ring", "pinky"]
+        .filter(f => p.fingers && p.fingers[f]).length;
+      return {
+        hand: p.hand === "left" ? "left" : "right",
+        thumbReach: (typeof p.reachMM === "number" ? p.reachMM : 95) < 80 ? "limited" : "full",
+        fingers: count || 1,
+        grip: p.grip || "moderate",
+        fatigue: p.fatigue || "low",
+        inputs: Array.isArray(p.inputs) ? p.inputs : [],
+        targetScale: typeof p.targetScale === "number" ? p.targetScale : 1.4,
+      };
+    } catch (e) { return null; }
+  }
+
   function defaultProfile() {
-    return { hand: "right", thumbReach: "limited", fingers: 2, grip: "weak", fatigue: "low", inputs: ["voice", "foot"], targetScale: 1.5 };
+    return sharedProfile() ||
+      { hand: "right", thumbReach: "limited", fingers: 2, grip: "weak", fatigue: "low", inputs: ["voice", "foot"], targetScale: 1.5 };
   }
 
   // the command palette PHANTOM HAND can surface — most-used, low-effort
