@@ -220,9 +220,33 @@
     stage.classList.remove("open"); stage.innerHTML=""; frame=null;
     document.title="ONEHAND OS";
   }
-  document.querySelectorAll(".tile").forEach(function(t){
+  function bindTile(t){
     t.addEventListener("click",function(){ launch(t.dataset.app, t.dataset.name); });
-  });
+  }
+  document.querySelectorAll(".tile").forEach(bindTile);
+
+  /* app manifest (apps.json) — points at the original app folders.
+     On any failure (file://, missing, malformed) the static tiles above
+     remain as the fallback. */
+  fetch("apps.json").then(function(r){ return r.json(); }).then(function(m){
+    if(!m || m.v!==1 || !Array.isArray(m.apps) || !m.apps.length) return;
+    var grid=document.querySelector(".grid");
+    grid.innerHTML="";
+    m.apps.forEach(function(a){
+      var b=document.createElement("button");
+      b.className="tile";
+      b.dataset.app=a.path+a.entry;
+      b.dataset.name=a.name;
+      b.innerHTML='<span class="tag"></span><span class="ico"></span><h2></h2><p></p><span class="go">Launch →</span>';
+      b.querySelector(".tag").textContent=a.tag||"";
+      b.querySelector(".ico").textContent=a.icon||"▣";
+      b.querySelector("h2").textContent=a.name;
+      b.querySelector("p").textContent=a.desc||"";
+      bindTile(b);
+      grid.appendChild(b);
+    });
+  }).catch(function(){});
+
   homeBtn.onclick=goHome;
   window.addEventListener("keydown",function(e){ if(e.key==="Escape") goHome(); });
 })();

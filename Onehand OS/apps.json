@@ -1,0 +1,45 @@
+{
+  "v": 1,
+  "apps": [
+    {
+      "id": "ghost",
+      "name": "GHOST",
+      "icon": "👻",
+      "tag": "command",
+      "desc": "AI command center. Plans, approval gates, fleet screens, world model and audit — now with the PHANTOM HAND one-handed control subsystem.",
+      "path": "../GHOST/",
+      "entry": "index.html",
+      "needsServer": false
+    },
+    {
+      "id": "forge",
+      "name": "THE FORGE",
+      "icon": "⚒",
+      "tag": "fabricate",
+      "desc": "Describe the problem, manufacture the solution: requirements, 3D model, PCB, firmware, BOM, drawings (DXF/3MF/STEP) and validation gates.",
+      "path": "../The forge/",
+      "entry": "index.html",
+      "needsServer": true
+    },
+    {
+      "id": "nexus",
+      "name": "NEXUS",
+      "icon": "🌆",
+      "tag": "simulate",
+      "desc": "The city that remembers. Thirty persistent residents, spreading rumors, a settling economy and a Day-7 election — Rusthook lives while you're away.",
+      "path": "../GHOST/nexus/",
+      "entry": "index.html",
+      "needsServer": false
+    },
+    {
+      "id": "observatory",
+      "name": "OBSERVATORY",
+      "icon": "🔭",
+      "tag": "analyze",
+      "desc": "The world that remembers — a persistent multi-agent reality simulator for decision analysis. Change one decision, observe the consequences.",
+      "path": "../GHOST/observatory/",
+      "entry": "index.html",
+      "needsServer": false
+    }
+  ]
+}
