@@ -218,6 +218,10 @@ export function inspectPrototypeDemo(spec) {
       : "Prototype passes inspection.",
     recommendRevision: findings.some(f => f.patch !== "none"),
     findings,
+    // Findings are derived from the design spec, NOT from any uploaded photo.
+    // This flag drives the visible "SIMULATED" banner so the demo path can
+    // never present fabricated observations as real analysis of the user's part.
+    simulated: true,
   };
 }
 

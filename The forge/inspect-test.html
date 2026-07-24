@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>inspect honesty tests</title>
+<style>
+  body{background:#0d0f12;color:#e8e4da;font:14px/1.5 "Segoe UI",system-ui,sans-serif;margin:0;padding:28px}
+  h1{font-size:16px;letter-spacing:.12em;font-weight:600}
+  #sum{font-size:15px;margin:14px 0 20px;padding:12px 16px;border-radius:10px;border:1px solid #2a2f38;background:#171a20}
+  #sum.pass{border-color:#3ddc97;color:#3ddc97} #sum.fail{border-color:#ff6b7a;color:#ff6b7a}
+  .case{padding:9px 14px;border-left:3px solid #2a2f38;margin:6px 0;background:#171a20;border-radius:0 8px 8px 0}
+  .case.ok{border-left-color:#3ddc97} .case.no{border-left-color:#ff6b7a}
+  .n{color:#9aa0aa} code{color:#ff8c2e}
+</style>
+</head>
+<body>
+  <h1>THE FORGE · inspection honesty (revert guard for audit C1)</h1>
+  <div id="sum">running…</div>
+  <div id="out"></div>
+
+<script type="module">
+import { inspectPrototypeDemo } from "./js/claude.js";
+
+var out = document.getElementById("out"), results = [];
+function check(name, cond, detail){ results.push({name:name, ok:!!cond, detail:detail||""}); }
+
+// two DIFFERENT specs → the demo must produce DIFFERENT findings (proves it is
+// spec-derived, not a fixed literal) and must be flagged simulated.
+function specWithIssues(){
+  return { rev:1, name:"Deck A",
+    geometry:{ jackEdge:"rear", usbRibs:false, dialClearanceMM:3, snapFit:false },
+    modules:{ pedals:{count:2}, encoders:{count:2}, trackball:{diameter:34} },
+    derived:{ assemblyMin:42, keyTotal:12, deck:{w:120,d:80,h:20} } };
+}
+function specClean(){
+  return { rev:3, name:"Deck B",
+    geometry:{ jackEdge:"side", usbRibs:true, dialClearanceMM:8, snapFit:true },
+    modules:{ pedals:{count:0}, encoders:{count:0}, trackball:{diameter:34} },
+    derived:{ assemblyMin:12, keyTotal:8, deck:{w:120,d:80,h:20} } };
+}
+
+var a = inspectPrototypeDemo(specWithIssues());
+var b = inspectPrototypeDemo(specClean());
+
+// 1. THE C1 GUARD: demo output must carry simulated:true (drives the visible banner).
+//    If someone drops this flag, the "SIMULATED" banner vanishes and fabricated
+//    findings would render as real analysis — this test fails first.
+check("demo report is flagged simulated:true", a.simulated === true && b.simulated === true,
+  "a.simulated="+a.simulated+" b.simulated="+b.simulated);
+
+// 2. findings are spec-derived, not constant (different input → different output).
+check("different specs yield different findings",
+  JSON.stringify(a.findings) !== JSON.stringify(b.findings));
+
+// 3. the issue-laden spec surfaces the expected patches (real parametric logic).
+var patches = a.findings.map(function(f){return f.patch;});
+check("issue spec surfaces usb-rib + dial-clearance patches",
+  patches.indexOf("add_usb_ribs")>=0 && patches.indexOf("increase_dial_clearance")>=0,
+  patches.join(","));
+
+// 4. the clean spec reports no defects (not a fixed non-empty list).
+check("clean spec reports 'no defects'",
+  b.findings.length===1 && /no defects/i.test(b.findings[0].observation), JSON.stringify(b.findings));
+
+render();
+function render(){
+  var passed=results.filter(function(r){return r.ok;}).length, total=results.length;
+  var s=document.getElementById("sum");
+  s.textContent = passed+" / "+total+" passed"+(passed===total?"  ✓ all green":"  ✗ FAILURES");
+  s.className = passed===total ? "pass":"fail";
+  results.forEach(function(r,i){
+    var d=document.createElement("div"); d.className="case "+(r.ok?"ok":"no");
+    d.innerHTML='<span class="n">0'+(i+1)+'</span> '+(r.ok?"✓":"✗")+' '+r.name+(r.detail?' — <code>'+r.detail+'</code>':"");
+    out.appendChild(d);
+  });
+  window.__results = {passed:passed, total:total, cases:results};
+}
+</script>
+</body>
+</html>

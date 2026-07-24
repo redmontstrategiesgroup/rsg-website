@@ -811,12 +811,20 @@ async function runInspection() {
     } else {
       await sleep(1100);
       report = inspectPrototypeDemo(state.spec);
-      if (!state.inspectImage) toast("No photo — running simulated inspection of rev " + state.spec.rev, "");
+      // Always signal the simulated path. Crucially, when a photo WAS uploaded
+      // but there's no key, say plainly the photo was not analyzed — never let
+      // spec-derived findings masquerade as vision analysis of the user's part.
+      toast(state.inspectImage
+        ? "No API key — SIMULATED inspection (your photo was not analyzed). Add a key in ⚙ Settings for real vision."
+        : "No photo — running simulated inspection of rev " + state.spec.rev, "");
     }
     state.lastReport = report;
     const sev = { major: "finding-bad", minor: "finding-warn", info: "finding-ok" };
+    const banner = report.simulated
+      ? `<span class="finding-warn">⚠ SIMULATED — generated from the design spec, ${state.inspectImage ? "not from your photo" : "no photo provided"}. Add a Claude API key in ⚙ Settings for real vision analysis.</span>\n\n`
+      : "";
     $("#inspect-report").innerHTML =
-      `<b>PROTOTYPE INSPECTION — rev ${state.spec.rev}</b>\n\n` +
+      `<b>PROTOTYPE INSPECTION — rev ${state.spec.rev}</b>\n\n` + banner +
       report.findings.map(f => `<span class="${sev[f.severity]}">▸ ${esc(f.observation)}</span>\n   FIX: ${esc(f.fix)}`).join("\n\n") +
       `\n\n<b>${esc(report.summary)}</b>`;
     $("#inspect-report").classList.remove("hidden");
