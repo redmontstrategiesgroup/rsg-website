@@ -27,7 +27,7 @@
       "icon": "🌆",
       "tag": "simulate",
       "desc": "The city that remembers. Thirty persistent residents, spreading rumors, a settling economy and a Day-7 election — Rusthook lives while you're away.",
-      "path": "../GHOST/nexus/",
+      "path": "../NEXUS/",
       "entry": "index.html",
       "needsServer": false
     },
