@@ -106,7 +106,7 @@ export function pcbSVG(spec) {
   const X = x => pad + (x - B.x0) * S;
   const Y = y => pad + (B.y1 - y) * S;
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H + 30}" style="background:#0b0d10">`;
-  s += `<text x="${pad}" y="18" fill="#ffb143" font-family="monospace" font-size="13" font-weight="bold">${esc(spec.name)} — PCB rev ${spec.rev} · 2-layer · ${B.w.toFixed(0)}×${B.h.toFixed(0)} mm</text>`;
+  s += `<text x="${pad}" y="18" fill="#ffb143" font-family="monospace" font-size="13" font-weight="bold">${esc(spec.name)} — PCB rev ${spec.rev} · 2-layer · ${B.w.toFixed(0)}×${B.h.toFixed(0)} mm<tspan fill="#ff6b7a" font-weight="normal"> · ⚠ header→GPIO pins unverified</tspan></text>`;
   s += `<g transform="translate(0,26)">`;
   s += `<rect x="${X(B.x0)}" y="${Y(B.y1)}" width="${B.w * S}" height="${B.h * S}" rx="10" fill="#0e2a1a" stroke="#d9c46a" stroke-width="1.6"/>`;
   for (const t of traces) {
@@ -204,8 +204,15 @@ Files:
   *.gko  board outline        *.gtl/.gbl  top/bottom copper
   *.gts/.gbs soldermask       *.drl       Excellon drill
 
-NOTE: v1 comb-autoroute. Import into KiCad (File > Import > Gerber) and run a
-DRC pass before ordering. Any 2-layer service (JLCPCB/PCBWay/OSHPark) works.
+*** DO NOT FABRICATE AS-IS ***
+The board GEOMETRY is real, but the header-pin mapping is an UNVERIFIED
+PLACEHOLDER: the matrix/encoder escape traces are routed to header pads by
+position (gpio % pad-count), NOT to the ESP32-S3-DevKitC-1 pins that actually
+carry those GPIOs. The copper therefore does not electrically match the
+schematic/firmware. Before ordering: assign every header pad to its real
+DevKitC-1 pin, re-route, and run a KiCad DRC pass. This is v1 comb-autoroute —
+Import into KiCad (File > Import > Gerber). Any 2-layer service (JLCPCB/PCBWay/
+OSHPark) works once the netlist is corrected.
 `;
   return files;
 }

@@ -185,6 +185,25 @@ export function firmwareConsistency(spec, firmwareSource) {
   return out;
 }
 
+// ---------------------------------------------------------------- PCB copper vs. netlist
+// The Gerber/Excellon geometry is real, but pcb.js routes matrix/encoder escapes to
+// header pads via a placeholder mapping (gpio % padCount), NOT the DevKitC-1 physical
+// pinout — so the copper does not electrically match the schematic/firmware. Nothing
+// else validates this (elecChecks only reads the abstract netlist). Surface it honestly.
+export function pcbChecks(spec) {
+  const p = spec.derived && spec.derived.pcb;
+  const out = [];
+  if (!p) return out;
+  const traces = (p.traces || []).length, pads = (p.pads || []).length;
+  out.push({ id: "pcb-geometry", sev: "pass", area: "PCB",
+    text: `Board geometry generated: ${pads} pads, ${traces} traces, ${p.board.w.toFixed(0)}×${p.board.h.toFixed(0)} mm — Gerber X2 + Excellon are structurally valid`,
+    basis: "generated 2-D geometry" });
+  out.push({ id: "pcb-netlist", sev: "warn", area: "PCB",
+    text: "Header-pin mapping is an UNVERIFIED placeholder — the matrix/encoder escapes are routed to header pads by position, not to the ESP32-S3-DevKitC-1 pins that carry those GPIOs. The copper does NOT yet electrically match the schematic. Do not fabricate before verifying the header→GPIO map (requires a DevKitC-1 physical-pinout table) and running DRC.",
+    basis: "pcb.js gpioPad = hdrPins[gpio % padCount] — placeholder, not the physical pinout" });
+  return out;
+}
+
 // ---------------------------------------------------------------- engineering calcs
 // Real formulas with explicit assumptions. Values labelled calculated vs assumed.
 export function engineeringCalcs(spec) {

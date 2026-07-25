@@ -152,8 +152,14 @@ revision" is a real regeneration, not a mock.
 
 ## Honest limitations
 
-- PCB is comb-autorouted: valid Gerbers, but run a KiCad DRC pass before fab
-  (tracked as a Gate 4 warning).
+- **PCB copper is not electrically verified — do not fabricate as-is.** The
+  Gerber/Excellon *geometry* is real and structurally valid, but the header-pin
+  mapping is a placeholder: matrix/encoder escapes are routed to header pads by
+  position (`gpio % pad-count`), not to the ESP32-S3-DevKitC-1 pins that carry
+  those GPIOs, so the copper does not match the schematic/firmware. The app
+  surfaces this as a **PCB warning in Validation** and in the PCB pane, preview,
+  and gerber `README.txt`. Fixing it for real needs a DevKitC-1 physical-pinout
+  table (a genuine follow-up), then a KiCad DRC pass.
 - STEP/3MF are **tessellated** (triangle mesh), not B-rep — they import into any
   MCAD viewer and slicer; they are not editable solids.
 - The enclosure/deck STL is multi-solid (shell + lid/plate); slicers union it,

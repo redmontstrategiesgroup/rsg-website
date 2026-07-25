@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forge PCB honesty tests</title>
+<style>
+  body{background:#0d0f12;color:#e8e4da;font:14px/1.5 "Segoe UI",system-ui,sans-serif;margin:0;padding:28px}
+  h1{font-size:16px;letter-spacing:.12em;font-weight:600}
+  #sum{font-size:15px;margin:14px 0 20px;padding:12px 16px;border-radius:10px;border:1px solid #2a2f38;background:#171a20}
+  #sum.pass{border-color:#3ddc97;color:#3ddc97} #sum.fail{border-color:#ff6b7a;color:#ff6b7a}
+  .case{padding:9px 14px;border-left:3px solid #2a2f38;margin:6px 0;background:#171a20;border-radius:0 8px 8px 0}
+  .case.ok{border-left-color:#3ddc97} .case.no{border-left-color:#ff6b7a}
+  .n{color:#9aa0aa} code{color:#ff8c2e}
+</style>
+</head>
+<body>
+  <h1>THE FORGE · PCB honesty (revert guard for audit H1)</h1>
+  <div id="sum">running…</div>
+  <div id="out"></div>
+
+<script type="module">
+import { pcbChecks } from "./js/validation.js";
+import { buildPCB, gerberFiles } from "./js/pcb.js";
+import { defaultSpec } from "./js/spec.js";
+import { layoutSpec } from "./js/layout.js";
+import { buildElectronics } from "./js/electronics.js";
+
+var out=document.getElementById("out"), results=[];
+function check(name, cond, detail){ results.push({name:name, ok:!!cond, detail:detail||""}); }
+
+// Build a REAL spec through the same derive chain the app uses, so derived.pcb
+// (and derived.elec) are genuine — gerberFiles then produces the real README.
+var spec = defaultSpec();
+layoutSpec(spec);
+buildElectronics(spec);
+buildPCB(spec);
+
+// 1. THE H1 GUARD: the validation layer must emit a PCB warning that the header
+//    mapping is unverified. If someone removes pcbChecks or downgrades it, this fails.
+var checks = pcbChecks(spec);
+var netlist = checks.find(function(c){ return c.id==="pcb-netlist"; });
+check("validation emits a PCB netlist warning", !!netlist && netlist.sev==="warn" && netlist.area==="PCB",
+  netlist ? (netlist.sev+"/"+netlist.area) : "no pcb-netlist check");
+check("the warning says the copper is unverified / do not fabricate",
+  !!netlist && /unverified|placeholder|not .*match|do not fab/i.test(netlist.text),
+  netlist ? netlist.text.slice(0,60)+"…" : "—");
+
+// 2. the gerber-zip README must carry the caveat (the embedded, downloadable label).
+var readme = (gerberFiles(spec)["README.txt"]) || "";
+check("gerber README.txt warns 'DO NOT FABRICATE AS-IS'", /do not fabricate/i.test(readme),
+  readme ? "present" : "no README.txt");
+check("gerber README explains the placeholder header mapping",
+  /placeholder/i.test(readme) && /devkitc/i.test(readme), "");
+
+// 3. geometry check still reports the board as structurally real (honesty cuts both ways —
+//    we don't pretend the geometry is fake).
+var geo = checks.find(function(c){ return c.id==="pcb-geometry"; });
+check("geometry is still reported as structurally valid (pass)", !!geo && geo.sev==="pass",
+  geo ? geo.sev : "—");
+
+render();
+function render(){
+  var passed=results.filter(function(r){return r.ok;}).length, total=results.length;
+  var s=document.getElementById("sum");
+  s.textContent = passed+" / "+total+" passed"+(passed===total?"  ✓ all green":"  ✗ FAILURES");
+  s.className = passed===total ? "pass":"fail";
+  results.forEach(function(r,i){
+    var el=document.createElement("div"); el.className="case "+(r.ok?"ok":"no");
+    el.innerHTML='<span class="n">0'+(i+1)+'</span> '+(r.ok?"✓":"✗")+' '+r.name+(r.detail?' — <code>'+r.detail+'</code>':"");
+    out.appendChild(el);
+  });
+  window.__results = {passed:passed, total:total, cases:results};
+}
+</script>
+</body>
+</html>

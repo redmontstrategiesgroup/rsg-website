@@ -12,7 +12,7 @@ import { getSettings, saveSettings, hasKey, generateSpecAI, inspectPrototypeAI, 
 import { woodPlan, repairPlan, REPAIR_TYPES } from "./modes.js";
 import { screenRequest, refusalDocument, rateSpec, exportPolicy, LEVELS } from "./complexity.js";
 import { deriveRequirements, deriveSimpleRequirements, criticalUnknowns, conflicts, acceptanceTests, CATEGORIES } from "./requirements.js";
-import { dfmFDM, clearanceChecks, elecChecks, firmwareConsistency, engineeringCalcs, computeGates } from "./validation.js";
+import { dfmFDM, clearanceChecks, elecChecks, pcbChecks, firmwareConsistency, engineeringCalcs, computeGates } from "./validation.js";
 import { deckDrawingSVG, partDrawingSVG, plateDXF, toDXF, to3MF, toSTEP } from "./drawings.js";
 import { PART_TYPES, partDFM } from "./partlib.js";
 import { BOARDS, ENCLOSURE_PRESETS, buildEnclosure, enclosurePlan, enclosureBOM, enclosureDFM } from "./enclosure.js";
@@ -183,7 +183,7 @@ async function rebuildDeck({ animate = false, fromStage = 5 } = {}) {
 
 function runValidation() {
   const spec = state.spec, P = state.project;
-  P.checks = [...dfmFDM(spec), ...clearanceChecks(spec), ...elecChecks(spec), ...firmwareConsistency(spec, state.firmware)];
+  P.checks = [...dfmFDM(spec), ...clearanceChecks(spec), ...elecChecks(spec), ...pcbChecks(spec), ...firmwareConsistency(spec, state.firmware)];
   P.calcs = engineeringCalcs(spec);
   P.complexity = rateSpec(spec);
   paintCxChip();
@@ -594,7 +594,7 @@ function renderPCBPane() {
   $("#pane-pcb").innerHTML = `
     <div class="pane-toolbar">
       <button class="bar-btn accent" id="dl-gerber">⬇ Gerber + drill (.zip)</button>
-      <span class="hint">2-layer · red = F.Cu columns · blue = B.Cu rows · comb-autorouted v1 — run KiCad DRC before fab (tracked as a Gate 4 warning).</span>
+      <span class="hint">2-layer · red = F.Cu columns · blue = B.Cu rows · geometry is real, but <b style="color:var(--bad,#ff6b7a)">header→GPIO pins are an UNVERIFIED placeholder</b> — the copper does not yet electrically match the schematic. Verify the pin map + run KiCad DRC before fab (see the PCB warning in Validation).</span>
     </div>
     <div class="svg-holder">${pcbSVG(state.spec)}</div>`;
   $("#dl-gerber").onclick = () => download(fname("gerbers.zip"), makeZip(gerberFiles(state.spec)));
