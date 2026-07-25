@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NEXUS economy tests</title>
+<style>
+  body{background:#0b0f17;color:#dfe7f5;font:14px/1.5 "Segoe UI",system-ui,sans-serif;margin:0;padding:28px}
+  h1{font-size:16px;letter-spacing:.12em;font-weight:600}
+  #sum{font-size:15px;margin:14px 0 20px;padding:12px 16px;border-radius:10px;border:1px solid #2a3a55;background:#111726}
+  #sum.pass{border-color:#3ddc97;color:#3ddc97} #sum.fail{border-color:#ff6b7a;color:#ff6b7a}
+  .case{padding:9px 14px;border-left:3px solid #2a3a55;margin:6px 0;background:#111726;border-radius:0 8px 8px 0;font-variant-numeric:tabular-nums}
+  .case.ok{border-left-color:#3ddc97} .case.no{border-left-color:#ff6b7a}
+  .n{color:#8ba0c4} code{color:#4da3ff}
+</style>
+</head>
+<body>
+  <h1>NEXUS · economy settlement (revert guard for audit H2)</h1>
+  <div id="sum">running…</div>
+  <div id="out"></div>
+
+<!-- logic layer only: no ui.js / map.js / app.js, so nothing boots and the live
+     save is never touched. UI calls in the tick path are optional-chained no-ops. -->
+<script src="js/util.js"></script>
+<script src="js/data.js"></script>
+<script src="js/social.js"></script>
+<script src="js/economy.js"></script>
+<script src="js/feed.js"></script>
+<script src="js/events.js"></script>
+<script src="js/sim.js"></script>
+<script>
+(function(){
+  var out=document.getElementById("out"), results=[];
+  function check(name, cond, detail){ results.push({name:name, ok:!!cond, detail:detail||""}); }
+
+  // Fresh throwaway world — NX.newWorld() never reads or writes nexus_world_v1.
+  var DAYS = 60;
+  var w = NX.newWorld();
+  var trackable = w.businesses.filter(function(b){ return b.type!=="factory" && b.type!=="civic"; });
+  var startCash = {}; trackable.forEach(function(b){ startCash[b.id]=b.cash; });
+  var maxBadDays=0, aggregatePrev=null, aggregateDown=0;
+
+  for (var d=0; d<DAYS; d++){
+    NX.sim.runTicks(w, NX.sim.TICKS_PER_DAY, true);   // advance exactly one day → one economy.daily
+    var agg=0;
+    trackable.forEach(function(b){ maxBadDays = Math.max(maxBadDays, b.badDays||0); agg += b.cash; });
+    if (aggregatePrev!==null && agg < aggregatePrev) aggregateDown++;
+    aggregatePrev = agg;
+  }
+  // how many trackable businesses ended NO richer than they started (or closed)?
+  var notRicher = trackable.filter(function(b){ return !b.open || b.cash <= startCash[b.id]; }).length;
+  var ballooned = trackable.filter(function(b){ return b.open && b.cash > startCash[b.id]*20; }).length;
+
+  // ---- THE H2 GUARD (every assertion is a clean discriminator: true after the fix,
+  //      false on the bug where revenueToday compounds and cash only ever rises) ----
+  check("aggregate business cash falls on some nights (not monotonic ↑)", aggregateDown > 0,
+    "aggregateDownDays="+aggregateDown+"  (bug: 0)");
+  check("failure path is reachable (a business hits cash<0 → badDays>0)", maxBadDays > 0,
+    "maxBadDays="+maxBadDays+"  (bug: 0)");
+  check("at least one business ends no richer than it started (or closed)", notRicher > 0,
+    notRicher+" of "+trackable.length+"  (bug: 0 — all compound upward)");
+  check("no business balloons to 20× start cash (revenue is not compounding)", ballooned === 0,
+    ballooned+" ballooned of "+trackable.length+"  (bug: most do)");
+
+  render();
+  function render(){
+    var passed=results.filter(function(r){return r.ok;}).length, total=results.length;
+    var s=document.getElementById("sum");
+    s.textContent = passed+" / "+total+" passed"+(passed===total?"  ✓ all green":"  ✗ FAILURES");
+    s.className = passed===total ? "pass":"fail";
+    results.forEach(function(r,i){
+      var el=document.createElement("div"); el.className="case "+(r.ok?"ok":"no");
+      el.innerHTML='<span class="n">0'+(i+1)+'</span> '+(r.ok?"✓":"✗")+' '+r.name+(r.detail?' — <code>'+r.detail+'</code>':"");
+      out.appendChild(el);
+    });
+    window.__results = {passed:passed, total:total, cases:results};
+  }
+})();
+</script>
+</body>
+</html>

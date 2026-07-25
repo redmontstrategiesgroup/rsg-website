@@ -20,8 +20,10 @@
 
     // 1) businesses trade: customers = residents with disposable income choosing venues
     for (const b of state.businesses) {
-      if (!b.open || b.type === "factory") { b.revenueToday = 0; continue; }
-      let customers = 0;
+      b.revenueToday = 0;                 // reset for EVERY business each night (was only reset
+      if (!b.open || b.type === "factory") continue;   // in this branch — see H2: revenue compounded
+      let customers = 0;                                //   nightly and re-credited to cash, so no
+                                                        //   business could ever run down and fail)
       for (const r of state.residents) {
         if (!r.alive || r.inJail || r.missing) continue;
         const disposable = r.money > 120 ? 1 : r.money > 40 ? 0.5 : 0.12;
