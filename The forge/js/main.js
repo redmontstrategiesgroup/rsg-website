@@ -829,7 +829,14 @@ async function runInspection() {
       `\n\n<b>${esc(report.summary)}</b>`;
     $("#inspect-report").classList.remove("hidden");
     if (report.recommendRevision) $("#inspect-rev").classList.remove("hidden");
-  } catch (e) { toast("Inspection failed: " + e.message, "err"); }
+  } catch (e) {
+    toast("Inspection failed: " + e.message, "err");
+    // Replace (not leave stale) the report so a failed run never shows old findings.
+    state.lastReport = null;
+    $("#inspect-report").innerHTML = `<span class="finding-bad">⚠ Inspection failed — ${esc(e.message)}.</span>\n\nNothing was analyzed. Check your API key / connection and try again.`;
+    $("#inspect-report").classList.remove("hidden");
+    $("#inspect-rev").classList.add("hidden");
+  }
   finally { btn.disabled = false; btn.textContent = "🔍 Inspect"; }
 }
 async function generateRevision() {
