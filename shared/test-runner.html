@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSG · test runner</title>
+<style>
+  :root{--bg:#06080d;--panel:#0e1420;--panel2:#131b2b;--line:#1c2740;--line2:#2a3a5f;
+    --txt:#dce6ff;--dim:#8593b5;--faint:#54628a;--acc:#4da3ff;--good:#3ddc97;--warn:#ffb454;--bad:#ff6b7a;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--txt);font:14px/1.55 "Segoe UI",system-ui,sans-serif;padding:30px;max-width:900px;margin:0 auto}
+  h1{font-size:17px;letter-spacing:.14em;font-weight:600}
+  h1 b{color:var(--acc)}
+  .sub{color:var(--faint);font-size:12px;letter-spacing:.08em;margin-top:5px}
+  #sum{font-size:16px;margin:18px 0;padding:16px 18px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);
+    font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:12px}
+  #sum.pass{border-color:var(--good);color:var(--good)} #sum.fail{border-color:var(--bad);color:var(--bad)}
+  #sum.run{color:var(--dim)}
+  #sum .dot{width:10px;height:10px;border-radius:50%;background:currentColor;flex:none}
+  .group{margin:18px 0 8px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 14px;margin:6px 0;background:var(--panel);
+    border:1px solid var(--line);border-left-width:3px;border-radius:0 10px 10px 0}
+  .row.ok{border-left-color:var(--good)} .row.no{border-left-color:var(--bad)} .row.pend{border-left-color:var(--line2)}
+  .row .ico{font-size:15px;width:18px;text-align:center;flex:none}
+  .row .name{font-weight:600;letter-spacing:.04em;min-width:150px}
+  .row .detail{color:var(--dim);font-size:12.5px;font-variant-numeric:tabular-nums}
+  .row.no .detail{color:var(--bad)}
+  .note{color:var(--faint);font-size:11.5px;line-height:1.6;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+  code{color:var(--acc)}
+  #frames{position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px}
+</style>
+</head>
+<body>
+  <h1>RSG · <b>test runner</b></h1>
+  <div class="sub">boots every app + runs every regression suite · one verdict</div>
+  <div id="sum" class="run"><span class="dot"></span><span id="sumtext">running…</span></div>
+
+  <div class="group">Apps boot clean</div>
+  <div id="apps"></div>
+  <div class="group">Regression suites</div>
+  <div id="suites"></div>
+
+  <div class="note" id="note"></div>
+  <div id="frames"></div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+
+  // ---- boot-signal table: how we know each app initialized (a fatal load
+  //      error prevents the global, so this catches boot failures) ----
+  var BOOT = {
+    ghost:       "typeof window.G==='object' && !!(G.engine && G.onehand)",
+    forge:       "!!document.getElementById('btn-forge') && !!window.RSGClaude",
+    nexus:       "typeof window.NX==='object' && !!(NX.sim && NX.claude)",
+    observatory: "typeof window.OBS==='object' && !!(OBS.store && OBS.copilot)"
+  };
+  // ---- regression suites: each exposes window.__results = {passed,total,cases} ----
+  var SUITES = [
+    { name: "claude-bridge",     url: "/shared/bridge-test.html" },
+    { name: "forge · inspection", url: "/The%20forge/inspect-test.html" }
+    // Phase 2/3 add: NEXUS economy, Forge PCB honesty
+  ];
+
+  var frames = $("#frames"), results = { apps: [], suites: [] };
+
+  function row(container, name){
+    var el=document.createElement("div"); el.className="row pend";
+    el.innerHTML='<span class="ico">…</span><span class="name"></span><span class="detail">running…</span>';
+    el.querySelector(".name").textContent=name; container.appendChild(el); return el;
+  }
+  function mark(el, ok, detail){
+    el.className="row "+(ok?"ok":"no");
+    el.querySelector(".ico").textContent = ok?"✓":"✗";
+    el.querySelector(".detail").textContent = detail;
+  }
+
+  // Load a URL in a hidden iframe; resolve with {win, consoleErrors[]} after `settle` ms,
+  // having hooked console.error / window.onerror for post-load runtime errors.
+  function boot(url, settle){
+    return new Promise(function(res){
+      var f=document.createElement("iframe"); var errs=[]; var done=false;
+      f.onload=function(){
+        try{
+          var w=f.contentWindow;
+          var oce=w.console.error;
+          w.console.error=function(){ errs.push([].slice.call(arguments).join(" ").slice(0,140)); return oce.apply(w.console,arguments); };
+          w.addEventListener("error", function(e){ errs.push((e.message||"error").slice(0,140)); });
+          w.addEventListener("unhandledrejection", function(e){ errs.push("unhandledrejection: "+((e.reason&&e.reason.message)||e.reason||"")); });
+        }catch(e){/* cross-origin (shouldn't happen same-origin) */}
+        setTimeout(function(){ if(done)return; done=true; res({ win:f.contentWindow, errs:errs, ok:true }); }, settle);
+      };
+      f.onerror=function(){ if(done)return; done=true; res({ win:null, errs:["iframe failed to load"], ok:false }); };
+      f.src=url; frames.appendChild(f);
+      setTimeout(function(){ if(done)return; done=true; res({ win:f.contentWindow, errs:errs.concat(["timed out"]), ok:false }); }, settle+9000);
+    });
+  }
+
+  // Poll a boot expression inside the iframe until true or timeout.
+  function bootReady(win, expr, ms){
+    return new Promise(function(res){
+      var t0=Date.now();
+      (function poll(){
+        var ok=false; try{ ok=!!win.eval(expr); }catch(e){}
+        if(ok) return res(true);
+        if(Date.now()-t0>ms) return res(false);
+        setTimeout(poll,120);
+      })();
+    });
+  }
+
+  function finish(){
+    var appFails = results.apps.filter(function(a){return !a.ok;}).length;
+    var suiteFails = results.suites.filter(function(s){return !s.ok;}).length;
+    var assertPassed=0, assertTotal=0;
+    results.suites.forEach(function(s){ assertPassed+=s.passed||0; assertTotal+=s.total||0; });
+    var allOk = appFails===0 && suiteFails===0;
+    var sum=$("#sum");
+    sum.className = allOk ? "pass":"fail";
+    $("#sumtext").textContent = allOk
+      ? (results.apps.length+" apps booted clean · "+assertPassed+"/"+assertTotal+" assertions across "+results.suites.length+" suites — all green")
+      : (appFails+" app failure(s) · "+suiteFails+" suite failure(s) — see below");
+    $("#note").innerHTML = "Boot check = the app's init global is present after load, plus no <code>console.error</code>/uncaught error in the settle window. "+
+      "Pre-boot non-fatal console messages need the <code>?rsgtest=1</code> beacon (harness A2). Runs against <code>serve.py</code>; open at <code>/shared/test-runner.html</code>.";
+    window.__results = {
+      passed: (results.apps.filter(function(a){return a.ok;}).length) + assertPassed,
+      total:  results.apps.length + assertTotal,
+      apps: results.apps, suites: results.suites, allOk: allOk
+    };
+  }
+
+  (async function run(){
+    // 1) apps from the manifest
+    var manifest;
+    try{ manifest = await fetch("/Onehand%20OS/apps.json").then(function(r){return r.json();}); }
+    catch(e){ manifest = { apps: [] }; }
+    var appEls = {};
+    (manifest.apps||[]).forEach(function(a){ appEls[a.id]=row($("#apps"), a.name); });
+
+    for (var i=0;i<(manifest.apps||[]).length;i++){
+      var a=manifest.apps[i];
+      var b=await boot(a.path+a.entry, 2200);
+      var expr=BOOT[a.id]||"true";
+      var booted = b.win ? await bootReady(b.win, expr, 4000) : false;
+      var clean = b.errs.length===0;
+      var ok = booted && clean && b.ok;
+      var detail = !b.ok ? "did not load"
+                 : !booted ? "did not boot (init signal absent)"
+                 : !clean ? b.errs.length+" console error(s): "+b.errs[0]
+                 : "booted · no console errors";
+      mark(appEls[a.id], ok, detail);
+      results.apps.push({ id:a.id, ok:ok, detail:detail });
+    }
+
+    // 2) regression suites
+    for (var j=0;j<SUITES.length;j++){
+      var s=SUITES[j]; var el=row($("#suites"), s.name);
+      var b2=await boot(s.url, 400);
+      var r=null, t0=Date.now();
+      while(!r && Date.now()-t0<6000){ try{ r=b2.win.__results; }catch(e){} if(!r) await new Promise(function(x){setTimeout(x,120);}); }
+      var ok = !!r && r.passed===r.total;
+      mark(el, ok, r ? (r.passed+"/"+r.total+" passed") : "no results");
+      results.suites.push({ name:s.name, ok:ok, passed:r?r.passed:0, total:r?r.total:0 });
+    }
+
+    finish();
+  })();
+})();
+</script>
+</body>
+</html>
