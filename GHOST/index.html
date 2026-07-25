@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- dev-only error beacon: injected only under ?rsgtest=1 (see shared/rsg-testkit.js) -->
+  <script>if(location.search.indexOf("rsgtest=1")>=0)document.write('<script src="/shared/rsg-testkit.js"><\/script>');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GHOST // Systems Terminal</title>
   <meta name="description" content="GHOST — General Hardware Orchestration and Systems Terminal. Tell GHOST what needs to happen; it plans, gets approval, executes, verifies, and shows exactly what happened." />

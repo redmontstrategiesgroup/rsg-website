@@ -140,15 +140,20 @@
 
     for (var i=0;i<(manifest.apps||[]).length;i++){
       var a=manifest.apps[i];
-      var b=await boot(a.path+a.entry, 2200);
+      // ?rsgtest=1 injects the error beacon (window.__rsgErrors) for full pre-boot coverage
+      var url=a.path+a.entry+(a.entry.indexOf("?")>=0?"&":"?")+"rsgtest=1";
+      var b=await boot(url, 2200);
       var expr=BOOT[a.id]||"true";
       var booted = b.win ? await bootReady(b.win, expr, 4000) : false;
-      var clean = b.errs.length===0;
+      // combine the post-load console hook with the beacon's full capture
+      var beacon=[]; try{ beacon=(b.win && b.win.__rsgErrors)||[]; }catch(e){}
+      var errs=b.errs.concat(beacon.map(function(x){return x.kind+": "+x.msg;}));
+      var clean = errs.length===0;
       var ok = booted && clean && b.ok;
       var detail = !b.ok ? "did not load"
                  : !booted ? "did not boot (init signal absent)"
-                 : !clean ? b.errs.length+" console error(s): "+b.errs[0]
-                 : "booted · no console errors";
+                 : !clean ? errs.length+" error(s): "+errs[0]
+                 : "booted · no errors (beacon "+(b.win&&b.win.__rsgErrors?"on":"off")+")";
       mark(appEls[a.id], ok, detail);
       results.apps.push({ id:a.id, ok:ok, detail:detail });
     }
