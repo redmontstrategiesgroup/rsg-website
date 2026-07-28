@@ -5,6 +5,6 @@ Disallow: /dashboard
 Disallow: /portal
 Disallow: /login
 Disallow: /api/
-Disallow: /thank-you
+Disallow: /thankyou
 
 Sitemap: https://redmontstrategiesgroup.com/sitemap.xml

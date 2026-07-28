@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSG · input device tests</title>
+<style>
+  body{background:#06080d;color:#dce6ff;font:14px/1.55 "Segoe UI",system-ui,sans-serif;padding:28px;max-width:960px;margin:0 auto}
+  h1{font-size:16px;letter-spacing:.14em;font-weight:600;margin-bottom:4px}
+  .sub{color:#54628a;font-size:12px;margin-bottom:16px}
+  #sum{font-size:15px;padding:14px 16px;border-radius:10px;border:1px solid #2a3a5f;background:#0e1420;margin-bottom:16px}
+  #sum.pass{border-color:#3ddc97;color:#3ddc97} #sum.fail{border-color:#ff6b7a;color:#ff6b7a}
+  .grp{margin:16px 0 6px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8593b5}
+  .case{padding:8px 12px;margin:4px 0;background:#0e1420;border:1px solid #1c2740;border-left-width:3px;border-radius:0 8px 8px 0;font-size:13px}
+  .case.ok{border-left-color:#3ddc97} .case.no{border-left-color:#ff6b7a;color:#ff9aa6}
+  .n{color:#54628a;font-variant-numeric:tabular-nums;margin-right:6px}
+  code{color:#4da3ff}
+</style>
+</head>
+<body>
+  <h1>RSG · <b>input devices</b></h1>
+  <div class="sub">disconnect, reconnect, reduced capabilities, denial — the paths that matter</div>
+  <div id="sum">running…</div>
+  <div id="out"></div>
+
+<script src="/shared/input-devices.js"></script>
+<script>
+(function(){
+  var I = window.RSGInput;
+  var results = [], out = document.getElementById("out"), group = "";
+  function grp(n){ group=n; var e=document.createElement("div"); e.className="grp"; e.textContent=n; out.appendChild(e); }
+  function check(name, ok, detail){
+    results.push({name:name, ok:!!ok, detail:detail||"", group:group});
+    var e=document.createElement("div"); e.className="case "+(ok?"ok":"no");
+    e.innerHTML='<span class="n">'+String(results.length).padStart(2,"0")+'</span>'+(ok?"✓":"✗")+' '+name+(detail?' — <code>'+String(detail).replace(/</g,"&lt;")+'</code>':"");
+    out.appendChild(e);
+  }
+
+  // ---- harness: injected clock + in-memory storage keeps runs deterministic ----
+  var t = 1000; var clock = function(){ return t; };
+  function memStore(){ var m={}; return {getItem:function(k){return m[k]||null;}, setItem:function(k,v){m[k]=v;}}; }
+  function pedal(id, buttons){   // a 1-button USB foot pedal
+    return {id:id, capabilities:{buttons:buttons||1, axes:0, analog:false, haptics:false},
+            buttons:new Array(buttons||1).fill(false), axes:[]};
+  }
+  function rig(devices){
+    var src = I.mockSource(devices||[]);
+    var m = I.createManager({source:src, clock:clock, storage:memStore()});
+    // Register actions WITH on-screen fallbacks (the dock buttons in the real app)
+    ["confirm","next","stop"].forEach(function(a){ m.registerAction(a, a, ["on-screen"]); });
+    var fired = [];
+    m.on("action", function(e){ fired.push(e); });
+    var statuses = [];
+    m.on("status", function(s){ statuses.push(s.state); });
+    m.start(0);   // no polling; tests drive sample() explicitly
+    return {src:src, m:m, fired:fired, statuses:statuses};
+  }
+  function press(r, id, i){ r.src._press(id,i,true); r.m.sample(); r.src._press(id,i,false); r.m.sample(); }
+
+  /* ============================================================ */
+  grp("Works with no device at all");
+  var none = rig([]);
+  check("status is 'no-device', not an error", none.m.status().state==="no-device", none.m.status().state);
+  check("status message tells the user everything still works",
+    /works on screen and by keyboard/.test(none.m.status().message), none.m.status().message);
+  check("every action is still triggerable via the fallback path", (function(){
+    none.m.trigger("confirm","on-screen");
+    return none.fired.length===1 && none.fired[0].via==="on-screen";
+  })());
+  check("no action is hardware-only", none.m.hardwareOnlyActions().length===0,
+    JSON.stringify(none.m.hardwareOnlyActions()));
+
+  grp("Discovery & capability reporting");
+  var r = rig([pedal("pedal-a",1)]);
+  check("device already attached at startup is enumerated", Object.keys(r.m.devices()).length===1,
+    Object.keys(r.m.devices()).join(","));
+  check("status reports connected with the device's capabilities",
+    r.m.status().state==="connected" && r.m.status().capabilities.buttons===1,
+    JSON.stringify(r.m.status().capabilities));
+  check("an unknown device gets a usable default mapping on first connection",
+    Object.keys(r.m.mappingFor("pedal-a")).length>0, JSON.stringify(r.m.mappingFor("pedal-a")));
+  check("hot-plug is detected without an input attempt", (function(){
+    r.src._attach(pedal("pedal-b",4)); r.m.reconcile();
+    return !!r.m.devices()["pedal-b"];
+  })());
+  check("capabilities come from the device, not its class", (function(){
+    var d = r.m.devices();
+    return d["pedal-a"].capabilities.buttons===1 && d["pedal-b"].capabilities.buttons===4;
+  })(), "1-button and 4-button described differently");
+
+  grp("A device reporting fewer capabilities than expected");
+  var few = rig([pedal("tiny",1)]);
+  few.m.bind("tiny","b0","confirm");
+  var bindHigh = few.m.bind("tiny","b7","stop");   // button the device does not have
+  check("binding to a non-existent input does not throw or corrupt state", bindHigh.ok===true);
+  check("actions on absent inputs simply never fire (no crash)", (function(){
+    press(few,"tiny",0);
+    return few.fired.length===1 && few.fired[0].actionId==="confirm";
+  })(), JSON.stringify(few.fired.map(function(f){return f.actionId;})));
+  check("the unreachable action is still reachable by fallback", (function(){
+    few.m.trigger("stop","on-screen");
+    return few.fired.some(function(f){ return f.actionId==="stop" && f.via==="on-screen"; });
+  })());
+
+  grp("Disconnect");
+  var d = rig([pedal("pedal-a",2)]);
+  d.m.bind("pedal-a","b0","confirm");
+  press(d,"pedal-a",0);
+  var beforeCount = d.fired.length;
+  var events=[]; d.m.on("devicechange", function(e){ events.push(e.type); });
+  t = 2000; d.src._detach("pedal-a"); d.m.reconcile();
+  check("disconnect is detected immediately, not on next input", events.indexOf("disconnect")>=0, events.join(","));
+  check("status becomes 'disconnected'", d.m.status().state==="disconnected", d.m.status().state);
+  check("the disconnect message does not require the device to resolve",
+    /still work on screen and by keyboard/.test(d.m.status().message), d.m.status().message);
+  check("work already done is preserved (prior events intact)", d.fired.length===beforeCount, d.fired.length+" events");
+  check("fallback still reaches every action after disconnect", (function(){
+    d.m.trigger("confirm","on-screen");
+    return d.fired[d.fired.length-1].via==="on-screen";
+  })());
+  check("mapping is NOT discarded on disconnect",
+    d.m.mappingFor("pedal-a").b0==="confirm", JSON.stringify(d.m.mappingFor("pedal-a")));
+
+  grp("Disconnect mid-action");
+  var mid = rig([pedal("p",1)]);
+  mid.m.bind("p","b0","confirm");
+  mid.src._press("p",0,true); mid.m.sample();          // button held down...
+  var heldFired = mid.fired.length;
+  mid.src._detach("p"); mid.m.reconcile();             // ...device yanked while held
+  check("a device pulled mid-press does not emit a phantom action",
+    mid.fired.length===heldFired, mid.fired.length+" vs "+heldFired);
+  check("state survives a disconnect during an in-flight interaction",
+    mid.m.status().state==="disconnected" && mid.m.hardwareOnlyActions().length===0);
+
+  grp("Reconnect");
+  var rc = rig([pedal("p",1)]);
+  rc.m.bind("p","b0","stop");
+  rc.src._detach("p"); rc.m.reconcile();
+  t = 3000; rc.src._attach(pedal("p",1)); rc.m.reconcile();
+  check("status returns to 'connected'", rc.m.status().state==="connected", rc.m.status().state);
+  check("the custom mapping survived the round trip", rc.m.mappingFor("p").b0==="stop",
+    JSON.stringify(rc.m.mappingFor("p")));
+  check("input works again after reconnect", (function(){
+    var before = rc.fired.length; press(rc,"p",0);
+    return rc.fired.length===before+1 && rc.fired[rc.fired.length-1].actionId==="stop";
+  })());
+
+  grp("Permission");
+  var pm = rig([]);
+  check("denial leaves the app fully usable", (function(){
+    var done=false, ok=false;
+    pm.m.requestPermission(function(){ throw new Error("User denied"); });
+    ok = pm.m.status().state==="denied";
+    pm.m.trigger("confirm","on-screen");
+    return ok && pm.fired.some(function(f){return f.via==="on-screen";});
+  })(), pm.m.status().state);
+  check("denied status is explained honestly",
+    /Everything still works/.test(pm.m.status().message), pm.m.status().message);
+
+  grp("Mapping");
+  var mp = rig([pedal("p",3)]);
+  check("hardware CANNOT be bound to an action with no fallback", (function(){
+    mp.m.registerAction("nuke","Nuke",[]);        // deliberately no fallback
+    var res = mp.m.bind("p","b2","nuke");
+    return res.ok===false && res.error==="no-fallback";
+  })(), mp.m.bind("p","b2","nuke").message);
+  check("binding succeeds once a fallback exists", (function(){
+    mp.m.addFallback("nuke","on-screen");
+    return mp.m.bind("p","b2","nuke").ok===true;
+  })());
+  check("mapping is to an ACTION, not a keystroke", (function(){
+    return typeof mp.m.mappingFor("p").b2 === "string" && !!mp.m.actions()["nuke"];
+  })());
+  check("one input can trigger a sequence of actions", (function(){
+    mp.m.bind("p","b0",["confirm","next"]);
+    var before = mp.fired.length; press(mp,"p",0);
+    return mp.fired.length===before+2;
+  })());
+  check("multiple inputs can drive the same action", (function(){
+    mp.m.bind("p","b1","confirm");
+    var before = mp.fired.length; press(mp,"p",1);
+    return mp.fired.length===before+1 && mp.fired[mp.fired.length-1].actionId==="confirm";
+  })());
+  check("remapping is possible with NO device attached", (function(){
+    var off = rig([]);
+    off.m.registerAction("later","Later",["on-screen"]);
+    var res = off.m.bind("future-device","b0","later");
+    return res.ok===true && off.m.mappingFor("future-device").b0==="later";
+  })());
+
+  grp("Debounce / tremor");
+  var db = rig([pedal("p",1)]);
+  db.m.bind("p","b0","confirm");
+  db.m.setDebounceMs(50);
+  check("repeat activations inside the debounce window are filtered", (function(){
+    var before = db.fired.length;
+    t = 5000; press(db,"p",0);
+    t = 5020; press(db,"p",0);   // tremor repeat, 20ms later
+    return db.fired.length===before+1;
+  })(), "debounce="+db.m.debounceMs()+"ms");
+  check("deliberate input after the window still registers", (function(){
+    var before = db.fired.length;
+    t = 5200; press(db,"p",0);
+    return db.fired.length===before+1;
+  })());
+  check("debounce is configurable, not a fixed default", (function(){
+    db.m.setDebounceMs(0);
+    var before = db.fired.length;
+    t = 6000; press(db,"p",0);
+    t = 6001; press(db,"p",0);
+    return db.fired.length===before+2;
+  })());
+
+  grp("Fallback events are not second class");
+  var fb = rig([pedal("p",1)]);
+  fb.m.bind("p","b0","confirm");
+  t = 7000; press(fb,"p",0);
+  var hw = fb.fired[fb.fired.length-1];
+  fb.m.trigger("confirm","on-screen");
+  var sw = fb.fired[fb.fired.length-1];
+  check("hardware and fallback produce the same event shape",
+    Object.keys(hw).sort().join(",")===Object.keys(sw).sort().join(","),
+    Object.keys(hw).sort().join(","));
+  check("both carry the same actionId", hw.actionId===sw.actionId);
+  check("`via` distinguishes them for logging without changing behaviour",
+    hw.via==="hardware" && sw.via==="on-screen");
+
+  /* ============================================================
+     WebHID
+     ============================================================ */
+  grp("WebHID · descriptor parsing (pure)");
+  var P = I.hid;
+  // A typical 3-button USB foot pedal: 3 button bits + 5 padding bits, one byte.
+  function pedalDescriptor(){
+    return { vendorId:0x055a, productId:0x0510, collections:[{ inputReports:[{ reportId:0, items:[
+      { usages:[(0x09<<16)|1,(0x09<<16)|2,(0x09<<16)|3], reportSize:1, reportCount:3, logicalMinimum:0, logicalMaximum:1 },
+      { isConstant:true, reportSize:1, reportCount:5, logicalMinimum:0, logicalMaximum:0 }
+    ]}]}]};
+  }
+  var lay = P.layoutFor(pedalDescriptor());
+  check("button bit offsets read from the descriptor, not hard-coded",
+    JSON.stringify(lay[0].buttons.map(function(b){return b.bit;}))==="[0,1,2]",
+    JSON.stringify(lay[0].buttons));
+  check("capabilities derived from the descriptor, not vendor/product id", (function(){
+    var c = P.describeHID(pedalDescriptor());
+    return c.buttons===3 && c.axes===0 && c.analog===false;
+  })(), JSON.stringify(P.describeHID(pedalDescriptor())));
+  check("haptics is reported false rather than guessed",
+    P.describeHID(pedalDescriptor()).haptics===false);
+  check("bit reader is LSB-first within each byte", (function(){
+    var v = new DataView(new Uint8Array([0b00000101]).buffer);
+    return P.readBits(v,0,1)===1 && P.readBits(v,1,1)===0 && P.readBits(v,2,1)===1;
+  })());
+  check("a report shorter than the descriptor claims does not throw", (function(){
+    var v = new DataView(new Uint8Array([0xFF]).buffer);
+    try { return P.readBits(v, 60, 8) === 0 || true; } catch(e){ return false; }
+  })());
+  check("usage ranges expand to individual usages", (function(){
+    var us = P.itemUsages({isRange:true, usageMinimum:(0x09<<16)|1, usageMaximum:(0x09<<16)|4}, 4);
+    return us.length===4;
+  })());
+  check("signed axis values decode as two's complement",
+    P.signed(0xFF, 8, -128) === -1, "0xFF@8bit,min=-128 → "+P.signed(0xFF,8,-128));
+  check("axes are found on Generic Desktop usages", (function(){
+    var d = {collections:[{inputReports:[{reportId:0, items:[
+      {usages:[(0x01<<16)|0x30,(0x01<<16)|0x31], reportSize:8, reportCount:2, logicalMinimum:-127, logicalMaximum:127}]}]}]};
+    var c = P.describeHID(d);
+    return c.axes===2 && c.analog===true;
+  })());
+  check("per-report-id bit cursors do not bleed between reports", (function(){
+    var d = {collections:[{inputReports:[
+      {reportId:1, items:[{usages:[(0x09<<16)|1], reportSize:1, reportCount:1}]},
+      {reportId:2, items:[{usages:[(0x09<<16)|1], reportSize:1, reportCount:1}]}]}]};
+    var l = P.layoutFor(d);
+    return l[1].buttons[0].bit===0 && l[2].buttons[0].bit===0;
+  })());
+
+  grp("WebHID · device lifecycle (mock navigator.hid)");
+  function mockHid(initial){
+    var granted = (initial||[]).slice(), handlers = {};
+    return {
+      getDevices: function(){ return Promise.resolve(granted.slice()); },
+      requestDevice: function(){ return Promise.resolve(this._next!==undefined ? this._next : []); },
+      addEventListener: function(k,f){ (handlers[k]=handlers[k]||[]).push(f); },
+      removeEventListener: function(k,f){ handlers[k]=(handlers[k]||[]).filter(function(x){return x!==f;}); },
+      _emit: function(k,e){ (handlers[k]||[]).forEach(function(f){ f(e); }); },
+      _granted: granted
+    };
+  }
+  function mockDevice(desc){
+    var listeners = {};
+    return Object.assign({
+      opened:false,
+      open: function(){ this.opened = true; return Promise.resolve(); },
+      addEventListener: function(k,f){ (listeners[k]=listeners[k]||[]).push(f); },
+      removeEventListener: function(k,f){ listeners[k]=(listeners[k]||[]).filter(function(x){return x!==f;}); },
+      _report: function(reportId, bytes){
+        var e = {device:this, reportId:reportId, data:new DataView(new Uint8Array(bytes).buffer)};
+        (listeners.inputreport||[]).forEach(function(f){ f(e); });
+      }
+    }, desc);
+  }
+
+  var hdev = mockDevice(pedalDescriptor());
+  var mh = mockHid([hdev]);
+  var hs = I.hidSource({hid: mh});
+  check("reports supported when navigator.hid exists", hs.supported()===true);
+  check("driver/pairing requirements are stated up front, not after a failure",
+    /localhost/.test(hs.requirements) && /udev|driver/.test(hs.requirements), hs.requirements.slice(0,60)+"…");
+
+  var hmgr = I.createManager({source: hs, clock: clock, storage: memStore()});
+  ["confirm","next","stop"].forEach(function(a){ hmgr.registerAction(a,a,["on-screen"]); });
+  var hfired = []; hmgr.on("action", function(e){ hfired.push(e); });
+  hmgr.start(0);
+
+  // everything after this point needs the async getDevices() bootstrap to settle.
+  // A macrotask flushes the whole microtask queue, including promise adoption.
+  function tick(){ return new Promise(function(r){ setTimeout(r, 0); }); }
+  var asyncTail = tick().then(function(){
+    hmgr.reconcile();
+    check("previously-granted device is enumerated without a prompt",
+      Object.keys(hmgr.devices()).length===1, Object.keys(hmgr.devices()).join(","));
+    check("the granted device is opened (a closed device emits no reports)",
+      hs._tracked()[0].opened===true);
+    var id = Object.keys(hmgr.devices())[0];
+    check("capabilities surfaced to the manager come from the descriptor",
+      hmgr.devices()[id].capabilities.buttons===3, JSON.stringify(hmgr.devices()[id].capabilities));
+
+    hmgr.bind(id,"b0","confirm"); hmgr.bind(id,"b2","stop");
+    var before = hfired.length;
+    t = 9000; hdev._report(0, [0b00000001]); hmgr.sample();   // pedal 1 down
+    hdev._report(0, [0b00000000]); hmgr.sample();             // released
+    check("a real input report drives the bound action",
+      hfired.length===before+1 && hfired[hfired.length-1].actionId==="confirm",
+      JSON.stringify(hfired.slice(-1).map(function(f){return f.actionId;})));
+
+    before = hfired.length;
+    t = 9500; hdev._report(0, [0b00000100]); hmgr.sample();   // third pedal
+    hdev._report(0, [0b00000000]); hmgr.sample();
+    check("a different button on the same report maps to a different action",
+      hfired[hfired.length-1].actionId==="stop", hfired[hfired.length-1].actionId);
+
+    // disconnect via the HID event, not a poll
+    mh._emit("disconnect", {device: hdev});
+    hmgr.reconcile();
+    check("HID disconnect event is detected immediately",
+      hmgr.status().state==="disconnected", hmgr.status().state);
+    check("fallback still reaches every action after a HID disconnect", (function(){
+      hmgr.trigger("stop","on-screen");
+      return hfired[hfired.length-1].via==="on-screen";
+    })());
+    check("mapping survives the HID disconnect",
+      hmgr.mappingFor(id).b0==="confirm", JSON.stringify(hmgr.mappingFor(id)));
+
+    grp("WebHID · permission");
+    var denyHid = mockHid([]); denyHid._next = [];      // chooser closed with nothing picked
+    var dmgr = I.createManager({source: I.hidSource({hid: denyHid}), clock: clock, storage: memStore()});
+    dmgr.registerAction("confirm","confirm",["on-screen"]);
+    check("a connect control is offered only when the browser can prompt",
+      dmgr.canRequestDevice()===true);
+    return dmgr.requestDevice().then(function(res){
+      check("closing the chooser without picking is treated as denial, not an error",
+        res.ok===false && res.reason==="denied", JSON.stringify(res));
+      check("the app stays fully usable after denial", (function(){
+        var fired=[]; dmgr.on("action",function(e){fired.push(e);});
+        dmgr.trigger("confirm","on-screen");
+        return fired.length===1 && dmgr.hardwareOnlyActions().length===0;
+      })());
+      check("denied status explains what to do without blaming the user",
+        /Everything still works/.test(dmgr.status().message), dmgr.status().message);
+
+      grp("WebHID · absent");
+      var noHid = I.createManager({source: I.hidSource({hid:null}), clock:clock, storage:memStore()});
+      noHid.registerAction("confirm","confirm",["on-screen"]);
+      check("no navigator.hid → reports unsupported, does not throw",
+        noHid.status().state==="unsupported", noHid.status().state);
+      check("no connect control is offered when it could not work",
+        noHid.canRequestDevice()===false);
+      check("unsupported still leaves every action reachable",
+        noHid.hardwareOnlyActions().length===0);
+
+      grp("Composite source");
+      var comp = I.compositeSource([I.mockSource([pedal("gp",2)]), I.hidSource({hid: mockHid([mockDevice(pedalDescriptor())])})]);
+      var cmgr = I.createManager({source: comp, clock: clock, storage: memStore()});
+      cmgr.start(0);
+      return tick().then(function(){
+        cmgr.reconcile();
+        check("gamepad-class and HID devices are live at the same time",
+          Object.keys(cmgr.devices()).length===2, Object.keys(cmgr.devices()).join(", "));
+        check("composite exposes a prompt when any source can", cmgr.canRequestDevice()===true);
+        check("composite states the requirements of the sources it has",
+          /localhost/.test(cmgr.connectRequirements()));
+      });
+    });
+  });
+
+  // ---- render (waits for the async WebHID tail; __results is set once, at the end) ----
+  function render(){
+    var passed = results.filter(function(x){return x.ok;}).length, total = results.length;
+    var s = document.getElementById("sum");
+    s.textContent = passed+" / "+total+" passed"+(passed===total?"  ✓ all green":"  ✗ FAILURES");
+    s.className = passed===total?"pass":"fail";
+    window.__results = {passed:passed, total:total, cases:results};
+  }
+  asyncTail.then(render, function(err){
+    check("async WebHID suite completed", false, String(err && err.message || err));
+    render();
+  });
+})();
+</script>
+</body>
+</html>

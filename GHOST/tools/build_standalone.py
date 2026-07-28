@@ -10,7 +10,10 @@ import pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 CSS_FILES = ["styles/core.css", "styles/app.css", "styles/views.css"]
-JS_FILES = ["js/lib.js", "js/store.js", "js/world.js", "js/data.js", "js/planner.js",
+# ../shared/* are portfolio-shared libraries and must be inlined too, or
+# ghost.html (the zero-dependency disaster mode) loses the ability resolver.
+JS_FILES = ["../shared/ability-resolver.js", "../shared/input-devices.js",
+            "js/lib.js", "js/store.js", "js/world.js", "js/data.js", "js/planner.js",
             "js/orchestrator.js", "js/onehand.js", "js/engine.js", "js/viz.js",
             "js/ui.js", "js/shell.js", "js/app.js"]
 
@@ -29,7 +32,7 @@ def main():
 
     # body inner, minus the external <script src> tags and their comment
     body_inner = re.search(r"<body>(.*)</body>", index, re.S).group(1)
-    body_inner = re.sub(r'\s*<script src="js/[^"]+"></script>', "", body_inner)
+    body_inner = re.sub(r'\s*<script src="(?:js/|/shared/)[^"]+"></script>', "", body_inner)
     body_inner = re.sub(r"<!-- Classic scripts.*?-->", "", body_inner, flags=re.S)
 
     styles = "\n".join(f"<style>\n{read(f)}\n</style>" for f in CSS_FILES)

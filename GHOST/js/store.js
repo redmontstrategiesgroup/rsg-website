@@ -19,9 +19,14 @@
     "approvals",      // pending / resolved human approvals
     "audit",          // append-only event log
     "verifications",  // verification records (proof a task really happened)
-    "memories",       // scoped memory items
     "notifications",  // operator-facing notifications
   ];
+  /* There is deliberately no "memories" collection. GHOST already has the
+     better substrate: an append-only audit log with verification records. What
+     GHOST would want to "remember" is a query over audit + entities, which
+     cannot drift from the truth the way a second, separately-written store
+     can. A named-but-unwritten memory slot is where an unscoped dumping ground
+     goes later, so it is not left declared. */
 
   let db = null;
   let saveTimer = null;

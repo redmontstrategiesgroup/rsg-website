@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSG · ability resolver tests</title>
+<style>
+  body{background:#06080d;color:#dce6ff;font:14px/1.55 "Segoe UI",system-ui,sans-serif;padding:28px;max-width:960px;margin:0 auto}
+  h1{font-size:16px;letter-spacing:.14em;font-weight:600;margin-bottom:4px}
+  .sub{color:#54628a;font-size:12px;margin-bottom:16px}
+  #sum{font-size:15px;padding:14px 16px;border-radius:10px;border:1px solid #2a3a5f;background:#0e1420;margin-bottom:16px}
+  #sum.pass{border-color:#3ddc97;color:#3ddc97} #sum.fail{border-color:#ff6b7a;color:#ff6b7a}
+  .grp{margin:16px 0 6px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8593b5}
+  .case{padding:8px 12px;margin:4px 0;background:#0e1420;border:1px solid #1c2740;border-left-width:3px;border-radius:0 8px 8px 0;font-size:13px}
+  .case.ok{border-left-color:#3ddc97} .case.no{border-left-color:#ff6b7a;color:#ff9aa6}
+  .n{color:#54628a;font-variant-numeric:tabular-nums;margin-right:6px}
+  code{color:#4da3ff}
+</style>
+</head>
+<body>
+  <h1>RSG · <b>ability resolver</b></h1>
+  <div class="sub">proves different ability profiles produce meaningfully different layouts</div>
+  <div id="sum">running…</div>
+  <div id="out"></div>
+
+<script src="/shared/ability-resolver.js"></script>
+<script>
+(function(){
+  var R = window.RSGAbility;
+  var results = [], out = document.getElementById("out"), group = "";
+  function grp(name){ group = name; var el=document.createElement("div"); el.className="grp"; el.textContent=name; out.appendChild(el); }
+  function check(name, ok, detail){
+    results.push({name:name, ok:!!ok, detail:detail||"", group:group});
+    var el=document.createElement("div"); el.className="case "+(ok?"ok":"no");
+    el.innerHTML='<span class="n">'+String(results.length).padStart(2,"0")+'</span>'+(ok?"✓":"✗")+' '+name+(detail?' — <code>'+String(detail).replace(/</g,"&lt;")+'</code>':"");
+    out.appendChild(el);
+  }
+
+  /* ---------- fixtures ---------- */
+  // A complete capability profile. Tests vary ONE field from this at a time.
+  function cap(over){
+    return Object.assign({
+      hand:"right",
+      fingers:{thumb:true,index:true,middle:true,ring:true,pinky:true},
+      reachMM:95, grip:"moderate", fatigue:"low",
+      precision:"high", permanence:"permanent", inputs:[]
+    }, over||{});
+  }
+  // An application's control requirements — kept separate from the person's profile.
+  var APP = {
+    id:"ghost",
+    surface:{width:360, height:720},
+    actions:[
+      {id:"ask",       label:"Ask GHOST",       frequency:"high",   gesture:"tap"},
+      {id:"map",       label:"System Map",      frequency:"high",   gesture:"tap"},
+      {id:"ops",       label:"Live Ops",        frequency:"medium", gesture:"tap"},
+      {id:"approvals", label:"Approvals",       frequency:"medium", gesture:"tap"},
+      {id:"audit",     label:"Audit",           frequency:"low",    gesture:"tap"},
+      {id:"zoom",      label:"Zoom Map",        frequency:"low",    gesture:"pinch"},
+      {id:"reorder",   label:"Reorder Queue",   frequency:"low",    gesture:"drag"},
+      {id:"stop",      label:"Pause All",       frequency:"low",    gesture:"tap", destructive:true}
+    ]
+  };
+  var r = function(over, app){ return R.resolve(cap(over), app||APP); };
+  function ids(layout){ return layout.placements.map(function(p){return p.actionId;}); }
+  function zoneOf(layout,id){ var p=layout.placements.filter(function(x){return x.actionId===id;})[0]; return p&&p.zone; }
+  function xOf(layout,id){ var p=layout.placements.filter(function(x){return x.actionId===id;})[0]; return p&&p.x; }
+
+  /* ============================================================
+     DIFFERENTIAL — one dimension changes, output must change as predicted
+     ============================================================ */
+  grp("Differential · handedness");
+  var L = r({hand:"left"}), Rr = r({hand:"right"});
+  check("left/right anchor to opposite corners",
+    L.zones.anchor.corner==="bottom-left" && Rr.zones.anchor.corner==="bottom-right",
+    L.zones.anchor.corner+" vs "+Rr.zones.anchor.corner);
+  check("zones mirror: every control's x flips across the surface midline",
+    APP.actions.every(function(a){
+      var lx=xOf(L,a.id), rx=xOf(Rr,a.id);
+      return lx==null||rx==null|| Math.abs((lx - 0) - (360 - rx)) <= 1;
+    }), "ask L="+xOf(L,"ask")+" R="+xOf(Rr,"ask"));
+
+  grp("Differential · precision (tremor / fine control)");
+  var lo = r({precision:"low"}), hi = r({precision:"high"});
+  check("low precision produces larger targets", lo.target.minPx > hi.target.minPx,
+    lo.target.minPx+"px vs "+hi.target.minPx+"px");
+  check("low precision widens spacing MORE than it widens targets",
+    (lo.target.gapPx - hi.target.gapPx) / (lo.target.minPx - hi.target.minPx) >= 0.5,
+    "+"+(lo.target.gapPx-hi.target.gapPx)+"px gap vs +"+(lo.target.minPx-hi.target.minPx)+"px target");
+  check("low precision fits fewer columns on the same surface", lo.columns < hi.columns,
+    lo.columns+" cols vs "+hi.columns);
+
+  grp("Differential · reach");
+  var near = r({reachMM:55}), far = r({reachMM:135});
+  check("limited reach shrinks the comfortable radius",
+    near.zones.comfortable.rMax < far.zones.comfortable.rMax,
+    Math.round(near.zones.comfortable.rMax)+"px vs "+Math.round(far.zones.comfortable.rMax)+"px");
+  check("limited reach relocates controls out of the comfortable zone",
+    near.placements.filter(function(p){return p.zone==="comfortable";}).length <
+    far.placements.filter(function(p){return p.zone==="comfortable";}).length,
+    near.placements.filter(function(p){return p.zone==="comfortable";}).length+" vs "+
+    far.placements.filter(function(p){return p.zone==="comfortable";}).length+" in comfortable");
+
+  grp("Differential · fatigue");
+  var fLo = r({fatigue:"low"}), fHi = r({fatigue:"high"});
+  check("high fatigue reduces the number of actions on screen",
+    fHi.placements.length < fLo.placements.length,
+    fHi.placements.length+" vs "+fLo.placements.length);
+  check("high fatigue defers the remainder rather than dropping it",
+    fHi.deferred.length > 0 && fHi.deferred.length + fHi.placements.length === APP.actions.length,
+    "deferred="+JSON.stringify(fHi.deferred));
+  check("high fatigue persists partial progress", fHi.fatigue.persistPartial && !fLo.fatigue.persistPartial,
+    "persistPartial "+fHi.fatigue.persistPartial+" vs "+fLo.fatigue.persistPartial);
+  check("the fatigue cap never hides a destructive/safety control",
+    ids(fHi).indexOf("stop")>=0 && fHi.deferred.indexOf("stop")<0, "shown: "+ids(fHi).join(", "));
+  check("the cap drops the LEAST FREQUENT, not whatever is declared last",
+    fHi.deferred.every(function(id){
+      var a = APP.actions.filter(function(x){return x.id===id;})[0];
+      return a.frequency==="low";
+    }) && ids(fHi).indexOf("ask")>=0 && ids(fHi).indexOf("map")>=0,
+    "deferred="+fHi.deferred.join(", "));
+
+  grp("Differential · voice");
+  var vOn = r({inputs:["voice"]}), vOff = r({inputs:[]});
+  check("voice available → mappings present", vOn.voice.enabled && Object.keys(vOn.voice.mappings).length===APP.actions.length,
+    Object.keys(vOn.voice.mappings).length+" mappings");
+  check("voice unavailable → no mappings", !vOff.voice.enabled && Object.keys(vOff.voice.mappings).length===0);
+  check("spoken name matches the control's visible label",
+    vOn.voice.mappings.ask.indexOf("ask ghost")>=0, JSON.stringify(vOn.voice.mappings.ask));
+
+  grp("Differential · switch / scanning");
+  var sw = r({inputs:["switch"]}), noSw = r({inputs:[]});
+  check("switch access flags the layout as scan-optimized",
+    sw.sequential.optimizedForScanning && !noSw.sequential.optimizedForScanning);
+  check("frequent actions reachable within a bounded number of steps",
+    sw.sequential.stepsToFrequent <= 2, "stepsToFrequent="+sw.sequential.stepsToFrequent);
+  check("destructive action is last in the traversal order",
+    sw.sequential.order[sw.sequential.order.length-1]==="stop", sw.sequential.order.join(" → "));
+
+  grp("Differential · usable fingers");
+  var one = r({fingers:{thumb:true,index:false,middle:false,ring:false,pinky:false}});
+  var five = r({fingers:{thumb:true,index:true,middle:true,ring:true,pinky:true}});
+  check("one usable finger shows fewer actions than five",
+    one.placements.length < five.placements.length,
+    one.placements.length+" vs "+five.placements.length);
+
+  grp("Differential · grip");
+  check("weak grip produces larger targets than strong",
+    r({grip:"weak"}).target.minPx > r({grip:"strong"}).target.minPx,
+    r({grip:"weak"}).target.minPx+"px vs "+r({grip:"strong"}).target.minPx+"px");
+
+  grp("Differential · permanence (changes output, not just metadata)");
+  var chg = r({permanence:"changing"}), perm = r({permanence:"permanent"}), tmp = r({permanence:"temporary"});
+  check("changing ability → more conservative target size than permanent",
+    chg.target.minPx > perm.target.minPx, chg.target.minPx+"px vs "+perm.target.minPx+"px");
+  check("changing ability → prompts to revisit", chg.fatigue.revisitPrompt && !perm.fatigue.revisitPrompt);
+  check("temporary ability → prior layout preserved to return to",
+    tmp.fatigue.preservePriorLayout && !perm.fatigue.preservePriorLayout);
+
+  /* ============================================================
+     THE NEGATIVE TEST — the one that catches a canned default
+     ============================================================ */
+  grp("Negative · substantially different profiles must not converge");
+  var A = R.resolve(cap({hand:"left", reachMM:55, grip:"weak", fatigue:"high",
+    precision:"low", permanence:"changing", inputs:["voice","switch"],
+    fingers:{thumb:true,index:false,middle:false,ring:false,pinky:false}}), APP);
+  var B = R.resolve(cap({hand:"right", reachMM:135, grip:"strong", fatigue:"low",
+    precision:"high", permanence:"permanent", inputs:[],
+    fingers:{thumb:true,index:true,middle:true,ring:true,pinky:true}}), APP);
+  function shape(l){ return JSON.stringify({t:l.target,c:l.columns,z:Math.round(l.zones.comfortable.rMax),
+    p:l.placements.map(function(x){return [x.actionId,x.zone,x.x,x.y];}),v:l.voice.enabled,f:l.fatigue}); }
+  check("two very different people get different layouts", shape(A) !== shape(B));
+  check("...differing in target size", A.target.minPx !== B.target.minPx, A.target.minPx+" vs "+B.target.minPx);
+  check("...in how many controls are shown", A.placements.length !== B.placements.length, A.placements.length+" vs "+B.placements.length);
+  check("...in anchor corner", A.zones.anchor.corner !== B.zones.anchor.corner);
+  check("...in voice availability", A.voice.enabled !== B.voice.enabled);
+  var diffFields = ["target.minPx","target.gapPx","columns","zones.anchor.corner","voice.enabled","fatigue.maxActions"]
+    .filter(function(path){
+      var g=function(o){ return path.split(".").reduce(function(a,k){return a&&a[k];},o); };
+      return JSON.stringify(g(A))!==JSON.stringify(g(B));
+    });
+  check("difference is broad, not a single cosmetic field", diffFields.length >= 5, diffFields.join(", "));
+
+  /* ============================================================
+     INVARIANTS — property-based over many generated profiles
+     ============================================================ */
+  grp("Invariants · property-based over the full profile space");
+  var hands=["left","right"], grips=["weak","moderate","strong"], fats=["low","med","high"],
+      precs=["low","moderate","high"], perms=["temporary","permanent","changing"],
+      inputSets=[[],["voice"],["switch"],["voice","switch","foot"]], reaches=[45,70,95,120,155];
+  var profiles=[], vio=[], n=0;
+  hands.forEach(function(h){ grips.forEach(function(g){ fats.forEach(function(f){ precs.forEach(function(pr){
+    perms.forEach(function(pm){ inputSets.forEach(function(inp){ reaches.forEach(function(rm){
+      n++;
+      // vary usable fingers deterministically across the sweep (no randomness)
+      var k = n % 5;
+      var fing = {thumb:true,index:k>0,middle:k>1,ring:k>2,pinky:k>3};
+      var layout = R.resolve({hand:h,grip:g,fatigue:f,precision:pr,permanence:pm,inputs:inp,reachMM:rm,fingers:fing}, APP);
+      var chk = R.checkInvariants(layout, APP);
+      if(!chk.ok) vio.push({n:n, v:chk.violations});
+      profiles.push(layout);
+    }); }); }); }); }); }); });
+  check(n+" generated profiles — all six invariants hold on every layout", vio.length===0,
+    vio.length ? JSON.stringify(vio[0]) : n+" profiles, 0 violations");
+
+  check("no layout requires two simultaneous contact points (rule 1)",
+    profiles.every(function(l){ return !l.substitutions.some(function(s){ return ["pinch","two-finger-scroll","modifier-click"].indexOf(s.to)>=0; }); }));
+  check("every drag action has a single-contact substitution (rule 2)",
+    profiles.every(function(l){ return l.substitutions.some(function(s){ return s.actionId==="reorder" && s.to==="stepper"; }); }),
+    "drag → "+profiles[0].substitutions.filter(function(s){return s.actionId==="reorder";})[0].to);
+  check("no confirmation depends on timing (rule 3)",
+    profiles.every(function(l){ return Object.keys(l.safeguards).every(function(k){ return l.safeguards[k].confirm==="two-step-untimed"; }); }));
+  check("destructive action never lands in the comfortable zone (rule 4)",
+    profiles.every(function(l){ return zoneOf(l,"stop")!=="comfortable"; }));
+  check("destructive action never adjacent to a frequent one (rule 4)",
+    profiles.every(function(l){
+      var d=l.placements.filter(function(p){return p.actionId==="stop";})[0]; if(!d) return true;
+      return ["ask","map"].every(function(fid){
+        var f=l.placements.filter(function(p){return p.actionId===fid;})[0];
+        return !f || Math.abs(f.col-d.col)>1 || Math.abs(f.row-d.row)>1;
+      });
+    }));
+  check("destructive action always has undo (rule 6)",
+    profiles.every(function(l){ return l.safeguards.stop && l.safeguards.stop.undo===true; }));
+  check("every action reachable in the sequential order (rule 5)",
+    profiles.every(function(l){ return APP.actions.every(function(a){ return l.sequential.order.indexOf(a.id)>=0; }); }));
+  check("every action has an on-screen route — placed or deferred, never dropped (rule 5)",
+    profiles.every(function(l){ return APP.actions.every(function(a){
+      return l.placements.some(function(x){return x.actionId===a.id;}) || l.deferred.indexOf(a.id)>=0; }); }));
+  check("every action has a spoken name whenever voice is declared (rule 5)",
+    profiles.filter(function(l){return l.voice.enabled;})
+      .every(function(l){ return APP.actions.every(function(a){ return !!l.voice.mappings[a.id]; }); }));
+  check("every target meets the 44px floor regardless of profile",
+    profiles.every(function(l){ return l.target.minPx >= 44 && l.target.gapPx >= 8; }),
+    "min seen "+Math.min.apply(null,profiles.map(function(l){return l.target.minPx;}))+"px");
+
+  /* ============================================================
+     DETERMINISM & PURITY
+     ============================================================ */
+  grp("Determinism");
+  var c = cap({hand:"left", reachMM:72, precision:"low", inputs:["voice"]});
+  check("identical input → byte-identical output across 50 runs", (function(){
+    var first = JSON.stringify(R.resolve(c, APP));
+    for(var i=0;i<50;i++){ if(JSON.stringify(R.resolve(c, APP))!==first) return false; }
+    return true;
+  })());
+  check("resolver does not mutate the capability profile it is given", (function(){
+    var before = JSON.stringify(c); R.resolve(c, APP); return JSON.stringify(c)===before;
+  })());
+  check("resolver does not mutate the application profile", (function(){
+    var before = JSON.stringify(APP); R.resolve(c, APP); return JSON.stringify(APP)===before;
+  })());
+
+  /* ============================================================
+     INCOMPLETE INPUT — must be marked, never silently defaulted
+     ============================================================ */
+  grp("Incomplete input is reported, not papered over");
+  var partial = R.resolve({hand:"left"}, APP);
+  check("missing dimensions are listed in `unresolved`",
+    partial.unresolved.indexOf("precision")>=0 && partial.unresolved.indexOf("fatigue")>=0,
+    partial.unresolved.join(", "));
+  check("supplied dimensions are NOT listed as unresolved", partial.unresolved.indexOf("hand")<0);
+  check("unresolved dimensions fall back conservatively, not to the middle",
+    partial.target.minPx >= r({precision:"low",grip:"weak",fatigue:"high"}).target.minPx - 4,
+    "partial="+partial.target.minPx+"px");
+  check("a fully specified profile has nothing unresolved", r({}).unresolved.length===0,
+    JSON.stringify(r({}).unresolved));
+
+  /* ============================================================
+     EXPLANATION — every decision traceable to the input that caused it
+     ============================================================ */
+  grp("Explanations");
+  var ex = r({hand:"left", precision:"low", fatigue:"high", inputs:["voice"]});
+  check("every layout carries a non-empty `why` trace", ex.why.length>0, ex.why.length+" entries");
+  check("anchor decision cites the hand input",
+    ex.why.some(function(w){ return /anchor/.test(w.decision) && w.input==="hand"; }));
+  check("target size decision cites precision, grip and fatigue",
+    ex.why.some(function(w){ return /^target /.test(w.decision) && /precision/.test(w.because) && /fatigue/.test(w.because); }),
+    (ex.why.filter(function(w){return /^target /.test(w.decision);})[0]||{}).because);
+  check("comfortable radius decision cites reachMM",
+    ex.why.some(function(w){ return /comfortable radius/.test(w.decision) && w.input==="reachMM"; }));
+  check("destructive placement decision is explained",
+    ex.why.some(function(w){ return /stop placed/.test(w.decision); }));
+  check("changing one input changes the explanation, not just the numbers",
+    JSON.stringify(r({precision:"low"}).why) !== JSON.stringify(r({precision:"high"}).why));
+
+  /* ---------- render ---------- */
+  var passed = results.filter(function(x){return x.ok;}).length, total = results.length;
+  var s = document.getElementById("sum");
+  s.textContent = passed+" / "+total+" passed"+(passed===total?"  ✓ all green":"  ✗ FAILURES");
+  s.className = passed===total ? "pass" : "fail";
+  window.__results = {passed:passed, total:total, cases:results};
+})();
+</script>
+</body>
+</html>

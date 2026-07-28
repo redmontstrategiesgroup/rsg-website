@@ -98,6 +98,80 @@ function resize() {
   }
 }
 
+/* ---------------------------------------------------------------
+   Tap-reachable equivalents for every OrbitControls gesture.
+
+   OrbitControls out of the box is orbit = drag, zoom = wheel or PINCH, pan =
+   right-drag or TWO-FINGER drag. That makes inspecting the generated model —
+   the whole point of this app — impossible with one finger, a switch, a dwell
+   pointer or a keyboard. The mouse gestures still work; they just stop being
+   the only way.
+   --------------------------------------------------------------- */
+
+/* Orbit in fixed steps. Discrete beats analogue here: repeatable, reachable
+   from any input, and costs no sustained precision. */
+export function orbitStep(yawDeg, pitchDeg) {
+  if (!controls) return;
+  const off = camera.position.clone().sub(controls.target);
+  const sph = new THREE.Spherical().setFromVector3(off);
+  sph.theta -= (yawDeg || 0) * Math.PI / 180;
+  sph.phi = Math.max(0.05, Math.min(Math.PI - 0.05, sph.phi - (pitchDeg || 0) * Math.PI / 180));
+  camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(sph));
+  camera.lookAt(controls.target);
+  controls.update();
+}
+
+/* Replaces wheel and pinch. */
+export function zoomStep(factor) {
+  if (!controls) return;
+  const off = camera.position.clone().sub(controls.target);
+  const len = Math.max(20, Math.min(3000, off.length() * (factor || 1)));
+  camera.position.copy(controls.target).add(off.setLength(len));
+  controls.update();
+}
+
+/* Replaces right-drag and two-finger drag. */
+export function panStep(dx, dy) {
+  if (!controls) return;
+  const dist = camera.position.distanceTo(controls.target);
+  const step = dist * 0.08;
+  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+  const up = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1);
+  const move = right.multiplyScalar(dx * step).add(up.multiplyScalar(dy * step));
+  camera.position.add(move);
+  controls.target.add(move);
+  controls.update();
+}
+
+/* Named views — one tap lands exactly on a standard orientation, which is
+   more precise than anyone can drag to anyway. */
+const VIEWS = {
+  front: [0, 0], back: [180, 0], left: [-90, 0], right: [90, 0],
+  top: [0, 89], iso: [35, 25]
+};
+export function setView(name) {
+  if (!controls || !VIEWS[name]) return;
+  const [yaw, pitch] = VIEWS[name];
+  const dist = camera.position.distanceTo(controls.target);
+  const sph = new THREE.Spherical(dist, (90 - pitch) * Math.PI / 180, yaw * Math.PI / 180);
+  camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(sph));
+  camera.lookAt(controls.target);
+  controls.update();
+}
+export function viewNames() { return Object.keys(VIEWS); }
+
+/* Diagnostics: lets a test assert the camera actually moved, rather than only
+   that a button exists. */
+export function cameraState() {
+  if (!camera || !controls) return null;
+  const p = camera.position, t = controls.target;
+  return {
+    pos: [Math.round(p.x), Math.round(p.y), Math.round(p.z)],
+    target: [Math.round(t.x), Math.round(t.y), Math.round(t.z)],
+    dist: Math.round(p.distanceTo(t))
+  };
+}
+
 export function setModel(group, { fit = true } = {}) {
   if (model) { scene.remove(model); disposeDeep(model); }
   model = group;

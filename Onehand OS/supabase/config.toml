@@ -1,0 +1,12 @@
+# Supabase CLI config for the rsg-onehand project.
+# project_id is the local project name; `supabase link --project-ref <ref>`
+# is what binds it to the hosted project once it exists.
+project_id = "rsg-onehand"
+
+[functions.registry-sync]
+# The caller is the website's sync job, not a signed-in user. It
+# authenticates with an HMAC signature instead of a user JWT.
+verify_jwt = false
+
+[functions.profile-read]
+verify_jwt = true

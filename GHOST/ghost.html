@@ -813,24 +813,30 @@ table.dt tr:hover td { background: rgba(53,242,230,.03); }
 
 /* ---------- ONEHAND DOCK ---------- */
 body.onehand .vtab, body.onehand .btn, body.onehand .gcmd .go, body.onehand .oh-toggle { transform: none; }
-.oh-dock { position: fixed; z-index: 38; width: 340px; padding: 12px; border: 1px solid #ff9d5c; border-radius: 14px; background: linear-gradient(180deg, rgba(28,18,10,.96), rgba(12,8,6,.97)); box-shadow: 0 30px 80px -20px rgba(0,0,0,.8), 0 0 40px -10px rgba(255,157,92,.4); }
+.oh-dock { position: fixed; z-index: 38; width: min(340px, calc(100vw - 44px)); max-height: calc(100vh - 44px); overflow-y: auto; padding: 12px; border: 1px solid #ff9d5c; border-radius: 14px; background: linear-gradient(180deg, rgba(28,18,10,.96), rgba(12,8,6,.97)); box-shadow: 0 30px 80px -20px rgba(0,0,0,.8), 0 0 40px -10px rgba(255,157,92,.4); }
 .oh-dock.lower-right { right: 22px; bottom: 22px; }
 .oh-dock.lower-left { left: 22px; bottom: 22px; }
 .oh-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .oh-badge { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #ffbe8c; }
 .oh-sub { font-size: 9px; color: var(--text-faint); }
-.oh-x { margin-left: auto; width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--hair); color: var(--text-dim); }
-.oh-ring { position: relative; margin: 6px auto; }
-.oh-item { position: absolute; border-radius: 50%; border: 1.5px solid rgba(255,157,92,.5); background: rgba(40,26,14,.92); color: #ffd9bc; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; transition: all .12s; }
-.oh-item:hover, .oh-item:focus { border-color: #ffbe8c; background: rgba(255,157,92,.22); box-shadow: 0 0 16px -4px #ff9d5c; outline: none; }
-.oh-item.danger { border-color: rgba(255,65,95,.5); color: #ff9db0; }
-.oh-item.danger.armed { background: rgba(255,65,95,.28); animation: blink .5s steps(2) infinite; }
-.oh-ic { font-size: 18px; } .oh-lbl { font-size: 7.5px; letter-spacing: .02em; text-align: center; line-height: 1; }
-.oh-key { position: absolute; top: 3px; right: 5px; font-size: 8px; color: var(--text-faint); font-family: var(--mono); }
-.oh-hub { position: absolute; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; border: 1.5px solid #ff9d5c; background: radial-gradient(circle, rgba(255,157,92,.25), rgba(20,12,8,.9)); }
+.oh-x { margin-left: auto; width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--hair); color: var(--text-dim); }
+/* Reach grid, not a radial arc. Eight targets never fit one comfortable thumb
+   sweep without overlapping, and the overlap grew as the profile asked for
+   bigger targets — the accommodation made aiming harder. A grid guarantees the
+   gap, scans in a predictable order, and survives any target size. */
+.oh-grid { display: grid; gap: 12px; margin: 8px 0; }
+.oh-item { position: relative; border-radius: 16px; border: 1.5px solid rgba(255,157,92,.5); background: rgba(40,26,14,.92); color: #ffd9bc; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px; transition: all .12s; }
+.oh-item:hover, .oh-item:focus-visible { border-color: #ffbe8c; background: rgba(255,157,92,.22); box-shadow: 0 0 16px -4px #ff9d5c; outline: none; }
+/* the destructive control gets its own row and extra separation from the rest */
+.oh-item.danger { border-color: rgba(255,65,95,.5); color: #ff9db0; grid-column: 1/-1; margin-top: 10px; }
+.oh-item.danger.armed { background: rgba(255,65,95,.28); border-color: #ff415f; color: #ffd9e0; }
+.oh-ic { font-size: 20px; } .oh-lbl { font-size: 10px; letter-spacing: .02em; text-align: center; line-height: 1.15; }
+.oh-key { position: absolute; top: 4px; right: 6px; font-size: 9px; color: var(--text-faint); font-family: var(--mono); }
 .oh-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; padding-top: 8px; border-top: 1px solid rgba(255,157,92,.2); }
 .oh-aid { font-size: 9px; color: var(--text-faint); }
-.oh-swap { margin-left: auto; font-size: 9px; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,157,92,.4); color: #ffbe8c; }
+/* a lost device is never announced quietly — silence is the worst behaviour here */
+.oh-alert { color: #ffb454; font-weight: 700; }
+.oh-swap { margin-left: auto; font-size: 11px; min-height: 44px; padding: 4px 14px; border-radius: 10px; border: 1px solid rgba(255,157,92,.4); color: #ffbe8c; }
 /* enlarge primary targets while OneHand active */
 body.onehand .gcmd input { padding: 13px 14px; font-size: 14px; }
 body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
@@ -898,6 +904,994 @@ body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
 
   
 
+<script>
+/* ============================================================
+   RSG // ability-resolver.js — capability profile → layout specification.
+
+   PURE. (capability, application) → layout. No I/O, no clock, no randomness,
+   no network, no model. Same input, same output, every run.
+
+   That is not fastidiousness: a person builds motor memory around control
+   positions, so a layout that drifts between sessions damages the very
+   accommodation it exists to provide. Determinism is the feature.
+
+   Input describes FUNCTION (what the person can comfortably do), never a
+   diagnosis — a diagnosis predicts need worse and raises the data's
+   sensitivity tier for nothing.
+
+   Consumed by: Onehand OS shell (writes rsg.ability.v1), GHOST (PHANTOM HAND
+   dock). Exposed as window.RSGAbility; consumers guard for its absence so
+   standalone serving degrades instead of breaking.
+   ============================================================ */
+(function (root) {
+  "use strict";
+
+  /* ---------- stated constants (not per-device tuning) ---------- */
+  var PX_PER_MM   = 3.0;   // CSS px per mm of comfortable thumb sweep
+  var BASE_TARGET = 44;    // floor for any target, before ability scaling
+  var BASE_GAP    = 8;     // floor for clear space between neighbours
+  var STRETCH_K   = 1.35;  // stretch zone extends to 1.35× the comfortable radius
+  var MARGIN      = 14;    // surface edge inset
+
+  var FINGERS = ["thumb", "index", "middle", "ring", "pinky"];
+
+  /* Gesture taxonomy. The resolver never emits a gesture outside SINGLE_OK. */
+  var SINGLE_OK   = ["tap", "stepper", "menu", "button", "switch", "voice", "foot"];
+  var MULTI       = ["pinch", "two-finger-scroll", "modifier-click"];
+  var TIMED       = ["double-tap", "timed-hold"];
+  var DRAGGING    = ["drag", "slider"];
+
+  /* Every excluded gesture has a single-contact, untimed replacement. */
+  var SUBSTITUTION = {
+    "drag":              "stepper",
+    "slider":            "stepper",
+    "pinch":             "button",
+    "two-finger-scroll": "button",
+    "modifier-click":    "menu",
+    "long-press":        "menu",
+    "double-tap":        "tap",
+    "timed-hold":        "tap"
+  };
+
+  /* Conservative fallbacks. Used ONLY alongside an `unresolved` entry — the
+     engine never silently substitutes a default and calls the job done. */
+  var CONSERVATIVE = {
+    hand: "right", reachMM: 70, grip: "weak", fatigue: "high",
+    precision: "low", permanence: "changing", inputs: []
+  };
+
+  function has(o, k) { return o && Object.prototype.hasOwnProperty.call(o, k) && o[k] != null; }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function oneOf(v, list, fallback) { return list.indexOf(v) >= 0 ? v : fallback; }
+
+  /* ============================================================
+     1. Normalize the capability profile.
+     Anything absent is recorded in `unresolved` and filled conservatively,
+     so the caller can ask rather than be quietly misserved.
+     ============================================================ */
+  function normalize(cap) {
+    cap = cap || {};
+    var unresolved = [], why = [];
+
+    function take(key, list) {
+      if (!has(cap, key)) {
+        unresolved.push(key);
+        why.push({ decision: key + "=" + CONSERVATIVE[key], because: "not supplied — most conservative value used", input: null });
+        return CONSERVATIVE[key];
+      }
+      return list ? oneOf(cap[key], list, CONSERVATIVE[key]) : cap[key];
+    }
+
+    var fingers = {};
+    var fingersGiven = has(cap, "fingers") && typeof cap.fingers === "object";
+    if (!fingersGiven) {
+      unresolved.push("fingers");
+      why.push({ decision: "fingers=thumb only", because: "not supplied — most conservative value used", input: null });
+    }
+    FINGERS.forEach(function (f) {
+      fingers[f] = fingersGiven ? !!cap.fingers[f] : (f === "thumb");
+    });
+    var fingerCount = FINGERS.filter(function (f) { return fingers[f]; }).length || 1;
+
+    var reach = has(cap, "reachMM") && typeof cap.reachMM === "number"
+      ? clamp(cap.reachMM, 40, 160) : take("reachMM");
+
+    return {
+      hand:       take("hand", ["left", "right"]),
+      fingers:    fingers,
+      fingerCount: fingerCount,
+      reachMM:    reach,
+      grip:       take("grip", ["weak", "moderate", "strong"]),
+      fatigue:    take("fatigue", ["low", "med", "high"]),
+      precision:  take("precision", ["low", "moderate", "high"]),
+      permanence: take("permanence", ["temporary", "permanent", "changing"]),
+      inputs:     has(cap, "inputs") && Array.isArray(cap.inputs) ? cap.inputs.slice() : take("inputs"),
+      _unresolved: unresolved,
+      _why: why
+    };
+  }
+
+  /* ============================================================
+     2. Target sizing. Precision is the dominant driver (it is what makes a
+     target hard to hit); grip and fatigue add on top. Kept separate so a
+     differential test can move one and see only its own contribution.
+     ============================================================ */
+  function sizing(p, why) {
+    var precAdd  = { low: 20, moderate: 8,  high: 0 }[p.precision];
+    var gripAdd  = { weak: 8,  moderate: 4, strong: 0 }[p.grip];
+    var fatAdd   = { high: 12, med: 6,      low: 0 }[p.fatigue];
+    var permAdd  = p.permanence === "changing" ? 4 : 0;  // headroom for a worse day
+
+    var minPx = BASE_TARGET + precAdd + gripAdd + fatAdd + permAdd;
+
+    /* Spacing matters more than size: a mis-hit costs an undo, a miss costs a
+       retry. Low precision widens the gap faster than it widens the target. */
+    var gapPx = BASE_GAP + { low: 12, moderate: 4, high: 0 }[p.precision]
+                         + { high: 6, med: 3, low: 0 }[p.fatigue];
+
+    why.push({ decision: "target " + minPx + "px", because: "precision=" + p.precision + " (+" + precAdd + "), grip=" + p.grip + " (+" + gripAdd + "), fatigue=" + p.fatigue + " (+" + fatAdd + ")" + (permAdd ? ", permanence=changing (+" + permAdd + ")" : ""), input: "precision,grip,fatigue,permanence" });
+    why.push({ decision: "gap " + gapPx + "px", because: "spacing scales with precision=" + p.precision + " and fatigue=" + p.fatigue, input: "precision,fatigue" });
+
+    return { minPx: minPx, gapPx: gapPx };
+  }
+
+  /* ============================================================
+     3. Reach zones, mirrored by handedness. Radii come straight from the
+     person's own reported sweep, so a smaller reach genuinely shrinks the
+     comfortable region rather than restyling it.
+     ============================================================ */
+  function zones(p, surface, why) {
+    var comfortableR = p.reachMM * PX_PER_MM;
+    var corner = p.hand === "left" ? "bottom-left" : "bottom-right";
+    why.push({ decision: "anchor " + corner, because: "hand=" + p.hand, input: "hand" });
+    why.push({ decision: "comfortable radius " + Math.round(comfortableR) + "px", because: "reachMM=" + p.reachMM + " × " + PX_PER_MM + "px/mm", input: "reachMM" });
+    return {
+      anchor: { corner: corner, x: p.hand === "left" ? MARGIN : surface.width - MARGIN, y: surface.height - MARGIN },
+      comfortable: { rMax: comfortableR },
+      stretch:     { rMin: comfortableR, rMax: comfortableR * STRETCH_K },
+      avoid:       { rMin: comfortableR * STRETCH_K }
+    };
+  }
+
+  function zoneAt(z, dist) {
+    if (dist <= z.comfortable.rMax) return "comfortable";
+    if (dist <= z.stretch.rMax) return "stretch";
+    return "avoid";
+  }
+
+  /* ============================================================
+     4. Placement. Slots are laid out from the anchor corner outward; distance
+     from the anchor decides the zone. Frequent actions claim the nearest
+     slots; destructive actions are pushed past the comfortable radius AND
+     away from any frequent neighbour.
+     ============================================================ */
+  function slotGeometry(i, cols, pitch, z, surface) {
+    var col = i % cols, row = Math.floor(i / cols);
+    var dx = (col + 0.5) * pitch, dy = (row + 0.5) * pitch;
+    return {
+      col: col, row: row,
+      x: z.anchor.corner === "bottom-left" ? z.anchor.x + dx : z.anchor.x - dx,
+      y: z.anchor.y - dy,
+      dist: Math.sqrt(dx * dx + dy * dy)
+    };
+  }
+  function adjacent(a, b) { return Math.abs(a.col - b.col) <= 1 && Math.abs(a.row - b.row) <= 1; }
+
+  function place(p, app, size, z, surface, why) {
+    var pitch = size.minPx + size.gapPx;
+    var usable = surface.width - MARGIN * 2;
+    var cols = Math.max(1, Math.floor((usable + size.gapPx) / pitch));
+
+    /* Fewer usable fingers and higher fatigue mean fewer things on screen at
+       once — the count is an ability output, not a design preference. */
+    var cap = p.fatigue === "high" ? 5 : p.fingerCount <= 1 ? 6 : 8;
+    var actions = (app.actions || []).slice();
+    var rank = { high: 0, medium: 1, low: 2 };
+
+    /* The cap drops the LEAST FREQUENT, never whatever happens to be declared
+       last. Destructive actions are always placed: they live in the avoid zone
+       and cost no comfortable real estate, and silently hiding a stop control
+       behind a submenu because a person is tired is not a safe trade. */
+    var frequent = actions.filter(function (a) { return !a.destructive; })
+      .sort(function (a, b) { return (rank[a.frequency] || 1) - (rank[b.frequency] || 1); });
+    var destructive = actions.filter(function (a) { return a.destructive; });
+    var deferred = frequent.slice(cap).map(function (a) { return a.id; });
+    frequent = frequent.slice(0, cap);
+    if (deferred.length) why.push({ decision: "defer " + deferred.length + " action(s) to a submenu", because: "fatigue=" + p.fatigue + ", usable fingers=" + p.fingerCount + " → cap " + cap + "; least-frequent deferred first", input: "fatigue,fingers" });
+
+    var placements = [], used = [];
+    frequent.forEach(function (a, i) {
+      var g = slotGeometry(i, cols, pitch, z, surface);
+      placements.push({ actionId: a.id, zone: zoneAt(z, g.dist), order: i, col: g.col, row: g.row, x: Math.round(g.x), y: Math.round(g.y), dist: Math.round(g.dist) });
+      used.push(g);
+    });
+
+    /* A destructive action must clear the comfortable zone and must not touch
+       a frequent one. Walk outward until both hold — never place and hope. */
+    destructive.forEach(function (a) {
+      var i = frequent.length, g, ok = false, guard = 0;
+      while (!ok && guard++ < 400) {
+        g = slotGeometry(i, cols, pitch, z, surface);
+        var clearsComfort = zoneAt(z, g.dist) !== "comfortable";
+        var noFrequentNeighbour = used.every(function (u) { return !adjacent(g, u); });
+        if (clearsComfort && noFrequentNeighbour) ok = true; else i++;
+      }
+      placements.push({ actionId: a.id, zone: zoneAt(z, g.dist), order: i, col: g.col, row: g.row, x: Math.round(g.x), y: Math.round(g.y), dist: Math.round(g.dist), destructive: true });
+      used.push(g);
+      why.push({ decision: a.id + " placed in the " + zoneAt(z, g.dist) + " zone", because: "destructive actions are kept out of the comfortable zone and away from frequent ones", input: "destructive" });
+    });
+
+    return { placements: placements, cols: cols, pitch: pitch, deferred: deferred, cap: cap };
+  }
+
+  /* ============================================================
+     5. Interaction substitutions, voice, sequential order, safeguards.
+     ============================================================ */
+  function substitutions(app, why) {
+    var subs = [];
+    (app.actions || []).forEach(function (a) {
+      var g = a.gesture || "tap";
+      if (SINGLE_OK.indexOf(g) >= 0) return;
+      var to = SUBSTITUTION[g] || "tap";
+      subs.push({ actionId: a.id, from: g, to: to });
+      why.push({ decision: a.id + ": " + g + " → " + to, because: g + " needs two contacts, sustained precision, or timing", input: "gesture" });
+    });
+    return subs;
+  }
+
+  function voiceFor(p, app, why) {
+    var enabled = p.inputs.indexOf("voice") >= 0;
+    if (!enabled) return { enabled: false, mappings: {} };
+    var m = {};
+    (app.actions || []).forEach(function (a) {
+      /* The spoken name must be what is written on the control — a voice user
+         says what they see, not what an aria-label says. */
+      var phrases = [String(a.label || a.id).toLowerCase()];
+      (a.voice || []).forEach(function (v) { if (phrases.indexOf(v) < 0) phrases.push(v); });
+      m[a.id] = phrases;
+    });
+    why.push({ decision: "voice mappings for " + Object.keys(m).length + " actions", because: "inputs include voice", input: "inputs" });
+    return { enabled: true, mappings: m };
+  }
+
+  function sequential(p, app, why) {
+    var rank = { high: 0, medium: 1, low: 2 };
+    var order = (app.actions || []).slice()
+      .sort(function (a, b) {
+        if (!!a.destructive !== !!b.destructive) return a.destructive ? 1 : -1;  // destructive last
+        return (rank[a.frequency] || 1) - (rank[b.frequency] || 1);
+      })
+      .map(function (a) { return a.id; });
+
+    var freq = (app.actions || []).filter(function (a) { return a.frequency === "high" && !a.destructive; });
+    var stepsToFrequent = freq.length ? Math.max.apply(null, freq.map(function (a) { return order.indexOf(a.id) + 1; })) : 0;
+    var scanning = p.inputs.indexOf("switch") >= 0 || p.inputs.indexOf("foot") >= 0;
+    if (scanning) why.push({ decision: "sequential order fixed, frequent actions within " + stepsToFrequent + " steps", because: "inputs include switch/foot — traversal cost is the real cost", input: "inputs" });
+    return { order: order, stepsToFrequent: stepsToFrequent, optimizedForScanning: scanning };
+  }
+
+  function safeguards(app, placements, size, why) {
+    var out = {};
+    (app.actions || []).filter(function (a) { return a.destructive; }).forEach(function (a) {
+      var pl = placements.filter(function (x) { return x.actionId === a.id; })[0];
+      out[a.id] = {
+        /* Untimed on purpose: an expiring confirm window punishes exactly the
+           slower, less predictable movement this engine exists to serve. */
+        confirm: "two-step-untimed",
+        separationPx: size.gapPx * 2,
+        undo: true,
+        zone: pl ? pl.zone : "avoid"
+      };
+      why.push({ decision: a.id + " guarded by an untimed two-step confirm with undo", because: "destructive action", input: "destructive" });
+    });
+    return out;
+  }
+
+  function fatiguePlan(p, cap, why) {
+    var plan = {
+      maxActions: cap,
+      persistPartial: p.fatigue !== "low",
+      targetBonus: { high: 12, med: 6, low: 0 }[p.fatigue],
+      revisitPrompt: p.permanence === "changing",
+      preservePriorLayout: p.permanence === "temporary"
+    };
+    if (plan.persistPartial) why.push({ decision: "partial progress persisted", because: "fatigue=" + p.fatigue + " — sessions get interrupted", input: "fatigue" });
+    if (plan.revisitPrompt) why.push({ decision: "prompt to revisit the profile", because: "permanence=changing", input: "permanence" });
+    if (plan.preservePriorLayout) why.push({ decision: "prior layout preserved for return", because: "permanence=temporary", input: "permanence" });
+    return plan;
+  }
+
+  /* ============================================================
+     6. Resolve.
+     ============================================================ */
+  function resolve(capability, application) {
+    var app = application || { id: "unknown", actions: [] };
+    var surface = app.surface || { width: 360, height: 720 };
+    var p = normalize(capability);
+    var why = p._why.slice();
+
+    var size = sizing(p, why);
+    var z = zones(p, surface, why);
+    var pl = place(p, app, size, z, surface, why);
+
+    return {
+      app: app.id,
+      surface: surface,
+      zones: z,
+      target: { minPx: size.minPx, gapPx: size.gapPx },
+      columns: pl.cols,
+      placements: pl.placements,
+      deferred: pl.deferred,
+      substitutions: substitutions(app, why),
+      voice: voiceFor(p, app, why),
+      sequential: sequential(p, app, why),
+      safeguards: safeguards(app, pl.placements, size, why),
+      fatigue: fatiguePlan(p, pl.cap, why),   /* cap comes from place(), never recomputed */
+      unresolved: p._unresolved,
+      why: why
+    };
+  }
+
+  /* ============================================================
+     7. Invariants. Asserted on every generated layout — these are not advice
+     to whoever writes the rules, they are a gate the generator cannot pass
+     while violating them.
+     ============================================================ */
+  function checkInvariants(layout, application) {
+    var app = application || { actions: [] };
+    var actions = app.actions || [];
+    var v = [];
+    var subFor = {};
+    layout.substitutions.forEach(function (s) { subFor[s.actionId] = s.to; });
+
+    actions.forEach(function (a) {
+      var effective = subFor[a.id] || a.gesture || "tap";
+
+      if (MULTI.indexOf(effective) >= 0)
+        v.push({ rule: 1, actionId: a.id, msg: "requires two simultaneous contact points: " + effective });
+
+      if (DRAGGING.indexOf(effective) >= 0)
+        v.push({ rule: 2, actionId: a.id, msg: "drag is the only path: " + effective });
+
+      if (TIMED.indexOf(effective) >= 0)
+        v.push({ rule: 3, actionId: a.id, msg: "depends on timing: " + effective });
+
+      /* 5 — reachable by every declared input method.
+         Only what this layer can actually back is asserted here: a spoken name
+         when voice is declared, a place in the traversal order, and an
+         on-screen route (placed, or deferred to a submenu). Reachability by
+         *hardware* — pedal, switch — is not knowable from a layout: it depends
+         on a device being present and bound, which input-devices.js enforces
+         separately by refusing to bind any action lacking a non-hardware path.
+         Asserting it here would be claiming a guarantee this layer cannot
+         keep, which is how the "foot-pedal = confirm" label came to be shown
+         for people who had never connected a pedal. */
+      if (layout.voice.enabled && !layout.voice.mappings[a.id])
+        v.push({ rule: 5, actionId: a.id, msg: "voice is available but this action has no spoken name" });
+      if (layout.sequential.order.indexOf(a.id) < 0)
+        v.push({ rule: 5, actionId: a.id, msg: "absent from the sequential traversal order" });
+      var onScreen = layout.placements.some(function (x) { return x.actionId === a.id; })
+                  || layout.deferred.indexOf(a.id) >= 0;
+      if (!onScreen)
+        v.push({ rule: 5, actionId: a.id, msg: "no on-screen route: neither placed nor deferred to a submenu" });
+
+      // 6 — reversible
+      if (a.destructive && !(layout.safeguards[a.id] && layout.safeguards[a.id].undo))
+        v.push({ rule: 6, actionId: a.id, msg: "destructive action without undo" });
+    });
+
+    // 3 — no safeguard may be timed
+    Object.keys(layout.safeguards).forEach(function (id) {
+      if (/timed(?!-)/.test(layout.safeguards[id].confirm) && layout.safeguards[id].confirm !== "two-step-untimed")
+        v.push({ rule: 3, actionId: id, msg: "timed confirmation: " + layout.safeguards[id].confirm });
+    });
+
+    // 4 — destructive never adjacent to frequent, never in the comfortable zone
+    var byId = {};
+    layout.placements.forEach(function (x) { byId[x.actionId] = x; });
+    var freqIds = actions.filter(function (a) { return a.frequency === "high" && !a.destructive; }).map(function (a) { return a.id; });
+    actions.filter(function (a) { return a.destructive; }).forEach(function (a) {
+      var d = byId[a.id];
+      if (!d) return;
+      if (d.zone === "comfortable")
+        v.push({ rule: 4, actionId: a.id, msg: "destructive action sits in the comfortable zone" });
+      freqIds.forEach(function (fid) {
+        var f = byId[fid];
+        if (f && Math.abs(f.col - d.col) <= 1 && Math.abs(f.row - d.row) <= 1)
+          v.push({ rule: 4, actionId: a.id, msg: "destructive action is adjacent to frequent action " + fid });
+      });
+    });
+
+    return { ok: v.length === 0, violations: v };
+  }
+
+  var API = {
+    resolve: resolve,
+    checkInvariants: checkInvariants,
+    normalize: normalize,
+    constants: { PX_PER_MM: PX_PER_MM, BASE_TARGET: BASE_TARGET, BASE_GAP: BASE_GAP, STRETCH_K: STRETCH_K, MARGIN: MARGIN },
+    FINGERS: FINGERS
+  };
+
+  root.RSGAbility = API;
+  if (typeof module === "object" && module.exports) module.exports = API;
+})(typeof window !== "undefined" ? window : this);
+
+</script>
+<script>
+/* ============================================================
+   RSG // input-devices.js — capability-based input hardware layer.
+
+   Designed against one assumption: THE DEVICE WILL DISCONNECT AT THE WORST
+   MOMENT, and for some people it is their only way to operate the software.
+   A silent drop is not an inconvenience, it is a lockout they may not be able
+   to resolve unaided.
+
+   So: detect disconnects immediately, say so unmistakably, preserve state, and
+   never let hardware be the only path to any action — `bind()` refuses to map
+   an action that has no non-hardware fallback registered.
+
+   Devices are described by CAPABILITIES (button/axis counts, analog, haptics),
+   never by model name, so an unfamiliar pedal or switch works on first
+   connection.
+
+   The device source and the clock are injected, so every failure path —
+   disconnect mid-action, reconnect, reduced capabilities, permission denial —
+   is exercisable without real hardware. See input-devices-test.html.
+
+   Exposed as window.RSGInput.
+   ============================================================ */
+(function (root) {
+  "use strict";
+
+  var STATES = ["unsupported", "no-device", "connected", "disconnected", "denied"];
+
+  /* ---------- default source: the Gamepad API ----------
+     Chosen because it needs no permission prompt and is what most assistive
+     pedals/switches that aren't keyboard-emulating present as. Pedals that
+     emulate a keyboard need no source at all — they arrive as key events, and
+     the keyboard fallback already covers them. */
+  function gamepadSource() {
+    return {
+      supported: function () {
+        return typeof navigator !== "undefined" && typeof navigator.getGamepads === "function";
+      },
+      list: function () {
+        if (!this.supported()) return [];
+        var pads = [];
+        try { pads = Array.prototype.slice.call(navigator.getGamepads() || []); } catch (e) { return []; }
+        return pads.filter(Boolean).map(function (g) {
+          return {
+            id: "gp:" + g.index,
+            /* Ask the device what it has. Never infer from the class — a
+               one-button pedal and a 16-button controller both arrive here. */
+            capabilities: {
+              buttons: (g.buttons || []).length,
+              axes: (g.axes || []).length,
+              analog: (g.buttons || []).some(function (b) { return b && typeof b.value === "number" && b.value > 0 && b.value < 1; }),
+              haptics: !!(g.vibrationActuator || (g.hapticActuators && g.hapticActuators.length))
+            },
+            buttons: (g.buttons || []).map(function (b) { return !!(b && b.pressed); }),
+            axes: (g.axes || []).slice()
+          };
+        });
+      },
+      /* Connect/disconnect arrive as window events; polling `list()` also
+         catches them, so both paths converge on reconcile(). */
+      subscribe: function (onChange) {
+        if (typeof root.addEventListener !== "function") return function () {};
+        var f = function () { onChange(); };
+        root.addEventListener("gamepadconnected", f);
+        root.addEventListener("gamepaddisconnected", f);
+        return function () {
+          root.removeEventListener("gamepadconnected", f);
+          root.removeEventListener("gamepaddisconnected", f);
+        };
+      }
+    };
+  }
+
+  /* ============================================================
+     HID report parsing — pure helpers, exported for test.
+
+     WebHID hands back raw report bytes plus a descriptor of what the bits
+     mean. Usage pages identify what an input IS: 0x09 = Button,
+     0x01 = Generic Desktop (0x30..0x38 are the axes). Reading the descriptor
+     rather than hard-coding byte offsets is what lets an unfamiliar pedal work
+     on first connection.
+     ============================================================ */
+  var USAGE_BUTTON = 0x09, USAGE_DESKTOP = 0x01;
+  function pageOf(usage) { return (usage >>> 16) & 0xffff; }
+  function idOf(usage) { return usage & 0xffff; }
+
+  /* Usages are either an explicit list or an inclusive range. */
+  function itemUsages(item, limit) {
+    if (item.isRange && item.usageMinimum != null && item.usageMaximum != null) {
+      var out = [], n = Math.min(item.usageMaximum - item.usageMinimum + 1, limit || 64);
+      for (var i = 0; i < n; i++) out.push(item.usageMinimum + i);
+      return out;
+    }
+    return (item.usages || []).slice();
+  }
+
+  /* Little-endian bit read, LSB-first within each byte — how HID packs fields. */
+  function readBits(view, bitOffset, bitLength) {
+    var v = 0;
+    for (var i = 0; i < bitLength; i++) {
+      var b = bitOffset + i, byteIndex = b >> 3;
+      if (byteIndex >= view.byteLength) return v;      // report shorter than the descriptor claims
+      v |= ((view.getUint8(byteIndex) >> (b & 7)) & 1) << i;
+    }
+    return v;
+  }
+  function signed(raw, size, min) {
+    if (min >= 0 || size <= 0) return raw;
+    var half = Math.pow(2, size - 1);
+    return raw >= half ? raw - Math.pow(2, size) : raw;
+  }
+
+  /* Walk the descriptor once and record where each button/axis lives.
+     Bit cursors are kept PER REPORT ID: items in different reports each start
+     at bit 0 of their own report. */
+  function layoutFor(device) {
+    var byReport = {}, cursor = {};
+    (device.collections || []).forEach(function (c) {
+      (c.inputReports || []).forEach(function (rep) {
+        var id = rep.reportId || 0;
+        var entry = byReport[id] || (byReport[id] = { buttons: [], axes: [] });
+        if (cursor[id] == null) cursor[id] = 0;
+        (rep.items || []).forEach(function (item) {
+          var size = item.reportSize || 0, count = item.reportCount || 0;
+          var us = itemUsages(item, count);
+          var page = us.length ? pageOf(us[0]) : (item.usagePage || 0);
+          for (var i = 0; i < count; i++) {
+            var off = cursor[id] + i * size;
+            if (page === USAGE_BUTTON) entry.buttons.push({ bit: off, size: size });
+            else if (page === USAGE_DESKTOP) {
+              var u = us[i] != null ? idOf(us[i]) : 0;
+              if (u >= 0x30 && u <= 0x38)
+                entry.axes.push({ bit: off, size: size, min: item.logicalMinimum || 0, max: item.logicalMaximum || 0 });
+            }
+          }
+          cursor[id] += size * count;
+        });
+      });
+    });
+    return byReport;
+  }
+
+  /* Capabilities come from the descriptor, never from vendor/product IDs. */
+  function describeHID(device) {
+    var lay = layoutFor(device), buttons = 0, axes = 0, analog = false;
+    Object.keys(lay).forEach(function (id) {
+      buttons += lay[id].buttons.length;
+      axes += lay[id].axes.length;
+      if (lay[id].axes.some(function (a) { return a.size > 1; })) analog = true;
+    });
+    return {
+      buttons: buttons, axes: axes, analog: analog,
+      /* HID haptics need an output-report handshake we do not perform, so this
+         is reported false rather than guessed from the presence of output
+         reports. Under-claiming beats a capability that isn't there. */
+      haptics: false
+    };
+  }
+
+  /* ============================================================
+     WebHID source. Chromium-only, secure-context-only.
+     ============================================================ */
+  function hidSource(opts) {
+    opts = opts || {};
+    /* hasOwnProperty, not `||`: passing hid:null must mean "there is no HID
+       here", not "fall back to navigator.hid". Otherwise the unsupported path
+       can never be reached on a browser that happens to have WebHID. */
+    var hid = Object.prototype.hasOwnProperty.call(opts, "hid")
+      ? opts.hid
+      : (typeof navigator !== "undefined" ? navigator.hid : null);
+    var tracked = [], subs = [], bootstrapped = false, seq = 0;
+
+    function fire() { subs.forEach(function (f) { try { f(); } catch (e) {} }); }
+    function find(device) {
+      for (var i = 0; i < tracked.length; i++) if (tracked[i].device === device) return tracked[i];
+      return null;
+    }
+    function onInputReport(e) {
+      var t = find(e.device || (e.target));
+      if (!t) return;
+      var lay = t.layout[e.reportId || 0];
+      if (!lay || !e.data) return;
+      lay.buttons.forEach(function (b, i) { t.buttons[i] = readBits(e.data, b.bit, b.size) !== 0; });
+      lay.axes.forEach(function (a, i) {
+        var raw = signed(readBits(e.data, a.bit, a.size), a.size, a.min);
+        t.axes[i] = a.max > a.min ? ((raw - a.min) / (a.max - a.min)) * 2 - 1 : raw;
+      });
+      fire();
+    }
+    function track(device) {
+      if (find(device)) return;
+      var caps = describeHID(device);
+      var t = {
+        device: device,
+        key: "hid:" + (device.vendorId || 0) + ":" + (device.productId || 0) + ":" + (seq++),
+        layout: layoutFor(device), caps: caps,
+        buttons: new Array(caps.buttons).fill(false),
+        axes: new Array(caps.axes).fill(0),
+        opened: false, error: null
+      };
+      tracked.push(t);
+      try { device.addEventListener("inputreport", onInputReport); } catch (e) {}
+      /* A granted device still arrives closed — no reports until it is opened. */
+      if (device.opened) { t.opened = true; }
+      else if (typeof device.open === "function") {
+        Promise.resolve().then(function () { return device.open(); })
+          .then(function () { t.opened = true; fire(); },
+                function (err) { t.error = String((err && err.message) || err); fire(); });
+      }
+      fire();
+    }
+    function untrack(device) {
+      var t = find(device);
+      if (!t) return;
+      try { device.removeEventListener("inputreport", onInputReport); } catch (e) {}
+      tracked = tracked.filter(function (x) { return x !== t; });
+      fire();
+    }
+    function bootstrap() {
+      if (bootstrapped || !hid || typeof hid.getDevices !== "function") return;
+      bootstrapped = true;
+      /* Previously-granted devices come back without a prompt — this IS the
+         persisted pairing, so a returning user is not asked again. */
+      Promise.resolve().then(function () { return hid.getDevices(); })
+        .then(function (ds) { (ds || []).forEach(track); fire(); }, function () {});
+    }
+
+    return {
+      supported: function () { return !!(hid && typeof hid.getDevices === "function"); },
+      list: function () {
+        bootstrap();
+        return tracked.filter(function (t) { return !t.error; }).map(function (t) {
+          return { id: t.key, capabilities: t.caps, buttons: t.buttons.slice(), axes: t.axes.slice(), opened: t.opened };
+        });
+      },
+      subscribe: function (onChange) {
+        subs.push(onChange);
+        var onConnect = function (e) { track(e.device); }, onDisconnect = function (e) { untrack(e.device); };
+        if (hid && typeof hid.addEventListener === "function") {
+          hid.addEventListener("connect", onConnect);
+          hid.addEventListener("disconnect", onDisconnect);
+        }
+        return function () {
+          subs = subs.filter(function (f) { return f !== onChange; });
+          if (hid && typeof hid.removeEventListener === "function") {
+            hid.removeEventListener("connect", onConnect);
+            hid.removeEventListener("disconnect", onDisconnect);
+          }
+        };
+      },
+      /* MUST be called from a user gesture — the browser rejects it otherwise.
+         An empty result means the person closed the chooser: a normal outcome,
+         reported as denial rather than an error. */
+      request: function (options) {
+        if (!hid || typeof hid.requestDevice !== "function")
+          return Promise.reject(new Error("WebHID is not available in this browser"));
+        return Promise.resolve(hid.requestDevice({ filters: (options && options.filters) || [] }))
+          .then(function (ds) {
+            if (!ds || !ds.length) throw new Error("No device was selected");
+            ds.forEach(track);
+            fire();
+            return ds.length;
+          });
+      },
+      requirements: "Chromium-based browser over HTTPS or localhost. On Linux the device needs udev read/write permission for your user; on Windows a vendor driver may claim the device and hide it from the browser.",
+      _tracked: function () { return tracked; }
+    };
+  }
+
+  /* Merge several sources so a gamepad-class controller and a HID pedal can be
+     live at the same time. */
+  function compositeSource(sources) {
+    var live = (sources || []).filter(function (s) { return s && s.supported(); });
+    return {
+      supported: function () { return live.length > 0; },
+      list: function () {
+        return live.reduce(function (acc, s) { return acc.concat(s.list() || []); }, []);
+      },
+      subscribe: function (f) {
+        var offs = live.map(function (s) { return s.subscribe(f); });
+        return function () { offs.forEach(function (o) { if (o) o(); }); };
+      },
+      request: function (o) {
+        var able = live.filter(function (s) { return typeof s.request === "function"; });
+        if (!able.length) return Promise.reject(new Error("No source in this browser can prompt for a device"));
+        return able[0].request(o);
+      },
+      requirements: live.map(function (s) { return s.requirements; }).filter(Boolean).join(" "),
+      sources: live
+    };
+  }
+
+  /* ---------- mock source, for tests and for the "no hardware here" case ---------- */
+  function mockSource(initial) {
+    var devices = (initial || []).slice(), subs = [];
+    function fire() { subs.forEach(function (f) { f(); }); }
+    return {
+      supported: function () { return true; },
+      list: function () { return devices.map(function (d) { return JSON.parse(JSON.stringify(d)); }); },
+      subscribe: function (f) { subs.push(f); return function () { subs = subs.filter(function (x) { return x !== f; }); }; },
+      /* test controls */
+      _attach: function (d) { devices.push(d); fire(); },
+      _detach: function (id) { devices = devices.filter(function (d) { return d.id !== id; }); fire(); },
+      _press: function (id, i, down) {
+        devices.forEach(function (d) { if (d.id === id) d.buttons[i] = !!down; });
+      },
+      _setDevices: function (list) { devices = list.slice(); fire(); }
+    };
+  }
+
+  /* ============================================================
+     Manager
+     ============================================================ */
+  function createManager(opts) {
+    opts = opts || {};
+    var source  = opts.source || compositeSource([gamepadSource(), hidSource()]);
+    var clock   = opts.clock || function () { return Date.now(); };
+    var store   = opts.storage || (typeof localStorage !== "undefined" ? localStorage : null);
+    var storeKey = opts.storageKey || "rsg.input.mappings.v1";
+
+    var actions = {};          // id -> { id, label, fallbacks: [] }
+    var mappings = load();     // deviceId -> { "b0": actionId | [actionIds] }
+    var devices = {};          // id -> descriptor
+    var prevButtons = {};      // id -> [bool]
+    var lastFire = {};         // id+idx -> ms  (debounce)
+    var listeners = { action: [], status: [], devicechange: [] };
+    var status = { state: source.supported() ? "no-device" : "unsupported", deviceId: null, since: clock(), detail: "" };
+    var debounceMs = opts.debounceMs != null ? opts.debounceMs : 40;
+    var unsub = null, timer = null, started = false;
+
+    function emit(kind, payload) { (listeners[kind] || []).forEach(function (f) { try { f(payload); } catch (e) {} }); }
+    function load() {
+      try { return JSON.parse((store && store.getItem(storeKey)) || "{}") || {}; } catch (e) { return {}; }
+    }
+    function persist() {
+      try { store && store.setItem(storeKey, JSON.stringify(mappings)); return true; } catch (e) { return false; }
+    }
+
+    function setStatus(state, deviceId, detail) {
+      if (STATES.indexOf(state) < 0) state = "unsupported";
+      if (status.state === state && status.deviceId === deviceId) return;
+      status = { state: state, deviceId: deviceId || null, since: clock(), detail: detail || "" };
+      emit("status", describeStatus());
+    }
+
+    /* Status is visible, specific and honest — including the states people
+       actually hit (denied, unsupported) rather than just connected/not. */
+    function describeStatus() {
+      var d = status.deviceId && devices[status.deviceId];
+      return {
+        state: status.state,
+        deviceId: status.deviceId,
+        capabilities: d ? d.capabilities : null,
+        since: status.since,
+        detail: status.detail,
+        /* Always true by construction — bind() will not create a
+           hardware-only action. Surfaced so UI can say so honestly. */
+        fallbackAvailable: true,
+        message: {
+          "unsupported":  "This browser can't talk to input devices. Everything still works on screen and by keyboard.",
+          "no-device":    "No input device connected. Everything works on screen and by keyboard.",
+          "connected":    "Device connected.",
+          "disconnected": "Input device disconnected — your controls still work on screen and by keyboard.",
+          "denied":       "Permission to use the device was declined. Everything still works on screen and by keyboard."
+        }[status.state]
+      };
+    }
+
+    /* ---------- actions & fallbacks ---------- */
+    function registerAction(id, label, fallbacks) {
+      actions[id] = { id: id, label: label || id, fallbacks: (fallbacks || []).slice() };
+      return actions[id];
+    }
+    function addFallback(actionId, method) {
+      if (!actions[actionId]) registerAction(actionId);
+      if (actions[actionId].fallbacks.indexOf(method) < 0) actions[actionId].fallbacks.push(method);
+    }
+
+    /* THE GUARDRAIL, enforced rather than documented: hardware may not become
+       the only route to anything. */
+    function bind(deviceId, inputKey, actionId) {
+      var target = Array.isArray(actionId) ? actionId : [actionId];
+      var missing = target.filter(function (a) {
+        return !actions[a] || actions[a].fallbacks.length === 0;
+      });
+      if (missing.length) {
+        return { ok: false, error: "no-fallback", actions: missing,
+          message: "Refusing to bind " + missing.join(", ") + " to hardware: no non-hardware path is registered for it." };
+      }
+      mappings[deviceId] = mappings[deviceId] || {};
+      mappings[deviceId][inputKey] = Array.isArray(actionId) ? actionId.slice() : actionId;
+      persist();
+      return { ok: true };
+    }
+    function unbind(deviceId, inputKey) {
+      if (mappings[deviceId]) { delete mappings[deviceId][inputKey]; persist(); }
+      return { ok: true };
+    }
+
+    /* A default mapping is a starting point, never a constraint. Derived from
+       capabilities, so an unknown device gets something usable immediately. */
+    function defaultMappingFor(device, order) {
+      var m = {}, n = device.capabilities.buttons, seq = (order || Object.keys(actions));
+      for (var i = 0; i < n && i < seq.length; i++) m["b" + i] = seq[i];
+      return m;
+    }
+    function mappingFor(deviceId) { return JSON.parse(JSON.stringify(mappings[deviceId] || {})); }
+
+    /* ---------- reconcile connect / disconnect ---------- */
+    function reconcile() {
+      if (!source.supported()) { setStatus("unsupported", null); return; }
+      var list = source.list();
+      var seen = {};
+      list.forEach(function (d) { seen[d.id] = true; });
+
+      // disconnects first — detected immediately, not on next input attempt
+      Object.keys(devices).forEach(function (id) {
+        if (!seen[id]) {
+          var gone = devices[id];
+          delete devices[id]; delete prevButtons[id];
+          emit("devicechange", { type: "disconnect", deviceId: id, capabilities: gone.capabilities });
+          /* Mapping is NOT dropped — it must survive reconnection. */
+          setStatus(Object.keys(devices).length ? "connected" : "disconnected",
+                    Object.keys(devices)[0] || null, "device " + id + " went away");
+        }
+      });
+
+      list.forEach(function (d) {
+        var isNew = !devices[d.id];
+        devices[d.id] = d;
+        if (isNew) {
+          if (!mappings[d.id]) { mappings[d.id] = defaultMappingFor(d); persist(); }
+          prevButtons[d.id] = d.buttons.slice();
+          emit("devicechange", { type: "connect", deviceId: d.id, capabilities: d.capabilities, mapping: mappingFor(d.id) });
+          setStatus("connected", d.id, "");
+        }
+      });
+
+      if (!list.length && status.state !== "disconnected" && status.state !== "denied") setStatus("no-device", null);
+    }
+
+    /* ---------- input sampling ---------- */
+    function sample() {
+      if (!source.supported()) return;
+      var list = source.list();
+      list.forEach(function (d) {
+        var prev = prevButtons[d.id] || [];
+        var map = mappings[d.id] || {};
+        d.buttons.forEach(function (down, i) {
+          var was = !!prev[i];
+          if (down && !was) {
+            var key = "b" + i, t = clock(), lastKey = d.id + ":" + key;
+            /* Debounce is deliberate and configurable: tremor produces repeat
+               activations that need filtering, but an aggressive default
+               swallows someone else's intentional fast input. */
+            if (t - (lastFire[lastKey] || -Infinity) < debounceMs) return;
+            lastFire[lastKey] = t;
+            var bound = map[key];
+            if (!bound) return;
+            /* One physical input may trigger a sequence — two switches still
+               need to reach twenty actions. */
+            (Array.isArray(bound) ? bound : [bound]).forEach(function (a) {
+              emit("action", { actionId: a, deviceId: d.id, inputKey: key, at: t, via: "hardware" });
+            });
+          }
+        });
+        prevButtons[d.id] = d.buttons.slice();
+        devices[d.id] = d;
+      });
+    }
+
+    function start(pollMs) {
+      if (started) return;
+      started = true;
+      reconcile();
+      unsub = source.subscribe(function () { reconcile(); });
+      if (typeof setInterval === "function" && pollMs !== 0) {
+        timer = setInterval(function () { reconcile(); sample(); }, pollMs || 16);
+      }
+      return api;
+    }
+    function stop() {
+      started = false;
+      if (unsub) { unsub(); unsub = null; }
+      if (timer) { clearInterval(timer); timer = null; }
+      return api;
+    }
+
+    /* Permission is requested only from an explicit user gesture, and denial
+       is a normal outcome the app stays fully usable through. */
+    function requestPermission(requester) {
+      var p;
+      try { p = requester ? requester() : Promise.resolve(null); }
+      catch (e) { setStatus("denied", null, String(e && e.message || e)); return Promise.resolve({ ok: false, reason: "denied" }); }
+      return Promise.resolve(p).then(function (r) {
+        reconcile();
+        return { ok: true, result: r };
+      }, function (err) {
+        setStatus("denied", null, String(err && err.message || err));
+        return { ok: false, reason: "denied" };
+      });
+    }
+
+    /* Can this browser prompt for a device at all? Drives whether a "connect"
+       control is offered — offering one that cannot work is worse than none. */
+    function canRequestDevice() {
+      /* A source can define request() and still be unusable here (no WebHID in
+         this browser). Offering a connect control that cannot work is worse
+         than offering none. */
+      return typeof source.request === "function" && source.supported();
+    }
+
+    /* What the person needs to have done BEFORE they hit a failure. Shown in
+       the connect flow, not in an error afterwards. */
+    function connectRequirements() { return source.requirements || ""; }
+
+    /* Must be called from a user gesture. */
+    function requestDevice(options) {
+      if (!canRequestDevice())
+        return Promise.resolve({ ok: false, reason: "unsupported",
+          message: "This browser can't prompt for an input device. Everything still works on screen and by keyboard." });
+      return requestPermission(function () { return source.request(options); });
+    }
+
+    var api = {
+      start: start, stop: stop,
+      canRequestDevice: canRequestDevice,
+      connectRequirements: connectRequirements,
+      requestDevice: requestDevice,
+      reconcile: reconcile, sample: sample,
+      registerAction: registerAction, addFallback: addFallback,
+      actions: function () { return JSON.parse(JSON.stringify(actions)); },
+      bind: bind, unbind: unbind, mappingFor: mappingFor, defaultMappingFor: defaultMappingFor,
+      devices: function () { return JSON.parse(JSON.stringify(devices)); },
+      status: describeStatus,
+      setDebounceMs: function (n) { debounceMs = Math.max(0, n | 0); return api; },
+      debounceMs: function () { return debounceMs; },
+      requestPermission: requestPermission,
+      /* Fire an action from a non-hardware path. Same event shape, so nothing
+         downstream can accidentally treat the fallback as second class. */
+      trigger: function (actionId, via) {
+        emit("action", { actionId: actionId, deviceId: null, inputKey: null, at: clock(), via: via || "fallback" });
+      },
+      on: function (kind, fn) {
+        if (!listeners[kind]) listeners[kind] = [];
+        listeners[kind].push(fn);
+        return function () { listeners[kind] = listeners[kind].filter(function (f) { return f !== fn; }); };
+      },
+      /* Auditable: which actions would be unreachable without hardware? Must
+         always be empty. */
+      hardwareOnlyActions: function () {
+        return Object.keys(actions).filter(function (id) { return actions[id].fallbacks.length === 0; });
+      }
+    };
+    return api;
+  }
+
+  var API = {
+    createManager: createManager,
+    gamepadSource: gamepadSource,
+    hidSource: hidSource,
+    compositeSource: compositeSource,
+    mockSource: mockSource,
+    /* default stack: gamepad needs no prompt, HID covers pedals and switches
+       that aren't keyboard-emulating */
+    defaultSource: function () { return compositeSource([gamepadSource(), hidSource()]); },
+    STATES: STATES,
+    hid: { layoutFor: layoutFor, describeHID: describeHID, readBits: readBits, itemUsages: itemUsages, signed: signed }
+  };
+  root.RSGInput = API;
+  if (typeof module === "object" && module.exports) module.exports = API;
+})(typeof window !== "undefined" ? window : this);
+
+</script>
 <script>
 /* ============================================================
    GHOST // lib.js — core helpers, reactive store, event bus
@@ -1018,9 +2012,14 @@ body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
     "approvals",      // pending / resolved human approvals
     "audit",          // append-only event log
     "verifications",  // verification records (proof a task really happened)
-    "memories",       // scoped memory items
     "notifications",  // operator-facing notifications
   ];
+  /* There is deliberately no "memories" collection. GHOST already has the
+     better substrate: an append-only audit log with verification records. What
+     GHOST would want to "remember" is a query over audit + entities, which
+     cannot drift from the truth the way a second, separately-written store
+     can. A named-but-unwritten memory slot is where an unscoped dumping ground
+     goes later, so it is not left declared. */
 
   let db = null;
   let saveTimer = null;
@@ -2174,45 +3173,186 @@ body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
 
   let active = null;   // active profile
   let dock = null;
+  let input = null;    // RSGInput manager — real device state, never a checkbox
+
+  /* Hardware is wired here, but it is never the only path: every action is
+     registered with its on-screen dock button and its number key as fallbacks
+     BEFORE anything is bound to a device. RSGInput refuses the bind otherwise. */
+  function ensureInput() {
+    if (input || !window.RSGInput) return input;
+    /* gamepad-class (no prompt) + WebHID (prompt, covers pedals and switches
+       that don't emulate a keyboard) */
+    input = window.RSGInput.createManager({
+      source: window.RSGInput.defaultSource(),
+      storageKey: "ghost.input.mappings.v1"
+    });
+    ACTIONS.forEach((a, i) => {
+      input.registerAction(a.act, a.label, ["on-screen", "keyboard:" + (i + 1)]);
+    });
+    input.on("action", (e) => {
+      const item = ACTIONS.filter(a => a.act === e.actionId)[0];
+      if (item) dispatch(item);
+    });
+    input.on("status", () => paintDeviceStatus());
+    input.on("devicechange", () => paintDeviceStatus());
+    return input;
+  }
+
+  /* The requirements are stated BEFORE the chooser opens, not in an error
+     afterwards — "pair it in system settings first" is useless as a failure
+     message. requestDevice() is called synchronously from this click so the
+     browser still sees a user gesture. */
+  function connectDevice() {
+    if (!input) return;
+    const el = dock && dock.querySelector("#oh-dev");
+    if (el) { el.textContent = "… " + input.connectRequirements(); el.className = "oh-aid"; }
+    input.requestDevice().then((res) => {
+      if (!res.ok && el) {
+        el.className = "oh-aid oh-alert";
+        el.textContent = "⚠ " + (res.message || input.status().message);
+      }
+      paintDeviceStatus();
+    });
+  }
+
+  /* Status is specific and honest — connected/none/disconnected/denied — and
+     the disconnect notice is on-screen, so dismissing it never needs the
+     device that just went away. */
+  function paintDeviceStatus() {
+    const el = dock && dock.querySelector("#oh-dev");
+    if (!el || !input) return;
+    const s = input.status();
+    const ico = { "connected": "🎮", "disconnected": "⚠", "denied": "⚠", "no-device": "○", "unsupported": "○" }[s.state];
+    el.textContent = ico + " " + (s.state === "connected"
+      ? "device connected · " + s.capabilities.buttons + " button" + (s.capabilities.buttons === 1 ? "" : "s")
+      : s.message);
+    el.className = "oh-aid" + (s.state === "disconnected" || s.state === "denied" ? " oh-alert" : "");
+  }
+
+  // Shared Onehand OS profile (rsg.ability.v1) → GHOST's count-based shape.
+  // Returns null when the shell hasn't written one.
+  function sharedProfile() {
+    try {
+      const p = JSON.parse(localStorage.getItem("rsg.ability.v1") || "null");
+      if (!p || p.v !== 1) return null;
+      const count = ["thumb", "index", "middle", "ring", "pinky"]
+        .filter(f => p.fingers && p.fingers[f]).length;
+      return {
+        hand: p.hand === "left" ? "left" : "right",
+        thumbReach: (typeof p.reachMM === "number" ? p.reachMM : 95) < 80 ? "limited" : "full",
+        fingers: count || 1,
+        grip: p.grip || "moderate",
+        fatigue: p.fatigue || "low",
+        // passed through untouched — absent means the resolver marks them
+        // unresolved rather than quietly assuming a middle value
+        precision: p.precision,
+        permanence: p.permanence,
+        inputs: Array.isArray(p.inputs) ? p.inputs : [],
+        targetScale: typeof p.targetScale === "number" ? p.targetScale : 1.4,
+      };
+    } catch (e) { return null; }
+  }
 
   function defaultProfile() {
-    return { hand: "right", thumbReach: "limited", fingers: 2, grip: "weak", fatigue: "low", inputs: ["voice", "foot"], targetScale: 1.5 };
+    return sharedProfile() ||
+      { hand: "right", thumbReach: "limited", fingers: 2, grip: "weak", fatigue: "low", inputs: ["voice", "foot"], targetScale: 1.5 };
   }
 
   // the command palette PHANTOM HAND can surface — most-used, low-effort
+  // freq drives which actions survive a fatigue cap and how early they appear
+  // in switch-scanning order — least frequent is deferred first, never whatever
+  // happens to be declared last.
   const ACTIONS = [
-    { act: "ask", ico: "❯", label: "Ask GHOST" },
-    { act: "map", ico: "🗺️", label: "System Map" },
-    { act: "ops", ico: "📡", label: "Live Ops" },
-    { act: "approvals", ico: "✓", label: "Approvals" },
-    { act: "audit", ico: "🧾", label: "Audit" },
-    { act: "workspace", ico: "🖥️", label: "Start Workspace" },
-    { act: "voice", ico: "🎙️", label: "Voice" },
-    { act: "stop", ico: "⛔", label: "Pause All", danger: true },
+    { act: "ask", ico: "❯", label: "Ask GHOST", freq: "high" },
+    { act: "map", ico: "🗺️", label: "System Map", freq: "high" },
+    { act: "ops", ico: "📡", label: "Live Ops", freq: "medium" },
+    { act: "approvals", ico: "✓", label: "Approvals", freq: "high" },
+    { act: "audit", ico: "🧾", label: "Audit", freq: "low" },
+    { act: "workspace", ico: "🖥️", label: "Start Workspace", freq: "low" },
+    { act: "voice", ico: "🎙️", label: "Voice", freq: "medium" },
+    { act: "stop", ico: "⛔", label: "Pause All", freq: "low", danger: true },
   ];
 
-  // build a reach-optimized, fatigue-aware layout from the profile
+  const GAP = 12;   // minimum clear space between neighbouring targets (fallback path)
+
+  // GHOST's control requirements, as the shared resolver consumes them. This is
+  // the *application* half of the contract; the person's capability profile is
+  // the other half and travels with them across apps.
+  function appProfile() {
+    const avail = Math.min(340, (window.innerWidth || 360) - 44);
+    return {
+      id: "ghost",
+      surface: { width: avail, height: window.innerHeight || 720 },
+      actions: ACTIONS.map(a => ({
+        id: a.act, label: a.label,
+        frequency: a.freq || "medium",
+        destructive: !!a.danger,
+        gesture: "tap",
+      })),
+    };
+  }
+
+  // build a reach-optimized, fatigue-aware layout from the profile.
+  // Delegates to the shared resolver (window.RSGAbility) so the capability →
+  // layout mapping lives in one tested place; the inline path below is the
+  // standalone fallback for when the shared library isn't served.
   function generateLayout(profile) {
     profile = profile || active || defaultProfile();
+
+    if (window.RSGAbility) {
+      const app = appProfile();
+      const spec = window.RSGAbility.resolve(toCapability(profile), app);
+      const shown = spec.placements.map(p => p.actionId);
+      return {
+        items: ACTIONS.filter(a => shown.indexOf(a.act) >= 0),
+        targetPx: spec.target.minPx,
+        gapPx: spec.target.gapPx,
+        reach: spec.zones.anchor.corner === "bottom-left" ? "lower-left" : "lower-right",
+        cols: Math.max(1, Math.min(3, spec.columns)),
+        voice: spec.voice.enabled,
+        foot: (profile.inputs || []).includes("foot"),
+        spec,   // full specification, for anything that wants the reasoning
+      };
+    }
+
+    // ---- fallback: no shared resolver available ----
     let items = ACTIONS.slice();
-    // fatigue-high → fewer, larger targets (reduce cognitive + motor load)
     const max = profile.fatigue === "high" ? 5 : profile.fingers <= 1 ? 6 : 8;
     items = items.slice(0, max);
     const targetPx = Math.round(56 * (profile.targetScale || 1.4) * (profile.fatigue === "high" ? 1.15 : 1));
     const reach = profile.hand === "left" ? "lower-left" : "lower-right";
-    // arc of comfortable reach for the chosen hand (degrees)
-    const arc = profile.hand === "left" ? [150, 270] : [270, 390];
+    const avail = Math.min(340, (window.innerWidth || 360) - 44) - 24;
+    const cols = Math.max(1, Math.min(3, Math.floor((avail + GAP) / (targetPx + GAP))));
     return {
-      items, targetPx, reach, arc,
-      stickyMods: profile.grip === "weak" || profile.fingers <= 2,
+      items, targetPx, reach, cols, gapPx: GAP,
       voice: profile.inputs.includes("voice"),
       foot: profile.inputs.includes("foot"),
-      radius: Math.min(150, 96 + items.length * 6),
+    };
+  }
+
+  // GHOST's count-based shape → the resolver's capability vocabulary.
+  function toCapability(p) {
+    const n = p.fingers || 1;
+    const order = ["thumb", "index", "middle", "ring", "pinky"];
+    const fingers = {};
+    order.forEach((f, i) => { fingers[f] = i < n; });
+    return {
+      hand: p.hand, fingers,
+      reachMM: p.thumbReach === "limited" ? 70 : 100,
+      grip: p.grip, fatigue: p.fatigue,
+      precision: p.precision, permanence: p.permanence,
+      inputs: p.inputs || [],
     };
   }
 
   function dispatch(item) {
-    if (item.danger && !item._armed) { item._armed = true; flashArm(item); return; } // 2-step guard
+    disarmAll(item);
+    // 2-step guard on destructive actions. Deliberately NOT on a timer: a
+    // confirm window that expires punishes exactly the slower, less predictable
+    // movement this mode exists to support. The armed state waits indefinitely
+    // and any other action cancels it.
+    if (item.danger && !item._armed) { item._armed = true; armUI(item, true); return; }
+    if (item.danger) { item._armed = false; armUI(item, false); }
     switch (item.act) {
       case "ask": G.bus.emit("oh:action", { type: "focus-command" }); break;
       case "map": G.bus.emit("oh:action", { type: "nav", view: "world" }); break;
@@ -2224,65 +3364,101 @@ body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
       case "stop": G.bus.emit("oh:action", { type: "emergency" }); break;
     }
   }
-  function flashArm(item) {
+  function armUI(item, on) {
     const el = dock && dock.querySelector(`[data-act="${item.act}"]`);
-    if (el) { el.classList.add("armed"); setTimeout(() => { item._armed = false; el.classList.remove("armed"); }, 2200); }
+    if (!el) return;
+    el.classList.toggle("armed", on);
+    const lbl = el.querySelector(".oh-lbl");
+    if (lbl) lbl.textContent = on ? "Tap again to confirm" : item.label;
+    el.setAttribute("aria-label", on ? item.label + " — tap again to confirm" : item.label);
+  }
+  function disarmAll(except) {
+    ACTIONS.forEach(a => { if (a !== except && a._armed) { a._armed = false; armUI(a, false); } });
   }
 
   function renderDock() {
     if (dock) dock.remove();
     const L = generateLayout(active);
-    dock = h("div", { class: "oh-dock " + L.reach, id: "oh-dock" });
+    dock = h("div", { class: "oh-dock " + L.reach, id: "oh-dock", role: "region", "aria-label": "Phantom Hand controls" });
     document.body.appendChild(dock);
 
-    // status header
+    // status header — describes what this layout actually is, nothing more
     dock.appendChild(h("div", { class: "oh-head" }, [
       h("span", { class: "oh-badge" }, "✋ PHANTOM HAND"),
-      h("span", { class: "oh-sub" }, `${active.hand} hand · ${L.stickyMods ? "sticky mods" : "direct"} · reach-opt`),
-      h("button", { class: "oh-x", title: "Exit OneHand", onclick: () => G.onehand.deactivate() }, "✕"),
+      h("span", { class: "oh-sub" }, `${active.hand} hand · ${L.items.length} actions · ${L.targetPx}px targets`),
+      h("button", { class: "oh-x", title: "Exit OneHand", "aria-label": "Exit OneHand mode", onclick: () => G.onehand.deactivate() }, "✕"),
     ]));
 
-    // radial menu in the reach arc
-    const ring = h("div", { class: "oh-ring", style: { width: L.radius * 2 + "px", height: L.radius * 2 + "px" } });
-    const [a0, a1] = L.arc;
+    // reach grid — visual order matches DOM order, so tab and switch-scanning
+    // walk the actions in the same sequence the eye does
+    const grid = h("div", {
+      class: "oh-grid",
+      style: {
+        gridTemplateColumns: `repeat(${L.cols}, minmax(0, 1fr))`,
+        gap: (L.gapPx || 12) + "px",   // spacing is an ability output, not a constant
+      },
+    });
     L.items.forEach((item, i) => {
-      const frac = L.items.length === 1 ? 0.5 : i / (L.items.length - 1);
-      const ang = (a0 + (a1 - a0) * frac) * Math.PI / 180;
-      const x = L.radius + Math.cos(ang) * L.radius - L.targetPx / 2;
-      const y = L.radius + Math.sin(ang) * L.radius - L.targetPx / 2;
       const btn = h("button", {
         class: "oh-item" + (item.danger ? " danger" : ""), data: { act: item.act },
-        style: { width: L.targetPx + "px", height: L.targetPx + "px", left: x + "px", top: y + "px" },
+        style: { minHeight: L.targetPx + "px" },
         title: item.label + "  (press " + (i + 1) + ")",
+        "aria-label": item.label,
         onclick: () => dispatch(item),
       }, [h("span", { class: "oh-ic" }, item.ico), h("span", { class: "oh-lbl" }, item.label), h("span", { class: "oh-key" }, i + 1)]);
-      ring.appendChild(btn);
+      grid.appendChild(btn);
     });
-    // center hub
-    ring.appendChild(h("div", { class: "oh-hub", style: { left: L.radius - 30 + "px", top: L.radius - 30 + "px" } }, "👻"));
-    dock.appendChild(ring);
+    dock.appendChild(grid);
 
     // capability quick-adjust + input aids
+    /* Aids listed here are the ones that actually exist right now. The pedal
+       line reports the real device state rather than the profile checkbox —
+       it previously said "🦶 foot-pedal = confirm" whether or not any pedal
+       had ever been connected. */
     dock.appendChild(h("div", { class: "oh-foot" }, [
       L.voice ? h("span", { class: "oh-aid" }, "🎙️ voice") : null,
-      L.foot ? h("span", { class: "oh-aid" }, "🦶 foot-pedal = confirm") : null,
       h("span", { class: "oh-aid" }, "⌨︎ keys 1–" + L.items.length),
+      h("span", { class: "oh-aid", id: "oh-dev" }, "○ checking for devices…"),
+      /* Only offered when this browser can actually prompt, and the click
+         itself is the user gesture WebHID requires. */
+      (input && input.canRequestDevice())
+        ? h("button", { class: "oh-swap", id: "oh-connect", onclick: connectDevice }, "＋ connect device")
+        : null,
       h("button", { class: "oh-swap", onclick: () => { active.hand = active.hand === "right" ? "left" : "right"; renderDock(); } }, "⇄ swap hand"),
     ]));
+    paintDeviceStatus();
   }
 
   function onKey(e) {
     if (!active) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    // Never swallow digits meant for a text field — the dock's own "Ask GHOST"
+    // action focuses the command bar, so stealing them broke typing outright.
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
     const n = parseInt(e.key, 10);
     const L = generateLayout(active);
     if (n >= 1 && n <= L.items.length) { e.preventDefault(); dispatch(L.items[n - 1]); }
   }
+
+  // The shell is the sole writer of rsg.ability.v1; when it changes hand or
+  // target scale, follow it live instead of waiting for a reload.
+  window.addEventListener("storage", (e) => {
+    if (e.key !== "rsg.ability.v1" || !active) return;
+    const p = sharedProfile();
+    if (!p) return;
+    active = p;
+    document.documentElement.style.setProperty("--oh-scale", String(active.targetScale || 1.4));
+    renderDock();
+  });
 
   function activate(profile) {
     active = profile || active || defaultProfile();
     document.body.classList.add("onehand");
     document.documentElement.style.setProperty("--oh-scale", String(active.targetScale || 1.4));
     G.store && G.store.setting("onehand", active);
+    ensureInput();
+    input && input.start();
     renderDock();
     document.addEventListener("keydown", onKey);
     G.bus.emit("onehand", { active: true, profile: active });
@@ -2291,6 +3467,7 @@ body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
     document.body.classList.remove("onehand");
     document.documentElement.style.removeProperty("--oh-scale");
     if (dock) { dock.remove(); dock = null; }
+    input && input.stop();
     document.removeEventListener("keydown", onKey);
     G.store && G.store.setting("onehand", null);
     G.bus.emit("onehand", { active: false });
@@ -2298,7 +3475,9 @@ body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
   }
   function isActive() { return !!active; }
 
-  G.onehand = { defaultProfile, generateLayout, activate, deactivate, isActive, renderDock, get profile() { return active; } };
+  G.onehand = { defaultProfile, generateLayout, activate, deactivate, isActive, renderDock,
+    get profile() { return active; },
+    get input() { return input; } };   // device status/mapping, for diagnostics
 })();
 
 </script>
@@ -2480,7 +3659,8 @@ body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
   }
   function redirect(text) {
     if (!text) return;
-    pushFeed("ORCH", `Redirect received: “${text}”. Re-planning next phase.`, "system");
+    const safe = String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    pushFeed("ORCH", `Redirect received: “${safe}”. Re-planning next phase.`, "system");
     G.bus.emit("redirect", text);
   }
   function terminate() {

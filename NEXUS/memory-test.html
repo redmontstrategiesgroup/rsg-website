@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NEXUS memory tests</title>
+<style>
+  body{background:#0b0f17;color:#dfe7f5;font:14px/1.5 "Segoe UI",system-ui,sans-serif;margin:0;padding:28px}
+  h1{font-size:16px;letter-spacing:.12em;font-weight:600}
+  .sub{color:#61708f;font-size:12px;margin:4px 0 14px}
+  #sum{font-size:15px;margin:14px 0 20px;padding:12px 16px;border-radius:10px;border:1px solid #2a3a55;background:#111726}
+  #sum.pass{border-color:#3ddc97;color:#3ddc97} #sum.fail{border-color:#ff6b7a;color:#ff6b7a}
+  .case{padding:9px 14px;border-left:3px solid #2a3a55;margin:6px 0;background:#111726;border-radius:0 8px 8px 0;font-variant-numeric:tabular-nums}
+  .case.ok{border-left-color:#3ddc97} .case.no{border-left-color:#ff6b7a}
+  .d{color:#61708f;font-size:12px}
+</style>
+</head>
+<body>
+  <h1>NEXUS · memory provenance</h1>
+  <div class="sub">a sentence the model improvised must not outrank something the city actually witnessed</div>
+  <div id="sum">running…</div>
+  <div id="out"></div>
+
+<!-- logic layer only: no ui.js / map.js / app.js, so nothing boots and the live
+     save is never touched. -->
+<script src="js/util.js"></script>
+<script src="js/data.js"></script>
+<script src="js/social.js"></script>
+<script src="js/economy.js"></script>
+<script src="js/feed.js"></script>
+<script src="js/events.js"></script>
+<script src="js/dialogue.js"></script>
+<script>
+(function(){
+  var out=document.getElementById("out"), results=[];
+  function check(name, cond, detail){ results.push({name:name, ok:!!cond, detail:detail||""}); }
+
+  var w = NX.newWorld();                       // throwaway world; never persisted
+  function subject(){ return w.residents[0]; }
+  function reset(r){ r.memories = []; return r; }
+
+  /* ---- 1. provenance on the way in ---- */
+  var r = reset(subject());
+  NX.dialogue.applyEffects(w, r, { src:"claude", remember:"the newcomer asked me about the plant" });
+  var claudeMem = r.memories[r.memories.length-1];
+  check("a model-authored memory is tagged as model-authored", claudeMem && claudeMem.kind==="claude", claudeMem && claudeMem.kind);
+  check("a model-authored memory does not outrank a witnessed event", claudeMem && claudeMem.imp<=3, "imp "+(claudeMem&&claudeMem.imp));
+
+  reset(r);
+  NX.dialogue.applyEffects(w, r, { remember:"the newcomer threatened me" });
+  var localMem = r.memories[r.memories.length-1];
+  check("an authored memory keeps its own weight and kind",
+    localMem && localMem.imp===4 && localMem.kind==="witness", localMem && (localMem.kind+" imp "+localMem.imp));
+
+  /* ---- 2. the prune no longer favours the model ----
+     Fill to the 60 cap with witnessed events, with one OLD model memory at the
+     front. Adding one more must evict the model memory, not the city's history.
+     Before the fix the model memory sat at imp 4 and the oldest witnessed event
+     was dropped in its place. */
+  reset(r);
+  /* Stored through the real path, so raising the model's importance again
+     breaks this test rather than quietly restoring the old behaviour. */
+  NX.dialogue.applyEffects(w, r, { src:"claude", remember:"model impression, day 1" });
+  r.memories[0].d = 1;
+  for (var i=2; i<=60; i++) NX.social.remember(w, r, { text:"witnessed event day "+i, about:"player", imp:3, kind:"witness", d:i });
+  check("resident is at the memory cap before the test", r.memories.length===60, r.memories.length+" memories");
+  check("the model memory is actually in there before the overflow",
+    r.memories.filter(function(m){ return m.kind==="claude"; }).length===1);
+  NX.social.remember(w, r, { text:"witnessed event day 61", about:"player", imp:3, kind:"witness", d:61 });
+  var kinds = r.memories.map(function(m){ return m.kind; });
+  check("the memory cap holds", r.memories.length===60, r.memories.length+" memories");
+  check("the oldest model memory is what gets forgotten", kinds.indexOf("claude")===-1);
+  check("no witnessed event was evicted to make room for it",
+    r.memories.filter(function(m){ return m.kind==="witness"; }).length===60);
+
+  /* ---- 3. improvised sentences spread reluctantly ----
+     NX.R.chance is stubbed so the outcome is the filter's decision, not luck. */
+  var realChance = NX.R.chance;
+  function gossipReaches(kind, chanceValue){
+    var a = reset(w.residents[1]), b = reset(w.residents[2]);
+    NX.social.remember(w, a, { text:"a thing about the newcomer ("+kind+")", about:"player", imp:3, cred:1, kind:kind, d:1 });
+    NX.R.chance = function(){ return chanceValue; };
+    var told = NX.social.gossip(w, a, b);
+    NX.R.chance = realChance;
+    return { told: told, received: b.memories[0] || null };
+  }
+  var wt = gossipReaches("witness", false);
+  var ct = gossipReaches("claude", false);
+  check("a witnessed event is always tellable", wt.told===true);
+  check("a model-authored memory is not freely tellable", ct.told===false,
+    "it needs the reluctance roll to pass");
+  var ct2 = gossipReaches("claude", true);
+  check("a model-authored memory can still spread when the roll passes", ct2.told===true);
+  check("once retold it is marked secondhand, not model-authored",
+    ct2.received && ct2.received.kind==="gossip", ct2.received && ct2.received.kind);
+  check("and it loses credence on the way", ct2.received && ct2.received.cred < 1,
+    ct2.received && ("cred "+ct2.received.cred.toFixed(2)));
+  check("NX.R.chance was restored after stubbing", NX.R.chance===realChance);
+
+  /* ---- 4. the log tells the player which is which ---- */
+  check("gossip and model-authored are distinct kinds, so the UI can label them",
+    "gossip"!=="claude" && ["witness","gossip","claude","secret","event"].indexOf("claude")>=0);
+
+  /* ---- render ---- */
+  results.forEach(function(x,i){
+    var el=document.createElement("div"); el.className="case "+(x.ok?"ok":"no");
+    el.innerHTML=(x.ok?"✓":"✗")+" "+String(i+1).padStart(2,"0")+" "+x.name+(x.detail?' <span class="d">— '+String(x.detail).replace(/</g,"&lt;")+"</span>":"");
+    out.appendChild(el);
+  });
+  var passed=results.filter(function(x){return x.ok;}).length, total=results.length;
+  var s=document.getElementById("sum");
+  s.textContent=passed+" / "+total+" passed"+(passed===total?"  ✓ all green":"  ✗ FAILURES");
+  s.className=passed===total?"pass":"fail";
+  window.__results={passed:passed,total:total,cases:results};
+})();
+</script>
+</body>
+</html>

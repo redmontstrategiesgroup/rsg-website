@@ -129,10 +129,13 @@
     display:flex;flex-direction:column;gap:10px;align-items:center}
   body[data-hand="right"] .cluster{right:18px}
   body[data-hand="left"]  .cluster{left:18px}
+  /* Driven by a body class, not a sibling combinator: #dock and #homeCluster sit
+     BEFORE #stage in the DOM, so "#stage.open ~ #dock" never matched and the
+     ⌂ home button was absent for the whole time an app was running. */
   #homeCluster{display:flex}
   #dock{display:none}
-  #stage.open ~ #dock{display:flex}
-  #stage.open ~ #homeCluster{display:none}
+  body.appopen #dock{display:flex}
+  body.appopen #homeCluster{display:none}
   .tbtn{width:var(--thumb);height:var(--thumb);border-radius:50%;cursor:pointer;
     background:rgba(14,20,32,.9);backdrop-filter:blur(10px);
     border:1px solid var(--line2);color:var(--txt);
@@ -161,7 +164,7 @@
     display:flex;align-items:center;justify-content:space-between;
     padding:14px 0 12px;border-bottom:1px solid var(--line);margin-bottom:4px}
   .sheet-h h2{font-size:14px;letter-spacing:.16em;font-weight:600;text-transform:uppercase}
-  .sheet .close{width:40px;height:40px;border-radius:50%;background:none;border:1px solid var(--line);
+  .sheet .close{width:48px;height:48px;border-radius:50%;background:none;border:1px solid var(--line);
     color:var(--dim);font-size:17px;cursor:pointer;transition:all var(--dur) ease}
   .sheet .close:hover{color:var(--txt);border-color:var(--line2)}
   .grp{margin-top:20px}
@@ -183,8 +186,10 @@
     background:var(--panel2);color:var(--txt)}
   .btn.primary{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600}
   .btn.primary:hover{filter:brightness(1.08)}
-  .btn.ghost{background:transparent;color:var(--dim);flex:0 0 auto;padding:0 16px}
-  .btn.ghost:hover{color:var(--danger);border-color:var(--danger)}
+  /* destructive controls get extra separation — a mis-tap here costs more than a miss */
+  .btn.ghost{background:transparent;color:var(--danger);border-color:var(--line2);
+    flex:0 0 auto;padding:0 16px;margin-left:20px}
+  .btn.ghost:hover{border-color:var(--danger)}
   .btn:hover{border-color:var(--line2)}
 
   .note{color:var(--faint);font-size:11.5px;line-height:1.6;margin-top:11px}
@@ -206,10 +211,18 @@
   .chips button.on{color:var(--txt);border-color:var(--acc);background:var(--panel2)}
   .chips.two button{flex:1 1 45%}
 
-  /* reach slider */
-  .reach-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  /* reach: slider for those who like it, steppers so it is never drag-only */
+  .reach-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
   .reach-head .ttl{margin-bottom:0}
-  .reach-head b{font-size:15px;font-weight:600;color:var(--acc);font-variant-numeric:tabular-nums}
+  .reach-head b{font-size:15px;font-weight:600;color:var(--acc);font-variant-numeric:tabular-nums;flex:none}
+  .stepper{display:flex;align-items:center;gap:10px}
+  .stepper button{flex:0 0 auto;width:52px;min-height:52px;background:var(--bg2);border:1px solid var(--line);
+    border-radius:var(--r-sm);color:var(--txt);font-family:inherit;font-size:20px;cursor:pointer;
+    transition:all var(--dur) ease}
+  .stepper button:hover{border-color:var(--acc)}
+  .stepper input[type=range]{flex:1;min-width:0}
+  .reach-say{color:var(--dim);font-size:12px;margin-top:8px}
+  .reach-say b{color:var(--txt);font-weight:600}
   input[type=range]{width:100%;accent-color:var(--acc);height:44px;cursor:pointer}
 
   @media (max-width:560px){
@@ -217,6 +230,10 @@
     header{flex-direction:row;align-items:center}
     .brand{font-size:18px}
     .clockbox{text-align:right}
+    /* keep a gutter on the thumb-cluster side so tiles never sit under the
+       floating controls — a near-miss on a tile must not hit "switch hand" */
+    body[data-hand="right"] .grid{padding-right:calc(var(--thumb) + 14px)}
+    body[data-hand="left"]  .grid{padding-left:calc(var(--thumb) + 14px)}
   }
   @media (prefers-reduced-motion: reduce){
     *{transition:none!important;animation:none!important}
@@ -256,10 +273,10 @@
   <!-- home thumb cluster: Settings + hand toggle, anchored to the reachable side -->
   <nav id="homeCluster" class="cluster" aria-label="Controls">
     <button id="gear" class="tbtn" title="Settings" aria-label="Settings">
-      <span class="ic">⚙</span><span class="mini">setup</span>
+      <span class="ic">⚙</span><span class="mini">settings</span>
     </button>
     <button id="handQuick" class="tbtn hand" title="Switch hand" aria-label="Switch hand">
-      <span class="ic">✋</span><b id="handQuickL">R</b>
+      <span class="ic">✋</span><b id="handQuickL">R</b><span class="mini">hand</span>
     </button>
   </nav>
 
@@ -269,7 +286,7 @@
       <span class="ic">⌂</span><span class="mini">home</span>
     </button>
     <button id="gear2" class="tbtn" title="Settings" aria-label="Settings">
-      <span class="ic">⚙</span><span class="mini">setup</span>
+      <span class="ic">⚙</span><span class="mini">settings</span>
     </button>
   </nav>
 
@@ -299,6 +316,9 @@
           <button class="btn primary" id="keySave" type="button">Save key</button>
           <button class="btn ghost" id="keyClear" type="button">Clear</button>
         </div>
+        <div class="btn-row" id="keyUndoRow" style="display:none">
+          <button class="btn" id="keyUndo" type="button">↩ Undo clear</button>
+        </div>
         <div class="note" id="keyNote">Stored only in this browser; sent only to <code>api.anthropic.com</code>. Shared by THE FORGE, NEXUS and Observatory — paste it once.</div>
       </div>
 
@@ -323,10 +343,15 @@
 
       <div class="grp">
         <div class="reach-head">
-          <span class="ttl">Comfortable reach</span>
+          <span class="ttl">How far your thumb sweeps</span>
           <b><span id="reachVal">95</span> mm</b>
         </div>
-        <input id="reach" type="range" min="50" max="140" step="5" value="95" aria-label="Comfortable reach in millimetres">
+        <div class="stepper">
+          <button id="reachDown" type="button" aria-label="Less reach">−</button>
+          <input id="reach" type="range" min="50" max="140" step="5" value="95" aria-label="Comfortable thumb reach in millimetres">
+          <button id="reachUp" type="button" aria-label="More reach">+</button>
+        </div>
+        <div class="reach-say">Holding the phone in one hand, you can comfortably reach <b id="reachSay">the lower half of the screen</b>.</div>
       </div>
 
       <div class="grp">
@@ -348,15 +373,50 @@
       </div>
 
       <div class="grp">
+        <span class="ttl">Hitting small things</span>
+        <div class="seg" id="precision" role="group" aria-label="Precision">
+          <button type="button" data-v="low">HARD</button>
+          <button type="button" data-v="moderate">SOMETIMES</button>
+          <button type="button" data-v="high">EASY</button>
+        </div>
+        <div class="note">Covers tremor, shake and fine control. This is what decides how big and how far apart the controls are.</div>
+      </div>
+
+      <div class="grp">
+        <span class="ttl">Is this likely to change?</span>
+        <div class="seg" id="permanence" role="group" aria-label="Whether this is likely to change">
+          <button type="button" data-v="temporary">FOR NOW</button>
+          <button type="button" data-v="changing">CHANGES</button>
+          <button type="button" data-v="permanent">STEADY</button>
+        </div>
+        <div class="note">“For now” keeps your old layout to return to. “Changes” leaves more room and reminds you to re-check.</div>
+      </div>
+
+      <div class="grp">
         <span class="ttl">Input aids</span>
         <div class="chips two" id="inputs" role="group" aria-label="Input aids">
           <button type="button" data-i="voice">🎙️ voice</button>
           <button type="button" data-i="foot">🦶 foot pedal</button>
         </div>
         <div class="btn-row">
-          <button class="btn primary" id="profSave" type="button">Save profile</button>
+          <button class="btn primary" id="profSave" type="button">Done</button>
         </div>
-        <div class="note" id="profNote">Every RSG app adapts to this: THE FORGE lays its hardware out around your hand, GHOST builds its one-handed dock from it.</div>
+        <div class="note" id="profNote">Saved as you go — no need to finish in one sitting. Every RSG app adapts to this: THE FORGE lays its hardware out around your hand, GHOST builds its one-handed dock from it.</div>
+      </div>
+
+      <div class="grp">
+        <span class="ttl">This profile</span>
+        <div class="note" id="profAge">Not saved yet.</div>
+        <div class="btn-row" id="profPriorRow" style="display:none">
+          <button class="btn" id="profPrior" type="button">↩ Back to my steady layout</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="profForget" type="button">Forget my profile</button>
+        </div>
+        <div class="btn-row" id="profUndoRow" style="display:none">
+          <button class="btn" id="profUndo" type="button">↩ Undo forget</button>
+        </div>
+        <div class="note">This describes your body, so it is yours to delete. Forgetting it removes it from this browser and every app goes back to its own defaults — nothing breaks. It is stored only here and never sent anywhere as a profile. One number leaves: when you ask THE FORGE to change a design in your own words, your reach in millimetres goes to <code>api.anthropic.com</code> with that request, because it cannot resize a layout around a reach it has not been told. Nothing else about you is sent — not your hand, fingers, grip, fatigue or anything else on this page.</div>
       </div>
     </div>
   </div>
@@ -400,21 +460,42 @@
     }catch(e){}
     return defaultProfile();
   }
+  var PRIOR="rsg.ability.prior.v1";
+  function snapshot(o){ try{ return JSON.parse(JSON.stringify(o)); }catch(e){ return {}; } }
+  function loadPrior(){
+    try{ var p=JSON.parse(localStorage.getItem(PRIOR)||"null"); return (p && p.v===1) ? p : null; }catch(e){ return null; }
+  }
   var profile=loadProfile();
+  function saveProfile(){ return safeSet(ABILITY, JSON.stringify(profile)); }
 
-  /* hand preference — profile.hand is authoritative; ohos.hand kept as fallback */
+  /* hand preference — profile.hand is authoritative; ohos.hand kept as fallback.
+     The one-tap toggle must write the shared profile too, or the apps keep
+     laying out for the old hand while the shell shows the new one. */
   var hand=profile.hand;
-  function setHand(h){
+  /* `persist` is opt-in so that painting the dock is never the same act as
+     declaring a profile. Booting used to write the whole ability record with
+     default values, which left no way to tell "never told us" apart from
+     "told us they have five working fingers" — and made deletion undoable by
+     the next repaint. */
+  function setHand(h, persist){
     hand=h; profile.hand=h; document.body.setAttribute("data-hand",h);
-    safeSet("ohos.hand",h);   /* dock still updates even if the write is refused */
+    if(persist!==false){
+      safeSet("ohos.hand",h);   /* dock still updates even if the write is refused */
+      /* Update an existing record; never resurrect a forgotten one. Flipping
+         the dock is a shell preference, not a statement about your body — and
+         after "Forget my profile" it must not quietly recreate the record. */
+      if(localStorage.getItem(ABILITY)) saveProfile();
+    }
     $("#sHandL").classList.toggle("on",h==="left");
     $("#sHandR").classList.toggle("on",h==="right");
     $("#handQuickL").textContent = h==="left" ? "L" : "R";
   }
-  $("#sHandL").onclick=function(){setHand("left")};
-  $("#sHandR").onclick=function(){setHand("right")};
+  /* In the settings panel, choosing a hand IS declaring part of the profile,
+     so it commits the record. The dock toggle below deliberately does not. */
+  $("#sHandL").onclick=function(){ setHand("left"); commitProfile(); };
+  $("#sHandR").onclick=function(){ setHand("right"); commitProfile(); };
   $("#handQuick").onclick=function(){ setHand(hand==="right"?"left":"right"); };
-  setHand(hand);
+  setHand(hand, false);
 
   /* ---- settings: shared Anthropic key (rsg.anthropic_key) ---- */
   var KEY="rsg.anthropic_key", keyInput=$("#apiKey"), keyNote=$("#keyNote");
@@ -424,50 +505,178 @@
       ? '<span class="ok">✓ key saved</span> ('+n+' chars) — shared by THE FORGE, NEXUS and Observatory.'
       : 'Stored only in this browser; sent only to <code>api.anthropic.com</code>. Shared by THE FORGE, NEXUS and Observatory — paste it once.';
   }
-  function openSettings(){ keyInput.value=localStorage.getItem(KEY)||""; keyInput.type="password"; keyMsg(); paintProfile(); settings.classList.add("open"); }
-  function closeSettings(){ settings.classList.remove("open"); }
+  /* Modal focus. aria-modal is a promise to assistive tech, not a mechanism:
+     without this, keyboard and switch users tab straight out into the tiles
+     behind the sheet and never find their way back. */
+  var lastFocus=null;
+  /* Nothing covered by an overlay stays tabbable — otherwise Tab wanders onto
+     invisible tiles behind a running app or behind the settings sheet. */
+  function applyInert(){
+    var sOpen=settings.classList.contains("open"), aOpen=stage.classList.contains("open");
+    $("#home").inert=sOpen||aOpen; $("#homeCluster").inert=sOpen||aOpen;
+    $("#dock").inert=sOpen; $("#stage").inert=sOpen;
+  }
+  function openSettings(){
+    lastFocus=document.activeElement;
+    keyInput.value=localStorage.getItem(KEY)||""; keyInput.type="password"; keyMsg(); paintProfile();
+    settings.classList.add("open"); applyInert();
+    $("#setClose").focus();
+  }
+  function closeSettings(){
+    settings.classList.remove("open"); applyInert();
+    if(lastFocus && lastFocus.isConnected) lastFocus.focus();   /* back where they were */
+    lastFocus=null;
+  }
   $("#gear").onclick=openSettings; $("#gear2").onclick=openSettings;
   $("#setClose").onclick=closeSettings;
   settings.addEventListener("click",function(e){ if(e.target===settings) closeSettings(); });
   $("#keyShow").onclick=function(){ keyInput.type = keyInput.type==="password" ? "text" : "password"; };
+  var undoRow=$("#keyUndoRow"), clearedKey=null;
   $("#keySave").onclick=function(){
     var v=keyInput.value.trim();
     if(!v){ keyNote.innerHTML='<span class="warn">Paste a key first, or use Clear.</span>'; keyInput.focus(); return; }
-    if(safeSet(KEY,v))
+    if(safeSet(KEY,v)){
+      clearedKey=null; undoRow.style.display="none";
       keyNote.innerHTML='<span class="ok">✓ saved</span> ('+v.length+' chars) — apps use it on next launch.';
-    else
+    } else
       keyNote.innerHTML='<span class="warn">Couldn\'t save — browser storage is full or blocked.</span> Free up space (close a heavy app tab) and try again.';
   };
+  /* Clear is destructive and a mis-tap is cheap to make — so it is undoable
+     rather than guarded by a confirm dialog full of small adjacent buttons. */
   $("#keyClear").onclick=function(){
-    localStorage.removeItem(KEY); keyInput.value="";
+    var cur=localStorage.getItem(KEY)||"";
+    if(!cur){ keyNote.innerHTML='<span class="warn">There is no saved key to clear.</span>'; return; }
+    clearedKey=cur; localStorage.removeItem(KEY); keyInput.value="";
+    undoRow.style.display="flex";
     keyNote.innerHTML='<span class="ok">✓ cleared.</span> Apps fall back to their own key field / offline mode.';
   };
+  $("#keyUndo").onclick=function(){
+    if(clearedKey===null) return;
+    if(safeSet(KEY,clearedKey)){
+      keyInput.value=clearedKey; clearedKey=null; undoRow.style.display="none"; keyMsg();
+    } else
+      keyNote.innerHTML='<span class="warn">Couldn\'t restore — browser storage is full or blocked.</span>';
+  };
 
-  /* ---- profile editor ---- */
-  function setSeg(id,val){ $$("#"+id+" button").forEach(function(b){ b.classList.toggle("on", b.dataset.v===val); }); }
+  /* ---- profile editor. Every control commits on change: ability shifts through
+     the day, and dialling fatigue back should cost one tap — not a scroll to a
+     Save button 300px below the fold, in a session that may get interrupted. ---- */
+  function setSeg(id,val){ $$("#"+id+" button").forEach(function(b){
+    var on=b.dataset.v===val; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); }); }
+  function reachSay(mm){
+    return mm<= 65 ? "only the bottom corner of the screen"
+         : mm<= 85 ? "the lower third of the screen"
+         : mm<=105 ? "the lower half of the screen"
+         : mm<=125 ? "most of the screen"
+         :           "the whole screen";
+  }
+  function paintReach(v){ $("#reachVal").textContent=v; $("#reachSay").textContent=reachSay(+v); }
   function paintProfile(){
     $$("#fingers button").forEach(function(b){ b.classList.toggle("on", !!profile.fingers[b.dataset.f]); b.setAttribute("aria-pressed", !!profile.fingers[b.dataset.f]); });
-    $("#reach").value=profile.reachMM; $("#reachVal").textContent=profile.reachMM;
+    $("#reach").value=profile.reachMM; paintReach(profile.reachMM);
     setSeg("grip", profile.grip); setSeg("fatigue", profile.fatigue);
+    setSeg("precision", profile.precision); setSeg("permanence", profile.permanence);
     $$("#inputs button").forEach(function(b){ var on=profile.inputs.indexOf(b.dataset.i)>=0; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+    paintMeta();
   }
-  $$("#fingers button").forEach(function(b){ b.setAttribute("aria-pressed","false"); b.onclick=function(){ b.classList.toggle("on"); b.setAttribute("aria-pressed", b.classList.contains("on")); }; });
-  $$("#inputs button").forEach(function(b){ b.setAttribute("aria-pressed","false"); b.onclick=function(){ b.classList.toggle("on"); b.setAttribute("aria-pressed", b.classList.contains("on")); }; });
-  $("#reach").addEventListener("input",function(){ $("#reachVal").textContent=this.value; });
-  $$("#grip button").forEach(function(b){ b.onclick=function(){ setSeg("grip", b.dataset.v); }; });
-  $$("#fatigue button").forEach(function(b){ b.onclick=function(){ setSeg("fatigue", b.dataset.v); }; });
   function segVal(id,def){ var on=$("#"+id+" button.on"); return on?on.dataset.v:def; }
-  $("#profSave").onclick=function(){
+  function commitProfile(){
     var fingers={}; $$("#fingers button").forEach(function(b){ fingers[b.dataset.f]=b.classList.contains("on"); });
     var inputs=[]; $$("#inputs button").forEach(function(b){ if(b.classList.contains("on")) inputs.push(b.dataset.i); });
     var grip=segVal("grip","moderate"), fatigue=segVal("fatigue","low"), reachMM=parseInt($("#reach").value,10);
-    var targetScale = fatigue==="high" ? 1.6 : grip==="weak" ? 1.5 : 1.4;
-    profile=Object.assign(profile,{ v:1, hand:hand, fingers:fingers, reachMM:reachMM, grip:grip, fatigue:fatigue, inputs:inputs, targetScale:targetScale });
+    var precision=segVal("precision",null), permanence=segVal("permanence",null);
+    /* "FOR NOW" is a promise the resolver already makes (preservePriorLayout):
+       keep the layout being stepped away from, so a bad stretch is reversible.
+       Snapshot on the way in, and only once — a second edit while temporary
+       must not overwrite the layout being held for return. */
+    var before=snapshot(profile);
+    if(permanence==="temporary"){ if(before.permanence!=="temporary" && !loadPrior()) safeSet(PRIOR, JSON.stringify(before)); }
+    else localStorage.removeItem(PRIOR);
+    profile=Object.assign(profile,{ v:1, hand:hand, fingers:fingers, reachMM:reachMM, grip:grip,
+      fatigue:fatigue, precision:precision, permanence:permanence, inputs:inputs,
+      updated:new Date().toISOString(),
+      targetScale: fatigue==="high" ? 1.6 : grip==="weak" ? 1.5 : 1.4 });
+    /* Unanswered dimensions are omitted, not guessed — the resolver reports
+       them as unresolved so the gap stays visible instead of being papered
+       over with a middle value nobody chose. */
+    if(!precision) delete profile.precision;
+    if(!permanence) delete profile.permanence;
     var count=Object.keys(fingers).filter(function(k){return fingers[k];}).length;
-    if(safeSet(ABILITY, JSON.stringify(profile)))
+    if(saveProfile())
       $("#profNote").innerHTML='<span class="ok">✓ saved</span> — '+hand+' hand · '+count+' finger'+(count===1?"":"s")+' · '+reachMM+' mm. Apps adapt on next launch.';
     else
       $("#profNote").innerHTML='<span class="warn">Couldn\'t save — browser storage is full or blocked.</span> Free up space and try again.';
+    paintMeta();
+  }
+  $$("#fingers button, #inputs button").forEach(function(b){
+    b.setAttribute("aria-pressed","false");
+    b.onclick=function(){ b.classList.toggle("on"); b.setAttribute("aria-pressed", b.classList.contains("on")); commitProfile(); };
+  });
+  ["grip","fatigue","precision","permanence"].forEach(function(id){
+    $$("#"+id+" button").forEach(function(b){ b.onclick=function(){ setSeg(id, b.dataset.v); commitProfile(); }; });
+  });
+
+  /* reach: the slider stays for anyone who likes it, but dragging is never the
+     only way to set it — steppers work for tap, switch, dwell and voice alike */
+  var reach=$("#reach");
+  reach.addEventListener("input",function(){ paintReach(this.value); });
+  reach.addEventListener("change", commitProfile);
+  function nudgeReach(dir){
+    var step=parseInt(reach.step,10)||5;
+    var v=Math.max(parseInt(reach.min,10), Math.min(parseInt(reach.max,10), parseInt(reach.value,10)+dir*step));
+    reach.value=v; paintReach(v); commitProfile();
+  }
+  $("#reachDown").onclick=function(){ nudgeReach(-1); };
+  $("#reachUp").onclick=function(){ nudgeReach(1); };
+  $("#profSave").onclick=closeSettings;
+
+  /* ---- profile age, revisit nudge, prior layout, deletion ----
+     The resolver emits revisitPrompt (permanence=changing) and
+     preservePriorLayout (permanence=temporary), and the copy above promises
+     both. This is where they become behaviour rather than a field. */
+  var DAY=86400000;
+  var STALE={ changing:30, temporary:14, permanent:0 };   /* 0 = never nag */
+  function daysSince(iso){
+    var t=Date.parse(iso||""); if(isNaN(t)) return null;
+    return Math.floor((Date.now()-t)/DAY);
+  }
+  function ago(d){ return d<=0 ? "today" : d===1 ? "yesterday" : d<30 ? d+" days ago" : d<60 ? "about a month ago" : Math.round(d/30)+" months ago"; }
+  function paintMeta(){
+    var saved=!!localStorage.getItem(ABILITY), d=daysSince(profile.updated);
+    var stale=STALE[profile.permanence]||0;
+    if(!saved) $("#profAge").textContent="Not saved yet.";
+    else if(d===null) $("#profAge").textContent="Saved in this browser.";
+    else if(stale && d>=stale)
+      $("#profAge").innerHTML='<span class="warn">Set '+ago(d)+'.</span> You said this was likely to change — worth a look to check it still fits.';
+    else $("#profAge").textContent="Set "+ago(d)+".";
+    $("#profPriorRow").style.display = loadPrior() ? "" : "none";
+  }
+
+  var forgotten=null;
+  $("#profForget").onclick=function(){
+    if(!localStorage.getItem(ABILITY) && !loadPrior()){
+      $("#profAge").innerHTML='<span class="warn">There is nothing saved to forget.</span>'; return;
+    }
+    forgotten={ profile:localStorage.getItem(ABILITY), prior:localStorage.getItem(PRIOR), hand:localStorage.getItem("ohos.hand") };
+    localStorage.removeItem(ABILITY); localStorage.removeItem(PRIOR); localStorage.removeItem("ohos.hand");
+    profile=defaultProfile(); setHand(profile.hand, false); paintProfile();
+    $("#profUndoRow").style.display=""; $("#profPriorRow").style.display="none";
+    $("#profAge").innerHTML='<span class="ok">✓ forgotten.</span> Every app is back to its own defaults.';
+  };
+  $("#profUndo").onclick=function(){
+    if(!forgotten) return;
+    if(forgotten.profile) safeSet(ABILITY, forgotten.profile);
+    if(forgotten.prior) safeSet(PRIOR, forgotten.prior);
+    if(forgotten.hand) safeSet("ohos.hand", forgotten.hand);
+    profile=loadProfile(); setHand(profile.hand, false); paintProfile();
+    forgotten=null; $("#profUndoRow").style.display="none";
+  };
+  $("#profPrior").onclick=function(){
+    var p=loadPrior(); if(!p) return;
+    localStorage.removeItem(PRIOR);
+    profile=p; setHand(profile.hand);
+    if(saveProfile()){ paintProfile(); $("#profAge").innerHTML='<span class="ok">✓ back to your steady layout.</span>'; }
+    else $("#profAge").innerHTML='<span class="warn">Couldn\'t restore — browser storage is full or blocked.</span>';
   };
 
   /* file:// notice — THE FORGE and NEXUS voice need http */
@@ -500,14 +709,17 @@
     });
     stage.insertBefore(frame, stageErr);
     frame.src=src;
-    stage.classList.add("open");
+    stage.classList.add("open"); document.body.classList.add("appopen"); applyInert();
     document.title=name+" — ONEHAND OS";
+    $("#homeBtn").focus();   /* the way out is the first thing keyboard/switch reaches */
     loadTimer=setTimeout(function(){ showErr(name); }, 9000);
   }
   function goHome(){
     clearTimeout(loadTimer);
-    stage.classList.remove("open"); stageErr.classList.remove("show");
+    stage.classList.remove("open"); document.body.classList.remove("appopen");
+    stageErr.classList.remove("show");
     if(frame){ frame.remove(); frame=null; }
+    applyInert();
     document.title="ONEHAND OS";
   }
   $("#homeBtn").onclick=goHome;

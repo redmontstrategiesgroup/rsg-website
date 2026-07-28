@@ -168,7 +168,7 @@
         </div>
         <button class="btn primary" id="ppl-talk">TALK TO ${NX.esc(r.name.split(" ")[0]).toUpperCase()}</button>
         <h3 class="sec">MEMORY (${r.memories.length})</h3>
-        <div class="memlog">${mems.map((m) => `<div class="mem"><b>d${m.d}</b> ${NX.esc(m.text)}${m.kind === "gossip" ? ' <span style="color:var(--neon2)">· secondhand</span>' : ""}</div>`).join("") || '<div class="mem">Nothing yet. Give them something to remember.</div>'}</div>
+        <div class="memlog">${mems.map((m) => `<div class="mem"><b>d${m.d}</b> ${NX.esc(m.text)}${m.kind === "gossip" ? ' <span style="color:var(--neon2)">· secondhand</span>' : m.kind === "claude" ? ' <span style="color:var(--dim)">· their impression of talking to you</span>' : ""}</div>`).join("") || '<div class="mem">Nothing yet. Give them something to remember.</div>'}</div>
       </div>`;
     $("#ppl-back").onclick = () => { S._showCard = false; UI.renderPeople(); };
     $("#ppl-talk").onclick = () => { UI.selectResident(r.id); UI.openTab("talk"); };

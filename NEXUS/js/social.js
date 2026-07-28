@@ -64,8 +64,12 @@
   S.gossip = function (state, a, b) {
     // guarded knowledge ("secret"-kind memories) rarely gets shared — unless close friends
     const closeness = a.relationships[b.id] || 0;
+    // Model-authored memories are a resident's own impression of a conversation,
+    // not something the city witnessed — they spread, but reluctantly, so an
+    // improvised sentence can't become common knowledge at full credence.
     const tellable = a.memories.filter((m) => m.imp >= 2 && m.cred > 0.3 &&
-      (m.kind !== "secret" || NX.R.chance(closeness > 30 ? 0.12 : 0.03)));
+      (m.kind !== "secret" || NX.R.chance(closeness > 30 ? 0.12 : 0.03)) &&
+      (m.kind !== "claude" || NX.R.chance(0.35)));
     if (!tellable.length) return false;
     // prefer juicy + recent
     tellable.sort((x, y) => (y.imp + y.d / 10) - (x.imp + x.d / 10));
@@ -88,8 +92,8 @@
   };
 
   // seed a rumor about the player into a resident (used by events/dialogue)
-  S.playerRumor = function (state, r, text, imp = 3, cred = 1) {
-    S.remember(state, r, { text, about: "player", cred, imp, kind: "witness" });
+  S.playerRumor = function (state, r, text, imp = 3, cred = 1, kind = "witness") {
+    S.remember(state, r, { text, about: "player", cred, imp, kind });
   };
 
   // witnesses at a location see an event

@@ -2,7 +2,8 @@
 import { defaultSpec, interpretOffline, SPEC_SCHEMA, specFromAI, EXAMPLES, deckConcepts, sharedAbility } from "./spec.js";
 import { layoutSpec } from "./layout.js";
 import { buildDeckModel, buildRepairPart, buildWoodModel } from "./geometry.js";
-import { initViewer, setModel, getModel, setExplode, setSpin, isSpin, setMode as setViewMode, snapshot, onPick } from "./viewer.js";
+import { initViewer, setModel, getModel, setExplode, setSpin, isSpin, setMode as setViewMode, snapshot, onPick,
+         orbitStep, zoomStep, setView, cameraState } from "./viewer.js";
 import { buildElectronics, schematicSVG, wiringSVG } from "./electronics.js";
 import { buildPCB, pcbSVG, gerberFiles } from "./pcb.js";
 import { generateFirmware, highlightC } from "./firmware.js";
@@ -1112,15 +1113,58 @@ function wireUI() {
   });
   $("#finger-picker").querySelectorAll("button").forEach(b => b.onclick = () => { b.classList.toggle("active"); liveRelayout(); });
   $("#reach-range").oninput = () => { $("#reach-val").textContent = $("#reach-range").value + " mm"; liveRelayoutDebounced(); };
+  const nudgeReach = (dir) => {
+    const r = $("#reach-range"), step = parseInt(r.step, 10) || 5;
+    r.value = Math.max(+r.min, Math.min(+r.max, parseInt(r.value, 10) + dir * step));
+    $("#reach-val").textContent = r.value + " mm";
+    liveRelayoutDebounced();
+  };
+  $("#reach-down").onclick = () => nudgeReach(-1);
+  $("#reach-up").onclick = () => nudgeReach(1);
+
+  /* Setup drawer (narrow screens). The same button opens and closes it, so the
+     target never moves mid-task, and it sits on the profile's hand side. */
+  const setupToggle = $("#setup-toggle"), setupScrim = $("#setup-scrim");
+  function setSetupOpen(open) {
+    document.body.classList.toggle("setup-open", open);
+    setupToggle.setAttribute("aria-expanded", String(open));
+    setupToggle.textContent = open ? "✕" : "⚙";
+    setupToggle.setAttribute("aria-label", open ? "Close setup panel" : "Open setup panel");
+    if (setupScrim) setupScrim.hidden = !open;
+  }
+  setupToggle.onclick = () => setSetupOpen(!document.body.classList.contains("setup-open"));
+  if (setupScrim) setupScrim.onclick = () => setSetupOpen(false);
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && document.body.classList.contains("setup-open")) setSetupOpen(false);
+  });
 
   // Seed the ability panel from the shared Onehand OS profile (rsg.ability.v1)
   // so the first forge already fits the user's hand. Panel stays editable.
-  const sa = sharedAbility();
-  if (sa) {
+  function applyAbility(sa) {
+    if (!sa) return;
+    /* Mirror the app's own chrome to the hand the profile names — the drawer
+       button is useless if it lands under the hand that isn't there. */
+    document.body.setAttribute("data-hand", sa.hand === "left" ? "left" : "right");
     $("#seg-hand").querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.v === sa.hand));
     $("#finger-picker").querySelectorAll("button").forEach(b => b.classList.toggle("active", !!sa.fingers[b.dataset.f]));
     $("#reach-range").value = sa.reachMM; $("#reach-val").textContent = sa.reachMM + " mm";
   }
+  applyAbility(sharedAbility());
+
+  // If the shell's profile changes mid-session, offer it — never apply it
+  // silently. Re-laying out the hardware would discard an in-progress design,
+  // and an interrupted session is the normal case here, not the exception.
+  window.addEventListener("storage", (e) => {
+    if (e.key !== "rsg.ability.v1") return;
+    const sa = sharedAbility();
+    if (!sa) return;
+    const btn = document.createElement("button");
+    btn.textContent = "Apply new hand profile (" + sa.hand + ", " + sa.reachMM + " mm)";
+    btn.className = "hint-apply";
+    btn.onclick = () => { applyAbility(sa); btn.remove(); liveRelayout(); };
+    const panel = $("#reach-range").closest(".panel");
+    if (panel && !panel.querySelector(".hint-apply")) panel.appendChild(btn);
+  });
 
   // wood / repair / enclosure inputs
   $("#wood-photo").onchange = e => $("#wood-photo-name").textContent = e.target.files[0]?.name || "";
@@ -1136,6 +1180,24 @@ function wireUI() {
   // workspace tabs / HUD / footer / settings
   $$(".ws-tab").forEach(t => t.onclick = () => selectTab(t.dataset.tab));
   $("#explode-range").oninput = e => setExplode(+e.target.value / 100);
+  const nudgeExplode = (dir) => {
+    const r = $("#explode-range"), step = parseInt(r.step, 10) || 5;
+    r.value = Math.max(+r.min, Math.min(+r.max, parseInt(r.value, 10) + dir * step));
+    setExplode(+r.value / 100);
+  };
+  $("#explode-down").onclick = () => nudgeExplode(-1);
+  $("#explode-up").onclick = () => nudgeExplode(1);
+
+  /* Camera without drag or pinch. 15° steps are repeatable and cost no
+     sustained precision; the presets land exactly on a standard orientation. */
+  $$("#view-presets button").forEach(b => b.onclick = () => setView(b.dataset.view));
+  $("#orbit-left").onclick  = () => orbitStep(-15, 0);
+  $("#orbit-right").onclick = () => orbitStep(15, 0);
+  $("#orbit-up").onclick    = () => orbitStep(0, 15);
+  $("#orbit-down").onclick  = () => orbitStep(0, -15);
+  $("#zoom-in").onclick     = () => zoomStep(0.85);
+  $("#zoom-out").onclick    = () => zoomStep(1.18);
+  $("#view-reset").onclick  = () => setView("iso");
   const modes = { "btn-view-solid": "solid", "btn-view-xray": "xray", "btn-view-wire": "wire" };
   for (const [id, m] of Object.entries(modes)) {
     $("#" + id).onclick = () => {
@@ -1225,6 +1287,9 @@ wireInspection();
 syncPartPanel();
 refreshAIStatus();
 setMode("product");
+/* Diagnostics handle — lets the accessibility checks assert the camera really
+   moves when the tap controls are used, not merely that buttons render. */
+window.FORGE = { cameraState, setView, orbitStep, zoomStep };
 // flagship demo: full pipeline; concept auto-selected and labelled as such,
 // requirements interview intentionally left open so Gate 1 shows real blockers.
 forgeDeck(EXAMPLES[0], { silent: true, autoConcept: true });

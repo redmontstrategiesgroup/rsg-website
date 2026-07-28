@@ -1,2 +1,21 @@
 __pycache__/
 *.pyc
+
+# Local env files. docs/per-app-supabase.md §5 tells you to write each app's
+# project ref and anon key into <app>/.env — the repo had nothing stopping those
+# from being committed. Only the .example templates belong in git.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# "basic website/" is the live site's Next.js source (Vercel project rsg-website)
+# and carries its OWN .git, plus node_modules/ and .next/. A nested repo must not
+# be tracked by this one — committing it would embed a broken gitlink and sweep in
+# build output. It is versioned by its own repo; back that up separately.
+# NOTE: this hides it from `git clean -fd`, but NOT from `git clean -fdx`.
+/basic website/
+
+# Per-developer Claude Code settings (launch.json is shared and stays tracked).
+.claude/settings.local.json
+

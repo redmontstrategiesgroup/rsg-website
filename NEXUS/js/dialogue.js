@@ -402,7 +402,13 @@
     if (fx.rel) NX.social.adjustPlayerRel(state, r, fx.rel);
     else if (!r.metPlayer) NX.social.adjustPlayerRel(state, r, 0.01); // mark met
     if (fx.mood) r.mood = NX.clamp(r.mood + fx.mood, -100, 100);
-    if (fx.remember) NX.social.playerRumor(state, r, fx.remember, 4);
+    /* Model-authored memories enter below authored world events (imp 4) and
+       carry their own kind. At imp 4 they outranked witnessed events under the
+       60-memory prune, so free text the model decided was memorable evicted the
+       city's designed history — and tagged "witness" it read, in the log and in
+       the next prompt, as something the resident had actually seen. */
+    if (fx.remember) NX.social.playerRumor(state, r, fx.remember, fx.src === "claude" ? 3 : 4, 1,
+      fx.src === "claude" ? "claude" : "witness");
 
     switch (fx.action) {
       case "warn_associates": {

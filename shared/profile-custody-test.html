@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSG · profile custody tests</title>
+<style>
+  body{background:#06080d;color:#dce6ff;font:14px/1.55 "Segoe UI",system-ui,sans-serif;padding:28px;max-width:960px;margin:0 auto}
+  h1{font-size:16px;letter-spacing:.14em;font-weight:600;margin-bottom:4px}
+  .sub{color:#54628a;font-size:12px;margin-bottom:16px}
+  #sum{font-size:15px;padding:14px 16px;border-radius:10px;border:1px solid #2a3a5f;background:#0e1420;margin-bottom:16px}
+  #sum.pass{border-color:#3ddc97;color:#3ddc97} #sum.fail{border-color:#ff6b7a;color:#ff6b7a}
+  .grp{margin:16px 0 6px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8593b5}
+  .case{padding:8px 12px;margin:4px 0;background:#0e1420;border:1px solid #1c2740;border-left-width:3px;border-radius:0 8px 8px 0;font-size:13px}
+  .case.ok{border-left-color:#3ddc97} .case.no{border-left-color:#ff6b7a;color:#ff9aa6}
+  .n{color:#54628a;font-variant-numeric:tabular-nums;margin-right:6px}
+  code{color:#4da3ff}
+  #frames{position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px}
+</style>
+</head>
+<body>
+  <h1>RSG · <b>profile custody</b></h1>
+  <div class="sub">the ability profile describes a person's body — prove it is only written when declared, and that deleting it deletes it</div>
+  <div id="sum">running…</div>
+  <div id="out"></div>
+  <div id="frames"></div>
+
+<script>
+(function(){
+  var results=[], out=document.getElementById("out"), group="";
+  function grp(name){ group=name; var el=document.createElement("div"); el.className="grp"; el.textContent=name; out.appendChild(el); }
+  function check(name, ok, detail){
+    results.push({name:name, ok:!!ok, detail:detail||"", group:group});
+    var el=document.createElement("div"); el.className="case "+(ok?"ok":"no");
+    el.innerHTML='<span class="n">'+String(results.length).padStart(2,"0")+'</span>'+(ok?"✓":"✗")+' '+name+(detail?' — <code>'+String(detail).replace(/</g,"&lt;")+'</code>':"");
+    out.appendChild(el);
+  }
+  function finish(){
+    var passed=results.filter(function(x){return x.ok;}).length, total=results.length;
+    var s=document.getElementById("sum");
+    s.textContent=passed+" / "+total+" passed"+(passed===total?"  ✓ all green":"  ✗ FAILURES");
+    s.className=passed===total?"pass":"fail";
+    window.__results={passed:passed,total:total,cases:results};
+  }
+
+  /* These keys live on the shared origin alongside the real user's data, so the
+     suite snapshots and restores them rather than clearing storage. A test that
+     wipes localStorage here would delete the very profile it exists to protect. */
+  var KEYS=["rsg.ability.v1","rsg.ability.prior.v1","ohos.hand"];
+  var saved={};
+  KEYS.forEach(function(k){ saved[k]=localStorage.getItem(k); });
+  function wipe(){ KEYS.forEach(function(k){ localStorage.removeItem(k); }); }
+  function restore(){ KEYS.forEach(function(k){ if(saved[k]===null) localStorage.removeItem(k); else localStorage.setItem(k, saved[k]); }); }
+  function ability(){ try{ return JSON.parse(localStorage.getItem("rsg.ability.v1")||"null"); }catch(e){ return null; } }
+
+  /* Boot the shell in an iframe and drive its real controls. Nothing here
+     re-implements the logic under test. */
+  function shell(){
+    return new Promise(function(res, rej){
+      var f=document.createElement("iframe");
+      f.onload=function(){ setTimeout(function(){ res(f); }, 250); };
+      f.onerror=function(){ rej(new Error("shell failed to load")); };
+      f.src="/Onehand%20OS/index.html";
+      document.getElementById("frames").appendChild(f);
+    });
+  }
+  function q(f,s){ return f.contentDocument.querySelector(s); }
+  function click(f,s){ var el=q(f,s); if(!el) throw new Error("missing control: "+s); el.click(); }
+
+  (async function run(){
+    try{
+      /* ---------- writing only on declaration ---------- */
+      grp("a profile is written only when it is declared");
+      wipe();
+      var f=await shell();
+      check("booting the shell writes no ability record",
+        ability()===null, "keys: "+KEYS.filter(function(k){return localStorage.getItem(k)!==null;}).join(",")||"none");
+      check("'never declared' is distinguishable from a declared default",
+        localStorage.getItem("rsg.ability.v1")===null);
+
+      click(f,"#gear");
+      click(f,'#fingers button[data-f="pinky"]');
+      var p=ability();
+      check("declaring in the panel writes the record", !!p, p&&JSON.stringify(p.fingers));
+      check("the record carries an updated stamp", !!(p&&p.updated), p&&p.updated);
+      check("the stamp parses as a date", !!(p&&!isNaN(Date.parse(p.updated))));
+
+      /* ---------- deletion ---------- */
+      grp("deletion actually deletes");
+      click(f,'#permanence button[data-v="permanent"]');
+      click(f,"#profForget");
+      check("forget removes the ability record", ability()===null);
+      check("forget removes the hand preference too", localStorage.getItem("ohos.hand")===null);
+      click(f,"#handQuick"); click(f,"#handQuick");
+      check("using the dock does not resurrect a forgotten profile", ability()===null,
+        "regression: setHand() used to persist the whole record on every repaint");
+      check("the dock preference still works after forgetting", localStorage.getItem("ohos.hand")!==null);
+      click(f,"#profUndo");
+      check("undo restores the forgotten record", !!ability());
+      check("undo restores it verbatim", ability() && ability().permanence==="permanent");
+
+      /* ---------- preservePriorLayout ---------- */
+      grp("'for now' keeps a layout to return to (preservePriorLayout)");
+      click(f,'#permanence button[data-v="temporary"]');
+      click(f,'#fatigue button[data-v="high"]');
+      var prior=JSON.parse(localStorage.getItem("rsg.ability.prior.v1")||"null");
+      check("stepping to a temporary profile snapshots the steady one", !!prior, prior&&prior.permanence);
+      check("the snapshot holds the pre-change values", prior && prior.fatigue==="low", prior&&prior.fatigue);
+      check("the current profile holds the new values", ability().fatigue==="high");
+      click(f,'#grip button[data-v="weak"]');
+      var prior2=JSON.parse(localStorage.getItem("rsg.ability.prior.v1")||"null");
+      check("a second edit while temporary does not overwrite the snapshot",
+        prior2 && prior2.fatigue==="low" && prior2.permanence==="permanent");
+      check("the restore control is offered", q(f,"#profPriorRow").style.display!=="none");
+      click(f,"#profPrior");
+      check("restoring returns the steady layout", ability().fatigue==="low" && ability().permanence==="permanent");
+      check("restoring clears the snapshot", localStorage.getItem("rsg.ability.prior.v1")===null);
+      click(f,'#permanence button[data-v="permanent"]');
+      check("leaving 'for now' clears any snapshot", localStorage.getItem("rsg.ability.prior.v1")===null);
+
+      /* ---------- revisitPrompt ---------- */
+      grp("'changes' prompts a re-check when the profile goes stale (revisitPrompt)");
+      function ageProfile(days, permanence){
+        var a=ability(); a.updated=new Date(Date.now()-days*86400000).toISOString();
+        if(permanence) a.permanence=permanence;
+        localStorage.setItem("rsg.ability.v1", JSON.stringify(a));
+      }
+      async function reopenWith(days, permanence){
+        ageProfile(days, permanence);
+        var f2=await shell();                      /* fresh boot re-reads storage */
+        click(f2,"#gear");
+        return q(f2,"#profAge").textContent;
+      }
+      var t;
+      t=await reopenWith(40,"changing");
+      check("a 40-day-old 'changes' profile prompts a re-check", /worth a look/.test(t), t);
+      t=await reopenWith(40,"permanent");
+      check("a 40-day-old 'steady' profile does not nag", !/worth a look/.test(t), t);
+      t=await reopenWith(3,"changing");
+      check("a 3-day-old 'changes' profile does not nag yet", !/worth a look/.test(t), t);
+      check("the age is stated plainly either way", /\bSet\b/.test(t), t);
+      t=await reopenWith(20,"temporary");
+      check("a 20-day-old 'for now' profile prompts a re-check (shorter window)", /worth a look/.test(t), t);
+
+      /* ---------- what actually leaves the browser ---------- */
+      grp("only what the settings panel discloses leaves the browser");
+      /* The panel tells the user that reach — and nothing else about them —
+         is sent to Anthropic. That is a promise about source code, so check
+         the source: any new ability field interpolated into a system prompt
+         makes the disclosure a lie, silently. */
+      var src=await fetch("/The%20forge/js/claude.js").then(function(r){return r.text();});
+      var prompts=[], m, re=/system:\s*`([\s\S]*?)`\s*,/g;
+      while((m=re.exec(src))) prompts.push(m[1]);
+      check("Forge's prompt builders were found to inspect", prompts.length>=4, prompts.length+" system prompts");
+      var leaked=[];
+      prompts.forEach(function(p){
+        var mm, r2=/spec\.ability\.(\w+)/g;
+        while((mm=r2.exec(p))) if(mm[1]!=="reachMM") leaked.push(mm[1]);
+      });
+      check("no ability field other than reach reaches a model prompt",
+        leaked.length===0, leaked.length?("leaked: "+leaked.join(", ")):"only reachMM");
+      check("reach is in fact what is sent (the disclosure is not vacuous)",
+        prompts.some(function(p){ return /spec\.ability\.reachMM/.test(p); }));
+    }catch(e){
+      check("suite ran to completion", false, e.message);
+    }finally{
+      restore();
+      check("the real profile is restored after the suite",
+        localStorage.getItem("rsg.ability.v1")===saved["rsg.ability.v1"]);
+      finish();
+    }
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+  "_comment": "Declared architecture for the RSG portfolio. Rules and rationale: docs/architecture/boundaries.md. Enforced by scripts/check_boundaries.py.",
+
+  "layers": ["capability", "platform", "app", "shell"],
+
+  "units": {
+    "shared-capability": {
+      "layer": "capability",
+      "owner": "Joseph P O'Day",
+      "files": [
+        "shared/ability-resolver.js",
+        "shared/input-devices.js",
+        "shared/rsg-testkit.js"
+      ],
+      "globals": ["RSGAbility", "RSGInput", "__rsgErrors"]
+    },
+    "shared-platform": {
+      "layer": "platform",
+      "owner": "Joseph P O'Day",
+      "files": [
+        "shared/rsg-supabase.js",
+        "shared/claude-bridge.js"
+      ],
+      "dirs": ["shared/supabase"],
+      "globals": ["RSGSupabase", "RSGClaude"]
+    },
+
+    "GHOST":        { "layer": "app", "dirs": ["GHOST"],         "aliases": ["ghost"],       "owner": "Joseph P O'Day" },
+    "NEXUS":        { "layer": "app", "dirs": ["NEXUS"],         "aliases": ["nexus"],       "owner": "Joseph P O'Day" },
+    "Observatory":  { "layer": "app", "dirs": ["Observatory"],   "aliases": ["observatory"], "owner": "Joseph P O'Day" },
+    "The forge":    { "layer": "app", "dirs": ["The forge"],     "aliases": ["forge"],       "owner": "Joseph P O'Day" },
+    "basic website":{ "layer": "app", "dirs": ["basic website"], "aliases": ["website"],     "owner": "Joseph P O'Day" },
+
+    "Onehand OS": {
+      "layer": "shell",
+      "dirs": ["Onehand OS"],
+      "aliases": ["onehand"],
+      "owner": "Joseph P O'Day",
+      "catalog_files": ["Onehand OS/apps.json", "Onehand OS/index.html"]
+    }
+  },
+
+  "generated": {
+    "Website": {
+      "reason": "Static mirror captured from the deployed Vercel build. Website/README.md: do not edit these files to change the site. The editable source is the Vercel-linked repo.",
+      "dirs": ["Website"]
+    }
+  },
+
+  "synced_files": [
+    { "source": "shared/supabase/0001_registry.sql", "copies": "*/supabase/migrations/0001_registry.sql" },
+    { "source": "shared/supabase/0002_ai_usage.sql", "copies": "*/supabase/migrations/0002_ai_usage.sql" }
+  ],
+
+  "allow": []
+}

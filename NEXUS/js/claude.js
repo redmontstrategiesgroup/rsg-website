@@ -132,6 +132,10 @@ RULES
     const out = JSON.parse(textBlock.text);
 
     const fx = {
+      // Provenance, so applyEffects can tell a sentence the model wrote from
+      // one the game authored. Both brains return the same shape; only this
+      // field says which wrote it.
+      src: "claude",
       rel: NX.clamp(out.relationship_delta | 0, -20, 20),
       mood: NX.clamp(out.mood_delta | 0, -20, 20),
       remember: out.remember || null,

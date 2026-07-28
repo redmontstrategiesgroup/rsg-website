@@ -54,6 +54,11 @@
   <div class="example-chips" id="example-chips"></div>
 </section>
 
+<!-- Setup drawer controls — only shown on narrow screens, where the sidebar
+     becomes a drawer instead of disappearing -->
+<div id="setup-scrim" hidden></div>
+<button id="setup-toggle" aria-label="Setup panel" aria-expanded="false" aria-controls="sidebar">⚙</button>
+
 <!-- ============ MAIN LAYOUT ============ -->
 <main id="main">
 
@@ -85,7 +90,11 @@
       </div>
       <div class="field-row">
         <label>Comfortable reach <span id="reach-val" class="mono">90 mm</span></label>
-        <input type="range" id="reach-range" min="55" max="130" value="90">
+        <div class="reach-stepper">
+          <button type="button" id="reach-down" aria-label="Less reach">−</button>
+          <input type="range" id="reach-range" min="55" max="130" step="5" value="90" aria-label="Comfortable reach in millimetres">
+          <button type="button" id="reach-up" aria-label="More reach">+</button>
+        </div>
       </div>
       <p class="hint">The Forge re-arranges the physical hardware layout around your hand before generating the enclosure.</p>
     </div>
@@ -238,7 +247,30 @@
           <div id="viewer-hud">
             <div class="hud-row">
               <label>EXPLODE</label>
-              <input type="range" id="explode-range" min="0" max="100" value="0">
+              <div class="reach-stepper">
+                <button type="button" id="explode-down" aria-label="Less explode">−</button>
+                <input type="range" id="explode-range" min="0" max="100" step="5" value="0" aria-label="Explode amount">
+                <button type="button" id="explode-up" aria-label="More explode">+</button>
+              </div>
+            </div>
+            <!-- Tap equivalents for orbit / zoom / pan. The mouse gestures still
+                 work; they are simply no longer the only way to see the model. -->
+            <div class="hud-row hud-btns" id="view-presets" role="group" aria-label="Camera view">
+              <button class="hud-btn" data-view="front">Front</button>
+              <button class="hud-btn" data-view="back">Back</button>
+              <button class="hud-btn" data-view="left">Left</button>
+              <button class="hud-btn" data-view="right">Right</button>
+              <button class="hud-btn" data-view="top">Top</button>
+              <button class="hud-btn" data-view="iso">Iso</button>
+            </div>
+            <div class="hud-row hud-btns" id="view-nudge" role="group" aria-label="Rotate, zoom and pan">
+              <button class="hud-btn" id="orbit-left" aria-label="Rotate left">◀</button>
+              <button class="hud-btn" id="orbit-right" aria-label="Rotate right">▶</button>
+              <button class="hud-btn" id="orbit-up" aria-label="Rotate up">▲</button>
+              <button class="hud-btn" id="orbit-down" aria-label="Rotate down">▼</button>
+              <button class="hud-btn" id="zoom-in" aria-label="Zoom in">＋</button>
+              <button class="hud-btn" id="zoom-out" aria-label="Zoom out">－</button>
+              <button class="hud-btn" id="view-reset" aria-label="Reset view">⟲</button>
             </div>
             <div class="hud-row hud-btns">
               <button id="btn-view-solid" class="hud-btn active">Solid</button>

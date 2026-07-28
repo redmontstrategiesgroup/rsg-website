@@ -187,24 +187,30 @@ table.dt tr:hover td { background: rgba(53,242,230,.03); }
 
 /* ---------- ONEHAND DOCK ---------- */
 body.onehand .vtab, body.onehand .btn, body.onehand .gcmd .go, body.onehand .oh-toggle { transform: none; }
-.oh-dock { position: fixed; z-index: 38; width: 340px; padding: 12px; border: 1px solid #ff9d5c; border-radius: 14px; background: linear-gradient(180deg, rgba(28,18,10,.96), rgba(12,8,6,.97)); box-shadow: 0 30px 80px -20px rgba(0,0,0,.8), 0 0 40px -10px rgba(255,157,92,.4); }
+.oh-dock { position: fixed; z-index: 38; width: min(340px, calc(100vw - 44px)); max-height: calc(100vh - 44px); overflow-y: auto; padding: 12px; border: 1px solid #ff9d5c; border-radius: 14px; background: linear-gradient(180deg, rgba(28,18,10,.96), rgba(12,8,6,.97)); box-shadow: 0 30px 80px -20px rgba(0,0,0,.8), 0 0 40px -10px rgba(255,157,92,.4); }
 .oh-dock.lower-right { right: 22px; bottom: 22px; }
 .oh-dock.lower-left { left: 22px; bottom: 22px; }
 .oh-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .oh-badge { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: #ffbe8c; }
 .oh-sub { font-size: 9px; color: var(--text-faint); }
-.oh-x { margin-left: auto; width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--hair); color: var(--text-dim); }
-.oh-ring { position: relative; margin: 6px auto; }
-.oh-item { position: absolute; border-radius: 50%; border: 1.5px solid rgba(255,157,92,.5); background: rgba(40,26,14,.92); color: #ffd9bc; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; transition: all .12s; }
-.oh-item:hover, .oh-item:focus { border-color: #ffbe8c; background: rgba(255,157,92,.22); box-shadow: 0 0 16px -4px #ff9d5c; outline: none; }
-.oh-item.danger { border-color: rgba(255,65,95,.5); color: #ff9db0; }
-.oh-item.danger.armed { background: rgba(255,65,95,.28); animation: blink .5s steps(2) infinite; }
-.oh-ic { font-size: 18px; } .oh-lbl { font-size: 7.5px; letter-spacing: .02em; text-align: center; line-height: 1; }
-.oh-key { position: absolute; top: 3px; right: 5px; font-size: 8px; color: var(--text-faint); font-family: var(--mono); }
-.oh-hub { position: absolute; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; border: 1.5px solid #ff9d5c; background: radial-gradient(circle, rgba(255,157,92,.25), rgba(20,12,8,.9)); }
+.oh-x { margin-left: auto; width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--hair); color: var(--text-dim); }
+/* Reach grid, not a radial arc. Eight targets never fit one comfortable thumb
+   sweep without overlapping, and the overlap grew as the profile asked for
+   bigger targets — the accommodation made aiming harder. A grid guarantees the
+   gap, scans in a predictable order, and survives any target size. */
+.oh-grid { display: grid; gap: 12px; margin: 8px 0; }
+.oh-item { position: relative; border-radius: 16px; border: 1.5px solid rgba(255,157,92,.5); background: rgba(40,26,14,.92); color: #ffd9bc; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px; transition: all .12s; }
+.oh-item:hover, .oh-item:focus-visible { border-color: #ffbe8c; background: rgba(255,157,92,.22); box-shadow: 0 0 16px -4px #ff9d5c; outline: none; }
+/* the destructive control gets its own row and extra separation from the rest */
+.oh-item.danger { border-color: rgba(255,65,95,.5); color: #ff9db0; grid-column: 1/-1; margin-top: 10px; }
+.oh-item.danger.armed { background: rgba(255,65,95,.28); border-color: #ff415f; color: #ffd9e0; }
+.oh-ic { font-size: 20px; } .oh-lbl { font-size: 10px; letter-spacing: .02em; text-align: center; line-height: 1.15; }
+.oh-key { position: absolute; top: 4px; right: 6px; font-size: 9px; color: var(--text-faint); font-family: var(--mono); }
 .oh-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; padding-top: 8px; border-top: 1px solid rgba(255,157,92,.2); }
 .oh-aid { font-size: 9px; color: var(--text-faint); }
-.oh-swap { margin-left: auto; font-size: 9px; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,157,92,.4); color: #ffbe8c; }
+/* a lost device is never announced quietly — silence is the worst behaviour here */
+.oh-alert { color: #ffb454; font-weight: 700; }
+.oh-swap { margin-left: auto; font-size: 11px; min-height: 44px; padding: 4px 14px; border-radius: 10px; border: 1px solid rgba(255,157,92,.4); color: #ffbe8c; }
 /* enlarge primary targets while OneHand active */
 body.onehand .gcmd input { padding: 13px 14px; font-size: 14px; }
 body.onehand .vtab { padding: 10px 13px; font-size: 12.5px; }
