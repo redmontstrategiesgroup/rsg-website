@@ -263,8 +263,12 @@ ${objects}
 export function toSTEP(root, filter, name = "FORGE-PART") {
   const parts = collectParts(root, filter);
   const ts = new Date().toISOString().slice(0, 19);
-  // one coordinates_list + triangulated_face per printed part, so the shape
-  // representation describes the parts it contains rather than one merged soup
+  // One coordinates_list + triangulated_face per printed part, all gathered into
+  // a single tessellated_shell. The shell matters: OCCT 7.8 (FreeCAD 1.1)
+  // imports a tessellated_shape_representation holding one triangulated_face,
+  // but silently yields zero objects when it holds two — verified by importing
+  // both arrangements. Wrapped in a shell it comes in as one object with a face
+  // per part, so the parts stay identifiable and the file still opens.
   let id = 30;
   const faceIds = [];
   const faces = parts.map(p => {
@@ -297,7 +301,8 @@ DATA;
 #14=(GEOMETRIC_REPRESENTATION_CONTEXT(3)GLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT((#13))GLOBAL_UNIT_ASSIGNED_CONTEXT((#10,#11,#12))REPRESENTATION_CONTEXT('',''));
 #15=PRODUCT_RELATED_PRODUCT_CATEGORY('part','',(#4));
 ${faces}
-#22=TESSELLATED_SHAPE_REPRESENTATION('${sesc(name)}',(${faceIds.map(f => "#" + f).join(",")}),#14);
+#${id}=TESSELLATED_SHELL('${sesc(name)}',(${faceIds.map(f => "#" + f).join(",")}),$);
+#22=TESSELLATED_SHAPE_REPRESENTATION('${sesc(name)}',(#${id}),#14);
 #23=SHAPE_DEFINITION_REPRESENTATION(#8,#22);
 ENDSEC;
 END-ISO-10303-21;

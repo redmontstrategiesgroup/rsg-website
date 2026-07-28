@@ -145,10 +145,26 @@ all passing:
 | STEP AP242 | header tokens, section structure, reference integrity, attribute arity per ISO 10303-242, 1-based triangle indices, product category | ✅ conformant |
 | DXF R12 | group-code pairing, `$ACADVER`, section balance, POLYLINE/SEQEND pairing, dummy point, VERTEX flags, EOF | ✅ conformant |
 
-**Not established:** none of these files has been opened in a CAD kernel, a
-slicer or a CAM package. Conforming to the format is necessary, not sufficient —
-a structurally valid file can still import badly. That check is a manual step
-and it has not been done. See `Honest limitations`.
+### Opened in real tools
+
+Format conformance is necessary, not sufficient, so the exports were also
+loaded into the software that consumes them:
+
+| File | Tool | Result |
+|---|---|---|
+| `print.3mf` | PrusaSlicer 2.9.6 | 2 objects, **manifold = yes** on each; 234 545.45 + 112 018.56 mm³ |
+| `print.stl` | PrusaSlicer 2.9.6 | **manifold = yes**, 17 parts, 346 562.31 mm³, 231.20 × 181.70 × 25.00 mm |
+| `bracket.stl` | PrusaSlicer 2.9.6 | **sliced to G-code**, 45 m 26 s — not just imported |
+| `model.step` | FreeCAD 1.1.2 (OCCT 7.8) | 1 Shell, one face per printed part, 231.20 × 181.70 × 25.00 mm, 346 563.8 mm³ |
+| `plate.dxf` | ezdxf 1.4.4 | AC1009/R12, **0 errors, 0 fixes** on recover *and* full audit, extents 231.20 × 181.70 mm |
+
+Volumes agree across the mesh harness, the slicer and the CAD kernel to within
+rounding (346 562.3 / 346 563.8 mm³).
+
+**This is what conformance could not tell us:** a `tessellated_shape_repre-
+sentation` holding two `triangulated_face` items is valid AP242 and passed every
+structural check — and OCCT imported it as *zero objects*, silently. Wrapping
+the faces in a `tessellated_shell` fixes it. Only opening the file found that.
 
 ## Prototype inspection loop
 
@@ -201,18 +217,17 @@ revision" is a real regeneration, not a mock.
   table (a genuine follow-up), then a KiCad DRC pass.
 - STEP/3MF are **tessellated** (triangle mesh), not B-rep — not editable solids,
   no tolerance data.
-- **No export has been opened in a real tool.** They are format-conformant (see
-  *Export status*) and geometrically validated, but nobody has loaded one into
-  FreeCAD, PrusaSlicer or a CAM package. Until someone does, "it imports" is an
-  expectation, not a result. To close it:
+- STEP imports as a **tessellated shell**, one face per printed part — not
+  solids. FreeCAD will show a Shell, not a Solid, and there is nothing to edit
+  parametrically. This is a viewing/inspection format here, not a CAD handoff.
+- Verified in PrusaSlicer 2.9.6, FreeCAD 1.1.2 (OCCT 7.8) and ezdxf 1.4.4 — see
+  *Opened in real tools*. **Not** checked in any CAM package, in Fusion,
+  SolidWorks, Bambu Studio or Cura, or on a physical printer. To repeat the
+  checks:
 
   ```bash
   winget install FreeCAD.FreeCAD Prusa3D.PrusaSlicer
   ```
-
-  Then open `model.step` in FreeCAD (expect one tessellated mesh feature per
-  printed part, correct overall size in mm) and `print.3mf` in PrusaSlicer
-  (expect one named object per part, no "auto-repaired N errors" notice).
 - The geometry exports are a **multi-part assembly in assembled position** —
   see *What the geometry exports are*. Arrange the parts on the bed before
   slicing.
