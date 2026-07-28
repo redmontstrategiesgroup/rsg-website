@@ -1,4 +1,4 @@
-// ============ THE FORGE — woodworking / repair / inventor engines ============
+// ============ THE FORGE — woodworking / repair engines ============
 import { WOOD, money } from "./catalog.js";
 
 // ---------------------------------------------------------------- woodworking
@@ -104,61 +104,4 @@ export function repairPlan(type, refMM) {
       "Test-fit before removing support (if any); a 2nd iteration at ±0.2 mm is normal.",
     ],
   };
-}
-
-// ---------------------------------------------------------------- inventor
-export function conceptsOffline(problem) {
-  const p = (problem || "").toLowerCase();
-  const oneHand = p.includes("one hand") || p.includes("one-hand") || p.includes("single hand") || p.includes("keyboard");
-  const base = oneHand ? [
-    {
-      name: "Radial Chord Deck",
-      description: "A fanned 12-key arc where letters are typed as 2-key chords under each finger's natural arc, with a thumb trackball for pointing. One hand covers the full alphabet without travel.",
-      usability: 78, cost: 88, manufacturability: 90,
-      sentence: "A one-handed chording keypad with 12 arc keys, a thumb trackball and an OLED showing the active chord layer.",
-    },
-    {
-      name: "Roller-Bar Glidepad",
-      description: "A palm-length rotary bar selects columns while five keys pick rows — typing becomes roll-and-tap. Very low finger force; great for limited dexterity.",
-      usability: 66, cost: 74, manufacturability: 62,
-      sentence: "A one-handed input device with a large roller bar, 5 low-force keys, 1 dial and 2 foot pedals.",
-    },
-    {
-      name: "Pedal-Shifted Half Board",
-      description: "A standard half-QWERTY layout where foot pedals mirror the missing hand's side (space = mirror shift). Fastest to learn — muscle memory transfers from two-handed typing.",
-      usability: 84, cost: 70, manufacturability: 85,
-      sentence: "A one-handed half keyboard with 15 keys, 3 foot pedals for mirroring and modifiers, a voice button and an OLED.",
-    },
-  ] : [
-    {
-      name: "Dedicated Macro Deck",
-      description: "A printed deck of mechanical keys and dials mapped to the exact workflow, with an OLED for state. The direct, robust answer.",
-      usability: 82, cost: 80, manufacturability: 92,
-      sentence: `A macro deck purpose-built for: ${problem}`,
-    },
-    {
-      name: "Foot + Voice Rig",
-      description: "Moves the whole interaction to three foot pedals and a push-to-talk voice key — hands never leave the primary task.",
-      usability: 64, cost: 90, manufacturability: 88,
-      sentence: "A pedal control hub with 3 foot pedals, a voice command button, 1 dial and no screen.",
-    },
-    {
-      name: "Modular Magnet Tiles",
-      description: "Magnetic 2-key tiles that snap around a core module, so the device is re-arranged physically per task. Highest flexibility, most parts.",
-      usability: 75, cost: 55, manufacturability: 58,
-      sentence: "A modular magnetic macro system with 12 keys in snap-on tiles, 2 dials and an OLED core.",
-    },
-  ];
-  return base;
-}
-
-export function scoreConcepts(concepts, weights) {
-  const wSum = Math.max(1, weights.use + weights.cost + weights.mfg);
-  for (const c of concepts) {
-    c.total = Math.round(
-      (c.usability * weights.use + c.cost * weights.cost + c.manufacturability * weights.mfg) / wSum
-    );
-  }
-  concepts.sort((a, b) => b.total - a.total);
-  return concepts;
 }
