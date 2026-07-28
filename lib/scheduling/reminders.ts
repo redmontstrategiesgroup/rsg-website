@@ -170,7 +170,15 @@ async function sendReminder(
     leadId: booking.lead_id,
   });
 
-  await enqueueWebhook("reminder.due", { bookingId });
+  // A booking has several reminders (24h, 1h, …), so the template key is part
+  // of the identity — keying on bookingId alone would deliver only the first.
+  // Retries of the SAME reminder job reuse this key on purpose: that is the
+  // duplicate we do want collapsed.
+  await enqueueWebhook(
+    "reminder.due",
+    { bookingId, templateKey: payload.template_key ?? null },
+    { eventId: `reminder.due:${bookingId}:${payload.template_key ?? "default"}` }
+  );
   await trackSchedulingEvent({
     eventType: "reminder_sent",
     bookingId,
@@ -246,10 +254,12 @@ async function detectAbandonedSessions(abandonHours: number) {
       { leadId: session.lead_id }
     );
 
-    await enqueueWebhook("lead.qualified_abandoned", {
-      sessionId: session.id,
-      leadId: session.lead_id,
-    });
+    await enqueueWebhook(
+      "lead.qualified_abandoned",
+      { sessionId: session.id, leadId: session.lead_id },
+      // Abandonment is detected once per session; the sweep is idempotent on it.
+      { eventId: `lead.qualified_abandoned:${session.id}` }
+    );
 
     await trackSchedulingEvent({
       eventType: "booking_abandoned",

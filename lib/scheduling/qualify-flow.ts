@@ -221,7 +221,11 @@ export async function runQualification(input: {
       leadId,
     });
     await sendInternalNotification("internal_manual_review", vars, { leadId });
-    await enqueueWebhook("lead.manual_review", { leadId, score: result.totalScore });
+    await enqueueWebhook(
+      "lead.manual_review",
+      { leadId, score: result.totalScore },
+      { eventId: `lead.manual_review:${leadId}` }
+    );
   } else if (result.outcome === "not_eligible") {
     await sendTemplatedEmail({
       templateKey: "visitor_not_eligible",
@@ -230,12 +234,27 @@ export async function runQualification(input: {
       leadId,
     });
     await sendInternalNotification("internal_not_eligible", vars, { leadId });
-    await enqueueWebhook("lead.disqualified", { leadId, score: result.totalScore });
+    await enqueueWebhook(
+      "lead.disqualified",
+      { leadId, score: result.totalScore },
+      { eventId: `lead.disqualified:${leadId}` }
+    );
   } else {
-    await enqueueWebhook("lead.qualified", { leadId, score: result.totalScore });
+    await enqueueWebhook(
+      "lead.qualified",
+      { leadId, score: result.totalScore },
+      { eventId: `lead.qualified:${leadId}` }
+    );
   }
 
-  await enqueueWebhook("lead.submitted", { leadId, outcome: result.outcome });
+  // Qualification runs once per lead, so the lead id is the identity. If a lead
+  // is ever re-qualified in place, add the attempt number here — otherwise the
+  // second outcome is deduped away.
+  await enqueueWebhook(
+    "lead.submitted",
+    { leadId, outcome: result.outcome },
+    { eventId: `lead.submitted:${leadId}` }
+  );
 
   return {
     ok: true as const,

@@ -325,11 +325,12 @@ export async function createBooking(input: {
   });
 
   await enqueueReminderJobs(bookingId, type.id, startsISO);
-  await enqueueWebhook("booking.created", {
-    bookingId,
-    leadId: session.lead_id,
-    startsAt: startsISO,
-  });
+  await enqueueWebhook(
+    "booking.created",
+    { bookingId, leadId: session.lead_id, startsAt: startsISO },
+    // A booking is created once, so its id is the whole identity.
+    { eventId: `booking.created:${bookingId}` }
+  );
 
   return { ok: true, bookingId, manageToken };
 }
@@ -502,7 +503,14 @@ export async function rescheduleBooking(input: {
     leadId: booking.lead_id,
     bookingId: booking.id,
   });
-  await enqueueWebhook("booking.rescheduled", { bookingId: booking.id });
+  await enqueueWebhook(
+    "booking.rescheduled",
+    { bookingId: booking.id, startsAt: startsISO },
+    // The new start time is part of the identity: a booking can be rescheduled
+    // repeatedly, and keying on the booking id alone would dedupe every
+    // reschedule after the first into nothing.
+    { eventId: `booking.rescheduled:${booking.id}:${startsISO}` }
+  );
 
   return { ok: true };
 }
@@ -605,7 +613,12 @@ export async function cancelBooking(input: {
     leadId: booking.lead_id,
     bookingId: booking.id,
   });
-  await enqueueWebhook("booking.cancelled", { bookingId: booking.id });
+  await enqueueWebhook(
+    "booking.cancelled",
+    { bookingId: booking.id },
+    // Cancellation is terminal — it happens at most once per booking.
+    { eventId: `booking.cancelled:${booking.id}` }
+  );
 
   return { ok: true };
 }
