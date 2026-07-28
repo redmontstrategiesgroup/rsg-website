@@ -233,13 +233,26 @@ export function meshChecks(model, filter = () => true) {
   const out = [];
   if (!model) return out;
   let meshes = 0, degenerate = 0, worst = null;
+  const parts = new Set();
   model.traverse(m => {
     if (!m.isMesh || !filter(m)) return;
     meshes++;
+    parts.add(m.userData.partName || "part");
     const d = m.geometry?.userData?.capDegenerate || 0;
     if (d) { degenerate += d; if (!worst || d > worst.d) worst = { d, name: m.userData.partName || "part" }; }
   });
   if (!meshes) return out;
+
+  // Say what the file actually is. These exports are an assembly of separately
+  // printed parts built from overlapping primitives — not one solid — and the
+  // parts are positioned as assembled, not laid out on a bed.
+  out.push({
+    id: "mesh-shells", sev: parts.size > 1 ? "warn" : "pass", area: "Geometry",
+    text: parts.size > 1
+      ? `Multi-part export: ${parts.size} printed parts (${[...parts].join(", ")}) as ${meshes} overlapping shells in one file. Each part is a closed solid and slicers union the overlaps, but this is not a single manifold body — do not expect a CAD kernel to treat it as one. The parts sit in assembled position, so arrange them on the bed before slicing.`
+      : `Single printed part exported as ${meshes} closed shell(s)`,
+    basis: "counted from the exported meshes",
+  });
   out.push(degenerate
     ? { id: "mesh-degenerate", sev: "warn", area: "Geometry",
         text: `${degenerate} zero-area triangle(s) across ${meshes} exported solid(s) — worst is ${worst.name}. The cutout layout leaves collinear edges the triangulator cannot resolve cleanly; slicers that strip degenerate facets will report that many small holes. Nudge the affected cutouts off the shared line, or repair on import.`,

@@ -269,9 +269,12 @@
     <div class="dropdown">
       <button id="btn-export" class="bar-btn">⬇ Export</button>
       <div class="dropdown-menu" id="export-menu">
-        <button data-x="stl">STL — print geometry</button>
-        <button data-x="3mf">3MF — print package</button>
-        <button data-x="step">STEP — AP242 tessellated</button>
+        <div class="menu-note">Parts are exported in <b>assembled position</b> —
+          arrange them on the bed before slicing. Mesh formats are tessellated,
+          not editable solids.</div>
+        <button data-x="stl">STL — print geometry (all parts, one soup)</button>
+        <button data-x="3mf">3MF — print package (one object per part)</button>
+        <button data-x="step">STEP — AP242 tessellated (not B-rep)</button>
         <button data-x="dxf">DXF — flat pattern / plate</button>
         <button data-x="drawing">Dimensioned drawing — .svg</button>
         <button data-x="gerber">Gerber — PCB fab files</button>

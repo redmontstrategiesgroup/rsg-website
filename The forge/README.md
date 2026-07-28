@@ -10,7 +10,9 @@ validation, and the files and instructions needed to build, assemble, and test
 it.
 
 > The Forge is not an image generator. Renders visualize the parametric CAD;
-> the CAD is the source of truth. Exports open in real manufacturing software.
+> the CAD is the source of truth. Exports are written to the published file
+> formats and checked against them — see **Export status** for exactly what
+> that has and has not established.
 
 ## Run it
 
@@ -103,13 +105,50 @@ Gate 1.** Acceptance tests are generated directly from the requirements.
 Every edit updates the spec, regenerates affected geometry, re-runs validation,
 and records a revision with affected artifacts + cost impact.
 
-## Exports (open in real tools)
+## Exports
 
 STL · **3MF** · **STEP (AP242, tessellated)** · **DXF (R12, laser/CNC)** ·
 **dimensioned drawing (title block, section view, GD&T-style callouts)** ·
 Gerber X2 + Excellon · ESP32-S3 Arduino firmware · BOM CSV (real MPNs) ·
 assembly + test manual · wiring/schematic SVG · product website · and the gated
 **manufacturing-package.zip** bundling all of it.
+
+### What the geometry exports are
+
+**An assembly of separately printed parts, not one solid.** A deck export
+carries a bottom shell and a switch plate; an enclosure carries a base and a
+lid. Each part is built from overlapping primitives — walls, floor, lintels,
+bosses — and each is individually closed, watertight and outward-oriented.
+The overlaps are deliberate: interpenetration is unambiguous to a slicer where
+touching faces are not, and the slicer unions them.
+
+Consequences worth knowing before you open one:
+
+- **The parts are in assembled position, not laid out on a bed.** Arrange them
+  before slicing, or the lid prints in mid-air above the base.
+- **3MF** carries one `<object>` per printed part with its own build item, so a
+  slicer sees them as separate parts by name.
+- **STL** has no notion of parts — it is one triangle soup of all the shells.
+- **STEP is tessellated**, one `triangulated_face` per part. It imports into
+  MCAD viewers and is *not* a B-rep: no editable solids, no feature tree, no
+  tolerance data. Do not hand it to a machinist expecting a machinable model.
+
+### Export status
+
+Every export is checked against its published format — 80 structural checks,
+all passing:
+
+| Format | Checked | Status |
+|---|---|---|
+| STL (binary) | header/length agreement, finite coordinates, non-zero facet normals, stored normal vs winding, attribute bytes | ✅ conformant |
+| 3MF | OPC zip (CRC32, central directory, EOCD), required parts, namespace, unit, build items, per-object index range, per-object manifoldness and orientation | ✅ conformant |
+| STEP AP242 | header tokens, section structure, reference integrity, attribute arity per ISO 10303-242, 1-based triangle indices, product category | ✅ conformant |
+| DXF R12 | group-code pairing, `$ACADVER`, section balance, POLYLINE/SEQEND pairing, dummy point, VERTEX flags, EOF | ✅ conformant |
+
+**Not established:** none of these files has been opened in a CAD kernel, a
+slicer or a CAM package. Conforming to the format is necessary, not sufficient —
+a structurally valid file can still import badly. That check is a manual step
+and it has not been done. See `Honest limitations`.
 
 ## Prototype inspection loop
 
@@ -160,9 +199,26 @@ revision" is a real regeneration, not a mock.
   surfaces this as a **PCB warning in Validation** and in the PCB pane, preview,
   and gerber `README.txt`. Fixing it for real needs a DevKitC-1 physical-pinout
   table (a genuine follow-up), then a KiCad DRC pass.
-- STEP/3MF are **tessellated** (triangle mesh), not B-rep — they import into any
-  MCAD viewer and slicer; they are not editable solids.
-- The enclosure/deck STL is multi-solid (shell + lid/plate); slicers union it,
-  print the parts using the placement.
+- STEP/3MF are **tessellated** (triangle mesh), not B-rep — not editable solids,
+  no tolerance data.
+- **No export has been opened in a real tool.** They are format-conformant (see
+  *Export status*) and geometrically validated, but nobody has loaded one into
+  FreeCAD, PrusaSlicer or a CAM package. Until someone does, "it imports" is an
+  expectation, not a result. To close it:
+
+  ```bash
+  winget install FreeCAD.FreeCAD Prusa3D.PrusaSlicer
+  ```
+
+  Then open `model.step` in FreeCAD (expect one tessellated mesh feature per
+  printed part, correct overall size in mm) and `print.3mf` in PrusaSlicer
+  (expect one named object per part, no "auto-repaired N errors" notice).
+- The geometry exports are a **multi-part assembly in assembled position** —
+  see *What the geometry exports are*. Arrange the parts on the bed before
+  slicing.
+- Mesh topology is validated per printed part (closed, manifold, outward,
+  no degenerate faces) and reported in Validation under **Geometry**. A grid
+  key layout can leave 1–2 zero-area triangles the triangulator cannot avoid;
+  that is reported rather than silently repaired.
 - Engineering calcs are first-order with stated assumptions — L4 designs
   explicitly require expert review before manufacturing.

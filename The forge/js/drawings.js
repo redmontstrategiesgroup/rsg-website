@@ -115,18 +115,26 @@ function dimV(x, y1, y2, label) {
   <text x="${x - 7}" y="${(y1 + y2) / 2}" class="dt" text-anchor="middle" transform="rotate(-90 ${x - 7} ${(y1 + y2) / 2})">${label}</text>`;
 }
 function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+// attribute-safe: part names reach 3MF/STEP attributes and STEP string literals
+function xesc(t) { return esc(t).replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+function sesc(t) { return String(t).replace(/'/g, "''").replace(/\\/g, "\\\\"); }
 
 // ---------------------------------------------------------------- DXF R12
 /** entities: [{type:'poly', pts:[[x,y]..], closed} | {type:'circle', x,y,r}] — mm, laser-ready. */
 export function toDXF(entities) {
-  let d = "0\nSECTION\n2\nHEADER\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n";
+  // R12 (AC1009). $ACADVER so readers do not have to guess the version, and the
+  // 10/20/30 dummy point plus a 70 flag on every VERTEX, both of which the
+  // POLYLINE record requires — importers that validate strictly reject
+  // otherwise, and the geometry looked fine right up until they did.
+  let d = "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n";
   for (const e of entities) {
     if (e.type === "circle") {
-      d += `0\nCIRCLE\n8\nCUT\n10\n${e.x.toFixed(3)}\n20\n${e.y.toFixed(3)}\n40\n${e.r.toFixed(3)}\n`;
+      d += `0\nCIRCLE\n8\nCUT\n10\n${e.x.toFixed(3)}\n20\n${e.y.toFixed(3)}\n30\n0.0\n40\n${e.r.toFixed(3)}\n`;
     } else {
-      d += `0\nPOLYLINE\n8\nCUT\n66\n1\n70\n${e.closed ? 1 : 0}\n`;
-      for (const p of e.pts) d += `0\nVERTEX\n8\nCUT\n10\n${p[0].toFixed(3)}\n20\n${p[1].toFixed(3)}\n`;
-      d += "0\nSEQEND\n";
+      d += `0\nPOLYLINE\n8\nCUT\n66\n1\n70\n${e.closed ? 1 : 0}\n10\n0.0\n20\n0.0\n30\n0.0\n`;
+      for (const p of e.pts)
+        d += `0\nVERTEX\n8\nCUT\n70\n0\n10\n${p[0].toFixed(3)}\n20\n${p[1].toFixed(3)}\n30\n0.0\n`;
+      d += "0\nSEQEND\n8\nCUT\n";
     }
   }
   d += "0\nENDSEC\n0\nEOF\n";
@@ -192,27 +200,48 @@ function collectMesh(root, filter) {
   return { verts, tris };
 }
 
+/**
+ * One entry per printed part, keyed by the tagged part name.
+ *
+ * These exports carry several separately printed parts. Merging them into a
+ * single mesh makes the shell and the plate share the faces they touch at, and
+ * 3MF core requires each object to be a manifold solid — so the honest and the
+ * conforming representation are the same one: a part per object.
+ */
+function collectParts(root, filter) {
+  const names = [];
+  root.traverse(m => {
+    if (!m.isMesh || (filter && !filter(m))) return;
+    const n = m.userData.partName || "part";
+    if (!names.includes(n)) names.push(n);
+  });
+  return names
+    .map(n => ({ name: n, ...collectMesh(root, m => (!filter || filter(m)) && (m.userData.partName || "part") === n) }))
+    .filter(p => p.tris.length);
+}
+
 // ---------------------------------------------------------------- 3MF
 export function to3MF(root, filter, title = "forge-part") {
-  const { verts, tris } = collectMesh(root, filter);
+  const parts = collectParts(root, filter);
+  const objects = parts.map((p, i) => `  <object id="${i + 1}" type="model" name="${xesc(p.name)}">
+   <mesh>
+    <vertices>
+${p.verts.map(v => `     <vertex x="${v[0].toFixed(3)}" y="${v[1].toFixed(3)}" z="${v[2].toFixed(3)}"/>`).join("\n")}
+    </vertices>
+    <triangles>
+${p.tris.map(t => `     <triangle v1="${t[0]}" v2="${t[1]}" v3="${t[2]}"/>`).join("\n")}
+    </triangles>
+   </mesh>
+  </object>`).join("\n");
   const model =
 `<?xml version="1.0" encoding="UTF-8"?>
 <model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
- <metadata name="Title">${title}</metadata>
+ <metadata name="Title">${xesc(title)}</metadata>
  <metadata name="Application">THE FORGE</metadata>
  <resources>
-  <object id="1" type="model">
-   <mesh>
-    <vertices>
-${verts.map(p => `     <vertex x="${p[0].toFixed(3)}" y="${p[1].toFixed(3)}" z="${p[2].toFixed(3)}"/>`).join("\n")}
-    </vertices>
-    <triangles>
-${tris.map(t => `     <triangle v1="${t[0]}" v2="${t[1]}" v3="${t[2]}"/>`).join("\n")}
-    </triangles>
-   </mesh>
-  </object>
+${objects}
  </resources>
- <build><item objectid="1"/></build>
+ <build>${parts.map((_, i) => `<item objectid="${i + 1}"/>`).join("")}</build>
 </model>`;
   return {
     "[Content_Types].xml":
@@ -232,21 +261,31 @@ ${tris.map(t => `     <triangle v1="${t[0]}" v2="${t[1]}" v3="${t[2]}"/>`).join(
 
 // ---------------------------------------------------------------- STEP AP242 (tessellated)
 export function toSTEP(root, filter, name = "FORGE-PART") {
-  const { verts, tris } = collectMesh(root, filter);
+  const parts = collectParts(root, filter);
   const ts = new Date().toISOString().slice(0, 19);
-  const coordList = verts.map(p => `(${p[0].toFixed(3)},${p[1].toFixed(3)},${p[2].toFixed(3)})`).join(",");
-  const triList = tris.map(t => `(${t[0] + 1},${t[1] + 1},${t[2] + 1})`).join(",");
+  // one coordinates_list + triangulated_face per printed part, so the shape
+  // representation describes the parts it contains rather than one merged soup
+  let id = 30;
+  const faceIds = [];
+  const faces = parts.map(p => {
+    const cid = id++, fid = id++;
+    faceIds.push(fid);
+    const coords = p.verts.map(v => `(${v[0].toFixed(3)},${v[1].toFixed(3)},${v[2].toFixed(3)})`).join(",");
+    const tl = p.tris.map(t => `(${t[0] + 1},${t[1] + 1},${t[2] + 1})`).join(",");
+    return `#${cid}=COORDINATES_LIST('${sesc(p.name)}',${p.verts.length},(${coords}));\n` +
+           `#${fid}=TRIANGULATED_FACE('${sesc(p.name)}',#${cid},${p.verts.length},(),$,(),(${tl}));`;
+  }).join("\n");
   return `ISO-10303-21;
 HEADER;
-FILE_DESCRIPTION(('THE FORGE tessellated export','${name}'),'2;1');
-FILE_NAME('${name}.step','${ts}',('THE FORGE'),(''),'AP242','THE FORGE','');
+FILE_DESCRIPTION(('THE FORGE tessellated export','${sesc(name)}'),'2;1');
+FILE_NAME('${sesc(name)}.step','${ts}',('THE FORGE'),(''),'AP242','THE FORGE','');
 FILE_SCHEMA(('AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF'));
 ENDSEC;
 DATA;
 #1=APPLICATION_CONTEXT('managed model based 3d engineering');
 #2=APPLICATION_PROTOCOL_DEFINITION('international standard','ap242_managed_model_based_3d_engineering',2020,#1);
 #3=PRODUCT_CONTEXT('',#1,'mechanical');
-#4=PRODUCT('${name}','${name}','',(#3));
+#4=PRODUCT('${sesc(name)}','${sesc(name)}','',(#3));
 #5=PRODUCT_DEFINITION_FORMATION('1','',#4);
 #6=PRODUCT_DEFINITION_CONTEXT('part definition',#1,'design');
 #7=PRODUCT_DEFINITION('design','',#5,#6);
@@ -256,9 +295,9 @@ DATA;
 #12=(NAMED_UNIT(*)SI_UNIT($,.STERADIAN.)SOLID_ANGLE_UNIT());
 #13=UNCERTAINTY_MEASURE_WITH_UNIT(LENGTH_MEASURE(0.005),#10,'DISTANCE_ACCURACY_VALUE','');
 #14=(GEOMETRIC_REPRESENTATION_CONTEXT(3)GLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT((#13))GLOBAL_UNIT_ASSIGNED_CONTEXT((#10,#11,#12))REPRESENTATION_CONTEXT('',''));
-#20=COORDINATES_LIST('',${verts.length},(${coordList}));
-#21=TRIANGULATED_FACE('',#20,${verts.length},(),$,(),(${triList}));
-#22=TESSELLATED_SHAPE_REPRESENTATION('',(#21),#14);
+#15=PRODUCT_RELATED_PRODUCT_CATEGORY('part','',(#4));
+${faces}
+#22=TESSELLATED_SHAPE_REPRESENTATION('${sesc(name)}',(${faceIds.map(f => "#" + f).join(",")}),#14);
 #23=SHAPE_DEFINITION_REPRESENTATION(#8,#22);
 ENDSEC;
 END-ISO-10303-21;
