@@ -10,7 +10,6 @@ const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
   { label: "Process", href: "/process" },
-  { label: "Industries", href: "/industries" },
   { label: "Demos", href: "/demos" },
   { label: "FAQ", href: "/faq" },
   { label: "Book", href: "/book" },
@@ -61,24 +60,36 @@ export function Navbar() {
           />
         </Link>
 
-        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center justify-center gap-8 md:flex lg:gap-9">
-          {NAV_LINKS.map((link) => {
-            const active = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm transition-colors ${
-                  active ? "text-white" : "text-white/60 hover:text-white"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 hidden -translate-y-1/2 md:flex">
+          <div className="ml-[9rem] flex items-center justify-center gap-8 lg:ml-[11rem] lg:gap-9">
+            {NAV_LINKS.map((link) => {
+              const active = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`pointer-events-auto text-sm transition-colors ${
+                    active ? "text-white" : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+          <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Link
+              href="/industries"
+              className={`text-sm transition-colors ${
+                pathname === "/industries" ? "text-white" : "text-white/60 hover:text-white"
+              }`}
+            >
+              Industries
+            </Link>
+          </div>
         </div>
 
-        <div className="ml-auto hidden lg:block">
+        <div className="ml-[2rem] hidden lg:block">
           <Link
             href="/book"
             onClick={() =>
