@@ -1,7 +1,8 @@
 /**
  * Observatory domain types, ported from the standalone app (js/scenario.js
- * `newSpec`). A ScenarioSpec is a rich nested object stored as jsonb; these
- * types mirror its shape so the server store and the ported client agree.
+ * `newSpec` and js/report.js). A ScenarioSpec is a rich nested object stored as
+ * jsonb; these types mirror its shape so the server store and the ported client
+ * agree.
  */
 
 /** An intervention delta (close_road, outage, layoff, open_business, ...). The
@@ -42,4 +43,26 @@ export type StoredScenario = {
   spec: ScenarioSpec;
   createdAt: string;
   updatedAt: string;
+};
+
+/** Reproducibility metadata stamped on a report (from the sim run's meta). */
+export type ReportMeta = {
+  engine?: string;
+  app?: string;
+  world?: string;
+  specHash?: number;
+  seeds?: number[];
+  params?: Record<string, number>;
+  ranAt?: string;
+};
+
+/** A generated decision report as persisted for one tenant (js/report.js). */
+export type StoredReport = {
+  id: string; // db row uuid
+  reportId: string; // the app's own rp_ id
+  specId: string; // scenario the report is for
+  name: string;
+  html: string; // fully-rendered report HTML
+  meta: ReportMeta;
+  createdAt: string;
 };
