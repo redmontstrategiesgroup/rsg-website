@@ -7,5 +7,7 @@ if (dsn) {
     dsn,
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1,
     enabled: Boolean(dsn),
+    // No cookies/headers/IP or request bodies on events (this app carries PII).
+    sendDefaultPii: false,
   });
 }

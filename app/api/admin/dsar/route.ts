@@ -8,12 +8,17 @@ import {
 import { getSupabase } from "@/lib/supabase";
 import { writeAuditEvent } from "@/lib/audit";
 import { clientIp } from "@/lib/security";
+import { exportDataSubject, eraseDataSubject } from "@/lib/privacy/erase";
 
 export const runtime = "nodejs";
 
 const RequestSchema = z.object({
   email: z.string().email().max(320),
   action: z.enum(["export", "delete"]),
+  // Erasure of a live portal client account (and its cascade of sessions,
+  // subscriptions, roadmaps, service records) is destructive — require an
+  // explicit opt-in rather than wiping an account as a side effect.
+  includeClientAccount: z.boolean().optional(),
 });
 
 /**
@@ -46,70 +51,73 @@ export async function POST(request: Request) {
     );
   }
 
+  // Exact match, not ILIKE, everywhere below: `_` and `%` are LIKE wildcards
+  // and valid email characters, so a wildcard match on an attacker-influenced
+  // address could reach a different person's data. Email is already lowercased.
   const email = parsed.data.email.trim().toLowerCase();
 
   if (parsed.data.action === "export") {
-    // Exact match, not ILIKE: `_` and `%` are LIKE wildcards and are valid
-    // email characters, so ILIKE on an attacker-influenced address could
-    // export or delete a different person's data. Email is already lowercased.
-    const leadsRes = await sb.from("leads").select("*").eq("email", email);
-    let bookings: unknown[] = [];
-    try {
-      const bookingRes = await sb
-        .from("bookings")
-        .select("id, starts_at, status, lead_id, leads(email)")
-        .eq("leads.email", email);
-      bookings = bookingRes.data ?? [];
-    } catch {
-      bookings = [];
-    }
+    // Full footprint, not just leads: bookings, newsletter subscription, and
+    // any portal client account/team membership held for this person.
+    const data = await exportDataSubject(sb, email);
 
     await writeAuditEvent({
       actorType: "admin",
       actorId: ctx.admin.id,
       actorEmail: ctx.admin.email,
       action: "dsar.export",
-      entityType: "lead",
-      metadata: { email },
+      entityType: "data_subject",
+      metadata: {
+        email,
+        counts: {
+          leads: data.leads.length,
+          bookings: data.bookings.length,
+          subscriber: data.subscriber.length,
+          clientAccount: data.clientAccount.length,
+          clientUsers: data.clientUsers.length,
+        },
+      },
       ip: clientIp(request),
     });
 
-    return NextResponse.json({
-      email,
-      leads: leadsRes.data ?? [],
-      bookings,
-      exportedAt: new Date().toISOString(),
-    });
+    return NextResponse.json(data);
   }
 
-  const { data: leadRows } = await sb
-    .from("leads")
-    .select("id")
-    .eq("email", email);
-  const ids = (leadRows ?? []).map((r: { id: string }) => r.id);
+  // Erasure across every table that holds this subject's PII. The portal
+  // client account is only removed when the admin explicitly opts in.
+  const { outcomes, clientAccountPresent } = await eraseDataSubject(sb, email, {
+    includeClientAccount: parsed.data.includeClientAccount === true,
+  });
 
-  if (ids.length) {
-    try {
-      await sb.from("bookings").delete().in("lead_id", ids);
-    } catch {
-      /* bookings table may not reference lead_id on older schemas */
-    }
-    await sb.from("leads").delete().in("id", ids);
-  }
+  const deleted = Object.fromEntries(
+    outcomes.map((o) => [o.table, o.deleted])
+  );
+  const skipped = outcomes.filter((o) => o.status !== "ok");
 
   await writeAuditEvent({
     actorType: "admin",
     actorId: ctx.admin.id,
     actorEmail: ctx.admin.email,
     action: "dsar.delete",
-    entityType: "lead",
-    metadata: { email, deletedLeadIds: ids },
+    entityType: "data_subject",
+    metadata: {
+      email,
+      deleted,
+      includeClientAccount: parsed.data.includeClientAccount === true,
+      clientAccountPresent,
+      skipped: skipped.map((o) => ({ table: o.table, detail: o.detail })),
+    },
     ip: clientIp(request),
   });
 
   return NextResponse.json({
     ok: true,
-    deletedLeads: ids.length,
     email,
+    deleted,
+    // Surface, rather than silently ignore, a portal account that was left in
+    // place — so the admin can consciously re-run with includeClientAccount.
+    clientAccountPresent,
+    clientAccountErased: parsed.data.includeClientAccount === true && clientAccountPresent,
+    skipped: skipped.map((o) => o.table),
   });
 }

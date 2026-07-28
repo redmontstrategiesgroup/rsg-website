@@ -1,4 +1,5 @@
 import { requireSupabase, periodMonth } from "@/lib/lifecycle/core";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import type { UsageRecord } from "@/lib/ai/proxy";
 
 /**
@@ -108,14 +109,29 @@ export async function tenantUsageThisMonth(clientId: string): Promise<TenantUsag
 
 /**
  * True when a tenant has reached the monthly token ceiling. Call BEFORE a proxy
- * invocation to enforce a hard cap. Fails OPEN (returns false) if usage can't be
- * read, so a metering outage never blocks legitimate use.
+ * invocation to enforce a hard cap.
+ *
+ * Failure mode is deliberately asymmetric:
+ *  - Supabase NOT configured (local/preview) → fail OPEN (false). There is no
+ *    shared production key to protect and metering is expected to be absent.
+ *  - Supabase configured but the read FAILS (query error, or the `ai_usage`
+ *    table missing/unmigrated in production) → fail CLOSED (true). This is
+ *    exactly the case where the cap would otherwise silently disappear and one
+ *    tenant could drain the shared key uncapped, so we block and shout instead.
+ *    The fix for the resulting outage is to apply the ai_usage migration, not
+ *    to fail open.
  */
 export async function isTenantOverAiCap(clientId: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false; // local/preview — nothing to protect
   try {
     const usage = await tenantUsageThisMonth(clientId);
     return usage.totalTokens >= MONTHLY_TOKEN_CAP;
-  } catch {
-    return false;
+  } catch (err) {
+    console.error(
+      "[ai/usage] cap check FAILED with Supabase configured — failing CLOSED. " +
+        "Is the ai_usage table migrated? Blocking AI to protect the shared key.",
+      err
+    );
+    return true;
   }
 }

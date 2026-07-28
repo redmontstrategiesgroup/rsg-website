@@ -43,7 +43,18 @@ export async function writeAuditEvent(event: AuditEventInput): Promise<void> {
     });
     if (error) throw error;
   } catch (err) {
-    console.warn("[audit] write failed", err);
+    // A dropped audit write is a compliance gap, not a cosmetic warning: with
+    // the audit_events table missing/unmigrated, EVERY admin action would land
+    // here and the trail would be silently empty. Log at error level (Sentry
+    // captures console.error) with the action, so "no audit rows" is
+    // distinguishable from "nobody did anything". Still non-throwing — the
+    // audit sink must never break the user-facing action it records.
+    console.error(
+      `[audit] WRITE FAILED for action="${event.action}" actor="${
+        event.actorEmail ?? event.actorId ?? "?"
+      }" — the audit trail is not being persisted. Is audit_events migrated?`,
+      err
+    );
   }
 }
 

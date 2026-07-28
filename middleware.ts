@@ -47,29 +47,90 @@ function forbidden(reason: string) {
   return NextResponse.json({ error: reason }, { status: 403 });
 }
 
-function looksLikeAdminToken(token: string | undefined): boolean {
-  if (!token || !token.includes(".")) return false;
+function decodeAdminPayload(
+  token: string | undefined
+): { role?: string; exp?: number } | null {
+  if (!token || !token.includes(".")) return null;
   try {
     const [body] = token.split(".");
     const pad = "=".repeat((4 - ((body!.length % 4) || 4)) % 4);
     const b64 = body!.replace(/-/g, "+").replace(/_/g, "/") + pad;
-    const json = JSON.parse(atob(b64)) as { role?: string; exp?: number };
-    if (json.role !== "admin") return false;
-    if (json.exp && json.exp < Math.floor(Date.now() / 1000)) return false;
+    return JSON.parse(atob(b64)) as { role?: string; exp?: number };
+  } catch {
+    return null;
+  }
+}
+
+/** Base64url (no padding) of an ArrayBuffer — matches Node's digest("base64url"). */
+function bufToBase64url(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf);
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/** Constant-time string compare (avoids leaking the signature via timing). */
+function timingSafeEqualStr(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/**
+ * Full admin-cookie validation on the edge: verify the HMAC-SHA256 signature
+ * (same secret + base64url shape as lib/auth's `sign`), then the role and
+ * expiry. This is what stops a forged/unsigned cookie from passing the page
+ * gate. The API handlers and page loaders verify independently too (defense in
+ * depth) — but the gate should not accept a cookie the rest of the app rejects.
+ *
+ * Requires AUTH_SECRET at the edge. When it is unset (local dev, where lib/auth
+ * uses a per-process random secret the edge runtime can't see), fall back to a
+ * structural check so dev isn't locked out — production ALWAYS sets AUTH_SECRET
+ * (lib/auth throws without it), so production always gets the real check.
+ */
+async function hasValidAdminCookie(token: string | undefined): Promise<boolean> {
+  const payload = decodeAdminPayload(token);
+  if (!payload) return false;
+  if (payload.role !== "admin") return false;
+  if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return false;
+
+  const secret = process.env.AUTH_SECRET?.trim();
+  if (!secret || secret.length < 16) {
+    // Dev fallback: no shared secret at the edge. Structural check only; the
+    // page loader (requireLiveAdminSession) still verifies the signature.
     return true;
+  }
+
+  const [body, signature] = token!.split(".");
+  if (!body || !signature) return false;
+  try {
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const sig = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      new TextEncoder().encode(body)
+    );
+    return timingSafeEqualStr(bufToBase64url(sig), signature);
   } catch {
     return false;
   }
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const correlationId = inboundCorrelationId(request) ?? crypto.randomUUID();
-  const response = handle(request, correlationId);
+  const response = await handle(request, correlationId);
   response.headers.set(CORRELATION_HEADER, correlationId);
   return response;
 }
 
-function handle(request: NextRequest, correlationId: string) {
+async function handle(request: NextRequest, correlationId: string) {
   const { pathname } = request.nextUrl;
 
   /** Pass the request through with the correlation id visible to the handler. */
@@ -85,7 +146,7 @@ function handle(request: NextRequest, correlationId: string) {
     pathname.startsWith("/dashboard");
   if (isAdminUi) {
     const token = request.cookies.get(ADMIN_COOKIE)?.value;
-    if (!looksLikeAdminToken(token)) {
+    if (!(await hasValidAdminCookie(token))) {
       const login = new URL("/admin/login", request.url);
       login.searchParams.set("next", pathname);
       return NextResponse.redirect(login);
