@@ -7,13 +7,16 @@ Related: [`lib/integration-log.ts`](../lib/integration-log.ts) (instrumentation)
 [`app/api/health/integrations`](../app/api/health/integrations/route.ts) (health),
 `supabase/migrations/20260727140000_integration_observability.sql` (schema).
 
-> **Not yet applied to the live database.** The repo's `migrations/` folder does
-> not reproduce the live schema. Run
-> [`supabase/APPLY-integration-observability.sql`](../supabase/APPLY-integration-observability.sql)
-> in the SQL editor of the live project (`dyajmgddsiqcnlehqbhl`) to create these
-> tables — and `email_jobs`, which the app already depends on and which is also
-> missing there. Until then every query below returns "relation does not exist"
-> and `/api/health/integrations` returns 503 `health_query_failed`.
+> **Live as of 2026-07-28.** The schema is applied to `dyajmgddsiqcnlehqbhl` and
+> verified end to end: a cron heartbeat wrote to `integration_runs` under its
+> correlation id, `integration_connections` transitioned `unknown → healthy`
+> with `last_success_at` set, and `/api/health/integrations` returned 200 with
+> real per-connection data. All 14 `error_class` / `outcome` values were probed
+> against the live CHECK constraints and accepted, so failure rows record
+> rather than being silently rejected.
+>
+> The `APPLY-*.sql` files in `supabase/` are retained as the record of what was
+> applied — they are idempotent and safe to re-run.
 
 ---
 
