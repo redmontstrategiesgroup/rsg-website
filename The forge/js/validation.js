@@ -217,6 +217,39 @@ export function pcbChecks(spec) {
   return out;
 }
 
+// ---------------------------------------------------------------- mesh topology
+/**
+ * Reads the generated mesh itself, not the spec. Nothing else in the pipeline
+ * looks at the geometry that actually gets exported — gate 3 checks component
+ * footprints in 2-D, so an open or degenerate solid used to reach print.stl
+ * with every check green.
+ *
+ * `capDegenerate` is stamped on each profile by the extruder: the count of
+ * zero-area faces its triangulator could not avoid. Zero-area faces are
+ * load-bearing (deleting one opens three edges), so they are reported, not
+ * silently removed.
+ */
+export function meshChecks(model, filter = () => true) {
+  const out = [];
+  if (!model) return out;
+  let meshes = 0, degenerate = 0, worst = null;
+  model.traverse(m => {
+    if (!m.isMesh || !filter(m)) return;
+    meshes++;
+    const d = m.geometry?.userData?.capDegenerate || 0;
+    if (d) { degenerate += d; if (!worst || d > worst.d) worst = { d, name: m.userData.partName || "part" }; }
+  });
+  if (!meshes) return out;
+  out.push(degenerate
+    ? { id: "mesh-degenerate", sev: "warn", area: "Geometry",
+        text: `${degenerate} zero-area triangle(s) across ${meshes} exported solid(s) — worst is ${worst.name}. The cutout layout leaves collinear edges the triangulator cannot resolve cleanly; slicers that strip degenerate facets will report that many small holes. Nudge the affected cutouts off the shared line, or repair on import.`,
+        basis: "counted in the generator's cap triangulation" }
+    : { id: "mesh-degenerate", sev: "pass", area: "Geometry",
+        text: `${meshes} exported solid(s), no degenerate faces — every cap triangulated cleanly`,
+        basis: "counted in the generator's cap triangulation" });
+  return out;
+}
+
 // ---------------------------------------------------------------- engineering calcs
 // Real formulas with explicit assumptions. Values labelled calculated vs assumed.
 export function engineeringCalcs(spec) {

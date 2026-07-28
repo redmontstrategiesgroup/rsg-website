@@ -12,7 +12,7 @@ import { getSettings, saveSettings, hasKey, generateSpecAI, inspectPrototypeAI, 
 import { woodPlan, repairPlan, REPAIR_TYPES } from "./modes.js";
 import { screenRequest, refusalDocument, rateSpec, exportPolicy, LEVELS } from "./complexity.js";
 import { deriveRequirements, deriveSimpleRequirements, criticalUnknowns, conflicts, acceptanceTests, CATEGORIES } from "./requirements.js";
-import { dfmFDM, clearanceChecks, elecChecks, pcbChecks, firmwareConsistency, engineeringCalcs, computeGates } from "./validation.js";
+import { dfmFDM, clearanceChecks, elecChecks, pcbChecks, firmwareConsistency, meshChecks, engineeringCalcs, computeGates } from "./validation.js";
 import { deckDrawingSVG, partDrawingSVG, plateDXF, toDXF, to3MF, toSTEP } from "./drawings.js";
 import { PART_TYPES, partDFM } from "./partlib.js";
 import { BOARDS, ENCLOSURE_PRESETS, buildEnclosure, enclosurePlan, enclosureBOM, enclosureDFM } from "./enclosure.js";
@@ -169,7 +169,7 @@ async function rebuildDeck({ animate = false, fromStage = 5 } = {}) {
   await st(fromStage + 2, () => buildElectronics(spec));
   await st(fromStage + 3, () => buildPCB(spec));
   await st(fromStage + 4, () => { state.firmware = generateFirmware(spec); });
-  await st(fromStage + 5, () => runValidation());
+  await st(fromStage + 5, () => runValidation(model));
   await st(fromStage + 6, async () => {
     spec.derived.bomTotal = bomTotal(buildBOM(spec));
     setModel(model);
@@ -181,9 +181,12 @@ async function rebuildDeck({ animate = false, fromStage = 5 } = {}) {
   updateViewerDims();
 }
 
-function runValidation() {
+// `model` is passed in: validation runs a stage before setModel(), so
+// getModel() would still be holding the previous revision's geometry.
+function runValidation(model = getModel()) {
   const spec = state.spec, P = state.project;
-  P.checks = [...dfmFDM(spec), ...clearanceChecks(spec), ...elecChecks(spec), ...pcbChecks(spec), ...firmwareConsistency(spec, state.firmware)];
+  P.checks = [...dfmFDM(spec), ...clearanceChecks(spec), ...elecChecks(spec), ...pcbChecks(spec),
+    ...firmwareConsistency(spec, state.firmware), ...meshChecks(model, printedPartFilter)];
   P.calcs = engineeringCalcs(spec);
   P.complexity = rateSpec(spec);
   paintCxChip();
@@ -225,7 +228,7 @@ async function forgePart() {
   await runStage(1, () => { P.complexity = rateSpec({ singlePart: true, modules: {}, geometry: {} }); paintCxChip(); });
   let model;
   await runStage(2, () => { model = t.build(p); state.part.model = model; state.part.plan = t.plan(p); });
-  await runStage(3, () => { P.checks = partDFM(state.part.type, p, state.spec?.printerBedMM || 220); });
+  await runStage(3, () => { P.checks = [...partDFM(state.part.type, p, state.spec?.printerBedMM || 220), ...meshChecks(model)]; });
   await runStage(4, async () => {
     setModel(model); await sleep(60);
     state.renderURL = snapshot(1100, 620);
@@ -244,7 +247,7 @@ async function forgeEnclosure() {
   await runStage(1, () => { P.complexity = rateSpec({ partCountOverride: 2, modules: {}, geometry: {} }); paintCxChip(); });
   let model;
   await runStage(2, () => { model = buildEnclosure(cfg); state.enc = { cfg, model, plan: enclosurePlan(cfg) }; });
-  await runStage(3, () => { P.checks = enclosureDFM(cfg, state.spec?.printerBedMM || 220); });
+  await runStage(3, () => { P.checks = [...enclosureDFM(cfg, state.spec?.printerBedMM || 220), ...meshChecks(model)]; });
   await runStage(4, async () => {
     setModel(model); await sleep(60);
     state.renderURL = snapshot(1100, 620);

@@ -137,11 +137,10 @@ function polyInto(target, pts) {
 }
 
 /** Annulus in plan view (outer circle with a concentric bore). */
-function ring(cx, cy, rOut, rIn, seg = 32) {
+function ring(cx, cy, rOut, rIn) {
   const s = new THREE.Shape();
   s.absarc(cx, cy, rOut, 0, Math.PI * 2, false);
   s.holes.push(circleHole(cx, cy, rIn));
-  s.curveSegments = seg;
   return s;
 }
 
@@ -155,11 +154,141 @@ function resample(pts, count) {
   return out;
 }
 
-/** Extrude a plan-view shape upward (XY plan → XZ world, +y up). */
+// Triangulating in general position. A rigid rotation cannot change which
+// index triples tile a polygon, but three.js's hole-bridging step drops faces
+// when two cutouts have exactly collinear edges — the normal case for a row or
+// grid of key cutouts, and the reason the switch plate exported with 16 open
+// edges. Rotate to break the collinearity, triangulate, then apply the returned
+// indices to the original untouched coordinates.
+// Which ears earcut clips depends on the rotation, and its hole-bridging can
+// still leave a few zero-area faces for some alignments. Try a spread of angles
+// and keep the first triangulation with none; a zero-area face is load-bearing
+// (dropping one opens three edges) so it cannot simply be deleted afterwards.
+// golden-angle steps: a well-spread sequence, ~0.3 ms per attempt on the
+// largest profile here, and it stops as soon as a clean triangulation appears
+const GENERIC_ROTS = Array.from({ length: 24 }, (_, k) => 0.0007123 + k * 0.6180339887);
+
+function triangulateCap(outer, holes) {
+  const all = [outer, ...holes].flat();
+  let best = [], bestBad = Infinity;
+  for (const th of GENERIC_ROTS) {
+    const c = Math.cos(th), s = Math.sin(th);
+    const spin = r => r.map(p => new THREE.Vector2(p.x * c - p.y * s, p.x * s + p.y * c));
+    const faces = THREE.ShapeUtils.triangulateShape(spin(outer), holes.map(spin))
+      .filter(f => f[0] !== f[1] && f[1] !== f[2] && f[0] !== f[2]);
+    let bad = 0;
+    for (const f of faces) {
+      const [a, b, d] = f.map(i => all[i]);
+      if (Math.abs((b.x - a.x) * (d.y - a.y) - (d.x - a.x) * (b.y - a.y)) < 2e-7) bad++;
+    }
+    if (bad < bestBad) { bestBad = bad; best = faces; }
+    if (!bad) break;
+  }
+  return { faces: best, degenerate: bestBad, all };
+}
+
+const flip = t => { const m = t[1]; t[1] = t[2]; t[2] = m; };
+function triNormal([a, b, c]) {
+  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+  return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+}
+
+/**
+ * Drop repeated, closing and collinear points.
+ *
+ * The collinear pass matters: roundedRectPolyline samples straight edges every
+ * 1.6 mm, and earcut only discards those points while they are *exactly*
+ * collinear. Rotating into general position leaves them collinear to ~1e-13,
+ * so they survive as zero-area ears. They describe nothing in a flat profile.
+ */
+function cleanContour(pts) {
+  const out = [];
+  for (const p of pts) {
+    const last = out[out.length - 1];
+    if (last && Math.hypot(p.x - last.x, p.y - last.y) < 1e-9) continue;
+    out.push(p);
+  }
+  while (out.length > 1 && Math.hypot(out[0].x - out[out.length - 1].x, out[0].y - out[out.length - 1].y) < 1e-9) out.pop();
+  for (let changed = true; changed && out.length > 3;) {
+    changed = false;
+    for (let i = 0; i < out.length && out.length > 3; i++) {
+      const a = out[(i - 1 + out.length) % out.length], b = out[i], c = out[(i + 1) % out.length];
+      if (Math.abs((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)) < 1e-6) { out.splice(i, 1); i--; changed = true; }
+    }
+  }
+  return out;
+}
+
+/**
+ * Extrude a plan-view shape upward (XY plan → XZ world, +y up).
+ *
+ * Caps and walls are generated from one shared contour list, so every wall edge
+ * has exactly one cap edge to meet and the result is closed by construction.
+ * Winding is verified against the enclosed volume rather than assumed.
+ */
+function extrudeProfile(shape, h, curveSegments = 20) {
+  const raw = shape.extractPoints(curveSegments);
+  let outer = cleanContour(raw.shape);
+  const holes = (raw.holes || []).map(cleanContour).filter(c => c.length >= 3);
+  if (outer.length < 3) return new THREE.BufferGeometry();
+
+  // three's triangulator expects a clockwise outer contour and CCW holes
+  if (!THREE.ShapeUtils.isClockWise(outer)) outer = outer.reverse();
+  for (let i = 0; i < holes.length; i++)
+    if (THREE.ShapeUtils.isClockWise(holes[i])) holes[i] = holes[i].reverse();
+
+  const { faces, degenerate, all } = triangulateCap(outer, holes);
+  const rings = [outer, ...holes];
+  const V = (p, t) => [p.x, t * h, -p.y];        // plan → world
+
+  // The triangulator returns faces wound like its (clockwise) input contour,
+  // which maps to a downward normal here — so the top cap is reversed and the
+  // bottom cap is not. Verified below rather than trusted.
+  const caps = [];
+  for (const f of faces) {
+    const [a, b, d] = f.map(i => all[i]);
+    caps.push([V(d, 1), V(b, 1), V(a, 1)]);      // top cap, normal +y
+    caps.push([V(a, 0), V(b, 0), V(d, 0)]);      // bottom cap, normal -y
+  }
+  const walls = [];
+  for (const r of rings) {
+    for (let i = 0; i < r.length; i++) {
+      // clockwise plan contour → the solid is to the right of a→b, so the quad
+      // a0-b0-b1-a1 has to be wound the other way for the normal to face out
+      const a = r[i], b = r[(i + 1) % r.length];
+      walls.push([V(b, 1), V(b, 0), V(a, 0)]);
+      walls.push([V(a, 1), V(b, 1), V(a, 0)]);
+    }
+  }
+  // Check the caps on their own: a global volume test cannot see inverted caps,
+  // because correctly wound walls outweigh them and the total stays positive.
+  const top = caps.filter((_, i) => i % 2 === 0);
+  let best = null, bestA = 0;
+  for (const t of top) {
+    const n = triNormal(t);
+    const a = Math.hypot(n[0], n[1], n[2]);
+    if (a > bestA) { bestA = a; best = n; }
+  }
+  if (best && best[1] < 0) for (const t of caps) flip(t);
+  const tri = [...caps, ...walls];
+  let v6 = 0;
+  for (const [a, b, d] of tri)
+    v6 += a[0] * (b[1] * d[2] - b[2] * d[1]) - a[1] * (b[0] * d[2] - b[2] * d[0]) + a[2] * (b[0] * d[1] - b[1] * d[0]);
+  if (v6 < 0) for (const t of tri) flip(t);      // outward normals enclose positive volume
+
+  const pos = new Float32Array(tri.length * 9);
+  let o = 0;
+  for (const t of tri) for (const p of t) { pos[o++] = p[0]; pos[o++] = p[1]; pos[o++] = p[2]; }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  g.computeVertexNormals();
+  // surfaced rather than swallowed: any residue here is a real mesh defect
+  g.userData.capDegenerate = degenerate;
+  return g;
+}
+
 function extrudeUp(shape, h, mat, y0 = 0) {
-  const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false, curveSegments: 20 });
-  g.rotateX(-D2);              // plan Y → world -z, extrusion → +y
-  const mesh = new THREE.Mesh(g, mat);
+  const mesh = new THREE.Mesh(extrudeProfile(shape, h), mat);
   mesh.position.y = y0;        // body occupies y0 … y0+h
   return mesh;
 }
@@ -254,7 +383,7 @@ export function buildDeckModel(spec) {
     .map(([ax, az]) => [ax * (deck.w / 2 - 5.4), az * (deck.d / 2 - 5.4)]);
   if (!G.snapFit) {
     for (const [bx, bz] of screwPts)
-      shell.add(extrudeUp(ring(bx, -bz, P.BOSS_OD / 2, P.BOSS_BORE / 2, 24), deck.h - floorH + 0.8, shellMat, floorH - 0.8));
+      shell.add(extrudeUp(ring(bx, -bz, P.BOSS_OD / 2, P.BOSS_BORE / 2), deck.h - floorH + 0.8, shellMat, floorH - 0.8));
   }
   tag(shell, "Bottom shell (printed)", 0, -34, 0);
   root.add(shell);
