@@ -227,7 +227,7 @@ export async function GET(request: Request) {
       let q = sb
         .from("bookings")
         .select(
-          "*, appointment_types(name, slug), team_members(name, email), leads(name, email, phone, business_name, qualification_score, qualification_outcome, service_requested, status, qualification_snapshot)",
+          "*, appointment_types(name, slug), team_members(name, email), services(name, slug), leads(name, email, phone, business_name, qualification_score, qualification_outcome, service_requested, preferred_contact, status, qualification_snapshot)",
           { count: "exact" }
         )
         .order("starts_at", { ascending: false })
@@ -296,7 +296,12 @@ export async function GET(request: Request) {
         sb.from("availability_schedules").select("*"),
         sb.from("availability_windows").select("*"),
         getSettings(),
-        sb.from("webhook_endpoints").select("*"),
+        // Never ship the webhook HMAC signing secret to the browser — the
+        // config section is readable by edit_availability roles, but the
+        // secret is only relevant to owners who manage webhooks.
+        sb
+          .from("webhook_endpoints")
+          .select("id, url, events, enabled, created_at, updated_at"),
         sb
           .from("notification_jobs")
           .select("*")
@@ -309,7 +314,10 @@ export async function GET(request: Request) {
           .eq("status", "failed")
           .order("created_at", { ascending: false })
           .limit(50),
-        sb.from("calendar_integrations").select("*"),
+        // Omit `config` — it can hold provider OAuth/credential material.
+        sb
+          .from("calendar_integrations")
+          .select("id, provider, team_member_id, status, created_at, updated_at"),
         sb
           .from("scheduling_activity_logs")
           .select("*")
@@ -358,8 +366,13 @@ export async function POST(request: Request) {
   const sb = requireSupabase();
   const body = await request.json();
   const action = body.action as string;
+  // Fail closed: every dispatchable action must map to a required permission.
+  // An unmapped action is rejected rather than proceeding under the base gate.
   const needed = SCHEDULING_ACTION_PERMISSION[action];
-  if (needed && !can(needed, ctx.role)) {
+  if (!needed) {
+    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  }
+  if (!can(needed, ctx.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

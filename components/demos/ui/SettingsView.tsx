@@ -400,7 +400,14 @@ export function SettingsView(props: ViewProps) {
                 </p>
               </div>
             )}
-            <div className="flex justify-end border-t border-white/[0.06] pt-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3">
+              <button
+                type="button"
+                onClick={() => props.openRequest({ source: "settings_personalize" })}
+                className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+              >
+                <Wand2 size={11} aria-hidden /> Customize this system for my business
+              </button>
               <SmallButton
                 onClick={() => {
                   dispatch({ type: "settings-personalization", personalization: {} });

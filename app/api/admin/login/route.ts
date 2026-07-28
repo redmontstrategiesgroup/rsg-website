@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import {
   verifyPassword,
+  verifyPasswordDecoy,
   setAdminSessionCookie,
+  getAuthSecret,
 } from "@/lib/auth";
 import {
   findAdminByEmail,
@@ -20,7 +22,7 @@ const SESSION_RECORD_DAYS = 90;
 
 /** Short-lived signed ticket proving password step passed (MFA pending). */
 function signMfaTicket(adminId: string, email: string, exp: number): string {
-  const secret = process.env.AUTH_SECRET || "dev";
+  const secret = getAuthSecret();
   const body = Buffer.from(JSON.stringify({ sub: adminId, email, exp })).toString(
     "base64url"
   );
@@ -33,7 +35,7 @@ function verifyMfaTicket(
 ): { sub: string; email: string } | null {
   const [body, sig] = ticket.split(".");
   if (!body || !sig) return null;
-  const secret = process.env.AUTH_SECRET || "dev";
+  const secret = getAuthSecret();
   const expected = createHmac("sha256", secret).update(body).digest("base64url");
   const a = Buffer.from(sig);
   const b = Buffer.from(expected);
@@ -109,6 +111,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Incorrect email or password." }, { status: 401 });
     }
     if (!verifyTotp(admin.mfaSecret, mfaCode)) {
+      await writeAuditEvent({
+        actorType: "anonymous",
+        actorEmail: admin.email,
+        action: "admin.login_failed",
+        metadata: { reason: "mfa_code" },
+        ip: clientIp(request),
+        userAgent: request.headers.get("user-agent"),
+      });
       return NextResponse.json({ error: "Invalid authenticator code." }, { status: 401 });
     }
     return issueAdminSession(request, admin);
@@ -130,7 +140,20 @@ export async function POST(request: Request) {
   }
 
   const admin = await findAdminByEmail(email);
+  // Run scrypt even when no admin matches so response timing can't reveal
+  // whether an admin email is registered.
+  if (!admin) verifyPasswordDecoy(password);
   if (!admin || !verifyPassword(password, admin.passwordHash)) {
+    // Real authentication events feed the Security Center dashboard. The
+    // attempted email is recorded; the password never is.
+    await writeAuditEvent({
+      actorType: "anonymous",
+      actorEmail: email.slice(0, 200),
+      action: "admin.login_failed",
+      metadata: { reason: "password" },
+      ip: clientIp(request),
+      userAgent: request.headers.get("user-agent"),
+    });
     return NextResponse.json(
       { error: "Incorrect email or password." },
       { status: 401 }

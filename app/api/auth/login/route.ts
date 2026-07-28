@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { verifyPassword, setSessionCookie } from "@/lib/auth";
-import { findClientByEmail, createSessionRecord } from "@/lib/store";
+import { setSessionCookie } from "@/lib/auth";
+import { getClientById, createSessionRecord } from "@/lib/store";
+import { authenticatePortalUser } from "@/lib/lifecycle/access";
 import { toPublic } from "@/lib/seed";
 import { toStr, isEmail, LIMITS } from "@/lib/validate";
 import { rateLimit, clientIp } from "@/lib/security";
@@ -45,22 +46,29 @@ export async function POST(request: Request) {
     );
   }
 
-  const client = await findClientByEmail(email);
-  // Constant-ish response whether or not the account exists.
-  if (!client || !client.passwordHash || !verifyPassword(password, client.passwordHash)) {
+  // Accepts both legacy client accounts and client_users team members.
+  // Runs a decoy scrypt compare when no account exists so timing can't
+  // reveal a registered email.
+  const account = await authenticatePortalUser(email, password);
+  if (!account) {
     return NextResponse.json(
       { error: "Incorrect email or password." },
       { status: 401 }
     );
   }
 
-  const sessionId = await setSessionCookie(client.id, client.email);
+  // Cookie subject = the signing account (client id or client_user id);
+  // the DB session record stays keyed to the parent client (FK).
+  const sessionId = await setSessionCookie(account.accountId, account.email);
   await createSessionRecord({
     sessionId,
-    clientId: client.id,
+    clientId: account.clientId,
     expiresAt: new Date(Date.now() + SESSION_RECORD_DAYS * 24 * 60 * 60_000),
     userAgent: request.headers.get("user-agent") ?? undefined,
     ip: clientIp(request),
   });
-  return NextResponse.json({ client: toPublic(client) });
+  const client = await getClientById(account.clientId);
+  return NextResponse.json({
+    client: client ? toPublic(client) : { name: account.name, email: account.email },
+  });
 }

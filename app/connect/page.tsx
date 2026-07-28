@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Connect | Redmont Strategies Group",
   description:
-    "Book a strategy call, explore RSG services, view industry demos, and contact Redmont Strategies Group — the official connect page.",
+    "Book a strategy call, explore RSG services, view industry demos, and contact Redmont Strategies Group.",
   alternates: { canonical: `${SITE_URL}/connect` },
   openGraph: {
     title: "Connect with Redmont Strategies Group",

@@ -2,10 +2,8 @@ import type { IndustryConfig } from "../types";
 import {
   DEMO_APPOINTMENT_TYPES,
   DEMO_INTAKE_FIELDS,
-  DEMO_ROLES,
   DEMO_SAMPLE_CUSTOMER,
   DEMO_SCHEDULE_DAYS,
-  DEMO_STAFF,
   DEMO_TEMPLATES,
   DEMO_TERMINOLOGY,
 } from "./shared";
@@ -37,19 +35,58 @@ export const dentalConfig: IndustryConfig = {
   accentLabel: "Patient Communication",
   terminology: DEMO_TERMINOLOGY,
   leadsLabel: "Patients & inquiries",
-  staff: DEMO_STAFF,
-  roles: DEMO_ROLES,
+  staff: [
+    { id: "staff-patel", name: "Dr. Patel", role: "Dentist" },
+    { id: "staff-sofia", name: "Sofia, RDH", role: "Hygienist" },
+    { id: "staff-beth", name: "Beth", role: "Treatment coordinator" },
+    { id: "staff-nina", name: "Nina", role: "Front desk" },
+  ],
+  roles: [
+    {
+      id: "owner",
+      label: "Practice owner",
+      description: "Full access — production, recall, reviews, and settings.",
+      nav: [
+        "overview", "leads", "pipeline", "conversations", "receptionist", "quotes",
+        "automations", "tasks", "calendar", "reviews", "campaigns", "analytics", "settings",
+      ],
+    },
+    {
+      id: "manager",
+      label: "Office manager",
+      description: "Front desk workload, recall campaigns, and patient communication.",
+      nav: [
+        "overview", "leads", "pipeline", "conversations", "receptionist", "quotes",
+        "tasks", "calendar", "reviews", "campaigns",
+      ],
+    },
+    {
+      id: "staff",
+      label: "Front desk",
+      description: "Conversations, today's schedule, and open tasks.",
+      nav: ["overview", "conversations", "receptionist", "tasks", "calendar", "leads"],
+    },
+    {
+      id: "provider",
+      label: "Provider",
+      description: "Their schedule and patient records — no admin noise.",
+      nav: ["overview", "calendar", "leads"],
+    },
+  ],
   nav: [
     { id: "overview", label: "Overview" },
     { id: "leads", label: "Patients" },
     { id: "pipeline", label: "Appointments" },
     { id: "conversations", label: "Conversations" },
+    { id: "receptionist", label: "AI Receptionist" },
+    { id: "quotes", label: "Treatment Estimates" },
     { id: "automations", label: "Automations" },
     { id: "tasks", label: "Front Desk" },
     { id: "calendar", label: "Calendar" },
     { id: "reviews", label: "Reviews" },
     { id: "campaigns", label: "Recall" },
     { id: "analytics", label: "Analytics" },
+    { id: "settings", label: "Settings" },
   ],
   metrics: [
     { id: "inquiries", label: "New patient inquiries", value: 19, delta: "+5 this week", deltaDir: "up" },
@@ -60,6 +97,7 @@ export const dentalConfig: IndustryConfig = {
     { id: "recall-booked", label: "Reactivation appointments", value: 9, delta: "+9", deltaDir: "up" },
     { id: "tasks-automated", label: "Front desk tasks automated", value: 87, delta: "+31", deltaDir: "up", hint: "Confirmations, forms, reminders" },
     { id: "response", label: "Avg response time", value: 1, format: "minutes", delta: "-4 hrs", deltaGood: true, deltaDir: "down", hint: "Includes after-hours" },
+    { id: "no-show-risk", label: "No-show risk", value: 6, format: "percent", delta: "-3 pts", deltaDir: "down", deltaGood: true, hint: "Visits missing a confirmation or forms" },
   ],
   stages: [
     { id: "inquiry", label: "New Inquiry" },
@@ -201,6 +239,170 @@ export const dentalConfig: IndustryConfig = {
   ],
   templates: DEMO_TEMPLATES,
   intakeFields: DEMO_INTAKE_FIELDS,
+  quote: {
+    title: "Instant treatment estimate",
+    description:
+      "The administrative estimate tool the front desk uses when a patient asks \"what will this cost me?\" — with insurance adjustments applied automatically. Estimates become records with follow-up.",
+    documentLabel: "Treatment estimate",
+    base: { label: "Exam & imaging", amount: 180 },
+    fields: [
+      {
+        id: "procedure",
+        label: "Procedure",
+        options: [
+          { label: "New patient cleaning + exam", amount: 220 },
+          { label: "Whitening (in-office)", amount: 450 },
+          { label: "Crown (per tooth)", amount: 1450 },
+          { label: "Invisalign (full treatment)", amount: 4800 },
+          { label: "Implant (consult + placement)", amount: 3900 },
+        ],
+      },
+      {
+        id: "insurance",
+        label: "Insurance adjustment (estimated)",
+        options: [
+          { label: "No insurance", amount: 0 },
+          { label: "In-network PPO", amount: -380 },
+          { label: "Out-of-network plan", amount: -150 },
+        ],
+        helper: "Estimates only — the system verifies benefits before the visit.",
+      },
+      {
+        id: "financing",
+        label: "Payment",
+        options: [
+          { label: "Monthly payment plan", amount: 0 },
+          { label: "Pay in full (courtesy discount)", amount: -100 },
+        ],
+      },
+    ],
+    acceptedStageId: "confirmed",
+    disclaimer:
+      "Sample administrative estimate — actual treatment and costs are determined by the dentist after clinical evaluation.",
+  },
+  receptionist: {
+    scenarioLabel: "After-hours call — 7:04 PM",
+    description: "The office closed at 5. The phone rings anyway — this is where practices lose new patients to whoever answers next.",
+    callerRole: "a caller reaching the practice after hours",
+    start: "greet",
+    nodes: [
+      {
+        id: "greet",
+        say: "Hi, you've reached Brightwater Dental — the office is closed until 8 AM, but I'm the practice's automated assistant and I can help with scheduling and questions right now. Please note: for dental emergencies with severe pain, swelling, or injury, follow our emergency line instructions; call 911 for medical emergencies. How can I help?",
+        meta: "Emergency protocol always stated first",
+        choices: [
+          { id: "c-new", label: "I'm a new patient — I need a cleaning and exam.", next: "insurance" },
+          { id: "c-pain", label: "I have a toothache that's getting worse.", next: "triage" },
+          { id: "c-ins", label: "Do you take Delta Dental?", next: "ins-answer" },
+        ],
+      },
+      {
+        id: "ins-answer",
+        say: "We do — Brightwater is in-network with Delta Dental, plus most major PPO plans. Would you like to set up a visit? I can also have Beth, our treatment coordinator, verify your exact benefits before you come in.",
+        meta: "Answers from your office playbook",
+        choices: [
+          { id: "c-new2", label: "Great — I'd like a new patient cleaning.", next: "insurance" },
+        ],
+      },
+      {
+        id: "triage",
+        say: "I'm sorry you're dealing with that — I can't give medical advice, but I can get you seen quickly. Is there severe pain, facial swelling, or bleeding right now?",
+        meta: "Escalation rules from office protocol",
+        choices: [
+          { id: "c-severe", label: "Yes — it's pretty severe.", next: "done-emergency" },
+          { id: "c-mild", label: "No, it's uncomfortable but manageable.", next: "sameday" },
+        ],
+      },
+      {
+        id: "done-emergency",
+        say: "Please follow our emergency line instructions at (508) 555-0119 now — I've also paged Dr. Patel's on-call service and flagged your number so the team follows up first thing. If this becomes a medical emergency, call 911.",
+        outcome: {
+          summary: [
+            "The caller was routed to the emergency line per office protocol — no medical advice given.",
+            "The on-call service was paged and a first-thing follow-up task was created.",
+            "The call was logged so the morning team has full context.",
+          ],
+          effects: [
+            { kind: "lead", lead: { id: "l-ai-emerg", name: "After-hours caller", service: "Emergency escalation — severe pain", source: "Missed call (after hours)", stageId: "review", lastActivity: "Just now", temp: "hot", note: "Escalated to emergency line + on-call page at 7:04 PM per protocol", assignee: "Nina" } },
+            { kind: "task", task: { id: "t-ai-emerg", title: "First thing: call back after-hours emergency caller — escalated to on-call at 7:04 PM", assignee: "Nina", due: "8:00 AM", priority: "high", auto: true } },
+            { kind: "metric", id: "missed-calls", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-emerg", title: "Emergency escalated per protocol", body: "On-call paged, morning follow-up task created. Simulated.", tone: "alert" } },
+          ],
+        },
+      },
+      {
+        id: "sameday",
+        say: "Understood. Dr. Patel holds same-day slots for situations like this — tomorrow has 8:20 AM or 11:40 AM open. Which works for you?",
+        meta: "Checks the live schedule",
+        choices: [
+          { id: "c-820", label: "8:20 AM, please.", next: "done-sameday" },
+          { id: "c-1140", label: "11:40 is better.", next: "done-sameday" },
+        ],
+      },
+      {
+        id: "done-sameday",
+        say: "You're booked for tomorrow with Dr. Patel. I'm texting your confirmation and new-patient forms now — filling them out tonight saves you 15 minutes at the desk. Feel better soon!",
+        outcome: {
+          summary: [
+            "A same-day-protocol appointment was booked at 7 PM with nobody in the office.",
+            "Forms went out automatically so check-in is fast tomorrow.",
+            "The patient record, conversation, and front-desk task are all connected.",
+          ],
+          effects: [
+            { kind: "lead", lead: { id: "l-ai-tooth", name: "Sam Rivera", service: "Same-day appointment — tooth pain", source: "Missed call (after hours)", stageId: "confirmed", lastActivity: "Just now", temp: "hot", note: "Booked by AI receptionist at 7:04 PM · manageable pain, same-day protocol", assignee: "Dr. Patel" } },
+            { kind: "calendar", event: { id: "cal-ai-tooth", day: "Fri", date: "Jul 17", time: "8:20 AM", title: "Same-day visit — Sam Rivera", withWhom: "Dr. Patel", status: "confirmed" } },
+            { kind: "conversation", conversation: { id: "c-ai-tooth", contact: "Sam Rivera", channel: "phone", topic: "After-hours call — same-day booked", unread: true, messages: [
+              { id: "ai-sd-1", from: "system", meta: "AI receptionist · call summary", text: "After-hours call: tooth pain, manageable per caller. Same-day protocol slot booked 8:20 AM with Dr. Patel. Forms texted. No clinical advice given.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "missed-calls", delta: 1 },
+            { kind: "metric", id: "booked", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-tooth", title: "After-hours call converted", body: "Sam Rivera — same-day slot 8:20 AM. Booked at 7:04 PM.", tone: "success" } },
+          ],
+        },
+      },
+      {
+        id: "insurance",
+        say: "Welcome! We'd love to get you in. Do you have dental insurance? If so, which plan — I'll check the network and note it for the front desk.",
+        meta: "Collects intake details",
+        choices: [
+          { id: "c-delta", label: "Yes — Delta Dental through my employer.", next: "book-cleaning" },
+          { id: "c-noins", label: "No insurance — I'll pay out of pocket.", next: "book-cleaning" },
+        ],
+      },
+      {
+        id: "book-cleaning",
+        say: "Noted. New patient cleanings are 60 minutes with Sofia, our hygienist. I have Thursday 9:00 AM or Friday 2:00 PM open — which is better?",
+        meta: "Checks the live schedule",
+        choices: [
+          { id: "c-thu9", label: "Thursday at 9.", next: "done-cleaning" },
+          { id: "c-fri2", label: "Friday at 2.", next: "done-cleaning" },
+        ],
+      },
+      {
+        id: "done-cleaning",
+        say: "All set — you're booked for a new patient cleaning and exam. Your confirmation and intake forms are on the way by text, and the front desk will verify your benefits before your visit. Welcome to Brightwater!",
+        outcome: {
+          summary: [
+            "A 7 PM caller became a booked new patient — no voicemail, no lost lead.",
+            "Insurance details were captured and queued for benefits verification.",
+            "Forms went out automatically and the front desk got a morning review task.",
+          ],
+          effects: [
+            { kind: "lead", lead: { id: "l-ai-clean", name: "Jamie Fletcher", service: "New patient cleaning + exam", source: "Missed call (after hours)", stageId: "confirmed", lastActivity: "Just now", temp: "warm", note: "Delta Dental · booked by AI receptionist at 7:04 PM · benefits verification queued", assignee: "Sofia, RDH" } },
+            { kind: "calendar", event: { id: "cal-ai-clean", day: "Thu", date: "Jul 16", time: "9:00 AM", title: "New patient cleaning — Jamie Fletcher", withWhom: "Sofia, RDH", status: "confirmed" } },
+            { kind: "task", task: { id: "t-ai-clean", title: "Verify Delta Dental benefits — Jamie Fletcher (new patient, Thu 9:00 AM)", assignee: "Nina", due: "Tomorrow", auto: true } },
+            { kind: "conversation", conversation: { id: "c-ai-clean", contact: "Jamie Fletcher", channel: "phone", topic: "After-hours call — new patient booked", messages: [
+              { id: "ai-c-1", from: "system", meta: "AI receptionist · call summary", text: "After-hours call handled: new patient, Delta Dental. Cleaning + exam booked Thu 9:00 AM with Sofia. Forms texted; benefits verification task created.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "inquiries", delta: 1 },
+            { kind: "metric", id: "missed-calls", delta: 1 },
+            { kind: "metric", id: "booked", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-clean", title: "New patient booked after hours", body: "Jamie Fletcher — Thu 9:00 AM cleaning. Captured at 7:04 PM.", tone: "success" } },
+          ],
+        },
+      },
+    ],
+  },
   appointmentTypes: DEMO_APPOINTMENT_TYPES,
   scheduleDays: DEMO_SCHEDULE_DAYS,
   sampleCustomer: DEMO_SAMPLE_CUSTOMER,
@@ -376,9 +578,324 @@ export const dentalConfig: IndustryConfig = {
           { kind: "notify", notification: { id: "n-s11", title: "Scenario complete", body: "After-hours missed call → confirmed new patient, ~90 seconds of staff time.", tone: "success" } },
         ],
       },
+      {
+        id: "s-12",
+        title: "Now try it yourself",
+        detail:
+          "Take a 7 PM call as the AI receptionist's caller, build a treatment estimate with insurance adjustments, or reschedule a visit on the calendar. Everything here is safe to touch.",
+        tab: "receptionist",
+        effects: [
+          { kind: "notify", notification: { id: "n-s12", title: "Your turn", body: "Try the after-hours call, then price a procedure in Treatment Estimates.", tone: "default" } },
+        ],
+      },
     ],
   },
-  scenarios: [],
+  scenarios: [
+    {
+      id: "scn-new-patient",
+      label: "New-patient inquiry to confirmed visit",
+      description:
+        "A 9:40 PM website inquiry becomes a confirmed, forms-complete new patient — insurance answered, slot held, front desk approves in one click.",
+      steps: [
+        {
+          id: "sc-np-1",
+          title: "A new-patient inquiry arrives at 9:40 PM",
+          detail:
+            "The office is dark. Priya Nair, new to town, writes in through the website: does Brightwater take MetLife PPO, and how far out are new-patient cleanings booking? The system picks it up instantly instead of queuing her for morning.",
+          tab: "conversations",
+          effects: [
+            {
+              kind: "conversation",
+              conversation: {
+                id: "c-priya",
+                contact: "Priya Nair",
+                channel: "web",
+                topic: "New patient — insurance & availability",
+                unread: true,
+                messages: [
+                  { id: "pn-1", from: "contact", text: "Hi — we just moved to the area. Do you take MetLife PPO? And how far out are you booking new patient cleanings?", time: "Just now" },
+                ],
+              },
+            },
+            { kind: "metric", id: "inquiries", delta: 1 },
+            { kind: "activity", item: { id: "a-np-1", icon: "message", text: "After-hours website inquiry from Priya Nair — automated response engaged.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-np-2",
+          title: "The AI answers insurance and availability",
+          detail:
+            "The AI answers from the office playbook: MetLife PPO is in-network. Then it reads open new-patient slots straight from the live schedule — at 9:40 PM, with nobody at the desk.",
+          tab: "conversations",
+          effects: [
+            { kind: "message", conversationId: "c-priya", message: { id: "pn-2", from: "system", meta: "Automated · Office playbook", text: "Welcome to the area, Priya! Brightwater is in-network with MetLife PPO. New patient cleanings are 60 minutes with Sofia, our hygienist — Thursday 10:00 AM or Friday 2:00 PM are open this week. Want me to hold one?", time: "Just now" } },
+            { kind: "lead", lead: { id: "l-priya", name: "Priya Nair", service: "New patient cleaning + exam", source: "Website chat (after hours)", stageId: "info", lastActivity: "Just now", temp: "hot", note: "MetLife PPO · asked about availability at 9:40 PM" } },
+            { kind: "metric", id: "tasks-automated", delta: 1 },
+          ],
+        },
+        {
+          id: "sc-np-3",
+          title: "She books Thursday at 10",
+          detail:
+            "Priya picks Thursday. The slot goes onto the calendar as a pending hold — the system proposes, the front desk approves. Nothing is final without a human.",
+          tab: "calendar",
+          effects: [
+            { kind: "message", conversationId: "c-priya", message: { id: "pn-3", from: "contact", text: "Thursday at 10 works great. Let's do it!", time: "Just now" } },
+            { kind: "stage", leadId: "l-priya", stageId: "requested" },
+            { kind: "metric", id: "requested", delta: 1 },
+            { kind: "calendar", event: { id: "cal-priya", day: "Thu", date: "Jul 16", time: "10:00 AM", title: "New patient cleaning + exam — Priya Nair (hold)", withWhom: "Sofia, RDH + Dr. Patel", status: "pending" } },
+            { kind: "notify", notification: { id: "n-np-3", title: "New patient hold placed", body: "Priya Nair — Thu 10:00 AM, pending front-desk approval.", tone: "default" } },
+          ],
+        },
+        {
+          id: "sc-np-4",
+          title: "The front desk gets one tidy task",
+          detail:
+            "At 8 AM, Nina sees a single review task with everything attached — name, plan, requested time — instead of a voicemail to decode and a cold callback to make.",
+          tab: "tasks",
+          effects: [
+            { kind: "task", task: { id: "t-priya", title: "Approve Thu 10 AM hold + verify MetLife PPO benefits — Priya Nair (new patient)", assignee: "Nina", due: "Today 8 AM", priority: "high", auto: true } },
+            { kind: "stage", leadId: "l-priya", stageId: "review" },
+            { kind: "notify", notification: { id: "n-np-4", title: "Ready for review", body: "Priya Nair's hold is queued with insurance details attached.", tone: "default" } },
+          ],
+        },
+        {
+          id: "sc-np-5",
+          title: "Approved — confirmation and intake forms go out",
+          detail:
+            "Nina approves with one click. The confirmation, digital intake forms, and parking directions send automatically, and the system starts tracking form completion.",
+          tab: "conversations",
+          effects: [
+            { kind: "completeTask", taskId: "t-priya" },
+            { kind: "appointmentStatus", eventId: "cal-priya", status: "confirmed" },
+            { kind: "stage", leadId: "l-priya", stageId: "confirmed" },
+            { kind: "metric", id: "booked", delta: 1 },
+            { kind: "message", conversationId: "c-priya", message: { id: "pn-4", from: "system", meta: "Automated · Confirmation + forms", text: "You're confirmed, Priya — Thursday, Jul 16 at 10:00 AM with Sofia and Dr. Patel. Your new-patient forms: brightwater.demo/forms (about 5 minutes, saves time at check-in). Parking is behind the building.", time: "Just now" } },
+            { kind: "metric", id: "tasks-automated", delta: 2 },
+          ],
+        },
+        {
+          id: "sc-np-6",
+          title: "Forms come back the same night",
+          detail:
+            "Priya finishes her digital intake from the couch. Her record moves to Forms Complete — no clipboard at check-in, no double entry for the front desk.",
+          tab: "pipeline",
+          effects: [
+            { kind: "message", conversationId: "c-priya", message: { id: "pn-5", from: "contact", text: "Forms are done — that was easy. See you Thursday!", time: "Just now" } },
+            { kind: "stage", leadId: "l-priya", stageId: "forms" },
+            { kind: "activity", item: { id: "a-np-6", icon: "automation", text: "Intake forms completed by Priya Nair — chart-ready before her first visit.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-np-7",
+          title: "Reminders arm and no-show risk drops",
+          detail:
+            "A day-before confirmation and a morning-of reminder schedule themselves. A confirmed time plus completed forms puts Priya in the lowest no-show-risk band — and the dashboard shows it.",
+          tab: "overview",
+          effects: [
+            { kind: "metric", id: "no-show-risk", delta: -1 },
+            { kind: "metric", id: "tasks-automated", delta: 2 },
+            { kind: "activity", item: { id: "a-np-7", icon: "calendar", text: "Reminder sequence armed for Priya Nair (Thu 10:00 AM) — T-24h confirmation + morning-of text.", time: "Just now" } },
+            { kind: "notify", notification: { id: "n-np-7", title: "Scenario complete", body: "After-hours inquiry → confirmed, forms-complete new patient. Simulated end to end.", tone: "success" } },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scn-plan-followup",
+      label: "Unscheduled treatment plan follow-up",
+      description:
+        "A crown presented 42 days ago never got scheduled. Watch a gentle follow-up, a straight answer on cost, and a spot on Friday's schedule.",
+      steps: [
+        {
+          id: "sc-tp-1",
+          title: "The system flags a presented, unscheduled plan",
+          detail:
+            "A nightly sweep compares presented treatment plans against the schedule. Derek Foley's crown — presented 42 days ago, no appointment on file — enters the follow-up sequence.",
+          tab: "campaigns",
+          effects: [
+            { kind: "lead", lead: { id: "l-foley", name: "Derek Foley", service: "Crown #30 — presented, unscheduled", source: "Treatment follow-up campaign", stageId: "info", lastActivity: "Just now", temp: "warm", note: "Crown presented 42 days ago · no appointment on file · follow-up sequence started" } },
+            { kind: "activity", item: { id: "a-tp-1", icon: "automation", text: "Nightly sweep: Derek Foley's presented crown has no appointment — follow-up sequence started.", time: "Just now" } },
+            { kind: "notify", notification: { id: "n-tp-1", title: "Unscheduled treatment found", body: "Derek Foley — crown presented 42 days ago. Gentle follow-up queued.", tone: "default" } },
+          ],
+        },
+        {
+          id: "sc-tp-2",
+          title: "A gentle check-in goes out",
+          detail:
+            "No pressure, no scare copy — the exact message Dr. Patel approved: a check-in with an easy way to ask about timing or cost, or to book directly.",
+          tab: "conversations",
+          effects: [
+            {
+              kind: "conversation",
+              conversation: {
+                id: "c-foley",
+                contact: "Derek Foley",
+                channel: "sms",
+                topic: "Treatment follow-up — crown",
+                messages: [
+                  { id: "df-1", from: "system", meta: "Automated · Treatment follow-up", text: "Hi Derek, it's Brightwater Dental. Dr. Patel asked us to check in on the crown we discussed at your last visit. If timing or cost is the question, Beth can walk you through options — or grab a time here: brightwater.demo/schedule", time: "Just now" },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          id: "sc-tp-3",
+          title: "Derek replies with the real objection: cost",
+          detail:
+            "He's been putting it off over price. The system doesn't guess at numbers — it routes the thread to Beth, the treatment coordinator, with the plan details attached.",
+          tab: "tasks",
+          effects: [
+            { kind: "message", conversationId: "c-foley", message: { id: "df-2", from: "contact", text: "Honestly I've been putting it off — what would my share be with insurance?", time: "Just now" } },
+            { kind: "conversationMeta", conversationId: "c-foley", patch: { unread: true } },
+            { kind: "task", task: { id: "t-foley", title: "Beth: call Derek Foley with crown estimate + payment plan options (asked by text)", assignee: "Beth (treatment coord.)", due: "Today", priority: "high", auto: true } },
+            { kind: "metric", id: "tasks-automated", delta: 1 },
+            { kind: "notify", notification: { id: "n-tp-3", title: "Cost question routed", body: "Derek Foley's thread handed to Beth with full context.", tone: "alert" } },
+          ],
+        },
+        {
+          id: "sc-tp-4",
+          title: "Beth answers with a written estimate",
+          detail:
+            "Beth builds the estimate in the system — crown, in-network adjustment, monthly plan option — and texts it back with two open Friday times. The estimate saves to Derek's record.",
+          tab: "quotes",
+          effects: [
+            { kind: "quote", quote: { id: "q-foley", contact: "Derek Foley", leadId: "l-foley", lines: [{ label: "Crown (per tooth)", amount: 1450 }, { label: "In-network PPO adjustment (estimated)", amount: -380 }], total: 1070, status: "sent", createdAt: "Just now" } },
+            { kind: "message", conversationId: "c-foley", message: { id: "df-3", from: "staff", meta: "Beth (treatment coord.)", text: "Hi Derek, Beth from Brightwater. With your PPO, the crown estimate comes to about $1,070, and a monthly plan is available. Dr. Patel has Friday 8:40 AM or 1:20 PM open — want me to hold one?", time: "Just now" } },
+            { kind: "stage", leadId: "l-foley", stageId: "requested" },
+            { kind: "metric", id: "requested", delta: 1 },
+          ],
+        },
+        {
+          id: "sc-tp-5",
+          title: "The crown gets scheduled",
+          detail:
+            "Derek takes Friday 8:40. The visit lands on Dr. Patel's calendar, the estimate flips to accepted, and Beth's task closes itself — nothing left to remember.",
+          tab: "calendar",
+          effects: [
+            { kind: "message", conversationId: "c-foley", message: { id: "df-4", from: "contact", text: "Friday 8:40 works. Thanks for making that painless.", time: "Just now" } },
+            { kind: "calendar", event: { id: "cal-foley", day: "Fri", date: "Jul 17", time: "8:40 AM", title: "Crown prep — Derek Foley", withWhom: "Dr. Patel", status: "confirmed" } },
+            { kind: "stage", leadId: "l-foley", stageId: "confirmed" },
+            { kind: "quoteStatus", quoteId: "q-foley", status: "accepted" },
+            { kind: "completeTask", taskId: "t-foley" },
+            { kind: "metric", id: "booked", delta: 1 },
+          ],
+        },
+        {
+          id: "sc-tp-6",
+          title: "Confirmation goes out — the plan stops leaking",
+          detail:
+            "The confirmation and pre-visit reminder schedule themselves. A treatment plan that sat stalled for 42 days moves to Friday's schedule in a single text thread.",
+          tab: "overview",
+          effects: [
+            { kind: "message", conversationId: "c-foley", message: { id: "df-5", from: "system", meta: "Automated · Confirmation", text: "You're set, Derek — Friday, Jul 17 at 8:40 AM with Dr. Patel for your crown. We'll send a reminder the day before. Reply here anytime with questions.", time: "Just now" } },
+            { kind: "metric", id: "tasks-automated", delta: 2 },
+            { kind: "activity", item: { id: "a-tp-6", icon: "pipeline", text: "Unscheduled treatment recovered: Derek Foley's crown scheduled 42 days after presentation.", time: "Just now" } },
+            { kind: "notify", notification: { id: "n-tp-6", title: "Treatment plan scheduled", body: "A $1,070 estimated crown moved from 'presented' to Friday's schedule. Simulated.", tone: "success" } },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scn-reactivation",
+      label: "Overdue patient reactivation",
+      description:
+        "A recall campaign wakes a patient who drifted for 16 months, books the evening hygiene slot she actually wants, and asks for the review after her visit.",
+      steps: [
+        {
+          id: "sc-ra-1",
+          title: "The recall campaign finds Carla",
+          detail:
+            "The overdue-recall segment refreshes: Carla Mendes — last cleaning 16 months ago, no future appointment, insurance on file — lands in the next batch. One friendly message, easy opt-out.",
+          tab: "campaigns",
+          effects: [
+            { kind: "activity", item: { id: "a-ra-1", icon: "campaign", text: "Recall batch sent to 12 overdue patients — includes Carla Mendes (16 months since last visit).", time: "Just now" } },
+            { kind: "metric", id: "reactivated", delta: 12 },
+            { kind: "notify", notification: { id: "n-ra-1", title: "Recall batch sent", body: "12 overdue patients contacted. Replies route back to this inbox.", tone: "default" } },
+          ],
+        },
+        {
+          id: "sc-ra-2",
+          title: "Carla replies eight minutes later",
+          detail:
+            "\"Has it really been that long?\" She asks for evenings — the reason she drifted in the first place. The system logs her preference and checks the schedule for real evening openings.",
+          tab: "conversations",
+          effects: [
+            {
+              kind: "conversation",
+              conversation: {
+                id: "c-carla",
+                contact: "Carla Mendes",
+                channel: "sms",
+                topic: "Recall — overdue 16 months",
+                unread: true,
+                messages: [
+                  { id: "cm-1", from: "system", meta: "Automated · Recall campaign", text: "Hi Carla, it's Brightwater Dental. It's been about 16 months since your last cleaning — Dr. Patel recommends every 6. Want us to text you a few times? Booking takes 10 seconds.", time: "Just now" },
+                  { id: "cm-2", from: "contact", text: "Oh wow, has it really been that long? Yes — do you have anything after 5? Work has been crazy", time: "Just now" },
+                ],
+              },
+            },
+            { kind: "lead", lead: { id: "l-carla", name: "Carla Mendes", service: "Overdue cleaning — 16 months", source: "Recall campaign", stageId: "info", lastActivity: "Just now", temp: "warm", note: "Prefers evenings after 5 PM · 16 months since last visit" } },
+          ],
+        },
+        {
+          id: "sc-ra-3",
+          title: "An evening slot books itself",
+          detail:
+            "Tuesday 5:10 PM with Sofia is open. Carla taps the link and the visit books and confirms — the front desk never touches the phone.",
+          tab: "calendar",
+          effects: [
+            { kind: "message", conversationId: "c-carla", message: { id: "cm-3", from: "system", meta: "Automated · Scheduling", text: "We added evening hours for exactly this — Tuesday 5:10 PM with Sofia, our hygienist, is open. Grab it here: brightwater.demo/schedule", time: "Just now" } },
+            { kind: "message", conversationId: "c-carla", message: { id: "cm-4", from: "contact", text: "Booked the Tuesday 5:10. Thank you!!", time: "Just now" } },
+            { kind: "calendar", event: { id: "cal-carla", day: "Tue", date: "Jul 14", time: "5:10 PM", title: "Recall cleaning — Carla Mendes", withWhom: "Sofia, RDH", status: "confirmed" } },
+            { kind: "stage", leadId: "l-carla", stageId: "confirmed" },
+            { kind: "metric", id: "recall-booked", delta: 1 },
+            { kind: "metric", id: "booked", delta: 1 },
+          ],
+        },
+        {
+          id: "sc-ra-4",
+          title: "Confirmation, forms, and reminders handle themselves",
+          detail:
+            "An updated health-history form goes out since it's been over a year, reminders schedule automatically, and Carla's record moves to Forms Complete when she finishes.",
+          tab: "pipeline",
+          effects: [
+            { kind: "message", conversationId: "c-carla", message: { id: "cm-5", from: "system", meta: "Automated · Confirmation + forms", text: "You're confirmed for Tuesday, Jul 14 at 5:10 PM with Sofia. Since it's been a bit, here's a quick health-history update: brightwater.demo/forms. We'll remind you the day before.", time: "Just now" } },
+            { kind: "stage", leadId: "l-carla", stageId: "forms" },
+            { kind: "metric", id: "tasks-automated", delta: 3 },
+            { kind: "activity", item: { id: "a-ra-4", icon: "automation", text: "Confirmation + health-history form sent to Carla Mendes; reminder sequence armed.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-ra-5",
+          title: "Visit complete — the review request waits until evening",
+          detail:
+            "Tuesday's cleaning wraps up. That evening, the system sends a thank-you and asks how the visit went — feedback first, so any concern reaches staff instead of the internet.",
+          tab: "reviews",
+          effects: [
+            { kind: "appointmentStatus", eventId: "cal-carla", status: "completed" },
+            { kind: "stage", leadId: "l-carla", stageId: "seen" },
+            { kind: "review", item: { id: "r-carla", name: "Carla Mendes", service: "Recall cleaning", status: "requested", time: "Just now" } },
+            { kind: "activity", item: { id: "a-ra-5", icon: "review", text: "Post-visit thank-you + review request sent to Carla Mendes.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-ra-6",
+          title: "Five stars — and a referral invite",
+          detail:
+            "Carla rates the visit five stars, so the system shares the review link and a refer-a-friend invite. Her recall clock resets so the 16-month gap never happens again.",
+          tab: "reviews",
+          effects: [
+            { kind: "reviewStatus", reviewId: "r-carla", status: "completed", rating: 5 },
+            { kind: "message", conversationId: "c-carla", message: { id: "cm-6", from: "contact", text: "Honestly the easiest dental visit I've ever set up. Left you 5 stars!", time: "Just now" } },
+            { kind: "activity", item: { id: "a-ra-6", icon: "review", text: "Carla Mendes left a 5-star review — referral invite sent; next recall set for 6 months out.", time: "Just now" } },
+            { kind: "notify", notification: { id: "n-ra-6", title: "Reactivation complete", body: "A 16-month lapse ends: cleaned, reviewed, and back on the 6-month cycle. Simulated.", tone: "success" } },
+          ],
+        },
+      ],
+    },
+  ],
   simActions: [
     {
       id: "sim-missed-call",
@@ -439,6 +956,44 @@ export const dentalConfig: IndustryConfig = {
         { kind: "notify", notification: { id: "n-sim-esc", title: "Staff attention required", body: "Patient message flagged: billing dispute + appointment question. Routed to Nicole.", tone: "alert" } },
         { kind: "task", task: { id: "t-esc", title: "Call patient re: billing question on last visit + reschedule request (flagged by system)", assignee: "Nicole (front desk)", due: "Today", priority: "high", auto: true } },
         { kind: "activity", item: { id: "a-sim-esc", icon: "alert", text: "Complex message escalated to staff — automation stands down on this thread.", time: "Just now" } },
+      ],
+    },
+    {
+      id: "sim-plan-nudge",
+      label: "Nudge unscheduled treatment",
+      description: "Follow up on a treatment plan that was presented but never scheduled.",
+      tab: "conversations",
+      effects: [
+        {
+          kind: "conversation",
+          conversation: {
+            id: "c-nadia",
+            contact: "Nadia Brooks",
+            channel: "sms",
+            topic: "Treatment follow-up — onlay",
+            unread: true,
+            messages: [
+              { id: "nb-1", from: "system", meta: "Automated · Treatment follow-up", text: "Hi Nadia, it's Brightwater Dental. Dr. Patel asked us to check in on the onlay we discussed in May. If timing or cost is the question, Beth can walk you through options — or grab a time: brightwater.demo/schedule", time: "Just now" },
+              { id: "nb-2", from: "contact", text: "Thanks for the reminder — what would my insurance cover on that?", time: "Just now" },
+            ],
+          },
+        },
+        { kind: "task", task: { id: "t-nadia", title: "Beth: send Nadia Brooks onlay estimate with insurance breakdown (asked by text)", assignee: "Beth (treatment coord.)", due: "Today", auto: true } },
+        { kind: "activity", item: { id: "a-sim-tp", icon: "automation", text: "Treatment follow-up sent to Nadia Brooks — cost question routed to Beth.", time: "Just now" } },
+        { kind: "notify", notification: { id: "n-sim-tp", title: "Follow-up got a reply", body: "Nadia Brooks asked about coverage — task created for Beth.", tone: "success" } },
+      ],
+    },
+    {
+      id: "sim-confirmations",
+      label: "Run tomorrow's confirmations",
+      description: "Send confirmations + form checks for tomorrow's schedule.",
+      tab: "overview",
+      effects: [
+        { kind: "activity", item: { id: "a-sim-cf", icon: "automation", text: "Confirmations sent to tomorrow's 13 patients — 9 confirmed in the first hour; 1 incomplete form flagged.", time: "Just now" } },
+        { kind: "metric", id: "tasks-automated", delta: 13 },
+        { kind: "metric", id: "no-show-risk", delta: -1 },
+        { kind: "task", task: { id: "t-sim-cf", title: "Call 1 unconfirmed patient on tomorrow's schedule (flagged by confirmation run)", assignee: "Nina", due: "Today 4 PM", auto: true } },
+        { kind: "notify", notification: { id: "n-sim-cf", title: "Confirmation run complete", body: "9 of 13 confirmed so far — the holdout is flagged for a quick call.", tone: "success" } },
       ],
     },
   ],

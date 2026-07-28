@@ -162,6 +162,25 @@ export async function createBooking(input: {
   });
 
   if (insertError) {
+    // Concurrent duplicate submit (double-click): the other request already
+    // created this booking — return it instead of failing.
+    if (
+      input.idempotencyKey &&
+      /bookings_idempotency_uidx/i.test(insertError.message)
+    ) {
+      const { data: existing } = await sb
+        .from("bookings")
+        .select("id, manage_token")
+        .eq("idempotency_key", input.idempotencyKey)
+        .maybeSingle();
+      if (existing) {
+        return {
+          ok: true,
+          bookingId: existing.id,
+          manageToken: existing.manage_token,
+        };
+      }
+    }
     if (/bookings_no_overlap|exclusion|23P01/i.test(insertError.message)) {
       return {
         ok: false,
@@ -251,6 +270,18 @@ export async function createBooking(input: {
     manageUrl,
   });
 
+  let serviceName = "";
+  if (session.service_id) {
+    const { data: svc } = await sb
+      .from("services")
+      .select("name")
+      .eq("id", session.service_id)
+      .maybeSingle();
+    serviceName = svc?.name ?? "";
+  }
+  const answers = (session.answers ?? {}) as Record<string, unknown>;
+  const attribution = (session.attribution ?? {}) as Record<string, string>;
+
   const vars = {
     first_name: firstName,
     full_name: fullName,
@@ -259,7 +290,12 @@ export async function createBooking(input: {
     phone: contact.phone ?? "",
     website: contact.website ?? "",
     industry: contact.industry ?? "",
-    service: "",
+    service: serviceName,
+    preferred_contact: contact.preferredContact ?? "",
+    improvement_note:
+      typeof answers.problem === "string" ? answers.problem : "",
+    visitor_notes: input.visitorNotes ?? "",
+    page_url: attribution.pageUrl ?? "",
     appointment_type: type.name,
     appointment_time_local: timeLocal,
     appointment_time_admin: timeAdmin,

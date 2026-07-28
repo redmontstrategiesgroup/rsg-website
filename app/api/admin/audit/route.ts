@@ -21,6 +21,14 @@ export async function GET(request: Request) {
   const events = await listAuditEvents({ limit, offset, action });
 
   if (format === "csv") {
+    // Neutralize spreadsheet formula injection: a cell starting with = + - @
+    // (or a control character) is executed as a formula by Excel/Sheets.
+    // Prefix those with an apostrophe so they're treated as literal text.
+    const cell = (v: unknown) => {
+      const s = String(v ?? "");
+      const safe = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+      return `"${safe.replace(/"/g, '""')}"`;
+    };
     const header = "created_at,actor_type,actor_email,action,entity_type,entity_id,ip\n";
     const rows = (events as Record<string, unknown>[]).map((e) =>
       [
@@ -32,7 +40,7 @@ export async function GET(request: Request) {
         e.entity_id,
         e.ip,
       ]
-        .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
+        .map(cell)
         .join(",")
     );
     return new NextResponse(header + rows.join("\n"), {

@@ -452,6 +452,42 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
   const [staff, setStaff] = useState(state.settings.staff[0]?.name ?? "");
   const [day, setDay] = useState(0);
   const [time, setTime] = useState(TIME_OPTIONS[2]);
+  const [rescheduling, setRescheduling] = useState<CalendarEvent | null>(null);
+  const [reschedDay, setReschedDay] = useState(0);
+  const [reschedTime, setReschedTime] = useState(TIME_OPTIONS[2]);
+
+  const reschedule = () => {
+    if (!rescheduling) return;
+    const d = config.scheduleDays[reschedDay];
+    const contactName = rescheduling.title.split("—").pop()?.trim() ?? rescheduling.title;
+    applyNow(dispatch, [
+      {
+        kind: "calendarUpdate",
+        eventId: rescheduling.id,
+        patch: { day: d.day, date: d.date, time: reschedTime, status: "confirmed" },
+      },
+      {
+        kind: "activity",
+        item: {
+          id: uid("act"),
+          icon: "calendar",
+          text: `${rescheduling.title} rescheduled to ${d.day} ${reschedTime}. Updated confirmation sent — simulated.`,
+          time: "Just now",
+        },
+      },
+      {
+        kind: "notify",
+        notification: {
+          id: uid("n"),
+          title: `Rescheduled: ${contactName}`,
+          body: `Now ${d.day} ${d.date} at ${reschedTime}. Simulated confirmation and reminders updated.`,
+          tone: "success",
+        },
+      },
+    ]);
+    track("rescheduled appointments");
+    setRescheduling(null);
+  };
 
   const setStatus = (event: CalendarEvent, status: AppointmentStatus) => {
     const effects = [{ kind: "appointmentStatus" as const, eventId: event.id, status }];
@@ -572,6 +608,14 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
                           <SmallButton onClick={() => setStatus(e, "confirmed")}>Confirm</SmallButton>
                         )}
                         <SmallButton onClick={() => setStatus(e, "completed")}>Complete</SmallButton>
+                        <SmallButton
+                          onClick={() => {
+                            setRescheduling(e);
+                            setReschedTime(e.time);
+                          }}
+                        >
+                          Reschedule
+                        </SmallButton>
                         <SmallButton onClick={() => setStatus(e, "no-show")}>No-show</SmallButton>
                         <SmallButton tone="danger" onClick={() => setStatus(e, "canceled")}>
                           Cancel
@@ -624,6 +668,41 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
               <SmallButton onClick={() => setBooking(false)}>Cancel</SmallButton>
               <SmallButton tone="primary" onClick={book} disabled={!contact.trim()}>
                 <CalendarPlus size={11} aria-hidden /> Book
+              </SmallButton>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {rescheduling && (
+        <Modal
+          title="Reschedule"
+          subtitle={`${rescheduling.title} — currently ${rescheduling.day} ${rescheduling.date} at ${rescheduling.time}. Demo calendar only.`}
+          onClose={() => setRescheduling(null)}
+        >
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <SelectInput
+                label="New day"
+                value={String(reschedDay)}
+                onChange={(v) => setReschedDay(Number(v))}
+                options={config.scheduleDays.map((d, i) => ({ value: String(i), label: `${d.day} ${d.date}` }))}
+              />
+              <SelectInput
+                label="New time"
+                value={reschedTime}
+                onChange={setReschedTime}
+                options={TIME_OPTIONS.map((t) => ({ value: t, label: t }))}
+              />
+            </div>
+            <p className="text-[0.64rem] leading-relaxed text-white/35">
+              The customer gets an updated confirmation and the reminder sequence re-arms around the
+              new time — simulated here, automatic in production.
+            </p>
+            <div className="flex justify-end gap-2 pt-1">
+              <SmallButton onClick={() => setRescheduling(null)}>Cancel</SmallButton>
+              <SmallButton tone="primary" onClick={reschedule}>
+                <CalendarPlus size={11} aria-hidden /> Confirm new time
               </SmallButton>
             </div>
           </div>
@@ -842,7 +921,7 @@ export function CampaignsView({ state: _state, config, dispatch, track }: ViewPr
 /* Analytics (derived from live demo records)                          */
 /* ------------------------------------------------------------------ */
 
-export function AnalyticsView({ state, config, track }: ViewProps) {
+export function AnalyticsView({ state, config, track, openRequest }: ViewProps) {
   const [source, setSource] = useState("");
   const [assignee, setAssignee] = useState("");
   const derived = useMemo(
@@ -947,6 +1026,20 @@ export function AnalyticsView({ state, config, track }: ViewProps) {
           <p className="mb-4 text-[0.6rem] text-white/30">Illustrative 8-week baseline · demo data</p>
           <LineChart points={a.responseTime.points} unit={a.responseTime.unit} />
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-crimson/20 bg-crimson/[0.05] px-4 py-3">
+        <p className="text-xs text-white/65">
+          Want reporting like this on your own numbers — leads, response time, close rate?
+        </p>
+        <button
+          type="button"
+          onClick={() => openRequest({ feature: "Reporting & analytics", source: "analytics_view" })}
+          className="inline-flex shrink-0 items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+        >
+          See what this would cost
+          <ArrowUpRight size={11} aria-hidden />
+        </button>
       </div>
     </div>
   );

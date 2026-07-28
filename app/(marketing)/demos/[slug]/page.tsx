@@ -65,7 +65,7 @@ export default async function DemoPage({ params }: { params: Promise<Params> }) 
 
       <BuilderSection config={config} />
 
-      <ConversionSection demoSlug={config.slug} cta={config.cta} />
+      <ConversionSection demoSlug={config.slug} cta={config.cta} config={config} />
 
       {/* Other demo systems */}
       <section className="container-px py-14 sm:py-16">

@@ -34,9 +34,11 @@ test("default connect links include booking and portal", () => {
   assert.equal(ids.includes("link-ai"), false);
 });
 
-test("default settings include Instagram and Facebook", async () => {
+test("default settings include Instagram and LinkedIn, not Facebook", async () => {
   const { defaultConnectSettings } = await import("../lib/connect-defaults.ts");
   const s = defaultConnectSettings();
   assert.match(s.socialInstagram, /instagram\.com\/redmontstrategiesgroup/);
-  assert.match(s.socialFacebook, /facebook\.com\/redmontstrategiesgroup/);
+  assert.match(s.socialLinkedin, /linkedin\.com\/company\/redmontstrategiesgroup/);
+  assert.equal(s.socialFacebook, "");
+  assert.equal(s.badgeLabel, "");
 });

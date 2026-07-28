@@ -18,6 +18,7 @@ const INDUSTRIES = [
   "Wellness clinic",
   "Home services / contracting",
   "Cleaning company",
+  "Retail / ecommerce",
   "Other local service business",
   "High-ticket services",
   "Other",
@@ -144,7 +145,7 @@ export function ContactForm() {
       }
       trackEvent("contact_form_submit");
       setSubmitted(true);
-      router.push("/thank-you");
+      router.push("/thankyou");
     } catch {
       setError("Network error. Please try again.");
     } finally {

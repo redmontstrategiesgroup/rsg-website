@@ -12,7 +12,9 @@ import { writeAuditEvent } from "@/lib/audit";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const ctx = await requireAdmin();
+  // Manual brief ingestion is an elevated write — gate it, don't accept any
+  // authenticated admin.
+  const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;
   const limited = await rateLimitAdminMutator(request, ctx.admin.id);
   if (limited) return limited;

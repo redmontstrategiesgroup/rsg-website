@@ -19,6 +19,7 @@ import {
   Clock,
   Download,
   ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 import type {
   ClientPublic,
@@ -26,15 +27,19 @@ import type {
   SystemStatus,
   ActivityKind,
 } from "@/lib/types";
+// Type-only import: keeps the server-only store (node:fs) out of the bundle.
+import type { PortalManagedData } from "@/lib/managed-services/portal-data";
 import { formatMetricValue } from "@/lib/format";
 import { CountUp } from "@/components/CountUp";
 import { Logo } from "@/components/Logo";
+import { PlanServices } from "@/components/portal/PlanServices";
 import { postJson } from "@/lib/api";
 
-type Tab = "overview" | "systems" | "projects" | "billing";
+type Tab = "overview" | "plan" | "systems" | "projects" | "billing";
 
 const TABS: { id: Tab; label: string; icon: typeof Activity }[] = [
   { id: "overview", label: "Overview", icon: Activity },
+  { id: "plan", label: "Plan & Services", icon: ShieldCheck },
   { id: "systems", label: "AI Systems", icon: Boxes },
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "billing", label: "Billing", icon: Receipt },
@@ -55,7 +60,13 @@ const ACTIVITY_ICON: Record<ActivityKind, typeof Activity> = {
   message: MessageSquare,
 };
 
-export function Dashboard({ client }: { client: ClientPublic }) {
+export function Dashboard({
+  client,
+  managed,
+}: {
+  client: ClientPublic;
+  managed?: PortalManagedData | null;
+}) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("overview");
   const [loggingOut, setLoggingOut] = useState(false);
@@ -194,6 +205,9 @@ export function Dashboard({ client }: { client: ClientPublic }) {
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
               {tab === "overview" && <Overview client={client} />}
+              {tab === "plan" && (
+                <PlanServices client={client} data={managed ?? null} />
+              )}
               {tab === "systems" && <Systems systems={client.systems} />}
               {tab === "projects" && <Projects client={client} />}
               {tab === "billing" && <Billing client={client} />}

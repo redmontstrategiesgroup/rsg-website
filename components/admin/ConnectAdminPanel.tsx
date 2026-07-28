@@ -190,7 +190,7 @@ export function ConnectAdminPanel() {
         <div>
           <h2 className="display text-xl">Connect Page</h2>
           <p className="mt-1 text-sm text-white/45">
-            Manage the official RSG link hub used on social, cards, and QR codes.
+            Manage the RSG link hub used on social, cards, and QR codes.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -411,7 +411,6 @@ export function ConnectAdminPanel() {
           [
             ["LinkedIn", "socialLinkedin"],
             ["Instagram", "socialInstagram"],
-            ["Facebook", "socialFacebook"],
             ["Email", "socialEmail"],
           ] as const
         ).map(([label, key]) => (
@@ -504,7 +503,7 @@ export function ConnectAdminPanel() {
                 className={inputClass}
                 value={link.badge}
                 onChange={(e) => updateLink(link.id, { badge: e.target.value })}
-                placeholder="Badge (Featured / New / Popular)"
+                placeholder="Badge (optional)"
               />
               <input
                 className={inputClass}

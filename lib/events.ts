@@ -22,7 +22,14 @@ export type EventName =
   | "chatbot_qualified_lead"
   | "thank_you_page_view"
   | "demo_launch_click"
-  | "demo_cta_click";
+  | "demo_request_open"
+  | "demo_request_submit"
+  | "booking_page_view"
+  | "booking_category_select"
+  | "booking_complete"
+  | "assessment_start"
+  | "assessment_complete"
+  | "security_cta_click";
 
 type EventProps = Record<string, string>;
 

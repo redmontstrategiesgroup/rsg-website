@@ -69,7 +69,7 @@ const ORG_SCHEMA = {
   url: SITE_URL,
   logo: `${SITE_URL}/brand/rsg-mark.png`,
   description:
-    "Business consulting and AI strategy for service businesses across Plymouth County and the South Shore of Massachusetts.",
+    "Business consulting and AI strategy for service and retail businesses across Plymouth County and the South Shore of Massachusetts.",
   telephone: PHONE_TEL,
   areaServed: [
     { "@type": "AdministrativeArea", name: "Plymouth County, Massachusetts" },

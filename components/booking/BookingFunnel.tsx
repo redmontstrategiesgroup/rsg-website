@@ -1,20 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Calendar,
-  Clock,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
-import { postJson, patchJson } from "@/lib/api";
-import { Turnstile } from "@/components/Turnstile";
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, Calendar, Clock, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { postJson, patchJson, getCsrfToken } from "@/lib/api";
+import { Turnstile } from "@/components/Turnstile";
+import { trackEvent } from "@/lib/events";
+import {
+  ProgressSteps,
+  OptionCard,
+  Field,
+  ChoiceChips,
+  Expandable,
+  TimezoneSelect,
+  inputClass,
+  timezoneLabel,
+} from "./ui";
 
 type Service = { id: string; name: string; slug: string; description?: string };
 type ApptType = {
@@ -24,72 +32,175 @@ type ApptType = {
   description?: string;
   durationMinutes: number;
   meetingFormats: string[];
-  color: string;
 };
-type Question = {
-  id: string;
-  key: string;
-  label: string;
-  helpText?: string;
-  type: string;
-  options: string[];
-  required: boolean;
-  sortOrder: number;
-  showWhen?: { parent_key?: string; equals?: string | string[] } | null;
-};
-
 type Config = {
   services: Service[];
   appointmentTypes: ApptType[];
-  questions: Question[];
   bookingsPaused: boolean;
   options: {
     employeeCount: string[];
-    monthlyRevenue: string[];
-    heardAbout: string[];
     meetingFormats: Record<string, string>;
   };
   turnstileSiteKey: string | null;
 };
 
+type Slot = { start: string; end: string; label: string };
+
 type Contact = {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   businessName: string;
   email: string;
   phone: string;
-  website: string;
   industry: string;
-  businessLocation: string;
-  employeeCount: string;
-  monthlyRevenueRange: string;
-  heardAbout: string;
+  website: string;
+  preferredContact: "email" | "phone" | "text";
 };
 
-type Step = "service" | "info" | "qualify" | "calendar" | "confirm";
+type ServicePlanAnswers = {
+  hasMaintainer?: "yes" | "no" | "partially";
+  ongoingNeeds?: "maintenance_only" | "occasional_changes" | "ongoing_improvements";
+  automationInterest?: "yes" | "maybe" | "no";
+  aiManagement?: "yes" | "planning_to" | "no";
+  sensitiveData?: "yes" | "no" | "unsure";
+  supportSpeed?: "same_day" | "next_day" | "within_days";
+  billingPreference?: "monthly" | "annual" | "undecided";
+};
 
-const STEPS: { id: Step; label: string }[] = [
-  { id: "service", label: "Service" },
-  { id: "info", label: "About you" },
-  { id: "qualify", label: "Eligibility" },
-  { id: "calendar", label: "Schedule" },
-  { id: "confirm", label: "Confirm" },
+type Answers = {
+  problem: string;
+  result: string;
+  business_size: string;
+  current_challenge: string;
+  interested_services: string[];
+  current_tools: string;
+  private_ai_focus: string[];
+  servicePlan: ServicePlanAnswers;
+};
+
+const EMPTY_CONTACT: Contact = {
+  fullName: "",
+  businessName: "",
+  email: "",
+  phone: "",
+  industry: "",
+  website: "",
+  preferredContact: "email",
+};
+
+const EMPTY_ANSWERS: Answers = {
+  problem: "",
+  result: "",
+  business_size: "",
+  current_challenge: "",
+  interested_services: [],
+  current_tools: "",
+  private_ai_focus: [],
+  servicePlan: {},
+};
+
+const SERVICE_PLAN_QUESTIONS: {
+  key: keyof ServicePlanAnswers;
+  label: string;
+  options: { value: string; label: string }[];
+}[] = [
+  {
+    key: "hasMaintainer",
+    label: "Do you currently have someone maintaining your website and systems?",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+      { value: "partially", label: "Partially" },
+    ],
+  },
+  {
+    key: "ongoingNeeds",
+    label: "Do you need ongoing changes or only technical maintenance?",
+    options: [
+      { value: "maintenance_only", label: "Maintenance only" },
+      { value: "occasional_changes", label: "Occasional changes" },
+      { value: "ongoing_improvements", label: "Ongoing improvements" },
+    ],
+  },
+  {
+    key: "automationInterest",
+    label: "Are you interested in ongoing automation development?",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "maybe", label: "Maybe" },
+      { value: "no", label: "No" },
+    ],
+  },
+  {
+    key: "aiManagement",
+    label: "Do you use AI systems that require management?",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "planning_to", label: "Planning to" },
+      { value: "no", label: "No" },
+    ],
+  },
+  {
+    key: "sensitiveData",
+    label: "Do you handle confidential or sensitive business data?",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+      { value: "unsure", label: "Unsure" },
+    ],
+  },
+  {
+    key: "supportSpeed",
+    label: "How quickly do you require support?",
+    options: [
+      { value: "same_day", label: "Same day" },
+      { value: "next_day", label: "Next business day" },
+      { value: "within_days", label: "Within a few days" },
+    ],
+  },
+  {
+    key: "billingPreference",
+    label: "Would you prefer monthly or annual billing?",
+    options: [
+      { value: "monthly", label: "Monthly" },
+      { value: "annual", label: "Annual" },
+      { value: "undecided", label: "Undecided" },
+    ],
+  },
 ];
 
-function formatPhone(value: string): string {
-  const d = value.replace(/\D/g, "").slice(0, 11);
-  if (d.length <= 3) return d;
-  if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
-  if (d.length <= 10)
-    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
-  return `+${d.slice(0, 1)} (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}`;
-}
+const RESULT_OPTIONS = [
+  "Generate more revenue",
+  "Get more qualified leads",
+  "Save time",
+  "Improve customer experience",
+  "Improve organization",
+  "Reduce manual work",
+  "Understand where AI could help",
+  "Design a custom private AI system",
+  "Not sure yet",
+];
 
-function fieldClass(error?: boolean) {
-  return `w-full border bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-crimson/60 ${
-    error ? "border-crimson/70" : "border-white/15"
-  }`;
-}
+const PRIVATE_AI_FOCUS_OPTIONS = [
+  "I need a fully private AI system",
+  "I want AI running locally",
+  "I need an internal company assistant",
+  "I need secure document search",
+  "I need to automate private workflows",
+  "I am concerned about sending data to public AI",
+  "I am not sure which system I need",
+];
+
+const PRIVATE_AI_SERVICE_SLUGS = new Set(["custom-private-ai", "explore-ai"]);
+
+const STEP_LABELS = ["Topic", "Time", "Your details"];
+
+const STORAGE_KEY = "rsg_booking_v2";
+const NOT_SURE_SLUG = "not-sure";
+const CONTACT_METHODS = [
+  { value: "email", label: "Email" },
+  { value: "phone", label: "Phone call" },
+  { value: "text", label: "Text message" },
+] as const;
 
 function detectTimezone(): string {
   try {
@@ -97,6 +208,14 @@ function detectTimezone(): string {
   } catch {
     return "America/New_York";
   }
+}
+
+function formatPhone(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+  if (d.length <= 10) return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+  return `+${d.slice(0, 1)} (${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}`;
 }
 
 function attributionFromPage() {
@@ -115,6 +234,48 @@ function attributionFromPage() {
   };
 }
 
+/** Local calendar date (YYYY-MM-DD) of a UTC instant in the given zone. */
+function localDayKey(isoUtc: string, timeZone: string): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(isoUtc));
+  } catch {
+    return isoUtc.slice(0, 10);
+  }
+}
+
+function dayLabel(dayKey: string, isoUtc: string, timeZone: string) {
+  try {
+    const d = new Date(isoUtc);
+    return {
+      weekday: new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short" }).format(d),
+      date: new Intl.DateTimeFormat("en-US", { timeZone, month: "short", day: "numeric" }).format(d),
+    };
+  } catch {
+    return { weekday: "", date: dayKey };
+  }
+}
+
+function formatSelectedSlot(isoUtc: string, timeZone: string): string {
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    }).format(new Date(isoUtc));
+  } catch {
+    return new Date(isoUtc).toLocaleString();
+  }
+}
+
 export function BookingFunnel({
   presetServiceSlug,
   presetAppointmentSlug,
@@ -126,42 +287,53 @@ export function BookingFunnel({
 }) {
   const router = useRouter();
   const [config, setConfig] = useState<Config | null>(null);
-  const [loadError, setLoadError] = useState("");
-  const [sessionToken, setSessionToken] = useState(initialSessionToken || "");
-  const [step, setStep] = useState<Step>("service");
+  const [fatalError, setFatalError] = useState("");
+  const [formError, setFormError] = useState("");
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [serviceId, setServiceId] = useState<string | null>(null);
-  const [appointmentTypeId, setAppointmentTypeId] = useState<string | null>(null);
-  const [contact, setContact] = useState<Contact>({
-    firstName: "",
-    lastName: "",
-    businessName: "",
-    email: "",
-    phone: "",
-    website: "",
-    industry: "",
-    businessLocation: "",
-    employeeCount: "",
-    monthlyRevenueRange: "",
-    heardAbout: "",
-  });
-  const [answers, setAnswers] = useState<Record<string, unknown>>({});
-  const [consent, setConsent] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [outcomeMessage, setOutcomeMessage] = useState("");
-  const [allowCalendar, setAllowCalendar] = useState(false);
-  const [outcome, setOutcome] = useState<string | null>(null);
   const [timezone, setTimezone] = useState(detectTimezone);
-  const [slots, setSlots] = useState<{ start: string; end: string; label: string }[]>([]);
-  const [selectedDay, setSelectedDay] = useState<string>("");
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [selectedDay, setSelectedDay] = useState("");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [meetingFormat, setMeetingFormat] = useState("phone");
-  const [visitorNotes, setVisitorNotes] = useState("");
+  const [contact, setContact] = useState<Contact>(EMPTY_CONTACT);
+  const [answers, setAnswers] = useState<Answers>(EMPTY_ANSWERS);
+  const [notes, setNotes] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [monthCursor, setMonthCursor] = useState(() => {
-    const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1);
-  });
+
+  const sessionTokenRef = useRef(initialSessionToken || "");
+  const [hasSession, setHasSession] = useState(Boolean(initialSessionToken));
+  const idempotencyKeyRef = useRef<string>("");
+  const submittingRef = useRef(false);
+  const completedRef = useRef(false);
+  const formStartedRef = useRef(false);
+  const restoredRef = useRef(false);
+
+  // ---------------------------------------------------------------- tracking
+
+  const track = useCallback(
+    (
+      event: string,
+      meta?: { category?: string; step?: string; field?: string }
+    ) => {
+      try {
+        void postJson("/api/booking/track", {
+          token: sessionTokenRef.current || undefined,
+          event,
+          meta,
+        });
+      } catch {
+        /* analytics never blocks the visitor */
+      }
+    },
+    []
+  );
+
+  // ------------------------------------------------------------------ config
 
   useEffect(() => {
     fetch("/api/booking/config")
@@ -173,259 +345,379 @@ export function BookingFunnel({
         setConfig(data);
         if (presetServiceSlug) {
           const svc = data.services.find((s) => s.slug === presetServiceSlug);
-          if (svc) setServiceId(svc.id);
-        }
-        if (presetAppointmentSlug) {
-          const t = data.appointmentTypes.find(
-            (a) => a.slug === presetAppointmentSlug
-          );
-          if (t) {
-            setAppointmentTypeId(t.id);
-            if (t.meetingFormats?.[0]) setMeetingFormat(t.meetingFormats[0]);
-          }
+          if (svc) setServiceId((prev) => prev ?? svc.id);
         }
       })
       .catch(() =>
-        setLoadError(
+        setFatalError(
           "Scheduling is temporarily unavailable. Please try again shortly or email contact@redmontstrategiesgroup.com."
         )
       );
-  }, [presetServiceSlug, presetAppointmentSlug]);
+    track("booking_page_viewed");
+    trackEvent("booking_page_view");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // The single public appointment type (preset slug wins when present).
+  const appointmentType = useMemo(() => {
+    if (!config) return null;
+    if (presetAppointmentSlug) {
+      const preset = config.appointmentTypes.find(
+        (t) => t.slug === presetAppointmentSlug
+      );
+      if (preset) return preset;
+    }
+    return config.appointmentTypes[0] ?? null;
+  }, [config, presetAppointmentSlug]);
+
+  useEffect(() => {
+    if (appointmentType && !appointmentType.meetingFormats.includes(meetingFormat)) {
+      setMeetingFormat(appointmentType.meetingFormats[0] || "phone");
+    }
+  }, [appointmentType, meetingFormat]);
+
+  // ------------------------------------------------- restore saved progress
+
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Partial<{
+        token: string;
+        step: 1 | 2 | 3;
+        serviceId: string;
+        timezone: string;
+        selectedDay: string;
+        selectedSlot: string;
+        contact: Contact;
+        answers: Answers;
+        notes: string;
+      }>;
+      if (saved.token && !sessionTokenRef.current) {
+        sessionTokenRef.current = saved.token;
+        setHasSession(true);
+      }
+      if (saved.serviceId) setServiceId((prev) => prev ?? saved.serviceId!);
+      if (saved.timezone) setTimezone(saved.timezone);
+      if (saved.selectedDay) setSelectedDay(saved.selectedDay);
+      if (saved.selectedSlot) setSelectedSlot(saved.selectedSlot);
+      if (saved.contact) setContact({ ...EMPTY_CONTACT, ...saved.contact });
+      if (saved.answers) setAnswers({ ...EMPTY_ANSWERS, ...saved.answers });
+      if (saved.notes) setNotes(saved.notes);
+      if (saved.step && saved.serviceId) setStep(saved.step);
+    } catch {
+      /* corrupted storage — start fresh */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          token: sessionTokenRef.current,
+          step,
+          serviceId,
+          timezone,
+          selectedDay,
+          selectedSlot,
+          contact,
+          answers,
+          notes,
+        })
+      );
+    } catch {
+      /* storage unavailable */
+    }
+  }, [step, serviceId, timezone, selectedDay, selectedSlot, contact, answers, notes]);
+
+  // Legacy resume links (?session=...) restore server-side progress.
   useEffect(() => {
     if (!initialSessionToken) return;
     fetch(`/api/booking/session?token=${encodeURIComponent(initialSessionToken)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!data) return;
-        setSessionToken(data.token);
+        sessionTokenRef.current = data.token;
+        setHasSession(true);
         if (data.serviceId) setServiceId(data.serviceId);
-        if (data.appointmentTypeId) setAppointmentTypeId(data.appointmentTypeId);
-        if (data.contact) setContact((c) => ({ ...c, ...data.contact }));
-        if (data.answers) setAnswers(data.answers);
         if (data.timezone) setTimezone(data.timezone);
-        if (data.qualificationOutcome === "qualified" || data.allowCalendar) {
-          setAllowCalendar(true);
-          setOutcome(data.qualificationOutcome);
-          setStep("calendar");
-        }
       })
       .catch(() => {});
   }, [initialSessionToken]);
 
-  const ensureSession = useCallback(async () => {
-    if (sessionToken) return sessionToken;
+  // Best-effort abandonment signal (keepalive request survives navigation).
+  useEffect(() => {
+    const onPageHide = () => {
+      if (completedRef.current || !sessionTokenRef.current) return;
+      if (!formStartedRef.current && step === 1) return;
+      try {
+        void fetch("/api/booking/track", {
+          method: "POST",
+          keepalive: true,
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": getCsrfToken(),
+          },
+          body: JSON.stringify({
+            token: sessionTokenRef.current,
+            event: "booking_abandoned",
+            meta: { step: String(step) },
+          }),
+        });
+      } catch {
+        /* best effort */
+      }
+    };
+    window.addEventListener("pagehide", onPageHide);
+    return () => window.removeEventListener("pagehide", onPageHide);
+  }, [step]);
+
+  // ----------------------------------------------------------------- session
+
+  const ensureSession = useCallback(async (): Promise<string> => {
+    if (sessionTokenRef.current) return sessionTokenRef.current;
     if (config?.turnstileSiteKey && !turnstileToken) {
-      throw new Error("Please complete the security check.");
+      throw new Error("Please complete the security check above.");
     }
     const res = await postJson("/api/booking/session", {
       turnstileToken,
       timezone,
       serviceId: serviceId || undefined,
-      appointmentTypeId: appointmentTypeId || undefined,
+      appointmentTypeId: appointmentType?.id,
       attribution: attributionFromPage(),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Unable to start session");
-    setSessionToken(data.token);
+    if (!res.ok) throw new Error(data.error || "Unable to start your booking.");
+    sessionTokenRef.current = data.token;
+    setHasSession(true);
     return data.token as string;
-  }, [
-    sessionToken,
-    config?.turnstileSiteKey,
-    turnstileToken,
-    timezone,
-    serviceId,
-    appointmentTypeId,
-  ]);
+  }, [config?.turnstileSiteKey, turnstileToken, timezone, serviceId, appointmentType?.id]);
 
-  const autosave = useCallback(
-    async (patch: Record<string, unknown>) => {
-      const token = sessionToken || (await ensureSession().catch(() => ""));
-      if (!token) return;
-      await patchJson("/api/booking/session", { token, ...patch });
+  const autosave = useCallback(async (patch: Record<string, unknown>) => {
+    const token = sessionTokenRef.current;
+    if (!token) return;
+    await patchJson("/api/booking/session", { token, ...patch }).catch(() => {});
+  }, []);
+
+  // ------------------------------------------------------------------- slots
+
+  const loadSlots = useCallback(
+    async (tz: string) => {
+      if (!appointmentType) return;
+      setSlotsLoading(true);
+      setFormError("");
+      try {
+        const token = await ensureSession();
+        const from = new Date().toISOString().slice(0, 10);
+        const toDate = new Date();
+        toDate.setDate(toDate.getDate() + 28);
+        const to = toDate.toISOString().slice(0, 10);
+        const res = await fetch(
+          `/api/booking/slots?token=${encodeURIComponent(token)}&appointmentTypeId=${appointmentType.id}&from=${from}&to=${to}&timezone=${encodeURIComponent(tz)}`
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Unable to load available times.");
+        setSlots(data.slots || []);
+      } catch (err) {
+        setFormError(
+          err instanceof Error ? err.message : "Unable to load available times."
+        );
+      } finally {
+        setSlotsLoading(false);
+      }
     },
-    [sessionToken, ensureSession]
+    [appointmentType, ensureSession]
   );
 
-  const visibleQuestions = useMemo(() => {
-    if (!config) return [];
-    return config.questions
-      .filter((q) => {
-        if (!q.showWhen?.parent_key) return true;
-        const parentVal = String(answers[q.showWhen.parent_key] ?? "");
-        if (q.showWhen.equals == null) return Boolean(parentVal);
-        if (Array.isArray(q.showWhen.equals))
-          return q.showWhen.equals.map(String).includes(parentVal);
-        return parentVal === String(q.showWhen.equals);
-      })
-      .sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [config, answers]);
-
-  const selectedType = config?.appointmentTypes.find(
-    (t) => t.id === appointmentTypeId
-  );
+  // Load availability whenever step 2 is shown for a type/timezone we haven't
+  // fetched yet (covers page-refresh restores, not just the step transition).
+  const slotsFetchedForRef = useRef("");
+  useEffect(() => {
+    if (step !== 2 || !config || !appointmentType) return;
+    const key = `${appointmentType.id}:${timezone}`;
+    if (slotsFetchedForRef.current === key) return;
+    slotsFetchedForRef.current = key;
+    void loadSlots(timezone);
+  }, [step, config, appointmentType, timezone, loadSlots]);
 
   const slotsByDay = useMemo(() => {
-    const map = new Map<string, { start: string; end: string; label: string }[]>();
+    const map = new Map<string, Slot[]>();
     for (const s of slots) {
-      const day = s.start.slice(0, 10);
+      const day = localDayKey(s.start, timezone);
       if (!map.has(day)) map.set(day, []);
       map.get(day)!.push(s);
     }
     return map;
-  }, [slots]);
+  }, [slots, timezone]);
 
-  async function loadSlots(typeId: string, tz: string) {
-    const token = sessionToken || (await ensureSession());
-    const from = new Date().toISOString().slice(0, 10);
-    const toDate = new Date();
-    toDate.setDate(toDate.getDate() + 28);
-    const to = toDate.toISOString().slice(0, 10);
-    const res = await fetch(
-      `/api/booking/slots?token=${encodeURIComponent(token)}&appointmentTypeId=${typeId}&from=${from}&to=${to}&timezone=${encodeURIComponent(tz)}`
-    );
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Unable to load times");
-    setSlots(data.slots || []);
-    const days = Object.keys(
-      (data.slots || []).reduce(
-        (acc: Record<string, boolean>, s: { start: string }) => {
-          acc[s.start.slice(0, 10)] = true;
-          return acc;
-        },
-        {}
-      )
-    ).sort();
-    if (days[0]) setSelectedDay(days[0]);
-  }
+  const availableDays = useMemo(() => [...slotsByDay.keys()].sort(), [slotsByDay]);
 
-  function validateInfo(): boolean {
-    const next: Record<string, string> = {};
-    if (!contact.firstName.trim()) next.firstName = "Required";
-    if (!contact.lastName.trim()) next.lastName = "Required";
-    if (!contact.businessName.trim()) next.businessName = "Required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email))
-      next.email = "Valid email required";
-    if (contact.phone.replace(/\D/g, "").length < 10)
-      next.phone = "Valid phone required";
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  }
+  useEffect(() => {
+    if (step !== 2) return;
+    if (availableDays.length === 0) return;
+    if (!selectedDay || !slotsByDay.has(selectedDay)) {
+      setSelectedDay(availableDays[0]);
+    }
+  }, [step, availableDays, selectedDay, slotsByDay]);
 
-  async function goNext() {
+  const selectedService = config?.services.find((s) => s.id === serviceId) ?? null;
+  const notSureSelected = selectedService?.slug === NOT_SURE_SLUG;
+
+  // ------------------------------------------------------------- transitions
+
+  async function continueFromCategory() {
+    if (!serviceId || !config) {
+      setErrors({ service: "Choose the option closest to what you need — “I’m not sure yet” is fine." });
+      track("validation_error", { step: "1" });
+      return;
+    }
     setBusy(true);
-    setLoadError("");
+    setFormError("");
+    setErrors({});
     try {
-      if (step === "service") {
-        if (!serviceId) {
-          setErrors({ service: "Select a service to continue." });
-          return;
-        }
-        await ensureSession();
-        await autosave({ step: "info", serviceId });
-        setStep("info");
-      } else if (step === "info") {
-        if (!validateInfo()) return;
-        await autosave({ step: "qualify", contact });
-        setStep("qualify");
-      } else if (step === "qualify") {
-        const missing = visibleQuestions.filter(
-          (q) =>
-            q.required &&
-            (answers[q.key] == null ||
-              answers[q.key] === "" ||
-              (Array.isArray(answers[q.key]) &&
-                (answers[q.key] as unknown[]).length === 0))
-        );
-        if (missing.length) {
-          setErrors(
-            Object.fromEntries(missing.map((m) => [m.key, "Required"]))
-          );
-          return;
-        }
-        if (!consent) {
-          setErrors({ consent: "Please accept to continue." });
-          return;
-        }
-        const token = await ensureSession();
-        const res = await postJson("/api/booking/qualify", {
-          sessionToken: token,
-          contact,
-          answers,
-          consent,
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Unable to evaluate");
-        setOutcome(data.outcome);
-        setOutcomeMessage(data.message);
-        setAllowCalendar(data.allowCalendar);
-        if (data.outcome === "not_eligible") {
-          router.push("/booking/not-eligible");
-          return;
-        }
-        if (data.outcome === "manual_review" && !data.allowCalendar) {
-          router.push("/booking/review");
-          return;
-        }
-        if (!appointmentTypeId && config?.appointmentTypes[1]) {
-          setAppointmentTypeId(config.appointmentTypes[1].id);
-        }
-        setStep("calendar");
-        const typeId =
-          appointmentTypeId || config?.appointmentTypes[1]?.id || "";
-        if (typeId) await loadSlots(typeId, timezone);
-      } else if (step === "calendar") {
-        if (!appointmentTypeId || !selectedSlot || !meetingFormat) {
-          setErrors({ calendar: "Select an appointment type, time, and format." });
-          return;
-        }
-        setStep("confirm");
-      } else if (step === "confirm") {
-        const token = await ensureSession();
-        const idempotencyKey =
-          typeof crypto !== "undefined" && crypto.randomUUID
-            ? crypto.randomUUID()
-            : `${Date.now()}`;
-        const res = await postJson("/api/booking/create", {
-          sessionToken: token,
-          appointmentTypeId,
-          startsAt: selectedSlot,
-          meetingFormat,
-          visitorTimezone: timezone,
-          visitorNotes,
-          idempotencyKey,
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          if (data.code === "conflict") {
-            setStep("calendar");
-            if (appointmentTypeId) await loadSlots(appointmentTypeId, timezone);
-          }
-          throw new Error(data.error || "Unable to book");
-        }
-        router.push(data.confirmedUrl || `/booking/confirmed?token=${data.manageToken}`);
-      }
+      await ensureSession();
+      await autosave({ step: "schedule", serviceId, timezone });
+      const svc = config.services.find((s) => s.id === serviceId);
+      track("help_category_selected", { category: svc?.slug });
+      if (svc?.slug === NOT_SURE_SLUG) track("not_sure_selected");
+      trackEvent("booking_category_select", { category: svc?.slug ?? "" });
+      setStep(2);
+      window.scrollTo({ top: 0 });
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Something went wrong.");
+      setFormError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setBusy(false);
     }
   }
 
-  function goBack() {
-    const order: Step[] = ["service", "info", "qualify", "calendar", "confirm"];
-    const idx = order.indexOf(step);
-    if (idx > 0) {
-      if (step === "calendar" && outcome && !allowCalendar) return;
-      setStep(order[idx - 1]);
+  function continueFromSchedule() {
+    if (!selectedSlot) {
+      setErrors({ slot: "Choose a day and time to continue." });
+      track("validation_error", { step: "2" });
+      return;
+    }
+    setErrors({});
+    idempotencyKeyRef.current =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    void autosave({ step: "details", timezone, meetingFormat });
+    setStep(3);
+    window.scrollTo({ top: 0 });
+  }
+
+  function validateDetails(): boolean {
+    const next: Record<string, string> = {};
+    if (contact.fullName.trim().length < 2) next.fullName = "Please enter your name.";
+    if (!contact.businessName.trim()) next.businessName = "Please enter your business name.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email.trim()))
+      next.email = "Enter a valid email address.";
+    if (contact.phone.replace(/\D/g, "").length < 10)
+      next.phone = "Enter a valid phone number.";
+    if (!consent) next.consent = "Please check this box so we can contact you about your appointment.";
+    setErrors(next);
+    if (Object.keys(next).length) {
+      track("validation_error", { step: "3", field: Object.keys(next)[0] });
+    }
+    return Object.keys(next).length === 0;
+  }
+
+  async function submitBooking() {
+    // Ref guard runs synchronously — a double-click can land before React
+    // re-renders the disabled state.
+    if (submittingRef.current || completedRef.current) return;
+    if (!validateDetails()) return;
+    if (!appointmentType || !selectedSlot) {
+      setStep(2);
+      return;
+    }
+    submittingRef.current = true;
+    setBusy(true);
+    setFormError("");
+    track("booking_submitted");
+    try {
+      const token = await ensureSession();
+      const res = await postJson("/api/booking/create", {
+        sessionToken: token,
+        appointmentTypeId: appointmentType.id,
+        startsAt: selectedSlot,
+        meetingFormat,
+        visitorTimezone: timezone,
+        visitorNotes: notes || undefined,
+        idempotencyKey: idempotencyKeyRef.current || undefined,
+        intake: {
+          contact,
+          answers: {
+            ...answers,
+            interested_services: answers.interested_services.length
+              ? answers.interested_services
+              : undefined,
+            private_ai_focus: answers.private_ai_focus.length
+              ? answers.private_ai_focus
+              : undefined,
+            servicePlan: Object.values(answers.servicePlan).some(Boolean)
+              ? answers.servicePlan
+              : undefined,
+          },
+          consent,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.code === "conflict" || data.code === "time") {
+          setSelectedSlot(null);
+          setStep(2);
+          setFormError(
+            "That time was just booked by someone else. Please pick another time — everything else you entered is saved."
+          );
+          void loadSlots(timezone);
+          return;
+        }
+        if (res.status === 401 || data.code === "session" || data.code === "expired") {
+          sessionTokenRef.current = "";
+          setHasSession(false);
+          setFormError(
+            "Your session timed out. Please press “Confirm booking” again to retry."
+          );
+          return;
+        }
+        throw new Error(data.error || "Unable to complete your booking.");
+      }
+      completedRef.current = true;
+      track("booking_completed");
+      trackEvent("booking_complete");
+      try {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+      router.push(data.confirmedUrl || `/booking/confirmed?token=${data.manageToken}`);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Something went wrong. Your details are saved — please try again.");
+    } finally {
+      submittingRef.current = false;
+      setBusy(false);
     }
   }
 
-  if (loadError && !config) {
+  function goBack() {
+    setFormError("");
+    setErrors({});
+    if (step === 3) setStep(2);
+    else if (step === 2) setStep(1);
+    window.scrollTo({ top: 0 });
+  }
+
+  // ---------------------------------------------------------------- render
+
+  if (fatalError && !config) {
     return (
       <div className="border border-white/10 bg-white/[0.02] p-8 text-center">
         <AlertCircle className="mx-auto mb-4 h-8 w-8 text-crimson" />
-        <p className="text-white/70">{loadError}</p>
+        <p className="text-white/70">{fatalError}</p>
         <Link href="/connect" className="link-underline mt-6 inline-block">
           Reach us another way
         </Link>
@@ -435,7 +727,7 @@ export function BookingFunnel({
 
   if (!config) {
     return (
-      <div className="flex items-center justify-center py-24 text-white/50">
+      <div className="flex items-center justify-center py-24 text-white/50" role="status" aria-label="Loading booking options">
         <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
@@ -444,9 +736,7 @@ export function BookingFunnel({
   if (config.bookingsPaused) {
     return (
       <div className="border border-white/10 bg-white/[0.02] p-8 text-center">
-        <p className="text-lg text-white">
-          Online booking is temporarily paused.
-        </p>
+        <p className="text-lg text-white">Online booking is temporarily paused.</p>
         <p className="mt-3 text-sm text-white/55">
           Please email{" "}
           <a
@@ -460,667 +750,653 @@ export function BookingFunnel({
     );
   }
 
-  const stepIndex = STEPS.findIndex((s) => s.id === step);
+  const daySlots = slotsByDay.get(selectedDay) || [];
 
   return (
-    <div className="mx-auto max-w-3xl">
-      {/* Progress */}
-      <div className="mb-10 flex flex-wrap items-center gap-2">
-        {STEPS.map((s, i) => (
-          <div key={s.id} className="flex items-center gap-2">
-            <div
-              className={`flex h-7 w-7 items-center justify-center text-[0.65rem] font-medium ${
-                i < stepIndex
-                  ? "bg-crimson text-white"
-                  : i === stepIndex
-                    ? "border border-crimson text-white"
-                    : "border border-white/15 text-white/35"
-              }`}
-            >
-              {i < stepIndex ? <Check className="h-3.5 w-3.5" /> : i + 1}
-            </div>
-            <span
-              className={`hidden text-[0.68rem] uppercase tracking-[0.18em] sm:inline ${
-                i === stepIndex ? "text-white/70" : "text-white/30"
-              }`}
-            >
-              {s.label}
-            </span>
-            {i < STEPS.length - 1 && (
-              <div className="mx-1 hidden h-px w-6 bg-white/10 sm:block" />
-            )}
-          </div>
-        ))}
-      </div>
+    <div className="mx-auto max-w-2xl">
+      <ProgressSteps current={step} labels={STEP_LABELS} />
 
-      {!sessionToken && config.turnstileSiteKey && (
-        <div className="mb-8">
-          <Turnstile
-            siteKey={config.turnstileSiteKey}
-            onToken={setTurnstileToken}
-          />
-        </div>
-      )}
-
-      {loadError && (
-        <div className="mb-6 border border-crimson/40 bg-crimson/10 px-4 py-3 text-sm text-crimson-light">
-          {loadError}
-        </div>
-      )}
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.28 }}
+      {formError && (
+        <div
+          role="alert"
+          className="mt-6 border border-crimson/40 bg-crimson/10 px-4 py-3 text-sm text-crimson-light"
         >
-          {step === "service" && (
-            <section>
-              <h2 className="display text-2xl sm:text-3xl">
-                What are you interested in?
-              </h2>
-              <p className="mt-3 max-w-xl text-sm text-white/55">
-                Select the primary focus for your consultation. You can refine
-                details in the next steps.
-              </p>
-              <div className="mt-8 grid gap-3">
-                {config.services.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => {
-                      setServiceId(s.id);
-                      setErrors({});
-                    }}
-                    className={`border px-5 py-4 text-left transition ${
-                      serviceId === s.id
-                        ? "border-crimson/70 bg-crimson/10"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/25"
-                    }`}
-                  >
-                    <div className="text-sm font-medium text-white">{s.name}</div>
-                    {s.description && (
-                      <div className="mt-1 text-xs text-white/45">
-                        {s.description}
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-              {errors.service && (
-                <p className="mt-3 text-sm text-crimson-light">{errors.service}</p>
+          {formError}
+        </div>
+      )}
+
+      {/* ---------------------------------------------- Step 1: category */}
+      {step === 1 && (
+        <section className="mt-8" aria-labelledby="booking-step1-heading">
+          <h2 id="booking-step1-heading" className="display text-2xl sm:text-3xl">
+            What would you like help with?
+          </h2>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/55">
+            Pick whatever is closest. You don’t need to know the right service —
+            that’s our job.
+          </p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            {config.services.map((s) => (
+              <OptionCard
+                key={s.id}
+                selected={serviceId === s.id}
+                onClick={() => {
+                  setServiceId(s.id);
+                  setErrors({});
+                }}
+                title={s.name}
+                description={s.description}
+              />
+            ))}
+          </div>
+          {notSureSelected && (
+            <p className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-white/70">
+              That’s completely fine. You’ll book a general strategy consultation
+              and we’ll help identify the best opportunities for your business.
+            </p>
+          )}
+          {errors.service && (
+            <p role="alert" className="mt-4 text-sm text-crimson-light">
+              {errors.service}
+            </p>
+          )}
+
+          {!hasSession && config.turnstileSiteKey && (
+            <div className="mt-8">
+              <Turnstile siteKey={config.turnstileSiteKey} onToken={setTurnstileToken} />
+            </div>
+          )}
+
+          <div className="mt-10 flex justify-end">
+            <button
+              type="button"
+              onClick={continueFromCategory}
+              disabled={busy}
+              className="btn-primary min-h-[52px] w-full px-6 py-3 text-sm sm:w-auto"
+            >
+              {busy ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight className="ml-2 inline h-4 w-4" aria-hidden="true" />
+                </>
               )}
-            </section>
-          )}
+            </button>
+          </div>
+        </section>
+      )}
 
-          {step === "info" && (
-            <section>
-              <h2 className="display text-2xl sm:text-3xl">About you</h2>
-              <p className="mt-3 text-sm text-white/55">
-                Tell us how to reach you and a little about the business.
-              </p>
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                {(
-                  [
-                    ["firstName", "First name"],
-                    ["lastName", "Last name"],
-                    ["businessName", "Business name"],
-                    ["email", "Work email"],
-                    ["phone", "Phone"],
-                    ["website", "Website"],
-                    ["industry", "Industry"],
-                    ["businessLocation", "Business location"],
-                  ] as const
-                ).map(([key, label]) => (
-                  <label key={key} className="block text-sm">
-                    <span className="mb-2 block text-white/50">{label}</span>
-                    <input
-                      className={fieldClass(Boolean(errors[key]))}
-                      value={contact[key]}
-                      onChange={(e) => {
-                        const v =
-                          key === "phone"
-                            ? formatPhone(e.target.value)
-                            : e.target.value;
-                        setContact((c) => ({ ...c, [key]: v }));
-                      }}
-                      onBlur={() =>
-                        autosave({ contact }).catch(() => {})
-                      }
-                      type={key === "email" ? "email" : "text"}
-                      autoComplete={
-                        key === "email"
-                          ? "email"
-                          : key === "phone"
-                            ? "tel"
-                            : "organization"
-                      }
-                    />
-                    {errors[key] && (
-                      <span className="mt-1 block text-xs text-crimson-light">
-                        {errors[key]}
-                      </span>
-                    )}
-                  </label>
-                ))}
-                <label className="block text-sm">
-                  <span className="mb-2 block text-white/50">Employees</span>
-                  <select
-                    className={fieldClass()}
-                    value={contact.employeeCount}
-                    onChange={(e) =>
-                      setContact((c) => ({
-                        ...c,
-                        employeeCount: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Select</option>
-                    {config.options.employeeCount.map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block text-sm">
-                  <span className="mb-2 block text-white/50">
-                    Estimated monthly revenue
-                  </span>
-                  <select
-                    className={fieldClass()}
-                    value={contact.monthlyRevenueRange}
-                    onChange={(e) =>
-                      setContact((c) => ({
-                        ...c,
-                        monthlyRevenueRange: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Select</option>
-                    {config.options.monthlyRevenue.map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block text-sm sm:col-span-2">
-                  <span className="mb-2 block text-white/50">
-                    How did you hear about us?
-                  </span>
-                  <select
-                    className={fieldClass()}
-                    value={contact.heardAbout}
-                    onChange={(e) =>
-                      setContact((c) => ({ ...c, heardAbout: e.target.value }))
-                    }
-                  >
-                    <option value="">Select</option>
-                    {config.options.heardAbout.map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </section>
-          )}
+      {/* ------------------------------------------------- Step 2: time */}
+      {step === 2 && (
+        <section className="mt-8" aria-labelledby="booking-step2-heading">
+          <h2 id="booking-step2-heading" className="display text-2xl sm:text-3xl">
+            Choose a time
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-white/55">
+            {appointmentType
+              ? `${appointmentType.name} — ${appointmentType.durationMinutes} minutes, free.`
+              : "Free consultation."}
+          </p>
 
-          {step === "qualify" && (
-            <section>
-              <h2 className="display text-2xl sm:text-3xl">
-                Eligibility &amp; qualification
-              </h2>
-              <p className="mt-3 text-sm text-white/55">
-                These questions help us determine whether a strategy consultation
-                is the right next step.
-              </p>
-              <div className="mt-8 space-y-6">
-                {visibleQuestions.map((q) => (
-                  <label key={q.id} className="block text-sm">
-                    <span className="mb-2 block text-white/70">
-                      {q.label}
-                      {q.required && (
-                        <span className="text-crimson-light"> *</span>
-                      )}
-                    </span>
-                    {q.helpText && (
-                      <span className="mb-2 block text-xs text-white/40">
-                        {q.helpText}
-                      </span>
-                    )}
-                    {q.type === "long_text" ? (
-                      <textarea
-                        className={`${fieldClass(Boolean(errors[q.key]))} min-h-[100px]`}
-                        value={String(answers[q.key] ?? "")}
-                        onChange={(e) =>
-                          setAnswers((a) => ({ ...a, [q.key]: e.target.value }))
-                        }
-                      />
-                    ) : q.type === "yes_no" ||
-                      q.type === "dropdown" ||
-                      q.type === "multiple_choice" ? (
-                      <select
-                        className={fieldClass(Boolean(errors[q.key]))}
-                        value={String(answers[q.key] ?? "")}
-                        onChange={(e) =>
-                          setAnswers((a) => ({ ...a, [q.key]: e.target.value }))
-                        }
-                      >
-                        <option value="">Select</option>
-                        {(q.options.length
-                          ? q.options
-                          : q.type === "yes_no"
-                            ? ["Yes", "No"]
-                            : []
-                        ).map((o) => (
-                          <option key={o} value={o}>
-                            {o}
-                          </option>
-                        ))}
-                      </select>
-                    ) : q.type === "checkboxes" ? (
-                      <div className="space-y-2">
-                        {q.options.map((o) => {
-                          const arr = Array.isArray(answers[q.key])
-                            ? (answers[q.key] as string[])
-                            : [];
-                          return (
-                            <label
-                              key={o}
-                              className="flex items-center gap-3 text-white/70"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={arr.includes(o)}
-                                onChange={(e) => {
-                                  const next = e.target.checked
-                                    ? [...arr, o]
-                                    : arr.filter((x) => x !== o);
-                                  setAnswers((a) => ({ ...a, [q.key]: next }));
-                                }}
-                              />
-                              {o}
-                            </label>
-                          );
-                        })}
-                      </div>
-                    ) : q.type === "rating" ? (
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <button
-                            key={n}
-                            type="button"
-                            onClick={() =>
-                              setAnswers((a) => ({ ...a, [q.key]: n }))
-                            }
-                            className={`h-10 w-10 border text-sm ${
-                              answers[q.key] === n
-                                ? "border-crimson bg-crimson/20"
-                                : "border-white/15"
-                            }`}
-                          >
-                            {n}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <input
-                        className={fieldClass(Boolean(errors[q.key]))}
-                        type={
-                          q.type === "number" || q.type === "currency"
-                            ? "number"
-                            : q.type === "date"
-                              ? "date"
-                              : "text"
-                        }
-                        value={String(answers[q.key] ?? "")}
-                        onChange={(e) =>
-                          setAnswers((a) => ({
-                            ...a,
-                            [q.key]:
-                              q.type === "number" || q.type === "currency"
-                                ? Number(e.target.value)
-                                : e.target.value,
-                          }))
-                        }
-                      />
-                    )}
-                    {errors[q.key] && (
-                      <span className="mt-1 block text-xs text-crimson-light">
-                        {errors[q.key]}
-                      </span>
-                    )}
-                  </label>
-                ))}
-                <label className="flex items-start gap-3 text-sm text-white/60">
-                  <input
-                    type="checkbox"
-                    className="mt-1"
-                    checked={consent}
-                    onChange={(e) => setConsent(e.target.checked)}
-                  />
-                  <span>
-                    I agree to the{" "}
-                    <Link href="/privacy" className="underline">
-                      Privacy Policy
-                    </Link>{" "}
-                    and{" "}
-                    <Link href="/terms" className="underline">
-                      Terms
-                    </Link>
-                    , and consent to Redmont Strategies Group contacting me about
-                    this request.
-                  </span>
-                </label>
-                {errors.consent && (
-                  <p className="text-sm text-crimson-light">{errors.consent}</p>
-                )}
-              </div>
-            </section>
-          )}
-
-          {step === "calendar" && (
-            <section>
-              <h2 className="display text-2xl sm:text-3xl">
-                Select a time
-              </h2>
-              {outcomeMessage && (
-                <p className="mt-3 text-sm text-white/60">{outcomeMessage}</p>
+          <div className="mt-8 space-y-7">
+            <Field label="Your time zone" hint="Detected automatically — change it if it’s wrong. All times below are shown in this time zone.">
+              {(props) => (
+                <TimezoneSelect
+                  id={props.id}
+                  describedBy={props["aria-describedby"]}
+                  value={timezone}
+                  onChange={(tz) => {
+                    setTimezone(tz);
+                    setSelectedSlot(null);
+                  }}
+                />
               )}
+            </Field>
 
-              <div className="mt-8 space-y-6">
+            {slotsLoading ? (
+              <div className="flex items-center gap-3 py-10 text-white/50" role="status">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="text-sm">Loading available times…</span>
+              </div>
+            ) : availableDays.length === 0 ? (
+              <div className="border border-white/10 bg-white/[0.02] p-6 text-sm text-white/60">
+                No online times are open in the next four weeks. Email{" "}
+                <a className="underline" href="mailto:contact@redmontstrategiesgroup.com">
+                  contact@redmontstrategiesgroup.com
+                </a>{" "}
+                and we’ll find a time that works.
+              </div>
+            ) : (
+              <>
                 <div>
-                  <p className="label mb-3">Appointment type</p>
-                  <div className="grid gap-2">
-                    {config.appointmentTypes.map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={async () => {
-                          setAppointmentTypeId(t.id);
-                          setSelectedSlot(null);
-                          setMeetingFormat(t.meetingFormats[0] || "phone");
-                          setBusy(true);
-                          try {
-                            await loadSlots(t.id, timezone);
-                          } catch (e) {
-                            setLoadError(
-                              e instanceof Error ? e.message : "Failed to load"
-                            );
-                          } finally {
-                            setBusy(false);
-                          }
-                        }}
-                        className={`border px-4 py-3 text-left text-sm ${
-                          appointmentTypeId === t.id
-                            ? "border-crimson/70 bg-crimson/10"
-                            : "border-white/10"
-                        }`}
-                      >
-                        <span className="font-medium text-white">{t.name}</span>
-                        <span className="ml-2 text-white/40">
-                          {t.durationMinutes} min
-                        </span>
-                      </button>
-                    ))}
+                  <p className="mb-3 flex items-center gap-2 text-sm text-white/60">
+                    <Calendar className="h-4 w-4" aria-hidden="true" /> Pick a day
+                  </p>
+                  <div
+                    role="group"
+                    aria-label="Available days"
+                    className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-2"
+                  >
+                    {availableDays.map((day) => {
+                      const first = slotsByDay.get(day)![0];
+                      const { weekday, date } = dayLabel(day, first.start, timezone);
+                      const active = selectedDay === day;
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => {
+                            setSelectedDay(day);
+                            setSelectedSlot(null);
+                            track("date_selected");
+                          }}
+                          className={`min-w-[76px] shrink-0 border px-3 py-3 text-center transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+                            active
+                              ? "border-crimson/70 bg-crimson/10"
+                              : "border-white/10 bg-white/[0.02] hover:border-white/30"
+                          }`}
+                        >
+                          <span className="block text-[0.65rem] uppercase tracking-wider text-white/45">
+                            {weekday}
+                          </span>
+                          <span className="mt-1 block text-sm font-medium text-white">
+                            {date}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <label className="block text-sm">
-                  <span className="mb-2 flex items-center gap-2 text-white/50">
-                    <Clock className="h-3.5 w-3.5" /> Time zone
-                  </span>
-                  <input
-                    className={fieldClass()}
-                    value={timezone}
-                    onChange={async (e) => {
-                      setTimezone(e.target.value);
-                      if (appointmentTypeId) {
-                        try {
-                          await loadSlots(appointmentTypeId, e.target.value);
-                        } catch {
-                          /* ignore */
-                        }
-                      }
-                    }}
-                  />
-                </label>
-
-                <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-                  <div>
-                    <div className="mb-3 flex items-center justify-between">
-                      <p className="label">
-                        <Calendar className="mr-2 inline h-3.5 w-3.5" />
-                        {monthCursor.toLocaleString("en-US", {
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </p>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          className="border border-white/15 px-2 py-1 text-xs"
-                          onClick={() =>
-                            setMonthCursor(
-                              new Date(
-                                monthCursor.getFullYear(),
-                                monthCursor.getMonth() - 1,
-                                1
-                              )
-                            )
-                          }
-                        >
-                          Prev
-                        </button>
-                        <button
-                          type="button"
-                          className="border border-white/15 px-2 py-1 text-xs"
-                          onClick={() =>
-                            setMonthCursor(
-                              new Date(
-                                monthCursor.getFullYear(),
-                                monthCursor.getMonth() + 1,
-                                1
-                              )
-                            )
-                          }
-                        >
-                          Next
-                        </button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-7 gap-1 text-center text-[0.65rem] text-white/35">
-                      {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-                        <div key={d}>{d}</div>
-                      ))}
-                      {Array.from({ length: monthCursor.getDay() }).map(
-                        (_, i) => (
-                          <div key={`e-${i}`} />
-                        )
-                      )}
-                      {Array.from({
-                        length: new Date(
-                          monthCursor.getFullYear(),
-                          monthCursor.getMonth() + 1,
-                          0
-                        ).getDate(),
-                      }).map((_, i) => {
-                        const day = i + 1;
-                        const iso = `${monthCursor.getFullYear()}-${String(monthCursor.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                        const has = slotsByDay.has(iso);
-                        return (
-                          <button
-                            key={iso}
-                            type="button"
-                            disabled={!has}
-                            onClick={() => {
-                              setSelectedDay(iso);
-                              setSelectedSlot(null);
-                            }}
-                            className={`aspect-square text-sm ${
-                              selectedDay === iso
-                                ? "bg-crimson text-white"
-                                : has
-                                  ? "bg-white/5 text-white hover:bg-white/10"
-                                  : "text-white/20"
-                            }`}
-                          >
-                            {day}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="label mb-3">Available times</p>
-                    <div className="max-h-64 space-y-2 overflow-y-auto">
-                      {(slotsByDay.get(selectedDay) || []).map((s) => (
+                <div>
+                  <p className="mb-3 flex items-center gap-2 text-sm text-white/60">
+                    <Clock className="h-4 w-4" aria-hidden="true" /> Available times
+                    <span className="text-xs text-white/35">· {timezoneLabel(timezone)}</span>
+                  </p>
+                  <div
+                    role="group"
+                    aria-label="Available times"
+                    className="grid grid-cols-3 gap-2 sm:grid-cols-4"
+                  >
+                    {daySlots.map((s) => {
+                      const active = selectedSlot === s.start;
+                      return (
                         <button
                           key={s.start}
                           type="button"
-                          onClick={() => setSelectedSlot(s.start)}
-                          className={`block w-full border px-3 py-2 text-left text-sm ${
-                            selectedSlot === s.start
-                              ? "border-crimson/70 bg-crimson/10"
-                              : "border-white/10"
+                          aria-pressed={active}
+                          onClick={() => {
+                            setSelectedSlot(s.start);
+                            track("time_selected");
+                          }}
+                          className={`min-h-[48px] border px-2 py-3 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+                            active
+                              ? "border-crimson bg-crimson text-white"
+                              : "border-white/10 bg-white/[0.02] text-white/80 hover:border-white/30"
                           }`}
                         >
                           {s.label}
                         </button>
-                      ))}
-                      {selectedDay &&
-                        !(slotsByDay.get(selectedDay) || []).length && (
-                          <p className="text-sm text-white/40">
-                            No times on this day.
-                          </p>
-                        )}
-                      {!selectedDay && (
-                        <p className="text-sm text-white/40">
-                          Select a highlighted day.
-                        </p>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
+                  {!daySlots.length && (
+                    <p className="mt-2 text-sm text-white/40">
+                      No times left on this day — pick another day above.
+                    </p>
+                  )}
                 </div>
 
-                {selectedType && (
-                  <div>
-                    <p className="label mb-3">Meeting format</p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedType.meetingFormats.map((f) => (
-                        <button
-                          key={f}
-                          type="button"
-                          onClick={() => setMeetingFormat(f)}
-                          className={`border px-3 py-2 text-xs ${
-                            meetingFormat === f
-                              ? "border-crimson/70 bg-crimson/10"
-                              : "border-white/10"
-                          }`}
-                        >
-                          {config.options.meetingFormats[f] || f}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                {selectedSlot && (
+                  <p className="border border-crimson/30 bg-crimson/[0.06] px-4 py-3 text-sm text-white/80">
+                    Selected: <strong>{formatSelectedSlot(selectedSlot, timezone)}</strong>
+                  </p>
                 )}
-                {errors.calendar && (
-                  <p className="text-sm text-crimson-light">{errors.calendar}</p>
-                )}
-              </div>
-            </section>
-          )}
+              </>
+            )}
 
-          {step === "confirm" && (
-            <section>
-              <h2 className="display text-2xl sm:text-3xl">Confirm booking</h2>
-              <p className="mt-3 text-sm text-white/55">
-                Review your details before confirming.
+            {errors.slot && (
+              <p role="alert" className="text-sm text-crimson-light">
+                {errors.slot}
               </p>
-              <div className="mt-8 space-y-4 border border-white/10 bg-white/[0.02] p-6 text-sm">
-                <div className="flex justify-between gap-4">
-                  <span className="text-white/45">Name</span>
-                  <span>
-                    {contact.firstName} {contact.lastName}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-white/45">Business</span>
-                  <span>{contact.businessName}</span>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-white/45">Appointment</span>
-                  <span>{selectedType?.name}</span>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-white/45">Time</span>
-                  <span>
-                    {selectedSlot
-                      ? new Date(selectedSlot).toLocaleString(undefined, {
-                          timeZone: timezone,
-                          dateStyle: "full",
-                          timeStyle: "short",
-                        })
-                      : "—"}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-white/45">Format</span>
-                  <span>
-                    {config.options.meetingFormats[meetingFormat] ||
-                      meetingFormat}
-                  </span>
-                </div>
-              </div>
-              <label className="mt-6 block text-sm">
-                <span className="mb-2 block text-white/50">
-                  Notes for the strategist (optional)
-                </span>
-                <textarea
-                  className={`${fieldClass()} min-h-[80px]`}
-                  value={visitorNotes}
-                  onChange={(e) => setVisitorNotes(e.target.value)}
-                />
-              </label>
-            </section>
-          )}
-        </motion.div>
-      </AnimatePresence>
+            )}
+          </div>
 
-      <div className="mt-10 flex items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={goBack}
-          disabled={step === "service" || busy}
-          className="btn-ghost px-5 py-3 text-sm disabled:opacity-30"
-        >
-          <ArrowLeft className="mr-2 inline h-4 w-4" />
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={goNext}
-          disabled={busy}
-          className="btn-primary px-6 py-3 text-sm"
-        >
-          {busy ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : step === "confirm" ? (
-            "Confirm appointment"
-          ) : (
-            <>
+          <div className="mt-10 flex items-center justify-between gap-4">
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={busy}
+              className="btn-ghost min-h-[52px] px-5 py-3 text-sm"
+            >
+              <ArrowLeft className="mr-2 inline h-4 w-4" aria-hidden="true" />
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={continueFromSchedule}
+              disabled={busy || slotsLoading}
+              className="btn-primary min-h-[52px] px-6 py-3 text-sm"
+            >
               Continue
-              <ArrowRight className="ml-2 inline h-4 w-4" />
-            </>
+              <ArrowRight className="ml-2 inline h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* ---------------------------------------------- Step 3: details */}
+      {step === 3 && (
+        <section className="mt-8" aria-labelledby="booking-step3-heading">
+          <h2 id="booking-step3-heading" className="display text-2xl sm:text-3xl">
+            Tell us about your business
+          </h2>
+          {selectedSlot && (
+            <p className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/75">
+              <Calendar className="mr-2 inline h-4 w-4 text-crimson" aria-hidden="true" />
+              {formatSelectedSlot(selectedSlot, timezone)}
+              {appointmentType ? ` · ${appointmentType.durationMinutes} min · Free` : ""}
+              {" · "}
+              <button
+                type="button"
+                onClick={goBack}
+                className="underline decoration-white/30 underline-offset-4 hover:text-white"
+              >
+                Change time
+              </button>
+            </p>
           )}
-        </button>
-      </div>
+
+          <form
+            className="mt-8 space-y-6"
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submitBooking();
+            }}
+            onFocusCapture={() => {
+              if (!formStartedRef.current) {
+                formStartedRef.current = true;
+                track("form_started");
+              }
+            }}
+          >
+            <div className="grid gap-6 sm:grid-cols-2">
+              <Field label="Full name" error={errors.fullName}>
+                {(props) => (
+                  <input
+                    {...props}
+                    className={inputClass(Boolean(errors.fullName))}
+                    autoComplete="name"
+                    value={contact.fullName}
+                    onChange={(e) =>
+                      setContact((c) => ({ ...c, fullName: e.target.value }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="Business name" error={errors.businessName}>
+                {(props) => (
+                  <input
+                    {...props}
+                    className={inputClass(Boolean(errors.businessName))}
+                    autoComplete="organization"
+                    value={contact.businessName}
+                    onChange={(e) =>
+                      setContact((c) => ({ ...c, businessName: e.target.value }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="Email" error={errors.email}>
+                {(props) => (
+                  <input
+                    {...props}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    className={inputClass(Boolean(errors.email))}
+                    value={contact.email}
+                    onChange={(e) =>
+                      setContact((c) => ({ ...c, email: e.target.value }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="Phone" error={errors.phone}>
+                {(props) => (
+                  <input
+                    {...props}
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    className={inputClass(Boolean(errors.phone))}
+                    value={contact.phone}
+                    onChange={(e) =>
+                      setContact((c) => ({
+                        ...c,
+                        phone: formatPhone(e.target.value),
+                      }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="Business type or industry" optional>
+                {(props) => (
+                  <input
+                    {...props}
+                    className={inputClass()}
+                    placeholder="e.g. Contractor, retail store, dental office, gym"
+                    value={contact.industry}
+                    onChange={(e) =>
+                      setContact((c) => ({ ...c, industry: e.target.value }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="Website" optional>
+                {(props) => (
+                  <input
+                    {...props}
+                    type="url"
+                    inputMode="url"
+                    autoComplete="url"
+                    className={inputClass()}
+                    placeholder="yourbusiness.com"
+                    value={contact.website}
+                    onChange={(e) =>
+                      setContact((c) => ({ ...c, website: e.target.value }))
+                    }
+                  />
+                )}
+              </Field>
+            </div>
+
+            <Field
+              label="What would you most like help improving?"
+              optional
+              hint="A sentence or two is plenty."
+            >
+              {(props) => (
+                <textarea
+                  {...props}
+                  className={`${inputClass()} min-h-[88px]`}
+                  value={answers.problem}
+                  onChange={(e) =>
+                    setAnswers((a) => ({ ...a, problem: e.target.value }))
+                  }
+                />
+              )}
+            </Field>
+
+            <fieldset>
+              <legend className="mb-3 block text-sm text-white/60">
+                Preferred contact method
+              </legend>
+              <div className="flex flex-wrap gap-2">
+                {CONTACT_METHODS.map((m) => (
+                  <label
+                    key={m.value}
+                    className={`flex min-h-[44px] cursor-pointer items-center gap-2 border px-4 py-2.5 text-sm transition ${
+                      contact.preferredContact === m.value
+                        ? "border-crimson/70 bg-crimson/10 text-white"
+                        : "border-white/15 text-white/70 hover:border-white/35"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="preferredContact"
+                      value={m.value}
+                      checked={contact.preferredContact === m.value}
+                      onChange={() =>
+                        setContact((c) => ({ ...c, preferredContact: m.value }))
+                      }
+                      className="sr-only"
+                    />
+                    {m.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <Expandable label="Add more details (optional)">
+              <Field label="What is the biggest result you are trying to achieve?" optional>
+                {() => (
+                  <ChoiceChips
+                    label="Biggest result you are trying to achieve"
+                    options={RESULT_OPTIONS}
+                    value={answers.result}
+                    onChange={(v) =>
+                      setAnswers((a) => ({ ...a, result: v as string }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="Approximate business size" optional>
+                {() => (
+                  <ChoiceChips
+                    label="Approximate business size"
+                    options={config.options.employeeCount.map((o) => `${o} people`)}
+                    value={
+                      answers.business_size ? `${answers.business_size} people` : ""
+                    }
+                    onChange={(v) =>
+                      setAnswers((a) => ({
+                        ...a,
+                        business_size: String(v).replace(/ people$/, ""),
+                      }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="What’s the biggest challenge right now?" optional>
+                {(props) => (
+                  <textarea
+                    {...props}
+                    className={`${inputClass()} min-h-[72px]`}
+                    value={answers.current_challenge}
+                    onChange={(e) =>
+                      setAnswers((a) => ({
+                        ...a,
+                        current_challenge: e.target.value,
+                      }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="Anything you already know you’re interested in?" optional>
+                {() => (
+                  <ChoiceChips
+                    label="Areas of interest"
+                    multi
+                    options={config.services
+                      .filter((s) => s.slug !== NOT_SURE_SLUG)
+                      .map((s) => s.name)}
+                    value={answers.interested_services}
+                    onChange={(v) =>
+                      setAnswers((a) => ({
+                        ...a,
+                        interested_services: v as string[],
+                      }))
+                    }
+                  />
+                )}
+              </Field>
+              {selectedService &&
+              PRIVATE_AI_SERVICE_SLUGS.has(selectedService.slug) ? (
+                <Field
+                  label="What kind of private AI help are you looking for?"
+                  optional
+                >
+                  {() => (
+                    <ChoiceChips
+                      label="Private AI focus"
+                      multi
+                      options={PRIVATE_AI_FOCUS_OPTIONS}
+                      value={answers.private_ai_focus}
+                      onChange={(v) =>
+                        setAnswers((a) => ({
+                          ...a,
+                          private_ai_focus: v as string[],
+                        }))
+                      }
+                    />
+                  )}
+                </Field>
+              ) : null}
+              <Field label="Software or tools you currently use" optional>
+                {(props) => (
+                  <input
+                    {...props}
+                    className={inputClass()}
+                    placeholder="e.g. QuickBooks, Google Sheets, Jobber"
+                    value={answers.current_tools}
+                    onChange={(e) =>
+                      setAnswers((a) => ({ ...a, current_tools: e.target.value }))
+                    }
+                  />
+                )}
+              </Field>
+              <Field label="Anything else we should know?" optional>
+                {(props) => (
+                  <textarea
+                    {...props}
+                    className={`${inputClass()} min-h-[72px]`}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                )}
+              </Field>
+
+              <fieldset className="border-t border-white/10 pt-5">
+                <legend className="float-left mb-1 w-full text-sm font-medium text-white/70">
+                  Ongoing support &amp; management (optional)
+                </legend>
+                <p className="mb-5 clear-left text-xs leading-relaxed text-white/40">
+                  A few quick questions about what happens after launch, so we
+                  can come prepared to discuss ongoing system management.
+                </p>
+                <div className="space-y-5">
+                  {SERVICE_PLAN_QUESTIONS.map((q) => {
+                    const current = answers.servicePlan[q.key] ?? "";
+                    const currentLabel =
+                      q.options.find((o) => o.value === current)?.label ?? "";
+                    return (
+                      <Field key={q.key} label={q.label} optional>
+                        {() => (
+                          <ChoiceChips
+                            label={q.label}
+                            options={q.options.map((o) => o.label)}
+                            value={currentLabel}
+                            onChange={(v) => {
+                              const picked = q.options.find(
+                                (o) => o.label === v
+                              )?.value;
+                              setAnswers((a) => ({
+                                ...a,
+                                servicePlan: {
+                                  ...a.servicePlan,
+                                  [q.key]: picked,
+                                },
+                              }));
+                            }}
+                          />
+                        )}
+                      </Field>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            </Expandable>
+
+            {appointmentType && appointmentType.meetingFormats.length > 1 && (
+              <fieldset>
+                <legend className="mb-3 block text-sm text-white/60">
+                  How would you like to meet?
+                </legend>
+                <div className="flex flex-wrap gap-2">
+                  {appointmentType.meetingFormats.map((f) => (
+                    <label
+                      key={f}
+                      className={`flex min-h-[44px] cursor-pointer items-center gap-2 border px-4 py-2.5 text-sm transition ${
+                        meetingFormat === f
+                          ? "border-crimson/70 bg-crimson/10 text-white"
+                          : "border-white/15 text-white/70 hover:border-white/35"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="meetingFormat"
+                        value={f}
+                        checked={meetingFormat === f}
+                        onChange={() => setMeetingFormat(f)}
+                        className="sr-only"
+                      />
+                      {config.options.meetingFormats[f] || f}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+
+            <div>
+              <label className="flex items-start gap-3 text-sm leading-relaxed text-white/60">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 shrink-0 accent-[#b3243a]"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  aria-invalid={errors.consent ? true : undefined}
+                />
+                <span>
+                  I agree to be contacted about this appointment and consent to the{" "}
+                  <Link href="/privacy" className="underline">
+                    Privacy Policy
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/terms" className="underline">
+                    Terms
+                  </Link>
+                  .
+                </span>
+              </label>
+              {errors.consent && (
+                <p role="alert" className="mt-1.5 text-xs text-crimson-light">
+                  {errors.consent}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-4 pt-2">
+              <button
+                type="button"
+                onClick={goBack}
+                disabled={busy}
+                className="btn-ghost min-h-[52px] px-5 py-3 text-sm"
+              >
+                <ArrowLeft className="mr-2 inline h-4 w-4" aria-hidden="true" />
+                Back
+              </button>
+              <button
+                type="submit"
+                disabled={busy}
+                className="btn-primary min-h-[52px] px-6 py-3 text-sm"
+              >
+                {busy ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    Booking…
+                  </>
+                ) : (
+                  "Confirm booking"
+                )}
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
     </div>
   );
 }

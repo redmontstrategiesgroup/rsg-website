@@ -9,6 +9,8 @@ import { trackEvent } from "@/lib/events";
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
+  { label: "Managed Services", href: "/managedservices" },
+  { label: "Security", href: "/security" },
   { label: "Process", href: "/process" },
   { label: "Industries", href: "/industries" },
   { label: "Demos", href: "/demos" },

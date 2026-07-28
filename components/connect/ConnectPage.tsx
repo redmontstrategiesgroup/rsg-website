@@ -181,10 +181,12 @@ export function ConnectPageView({
             width={96}
             height={96}
           />
-          <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-[0.54rem] uppercase tracking-label text-crimson-light">
-            <ShieldCheck size={12} aria-hidden />
-            {settings.badgeLabel || "Official RSG Page"}
-          </p>
+          {settings.badgeLabel ? (
+            <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-[0.54rem] uppercase tracking-label text-crimson-light">
+              <ShieldCheck size={12} aria-hidden />
+              {settings.badgeLabel}
+            </p>
+          ) : null}
           <h1 className="display mt-4 text-[1.65rem] font-semibold leading-tight tracking-tight sm:text-[1.9rem]">
             {settings.headline}
           </h1>
@@ -342,9 +344,6 @@ function SocialRow({ settings }: { settings: ConnectSettings }) {
       : null,
     settings.socialInstagram
       ? { label: "Instagram", href: settings.socialInstagram }
-      : null,
-    settings.socialFacebook
-      ? { label: "Facebook", href: settings.socialFacebook }
       : null,
     {
       label: "Email",

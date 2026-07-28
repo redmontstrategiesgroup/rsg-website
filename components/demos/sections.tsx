@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check, ShieldCheck, Workflow, Inbox, Users } from "lucide-react";
 import { Reveal, RevealGroup } from "@/components/Reveal";
 import { TrackedLink } from "@/components/TrackedLink";
+import { BuildSystemCta } from "./BuildSystemCta";
 import type { IndustryConfig } from "./types";
 
 /* ------------------------------------------------------------------ */
@@ -218,9 +219,12 @@ const IMPLEMENTATION_STEPS = [
 export function ConversionSection({
   demoSlug,
   cta,
+  config,
 }: {
   demoSlug?: string;
   cta?: IndustryConfig["cta"];
+  /** When provided, the CTA opens the explore/request dialog instead of linking to /book. */
+  config?: IndustryConfig;
 }) {
   return (
     <section className="border-t border-white/[0.07] bg-base-900/40">
@@ -236,14 +240,18 @@ export function ConversionSection({
               customer journey, team responsibilities, bottlenecks, and growth priorities.
             </p>
             <div className="mt-8">
-              <TrackedLink
-                href="/book"
-                event="demo_cta_click"
-                eventProps={{ demo: demoSlug ?? "landing", cta: "consultation" }}
-                className="btn-primary"
-              >
-                {cta ? cta.button : "Book a Systems Consultation"}
-              </TrackedLink>
+              {config ? (
+                <BuildSystemCta config={config} source="conversion_section" />
+              ) : (
+                <TrackedLink
+                  href="/book"
+                  event="demo_cta_click"
+                  eventProps={{ demo: demoSlug ?? "landing", cta: "consultation" }}
+                  className="btn-primary"
+                >
+                  {cta ? cta.button : "Book a Systems Consultation"}
+                </TrackedLink>
+              )}
             </div>
           </Reveal>
           <RevealGroup className="space-y-0 lg:col-span-6 lg:col-start-7">

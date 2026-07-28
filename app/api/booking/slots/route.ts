@@ -38,31 +38,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Session expired." }, { status: 401 });
   }
 
+  // Simplified funnel: choosing a time is step 2, before any contact details
+  // are collected, so availability is visible to every valid session. The
+  // booking-create path still enforces its own eligibility gate.
   const settings = await getSettings();
-  let allowManual = false;
-  if (session.qualification_outcome === "manual_review") {
-    const { requireSupabase } = await import("@/lib/scheduling/db");
-    const sb = requireSupabase();
-    const { data: rule } = await sb
-      .from("qualification_rule_sets")
-      .select("allow_calendar_on_manual_review")
-      .eq("status", "published")
-      .order("published_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    allowManual = Boolean(rule?.allow_calendar_on_manual_review);
-  }
-
-  if (
-    session.qualification_outcome !== "qualified" &&
-    !allowManual &&
-    !session.is_test
-  ) {
-    return NextResponse.json(
-      { error: "Not eligible to view availability." },
-      { status: 403 }
-    );
-  }
 
   const fromDate =
     from || DateTime.now().setZone(timezone).toISODate()!;

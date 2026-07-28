@@ -4,6 +4,7 @@ import { processDueJobs } from "@/lib/scheduling/reminders";
 import { deliverPendingWebhooks } from "@/lib/scheduling/webhooks";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { processEmailJobs, runLeadRetention } from "@/lib/email-jobs";
+import { runLifecycleCron } from "@/lib/lifecycle/orchestrate";
 import { writeAuditEvent } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -48,11 +49,14 @@ export async function POST(request: Request) {
   const webhooks = await deliverPendingWebhooks(20);
   const emails = await processEmailJobs(20);
   const retained = await runLeadRetention(730);
+  // Lifecycle sweeps (reminders, expirations, delayed automations) never
+  // throw — failures are reported in the counts.
+  const lifecycle = await runLifecycleCron();
 
   await writeAuditEvent({
     actorType: "cron",
     action: "cron.scheduling",
-    metadata: { jobs, webhooks, emails, retained },
+    metadata: { jobs, webhooks, emails, retained, lifecycle },
   });
 
   return NextResponse.json({
@@ -61,6 +65,7 @@ export async function POST(request: Request) {
     webhooks,
     emails,
     retained,
+    lifecycle,
     at: new Date().toISOString(),
   });
 }

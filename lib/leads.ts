@@ -43,6 +43,15 @@ async function storeInSupabase(lead: Lead): Promise<{ ok: boolean; id?: string }
         status: lead.status ?? "new",
         notes: lead.notes ?? "",
         owner: lead.owner ?? "",
+        // Demo-request context rides in the snapshot so the scheduling admin
+        // panel and lead views can show which demo interactions led here.
+        ...(lead.demo
+          ? {
+              qualification_snapshot: { demoRequest: lead.demo },
+              employee_count: lead.demo.businessSize ?? "",
+              service_requested: lead.demo.system,
+            }
+          : {}),
       })
       .select("id")
       .limit(1);
@@ -121,8 +130,44 @@ async function emailOwner(lead: Lead): Promise<boolean> {
         ? "Site chat assistant"
         : lead.source === "website_connect_page"
           ? "RSG Connect Page"
-          : "Contact form",
+          : lead.source === "website_private_ai_designer"
+            ? "Private AI System Designer"
+            : lead.source === "interactive_demo"
+              ? `Interactive demo — ${lead.demo?.system ?? "demo system"}`
+              : "Contact form",
     ],
+    ...(lead.demo
+      ? ([
+          ["Demo viewed", `${lead.demo.system} (${lead.demo.businessCategory})`],
+          [
+            "Features explored in demo",
+            lead.demo.featuresExplored.length
+              ? lead.demo.featuresExplored.join(", ")
+              : "—",
+          ],
+          [
+            "Services requested",
+            lead.demo.featuresRequested.length
+              ? lead.demo.featuresRequested.join(", ")
+              : "—",
+          ],
+          ["Business size", lead.demo.businessSize || "—"],
+          [
+            "Preferred meeting",
+            [lead.demo.preferredDate, lead.demo.preferredTime]
+              .filter(Boolean)
+              .join(" · ") || "—",
+          ],
+          ["Scenarios run in demo", String(lead.demo.scenariosRun ?? 0)],
+          ...Object.entries(lead.demo.extras ?? {}).map(
+            ([k, v]) =>
+              [k.replace(/[-_]/g, " ").replace(/^\w/, (c) => c.toUpperCase()), v] as [
+                string,
+                string,
+              ],
+          ),
+        ] as [string, string][])
+      : []),
     ["Name", lead.name],
     ["Business name", lead.company || "—"],
     ["Website", lead.website || "—"],
@@ -166,13 +211,18 @@ async function emailOwner(lead: Lead): Promise<boolean> {
 
   const textBody = rows.map(([label, value]) => `${label}: ${value}`).join("\n");
 
+  const subject =
+    lead.source === "interactive_demo"
+      ? `Demo system request: ${lead.name}${lead.company ? ` — ${lead.company}` : ""} (${lead.demo?.system ?? "interactive demo"})`
+      : `New RSG lead: ${lead.name}${lead.company ? ` — ${lead.company}` : ""}`;
+
   try {
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
       from: process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
       to,
       ...(lead.email ? { replyTo: lead.email } : {}),
-      subject: `New RSG lead: ${lead.name}${lead.company ? ` — ${lead.company}` : ""}`,
+      subject,
       html,
       text: textBody,
     });
@@ -185,7 +235,7 @@ async function emailOwner(lead: Lead): Promise<boolean> {
           process.env.CONTACT_FROM_EMAIL ??
           "RSG Website <onboarding@resend.dev>",
         replyTo: lead.email || undefined,
-        subject: `New RSG lead: ${lead.name}${lead.company ? ` — ${lead.company}` : ""}`,
+        subject,
         html,
         text: textBody,
       });
@@ -201,7 +251,7 @@ async function emailOwner(lead: Lead): Promise<boolean> {
         process.env.CONTACT_FROM_EMAIL ??
         "RSG Website <onboarding@resend.dev>",
       replyTo: lead.email || undefined,
-      subject: `New RSG lead: ${lead.name}${lead.company ? ` — ${lead.company}` : ""}`,
+      subject,
       html,
       text: textBody,
     });

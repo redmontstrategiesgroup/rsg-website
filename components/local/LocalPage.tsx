@@ -3,9 +3,15 @@ import { ArrowRight } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { Reveal } from "@/components/Reveal";
 import { CtaLink } from "@/components/local/CtaLink";
+import { SecurityIncluded } from "@/components/security/SecurityIncluded";
+import { AfterLaunchSection } from "@/components/managed-services/AfterLaunch";
+import {
+  variantForSlug,
+  type SecurityVariant,
+} from "@/lib/security-center/service-controls";
 import { PHONE_DISPLAY, PHONE_TEL, SITE_URL } from "@/lib/site";
 
-const AUDIT_SLUG = "business-systems-audit-plymouth-county-ma";
+const AUDIT_SLUG = "systemsaudit";
 
 /**
  * Shared renderer for local SEO service and industry pages.
@@ -17,7 +23,7 @@ const AUDIT_SLUG = "business-systems-audit-plymouth-county-ma";
  */
 
 export type LocalPageContent = {
-  /** URL slug without leading slash, e.g. "business-consulting-plymouth-county-ma". */
+  /** URL slug without leading slash, e.g. "businessconsulting". */
   slug: string;
   /** Small eyebrow label above the H1. */
   label: string;
@@ -45,6 +51,13 @@ export type LocalPageContent = {
     serviceDescription: string;
     serviceType: string;
   };
+  /** Override the auto-selected "Security Included" control set for this page. */
+  securityVariant?: SecurityVariant;
+  /**
+   * When set, renders the managed-services "What Happens After Launch?"
+   * section (keyed into SERVICE_PLAN_RECOMMENDATIONS) before the FAQ.
+   */
+  managedService?: string;
 };
 
 const PROCESS_STEPS = [
@@ -278,6 +291,9 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
         </div>
       </section>
 
+      {/* Security included */}
+      <SecurityIncluded variant={c.securityVariant ?? variantForSlug(c.slug)} />
+
       {/* Process strip */}
       <section className="container-px py-20 sm:py-28">
         <Reveal y={12}>
@@ -315,6 +331,9 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
           </div>
         </Reveal>
       </section>
+
+      {/* Managed services (ongoing partnership) */}
+      {c.managedService ? <AfterLaunchSection service={c.managedService} /> : null}
 
       {/* FAQ */}
       <section className="border-y border-white/[0.08] bg-base-900">

@@ -70,6 +70,12 @@ export function middleware(request: NextRequest) {
     if (pathname === "/api/cron/scheduling") {
       return NextResponse.next();
     }
+    // Stripe webhooks are server-to-server and authenticate via signature
+    // verification (constructEvent) plus a unique-event replay guard in the
+    // route handler. Browser CSRF and user-agent checks do not apply.
+    if (pathname === "/api/stripe/webhook") {
+      return NextResponse.next();
+    }
     // Health checks are GET-only; nothing to exempt here for mutating.
 
     // 1. Reject obvious scripted clients.

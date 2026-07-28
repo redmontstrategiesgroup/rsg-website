@@ -19,6 +19,22 @@ type BookingView = {
   startsAt?: string;
 };
 
+function formatSlot(isoUtc: string, timeZone?: string): string {
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: timeZone || undefined,
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    }).format(new Date(isoUtc));
+  } catch {
+    return new Date(isoUtc).toLocaleString();
+  }
+}
+
 export function BookingManageClient({
   token,
   confirmedView,
@@ -149,6 +165,11 @@ export function BookingManageClient({
             <p className="text-lg text-white">{data.appointmentType}</p>
             <p className="mt-2 text-white/70">{data.displayTime}</p>
             <p className="mt-1 text-sm text-white/40">
+              {data.visitorTimezone
+                ? `Shown in your time zone: ${data.visitorTimezone.replace(/_/g, " ")}`
+                : null}
+            </p>
+            <p className="mt-1 text-sm text-white/40">
               Status: {data.status.replace(/_/g, " ")}
               {data.meetingFormat ? ` · ${data.meetingFormat.replace(/_/g, " ")}` : ""}
             </p>
@@ -158,6 +179,50 @@ export function BookingManageClient({
           </div>
         </div>
       </div>
+
+      {data.contact && (data.contact.name || data.contact.email) && (
+        <div className="border border-white/10 bg-white/[0.02] p-6">
+          <p className="label mb-4">Your details</p>
+          <dl className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+            {data.contact.name && (
+              <div className="flex justify-between gap-4 sm:block">
+                <dt className="text-white/45">Name</dt>
+                <dd className="text-white/85">{data.contact.name}</dd>
+              </div>
+            )}
+            {data.contact.businessName && (
+              <div className="flex justify-between gap-4 sm:block">
+                <dt className="text-white/45">Business</dt>
+                <dd className="text-white/85">{data.contact.businessName}</dd>
+              </div>
+            )}
+            {data.contact.email && (
+              <div className="flex justify-between gap-4 sm:block">
+                <dt className="text-white/45">Email</dt>
+                <dd className="break-all text-white/85">{data.contact.email}</dd>
+              </div>
+            )}
+            {data.contact.phone && (
+              <div className="flex justify-between gap-4 sm:block">
+                <dt className="text-white/45">Phone</dt>
+                <dd className="text-white/85">{data.contact.phone}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      )}
+
+      {confirmedView && data.status !== "cancelled" && (
+        <div className="border border-white/10 bg-white/[0.02] p-6">
+          <p className="label mb-4">What happens on the call</p>
+          <ul className="space-y-2 text-sm leading-relaxed text-white/60">
+            <li>· We review what you shared before the call so we start prepared.</li>
+            <li>· We talk through your goals and where your business is today.</li>
+            <li>· We identify the strongest opportunities for growth, efficiency, or automation.</li>
+            <li>· You leave with practical recommended next steps — no obligation.</li>
+          </ul>
+        </div>
+      )}
 
       {data.calendarLinks && data.status !== "cancelled" && (
         <div>
@@ -194,7 +259,7 @@ export function BookingManageClient({
         </div>
       )}
 
-      {!confirmedView && data.status !== "cancelled" && mode === "view" && (
+      {data.status !== "cancelled" && mode === "view" && (
         <div className="flex flex-wrap gap-3">
           {data.canReschedule && (
             <button
@@ -228,13 +293,13 @@ export function BookingManageClient({
                 key={s.start}
                 type="button"
                 onClick={() => setSelected(s.start)}
-                className={`block w-full border px-3 py-2 text-left text-sm ${
+                className={`block min-h-[44px] w-full border px-3 py-2 text-left text-sm ${
                   selected === s.start
                     ? "border-crimson/70 bg-crimson/10"
                     : "border-white/10"
                 }`}
               >
-                {new Date(s.start).toLocaleString()} ({s.label})
+                {formatSlot(s.start, data.visitorTimezone)}
               </button>
             ))}
             {!slots.length && (

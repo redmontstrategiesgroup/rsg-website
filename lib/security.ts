@@ -76,11 +76,25 @@ export async function rateLimit(
   }
 }
 
-/** Best-effort client IP (first hop of x-forwarded-for, set by the proxy). */
+/**
+ * Best-effort client IP for rate limiting. Prefers x-real-ip (set by the
+ * platform proxy and not client-controllable). Falls back to the RIGHTMOST
+ * x-forwarded-for entry — the hop the trusted proxy appended — rather than
+ * the leftmost, which a client can spoof to rotate its apparent IP and defeat
+ * per-IP caps.
+ */
 export function clientIp(request: Request): string {
+  const real = request.headers.get("x-real-ip");
+  if (real && real.trim()) return real.trim().slice(0, 64);
   const fwd = request.headers.get("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0].trim().slice(0, 64);
-  return request.headers.get("x-real-ip")?.slice(0, 64) ?? "local";
+  if (fwd) {
+    const parts = fwd
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (parts.length) return parts[parts.length - 1].slice(0, 64);
+  }
+  return "local";
 }
 
 const RATE_LIMIT_RESPONSE = {

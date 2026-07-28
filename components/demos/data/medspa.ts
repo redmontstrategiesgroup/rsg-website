@@ -5,7 +5,7 @@ import type { IndustryConfig } from "../types";
  * "Aura Aesthetics". All names, numbers, and messages are sample data.
  */
 export const medspaConfig: IndustryConfig = {
-  slug: "med-spa",
+  slug: "medspa",
   industry: "Med Spas & Aesthetic Clinics",
   systemName: "RSG Med Spa Growth System",
   osName: "Med Spa Growth System",
@@ -35,6 +35,8 @@ export const medspaConfig: IndustryConfig = {
     { id: "leads", label: "Patients" },
     { id: "pipeline", label: "Pipeline" },
     { id: "conversations", label: "Conversations" },
+    { id: "receptionist", label: "AI Receptionist" },
+    { id: "quotes", label: "Treatment Quotes" },
     { id: "automations", label: "Automations" },
     { id: "tasks", label: "Tasks" },
     { id: "calendar", label: "Calendar" },
@@ -54,19 +56,19 @@ export const medspaConfig: IndustryConfig = {
       id: "owner",
       label: "Owner",
       description: "Everything — performance, settings, and the full system.",
-      nav: ["overview", "leads", "pipeline", "conversations", "automations", "tasks", "calendar", "reviews", "campaigns", "analytics", "settings"],
+      nav: ["overview", "leads", "pipeline", "conversations", "receptionist", "quotes", "automations", "tasks", "calendar", "reviews", "campaigns", "analytics", "settings"],
     },
     {
       id: "manager",
       label: "Practice manager",
       description: "Team workload, pipelines, campaigns, and exceptions.",
-      nav: ["overview", "leads", "pipeline", "conversations", "tasks", "calendar", "reviews", "campaigns", "analytics"],
+      nav: ["overview", "leads", "pipeline", "conversations", "receptionist", "quotes", "tasks", "calendar", "reviews", "campaigns", "analytics"],
     },
     {
       id: "staff",
       label: "Front desk",
       description: "Conversations, tasks, and the day's schedule.",
-      nav: ["overview", "conversations", "tasks", "calendar", "leads"],
+      nav: ["overview", "conversations", "receptionist", "quotes", "tasks", "calendar", "leads"],
     },
     {
       id: "provider",
@@ -239,6 +241,150 @@ export const medspaConfig: IndustryConfig = {
     { id: "notes", label: "Goals or questions", type: "textarea", helper: "e.g. \"First time — want a subtle, natural look\"" },
     { id: "consent", label: "OK to text me about my inquiry", type: "checkbox" },
   ],
+  quote: {
+    title: "Instant treatment quote",
+    description:
+      "The same pricing tool a patient can use on your website or that the front desk uses chair-side. Pick the treatment and options — generated quotes become records with automated follow-up.",
+    documentLabel: "Treatment quote",
+    base: { label: "Consultation & personalized treatment plan", amount: 0 },
+    fields: [
+      {
+        id: "treatment",
+        label: "Treatment",
+        options: [
+          { label: "Botox / Dysport (per area pricing below)", amount: 480 },
+          { label: "Dermal filler (per syringe)", amount: 650 },
+          { label: "Hydrafacial series (3 sessions)", amount: 540 },
+          { label: "Laser hair removal package (6 sessions)", amount: 1200 },
+          { label: "Microneedling series (3 sessions)", amount: 900 },
+        ],
+      },
+      {
+        id: "areas",
+        label: "Areas / add-on units",
+        options: [
+          { label: "Single area or standard units", amount: 0 },
+          { label: "Two areas", amount: 320 },
+          { label: "Three areas / full face", amount: 620 },
+        ],
+      },
+      {
+        id: "addon",
+        label: "Add-on",
+        options: [
+          { label: "None", amount: 0 },
+          { label: "Medical-grade skincare kit", amount: 180 },
+          { label: "LED therapy add-on", amount: 120 },
+        ],
+      },
+      {
+        id: "membership",
+        label: "Aura membership",
+        options: [
+          { label: "Not a member", amount: 0 },
+          { label: "Member pricing", amount: -90 },
+        ],
+        helper: "Members save on every visit — great retention hook.",
+      },
+    ],
+    acceptedStageId: "treatment",
+    disclaimer: "Demo pricing for illustration — real treatment plans are quoted after a consultation.",
+  },
+  receptionist: {
+    scenarioLabel: "Missed call — new patient inquiry",
+    description: "It's 1:15 PM on a Tuesday. Amanda is checking in a patient when the phone rings out.",
+    callerRole: "a first-time caller curious about Botox",
+    start: "greet",
+    nodes: [
+      {
+        id: "greet",
+        say: "Hi, you've reached Aura Aesthetics! Everyone's with a patient right now, but I'm the practice's automated assistant and I can help with almost everything. What brings you in today?",
+        choices: [
+          { id: "c-botox", label: "I've never had Botox — I want to ask about pricing.", next: "pricing" },
+          { id: "c-resched", label: "I need to move my Thursday appointment.", next: "resched" },
+          { id: "c-hours", label: "Are you open Saturdays?", next: "hours" },
+        ],
+      },
+      {
+        id: "hours",
+        say: "We are — Saturdays 9 to 3, and they book up fastest. Is there a treatment you'd like to come in for?",
+        choices: [
+          { id: "c-botox2", label: "Maybe Botox — what does it cost?", next: "pricing" },
+        ],
+      },
+      {
+        id: "resched",
+        say: "No problem at all. I see a Thursday 1:00 PM Hydrafacial under this number — I can move it to Friday 11:00 AM or Saturday 10:00 AM. Which do you prefer?",
+        meta: "Looks up the live schedule",
+        choices: [
+          { id: "c-fri", label: "Friday at 11, please.", next: "done-resched" },
+          { id: "c-sat", label: "Saturday morning works.", next: "done-resched" },
+        ],
+      },
+      {
+        id: "done-resched",
+        say: "Done! Your appointment is moved and a new confirmation is on its way by text. The old reminders were cancelled automatically. Anything else I can help with?",
+        outcome: {
+          summary: [
+            "The appointment was rescheduled with zero front-desk time.",
+            "Old reminders were cancelled and new ones queued automatically.",
+            "The change was logged on the patient's record.",
+          ],
+          effects: [
+            { kind: "activity", item: { id: "a-ai-resched", icon: "calendar", text: "AI receptionist rescheduled Rachel Nguyen's Hydrafacial to Friday 11:00 AM — confirmations updated.", time: "Just now" } },
+            { kind: "notify", notification: { id: "n-ai-resched", title: "Reschedule handled by assistant", body: "No hold music, no callback list — done during the missed call.", tone: "success" } },
+          ],
+        },
+      },
+      {
+        id: "pricing",
+        say: "Great question! Botox at Aura starts at $480 per area, and first-timers usually start with one area for a subtle, natural look. The best first step is a free 15-minute consultation with Carly, our nurse injector. Want me to check times?",
+        meta: "Pricing rules from your playbook",
+        choices: [
+          { id: "c-times", label: "Sure — what's available this week?", next: "times" },
+          { id: "c-nervous", label: "I'm a little nervous — does it look fake?", next: "reassure" },
+        ],
+      },
+      {
+        id: "reassure",
+        say: "Totally normal question — Carly specializes in subtle, natural results, and at the consult she'll map out exactly what to expect before you commit to anything. It's free and there's no pressure. Want to grab a time?",
+        choices: [
+          { id: "c-times2", label: "OK, let's look at times.", next: "times" },
+        ],
+      },
+      {
+        id: "times",
+        say: "Carly has Thursday 4:00 PM or Saturday 10:30 AM open for a free consultation. Which works better?",
+        meta: "Checks the live schedule",
+        choices: [
+          { id: "c-thu", label: "Thursday at 4.", next: "done-booked" },
+          { id: "c-sat2", label: "Saturday at 10:30.", next: "done-booked" },
+        ],
+      },
+      {
+        id: "done-booked",
+        say: "Perfect — you're booked for a free Botox consultation with Carly. I'm texting your confirmation and a short intake form now. We can't wait to meet you!",
+        outcome: {
+          summary: [
+            "A new patient record was created from a call nobody was free to answer.",
+            "The consultation went straight onto Carly's calendar with reminders queued.",
+            "The intake form was texted automatically, and the call summary is in Conversations.",
+          ],
+          effects: [
+            { kind: "lead", lead: { id: "l-ai-botox", name: "Maya Torres", service: "Botox — first time", source: "Missed call", stageId: "booked", value: 480, lastActivity: "Just now", temp: "hot", note: "First-timer, wants subtle look · booked by AI receptionist during missed call", assignee: "Carly Jensen, RN" } },
+            { kind: "calendar", event: { id: "cal-ai-botox", day: "Thu", date: "Jul 16", time: "4:00 PM", title: "Free consultation — Maya Torres", withWhom: "Carly Jensen, RN", status: "confirmed" } },
+            { kind: "conversation", conversation: { id: "c-ai-botox", contact: "Maya Torres", channel: "phone", topic: "Missed call — Botox consult booked", unread: true, messages: [
+              { id: "ai-b-1", from: "system", meta: "AI receptionist · call summary", text: "Missed call handled: first-time Botox inquiry. Pricing explained ($480/area), consultation booked Thu 4:00 PM with Carly. Confirmation + intake form texted.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "inquiries", delta: 1 },
+            { kind: "metric", id: "consults", delta: 1 },
+            { kind: "metric", id: "missed-recovered", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-botox", title: "Missed call converted", body: "Maya Torres — Botox consult booked Thu 4 PM while Amanda was with a patient.", tone: "success" } },
+          ],
+        },
+      },
+    ],
+  },
   appointmentTypes: [
     { id: "apt-consult", label: "Free consultation", duration: 15 },
     { id: "apt-injectable", label: "Injectable appointment", duration: 45 },
@@ -416,6 +562,16 @@ export const medspaConfig: IndustryConfig = {
         effects: [
           { kind: "metric", id: "conversion", delta: 1 },
           { kind: "notify", notification: { id: "n-s10", title: "Scenario complete", body: "Instagram DM → booked consultation in under 5 minutes, fully automated with staff oversight.", tone: "success" } },
+        ],
+      },
+      {
+        id: "s-11",
+        title: "Now try it yourself",
+        detail:
+          "Take a missed call as the AI receptionist's caller, build an instant treatment quote, or reschedule a consultation on the calendar. Everything here is safe to touch.",
+        tab: "receptionist",
+        effects: [
+          { kind: "notify", notification: { id: "n-s11", title: "Your turn", body: "Try the AI receptionist call, then price a treatment in Treatment Quotes.", tone: "default" } },
         ],
       },
     ],

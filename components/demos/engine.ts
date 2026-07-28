@@ -6,8 +6,13 @@ import type {
   IndustryConfig,
   IntakeField,
   Lead,
+  LoyaltyActivityItem,
+  LoyaltyMember,
+  LoyaltyReward,
   Metric,
   MetricFormat,
+  Product,
+  QuoteRecord,
   RoleId,
   Stage,
   Template,
@@ -15,8 +20,8 @@ import type {
   WorkflowRun,
 } from "./types";
 
-/** Bump when the state shape changes — stale stored sessions are discarded. */
-export const DEMO_SCHEMA_VERSION = 2;
+/** Bump when the state shape or seed data changes — stale sessions are discarded. */
+export const DEMO_SCHEMA_VERSION = 5;
 
 /* ------------------------------------------------------------------ */
 /* State                                                               */
@@ -52,6 +57,13 @@ export type DemoState = {
   reviews: IndustryConfig["reviews"];
   automations: Automation[];
   templates: Template[];
+  quotes: QuoteRecord[];
+  /** Loyalty module records (empty when the industry has no loyalty config). */
+  loyaltyMembers: LoyaltyMember[];
+  loyaltyRewards: LoyaltyReward[];
+  loyaltyActivity: LoyaltyActivityItem[];
+  /** Inventory module records (empty when the industry has no inventory config). */
+  products: Product[];
   workflowRuns: WorkflowRun[];
   notifications: DemoNotification[];
   toasts: DemoNotification[];
@@ -105,6 +117,11 @@ export function initialDemoState(config: IndustryConfig): DemoState {
     reviews: config.reviews.map((r) => ({ ...r })),
     automations: config.automations.map((a) => ({ ...a, steps: [...a.steps] })),
     templates: config.templates.map((t) => ({ ...t })),
+    quotes: [],
+    loyaltyMembers: (config.loyalty?.members ?? []).map((m) => ({ ...m })),
+    loyaltyRewards: (config.loyalty?.rewards ?? []).map((r) => ({ ...r })),
+    loyaltyActivity: (config.loyalty?.activity ?? []).map((a) => ({ ...a })),
+    products: (config.inventory?.products ?? []).map((p) => ({ ...p })),
     workflowRuns: [],
     notifications: [],
     toasts: [],
@@ -147,6 +164,19 @@ export type DemoAction =
   | { type: "settings-intake"; fields: IntakeField[] }
   | { type: "settings-personalization"; personalization: DemoSettings["personalization"] }
   | { type: "reset"; state: DemoState };
+
+/**
+ * Derive a product's inventory status from its live numbers so demo stock
+ * changes surface immediately (out of stock → low → reorder → slow/over).
+ */
+export function productStatus(p: Product): Product["status"] {
+  if (p.stock === 0) return "out-of-stock";
+  if (p.stock <= Math.ceil(p.reorderPoint / 2)) return "reorder";
+  if (p.stock <= p.reorderPoint) return "low-stock";
+  if (p.velocity <= 1 && p.stock >= p.reorderPoint * 3) return "slow-moving";
+  if (p.stock >= p.reorderPoint * 4) return "overstocked";
+  return "in-stock";
+}
 
 function applyEffect(state: DemoState, effect: Effect): DemoState {
   switch (effect.kind) {
@@ -232,6 +262,13 @@ function applyEffect(state: DemoState, effect: Effect): DemoState {
       return state.calendar.some((e) => e.id === effect.event.id)
         ? state
         : { ...state, calendar: [effect.event, ...state.calendar] };
+    case "calendarUpdate":
+      return {
+        ...state,
+        calendar: state.calendar.map((e) =>
+          e.id === effect.eventId ? { ...e, ...effect.patch } : e,
+        ),
+      };
     case "appointmentStatus":
       return {
         ...state,
@@ -256,6 +293,66 @@ function applyEffect(state: DemoState, effect: Effect): DemoState {
       return state.workflowRuns.some((r) => r.id === effect.run.id)
         ? state
         : { ...state, workflowRuns: [effect.run, ...state.workflowRuns].slice(0, 60) };
+    case "quote":
+      return state.quotes.some((q) => q.id === effect.quote.id)
+        ? state
+        : { ...state, quotes: [effect.quote, ...state.quotes] };
+    case "quoteStatus":
+      return {
+        ...state,
+        quotes: state.quotes.map((q) =>
+          q.id === effect.quoteId ? { ...q, status: effect.status } : q,
+        ),
+      };
+    case "loyaltyPoints":
+      return {
+        ...state,
+        loyaltyMembers: state.loyaltyMembers.map((m) =>
+          m.id === effect.memberId
+            ? { ...m, points: Math.max(0, m.points + effect.delta), lastActivity: "Just now" }
+            : m,
+        ),
+      };
+    case "loyaltyRedeem": {
+      const reward = state.loyaltyRewards.find((r) => r.id === effect.rewardId);
+      const member = state.loyaltyMembers.find((m) => m.id === effect.memberId);
+      if (!reward || !member || member.points < reward.cost) return state;
+      return {
+        ...state,
+        loyaltyMembers: state.loyaltyMembers.map((m) =>
+          m.id === member.id
+            ? { ...m, points: m.points - reward.cost, lastActivity: "Just now" }
+            : m,
+        ),
+        loyaltyRewards: state.loyaltyRewards.map((r) =>
+          r.id === reward.id ? { ...r, redeemedThisMonth: r.redeemedThisMonth + 1 } : r,
+        ),
+      };
+    }
+    case "loyaltyTier":
+      return {
+        ...state,
+        loyaltyMembers: state.loyaltyMembers.map((m) =>
+          m.id === effect.memberId ? { ...m, tierId: effect.tierId, lastActivity: "Just now" } : m,
+        ),
+      };
+    case "loyaltyReward":
+      return state.loyaltyRewards.some((r) => r.id === effect.reward.id)
+        ? state
+        : { ...state, loyaltyRewards: [...state.loyaltyRewards, effect.reward] };
+    case "loyaltyActivity":
+      return state.loyaltyActivity.some((a) => a.id === effect.item.id)
+        ? state
+        : { ...state, loyaltyActivity: [effect.item, ...state.loyaltyActivity].slice(0, 40) };
+    case "stock":
+      return {
+        ...state,
+        products: state.products.map((p) => {
+          if (p.id !== effect.productId) return p;
+          const stock = Math.max(0, p.stock + effect.delta);
+          return { ...p, stock, status: productStatus({ ...p, stock }) };
+        }),
+      };
     case "notify": {
       const n = effect.notification;
       if (state.notifications.some((x) => x.id === n.id)) return state;
@@ -673,6 +770,120 @@ export function completedEffects(
         },
       },
     );
+  }
+  return effects;
+}
+
+/** Effects when a demo quote/estimate is marked sent. */
+export function quoteSentEffects(
+  quote: QuoteRecord,
+  state: DemoState,
+  config: IndustryConfig,
+): Effect[] {
+  const first = quote.contact.split(" ")[0];
+  const doc = config.quote.documentLabel;
+  const effects: Effect[] = [
+    { kind: "quoteStatus", quoteId: quote.id, status: "sent" },
+    {
+      kind: "activity",
+      item: {
+        id: uid("act"),
+        icon: "automation",
+        text: `${doc} for ${quote.contact} ($${quote.total.toLocaleString()}) delivered — follow-up sequence armed. Simulated.`,
+        time: "Just now",
+      },
+    },
+  ];
+  // Deliver into an existing conversation when one matches, else start one.
+  const existing = state.conversations.find(
+    (c) => c.contact.toLowerCase() === quote.contact.toLowerCase(),
+  );
+  const text = `Hi ${first}, your ${doc.toLowerCase()} from ${state.settings.businessName} is ready: $${quote.total.toLocaleString()}. Reply here with any questions — happy to walk through it.`;
+  if (existing) {
+    effects.push({
+      kind: "message",
+      conversationId: existing.id,
+      message: { id: uid("m"), from: "system", meta: `Automated · ${doc} delivery`, text, time: "Just now" },
+    });
+  } else {
+    effects.push({
+      kind: "conversation",
+      conversation: {
+        id: uid("c"),
+        contact: quote.contact,
+        channel: "sms",
+        topic: `${doc} — delivery`,
+        messages: [
+          { id: uid("m"), from: "system", meta: `Automated · ${doc} delivery`, text, time: "Just now" },
+        ],
+      },
+    });
+  }
+  // Move the linked lead forward when the config maps a "sent" stage.
+  if (quote.leadId && config.quote.sentStageId) {
+    const lead = state.leads.find((l) => l.id === quote.leadId);
+    if (lead && state.stages.some((s) => s.id === config.quote.sentStageId)) {
+      effects.push({ kind: "stage", leadId: lead.id, stageId: config.quote.sentStageId });
+    }
+  }
+  effects.push({
+    kind: "notify",
+    notification: {
+      id: uid("n"),
+      title: `${doc} sent: ${quote.contact}`,
+      body: `$${quote.total.toLocaleString()} delivered by text and email — simulated, follow-ups queued.`,
+      tone: "success",
+    },
+  });
+  return effects;
+}
+
+/** Effects when a demo quote/estimate is accepted. */
+export function quoteAcceptedEffects(
+  quote: QuoteRecord,
+  state: DemoState,
+  config: IndustryConfig,
+): Effect[] {
+  const effects: Effect[] = [
+    { kind: "quoteStatus", quoteId: quote.id, status: "accepted" },
+    {
+      kind: "activity",
+      item: {
+        id: uid("act"),
+        icon: "pipeline",
+        text: `${quote.contact} accepted the ${config.quote.documentLabel.toLowerCase()} ($${quote.total.toLocaleString()}).`,
+        time: "Just now",
+      },
+    },
+    {
+      kind: "notify",
+      notification: {
+        id: uid("n"),
+        title: `${config.quote.documentLabel} accepted: ${quote.contact}`,
+        body: `$${quote.total.toLocaleString()} — next-step task created for your team.`,
+        tone: "success",
+      },
+    },
+    {
+      kind: "task",
+      task: {
+        id: uid("t"),
+        title: `Send agreement + deposit details — ${quote.contact} ($${quote.total.toLocaleString()} accepted)`,
+        assignee: state.settings.staff[0]?.name ?? "Team",
+        due: "Today",
+        priority: "high",
+        auto: true,
+      },
+    },
+  ];
+  if (quote.leadId) {
+    effects.push({ kind: "updateLead", leadId: quote.leadId, patch: { value: quote.total } });
+    if (
+      config.quote.acceptedStageId &&
+      state.stages.some((s) => s.id === config.quote.acceptedStageId)
+    ) {
+      effects.push({ kind: "stage", leadId: quote.leadId, stageId: config.quote.acceptedStageId });
+    }
   }
   return effects;
 }

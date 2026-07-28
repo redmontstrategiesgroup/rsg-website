@@ -41,7 +41,7 @@ calendar when they qualify.
 | `/book/[slug]` | Appointment-type slug |
 | `/booking/confirmed` | Confirmation |
 | `/booking/review` | Manual review outcome |
-| `/booking/not-eligible` | Not eligible outcome |
+| `/booking/noteligible` | Not eligible outcome |
 | `/booking/manage/[token]` | Secure reschedule / cancel |
 
 ## Security notes

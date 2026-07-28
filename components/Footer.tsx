@@ -1,67 +1,91 @@
 import Link from "next/link";
+import { defaultConnectSettings } from "@/lib/connect-defaults";
 import { PHONE_DISPLAY, PHONE_TEL } from "@/lib/site";
+
+const connectSocial = defaultConnectSettings();
+
+const SOCIAL_LINKS = [
+  connectSocial.socialLinkedin
+    ? { label: "LinkedIn", href: connectSocial.socialLinkedin }
+    : null,
+  connectSocial.socialInstagram
+    ? { label: "Instagram", href: connectSocial.socialInstagram }
+    : null,
+  {
+    label: "Email",
+    href: `mailto:${connectSocial.socialEmail || "contact@redmontstrategiesgroup.com"}`,
+  },
+].filter(Boolean) as { label: string; href: string }[];
 
 const SERVICE_LINKS = [
   {
     label: "Business Systems Audit",
-    href: "/business-systems-audit-plymouth-county-ma",
+    href: "/systemsaudit",
   },
+  { label: "Managed Services", href: "/managedservices" },
   {
     label: "Business Consulting",
-    href: "/business-consulting-plymouth-county-ma",
+    href: "/businessconsulting",
   },
   {
     label: "AI Strategy & Implementation",
-    href: "/ai-strategy-implementation-plymouth-county-ma",
+    href: "/aistrategy",
   },
-  { label: "AI Automation", href: "/ai-automation-plymouth-county-ma" },
+  { label: "AI Automation", href: "/aiautomation" },
+  {
+    label: "Custom Private AI Systems",
+    href: "/services/customprivateaisystems",
+  },
+  {
+    label: "Secure Systems Standard",
+    href: "/security",
+  },
   {
     label: "Operations Consulting",
-    href: "/operations-consulting-plymouth-county-ma",
+    href: "/operationsconsulting",
   },
   {
     label: "Web Development",
-    href: "/web-development-digital-infrastructure-plymouth-county-ma",
+    href: "/webdevelopment",
   },
   {
     label: "CRM & Pipeline Systems",
-    href: "/crm-pipeline-systems-plymouth-county-ma",
+    href: "/crmsystems",
   },
 ];
 
 const INDUSTRY_LINKS = [
   {
-    label: "Med Spas & Aesthetic Clinics",
-    href: "/med-spa-business-consulting-ai-automation",
+    label: "Home Services & Trades",
+    href: "/industries/homeservices",
   },
   {
-    label: "Gyms & Fitness Studios",
-    href: "/gym-fitness-studio-business-systems",
+    label: "Dental & Specialty Healthcare",
+    href: "/industries/dentalpractices",
   },
   {
-    label: "Home Service Companies",
-    href: "/home-service-business-consulting-ai-automation",
+    label: "Retail & Multi-Location",
+    href: "/industries/retail",
   },
   {
-    label: "Dental & Wellness Offices",
-    href: "/dental-wellness-office-ai-strategy",
-  },
-  {
-    label: "Contractors",
-    href: "/contractor-business-systems",
+    label: "Additional Industries",
+    href: "/industries/additional",
   },
 ];
 
 const COMPANY_LINKS = [
   { label: "Services", href: "/services" },
+  { label: "Managed Services", href: "/managedservices" },
   { label: "Process", href: "/process" },
   { label: "Industries", href: "/industries" },
+  { label: "Security", href: "/security" },
   { label: "Demo Systems", href: "/demos" },
   { label: "Connect", href: "/connect" },
-  { label: "Service Area", href: "/service-area-plymouth-county-south-shore-ma" },
+  { label: "Service Area", href: "/servicearea" },
   { label: "FAQ", href: "/faq" },
   { label: "Book", href: "/book" },
   { label: "Client Login", href: "/login" },
+  { label: "Admin Portal", href: "/admin" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
 ];
@@ -80,8 +104,8 @@ export function Footer() {
             />
             <p className="mt-8 max-w-sm text-sm leading-relaxed text-white/50">
               A business consulting and strategy firm serving Plymouth County
-              and the South Shore of Massachusetts. We help service businesses
-              fix operations, lead flow, and follow-up.
+              and the South Shore of Massachusetts. We help service and retail
+              businesses fix operations, lead flow, and follow-up.
             </p>
             <a
               href={`tel:${PHONE_TEL}`}
@@ -89,6 +113,24 @@ export function Footer() {
             >
               {PHONE_DISPLAY}
             </a>
+            <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+              {SOCIAL_LINKS.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    target={link.href.startsWith("http") ? "_blank" : undefined}
+                    rel={
+                      link.href.startsWith("http")
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
+                    className="text-sm text-white/55 transition-colors hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="lg:col-span-3">

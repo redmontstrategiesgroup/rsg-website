@@ -22,8 +22,23 @@ export type SchedulingPermission =
   | "view_private_notes"
   | "manage_leads"
   | "manage_clients"
+  | "manage_billing"
   | "view_audit"
-  | "manage_mfa";
+  | "manage_mfa"
+  // Security Center
+  | "view_security"
+  | "manage_incidents"
+  | "manage_vendors"
+  | "manage_retention"
+  | "approve_ai_actions"
+  | "manage_security_tests"
+  | "manage_security_settings"
+  // Client lifecycle (Client OS)
+  | "manage_proposals"
+  | "manage_projects"
+  | "manage_support"
+  | "manage_training"
+  | "manage_automations";
 
 const ALL: SchedulingPermission[] = [
   "view_appointments",
@@ -40,13 +55,43 @@ const ALL: SchedulingPermission[] = [
   "view_private_notes",
   "manage_leads",
   "manage_clients",
+  "manage_billing",
   "view_audit",
   "manage_mfa",
+  "view_security",
+  "manage_incidents",
+  "manage_vendors",
+  "manage_retention",
+  "approve_ai_actions",
+  "manage_security_tests",
+  "manage_security_settings",
+  "manage_proposals",
+  "manage_projects",
+  "manage_support",
+  "manage_training",
+  "manage_automations",
 ];
 
 const ROLE_PERMISSIONS: Record<SchedulingRole, SchedulingPermission[]> = {
   owner: ALL,
   administrator: ALL.filter((p) => p !== "manage_team"),
+  manager: [
+    "view_appointments",
+    "edit_appointments",
+    "cancel_appointments",
+    "view_qualification",
+    "override_qualification",
+    "edit_availability",
+    "export_bookings",
+    "view_analytics",
+    "manage_leads",
+    "view_security",
+    "manage_incidents",
+    "approve_ai_actions",
+    "manage_projects",
+    "manage_support",
+    "manage_training",
+  ],
   scheduler: [
     "view_appointments",
     "edit_appointments",
@@ -68,6 +113,24 @@ const ROLE_PERMISSIONS: Record<SchedulingRole, SchedulingPermission[]> = {
     "override_qualification",
     "view_analytics",
     "manage_leads",
+    "manage_proposals",
+  ],
+  employee: [
+    "view_appointments",
+    "edit_appointments",
+    "view_qualification",
+    "view_analytics",
+    "manage_leads",
+  ],
+  contractor: ["view_appointments", "view_qualification"],
+  security_reviewer: [
+    "view_security",
+    "view_audit",
+    "view_analytics",
+    "manage_incidents",
+    "manage_vendors",
+    "manage_retention",
+    "manage_security_tests",
   ],
   viewer: ["view_appointments", "view_analytics"],
 };

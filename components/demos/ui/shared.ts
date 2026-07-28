@@ -9,6 +9,11 @@ export type ViewProps = {
   dispatch: Dispatch<DemoAction>;
   /** Record that the visitor touched a feature (for the CTA context summary). */
   track: (key: string) => void;
+  /**
+   * Open the "request this system" consultation form, optionally preselecting
+   * the feature the visitor was just using. Never sends anything by itself.
+   */
+  openRequest: (opts?: { feature?: string; source?: string }) => void;
 };
 
 export function applyNow(dispatch: Dispatch<DemoAction>, effects: Effect[]): void {

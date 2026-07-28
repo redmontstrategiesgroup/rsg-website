@@ -42,17 +42,14 @@ const DAILY_IP_LIMIT = 60; // per 24 hours
 /** Site-wide daily request ceiling (env-overridable safety valve). */
 const DAILY_GLOBAL_LIMIT = Number(process.env.CHAT_DAILY_LIMIT ?? 400);
 
-/** Global day counter (per server process — resets on deploy/restart). */
-const globalCounter = { day: "", count: 0 };
-function underGlobalDailyLimit(): boolean {
-  const today = new Date().toISOString().slice(0, 10);
-  if (globalCounter.day !== today) {
-    globalCounter.day = today;
-    globalCounter.count = 0;
-  }
-  if (globalCounter.count >= DAILY_GLOBAL_LIMIT) return false;
-  globalCounter.count += 1;
-  return true;
+/**
+ * Site-wide daily ceiling enforced through the shared limiter on a single
+ * fixed key, so the cap holds across serverless instances when Upstash is
+ * configured (it falls back to in-process memory in dev). A per-process
+ * counter would let the effective cap scale with instance count.
+ */
+async function underGlobalDailyLimit(): Promise<boolean> {
+  return rateLimit("chat-global-day", DAILY_GLOBAL_LIMIT, 24 * 60 * 60_000);
 }
 
 const LIMIT_MESSAGE =
@@ -231,6 +228,18 @@ function sanitizeMessages(raw: unknown): IncomingMessage[] | null {
 export async function POST(request: Request) {
   const ip = clientIp(request);
 
+  // Emergency disable: an admin can pause all AI features from the Security
+  // Center. When paused, the assistant is off and visitors go to the form.
+  try {
+    const { getSecuritySettings } = await import("@/lib/security-center/store");
+    const settings = await getSecuritySettings();
+    if (settings.aiPaused) {
+      return NextResponse.json({ error: LIMIT_MESSAGE }, { status: 503 });
+    }
+  } catch {
+    /* settings unavailable — fail open to normal rate-limited behavior */
+  }
+
   // Layered limits: short burst, per-IP daily ceiling, site-wide daily cap.
   if (!(await rateLimit(`chat:${ip}`, BURST_LIMIT, 5 * 60_000))) {
     return rateLimitResponse();
@@ -238,7 +247,7 @@ export async function POST(request: Request) {
   if (!(await rateLimit(`chat-day:${ip}`, DAILY_IP_LIMIT, 24 * 60 * 60_000))) {
     return NextResponse.json({ error: LIMIT_MESSAGE }, { status: 429 });
   }
-  if (!underGlobalDailyLimit()) {
+  if (!(await underGlobalDailyLimit())) {
     console.warn("[/api/chat] site-wide daily chat limit reached");
     return NextResponse.json({ error: LIMIT_MESSAGE }, { status: 429 });
   }

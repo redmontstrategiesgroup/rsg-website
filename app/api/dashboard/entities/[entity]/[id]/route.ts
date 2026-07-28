@@ -18,7 +18,8 @@ const updates = {
 } as const;
 
 export async function PATCH(request: Request, context: { params: Promise<{ entity: string; id: string }> }) {
-  const ctx = await requireAdmin();
+  // Elevated permission required — see POST handler note on dashboard writes.
+  const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;
   const limited = await rateLimitAdminMutator(request, ctx.admin.id);
   if (limited) return limited;

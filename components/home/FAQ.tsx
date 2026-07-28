@@ -28,6 +28,22 @@ const FAQS = [
     q: "What if my business is already getting leads?",
     a: "Then the opportunity is usually in follow-up, conversion, and visibility. Most businesses lose more revenue to weak systems than to a shortage of leads.",
   },
+  {
+    q: "Does RSG work with retail stores, or only service businesses?",
+    a: "Both. For retailers we build customer-retention, loyalty, missed-call recovery, ecommerce, review, and inventory-reporting systems — usually connected to the POS and platform the store already runs. The interactive retail demo shows the whole system working on sample data.",
+  },
+  {
+    q: "Can RSG connect to my POS or ecommerce platform?",
+    a: "Usually. Square, Shopify, Clover, and Lightspeed are common starting points, and integrations are scoped per engagement around what you already use. If a direct connection isn't practical, we say so up front and design the workflow around it.",
+  },
+  {
+    q: "Do you manage systems after launch?",
+    a: "Yes. RSG offers managed services: hosting, maintenance, optimization, AI management, and security handled continuously after your system goes live. There are four plans — Maintain, Optimize, Scale, and Managed Infrastructure — and current details live on the Managed Services page. Launch is the starting point, not the finish line.",
+  },
+  {
+    q: "What happens if we don't want ongoing management?",
+    a: "You own everything we build. We hand over credentials, documentation, and a transition checklist so you or another provider can take over cleanly. Without ongoing management, updates, backups, and monitoring become your responsibility.",
+  },
 ];
 
 export function FAQ({

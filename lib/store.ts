@@ -456,7 +456,42 @@ type LeadRow = {
   owner: string | null;
   archived_at: string | null;
   created_at: string;
+  qualification_snapshot?: Record<string, unknown> | null;
+  service_plan_answers?: Record<string, unknown> | null;
+  recommended_plan?: string | null;
 };
+
+/** Pull interactive-demo context out of the scheduling snapshot, if present. */
+function demoMetaFromSnapshot(
+  snapshot: Record<string, unknown> | null | undefined
+): Lead["demo"] {
+  const raw = snapshot?.demoRequest;
+  if (!raw || typeof raw !== "object") return undefined;
+  const d = raw as Record<string, unknown>;
+  if (typeof d.slug !== "string" || typeof d.system !== "string") return undefined;
+  const strings = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+  return {
+    slug: d.slug,
+    system: d.system,
+    businessCategory: typeof d.businessCategory === "string" ? d.businessCategory : "",
+    featuresExplored: strings(d.featuresExplored),
+    featuresRequested: strings(d.featuresRequested),
+    scenariosRun: typeof d.scenariosRun === "number" ? d.scenariosRun : undefined,
+    demoBusinessName: typeof d.demoBusinessName === "string" ? d.demoBusinessName : undefined,
+    businessSize: typeof d.businessSize === "string" ? d.businessSize : undefined,
+    preferredDate: typeof d.preferredDate === "string" ? d.preferredDate : undefined,
+    preferredTime: typeof d.preferredTime === "string" ? d.preferredTime : undefined,
+    extras:
+      d.extras && typeof d.extras === "object" && !Array.isArray(d.extras)
+        ? Object.fromEntries(
+            Object.entries(d.extras as Record<string, unknown>).filter(
+              (entry): entry is [string, string] => typeof entry[1] === "string",
+            ),
+          )
+        : undefined,
+  };
+}
 
 function rowToLead(row: LeadRow): Lead {
   return {
@@ -486,7 +521,21 @@ function rowToLead(row: LeadRow): Lead {
     owner: row.owner ?? "",
     archivedAt: row.archived_at ?? undefined,
     submittedAt: row.created_at,
+    demo: demoMetaFromSnapshot(row.qualification_snapshot),
+    servicePlanAnswers: servicePlanAnswersFromRow(row.service_plan_answers),
+    recommendedPlan: row.recommended_plan ?? undefined,
   };
+}
+
+/** Keep only string-valued answers (defensive against malformed JSONB). */
+function servicePlanAnswersFromRow(
+  value: Record<string, unknown> | null | undefined
+): Record<string, string> | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const entries = Object.entries(value).filter(
+    (entry): entry is [string, string] => typeof entry[1] === "string"
+  );
+  return entries.length ? Object.fromEntries(entries) : undefined;
 }
 
 /**
@@ -565,6 +614,8 @@ export type LeadPatch = {
   notes?: string;
   owner?: string;
   archivedAt?: string | null;
+  /** Managed-service plan recommendation override (plan key or ""). */
+  recommendedPlan?: string;
 };
 
 /** Update lead pipeline fields. Prefers Supabase; falls back to file store. */
@@ -585,6 +636,9 @@ export async function updateLead(
       else if (typeof patch.archivedAt === "string") updates.archived_at = patch.archivedAt;
       if (patch.status === "archived" && !patch.archivedAt) {
         updates.archived_at = new Date().toISOString();
+      }
+      if (typeof patch.recommendedPlan === "string") {
+        updates.recommended_plan = patch.recommendedPlan.slice(0, 100) || null;
       }
 
       const { data, error } = await supabase
@@ -610,6 +664,10 @@ export async function updateLead(
     status: patch.status ?? current.status,
     notes: typeof patch.notes === "string" ? patch.notes.slice(0, 8000) : current.notes,
     owner: typeof patch.owner === "string" ? patch.owner.slice(0, 200) : current.owner,
+    recommendedPlan:
+      typeof patch.recommendedPlan === "string"
+        ? patch.recommendedPlan.slice(0, 100) || undefined
+        : current.recommendedPlan,
     archivedAt:
       patch.archivedAt === null
         ? undefined
@@ -748,6 +806,40 @@ export async function findAdminByEmail(
   }
   if (envAdmin.email.trim().toLowerCase() !== normalized) return null;
   return envAdmin;
+}
+
+/**
+ * All active admin accounts (DB admins plus the env bootstrap owner when
+ * configured). Callers MUST strip passwordHash/mfaSecret before sending
+ * anywhere near a client.
+ */
+export async function listAdmins(): Promise<AdminRecord[]> {
+  const admins: AdminRecord[] = [];
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("admins")
+        .select("*")
+        .eq("active", true)
+        .order("created_at", { ascending: true })
+        .limit(100);
+      if (error) throw error;
+      admins.push(...((data as AdminRow[]) ?? []).map(mapAdminRow));
+    } catch (err) {
+      console.warn("[store] admins list failed", err);
+    }
+  }
+  const envAdmin = envAdminRecord();
+  if (
+    envAdmin &&
+    !admins.some(
+      (a) => a.email.trim().toLowerCase() === envAdmin.email.trim().toLowerCase()
+    )
+  ) {
+    admins.push(envAdmin);
+  }
+  return admins;
 }
 
 export async function getAdminById(id: string): Promise<AdminRecord | null> {

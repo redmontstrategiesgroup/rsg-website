@@ -49,13 +49,16 @@ export async function POST(request: Request) {
   const email = parsed.data.email.trim().toLowerCase();
 
   if (parsed.data.action === "export") {
-    const leadsRes = await sb.from("leads").select("*").ilike("email", email);
+    // Exact match, not ILIKE: `_` and `%` are LIKE wildcards and are valid
+    // email characters, so ILIKE on an attacker-influenced address could
+    // export or delete a different person's data. Email is already lowercased.
+    const leadsRes = await sb.from("leads").select("*").eq("email", email);
     let bookings: unknown[] = [];
     try {
       const bookingRes = await sb
         .from("bookings")
         .select("id, starts_at, status, lead_id, leads(email)")
-        .ilike("leads.email", email);
+        .eq("leads.email", email);
       bookings = bookingRes.data ?? [];
     } catch {
       bookings = [];
@@ -82,7 +85,7 @@ export async function POST(request: Request) {
   const { data: leadRows } = await sb
     .from("leads")
     .select("id")
-    .ilike("email", email);
+    .eq("email", email);
   const ids = (leadRows ?? []).map((r: { id: string }) => r.id);
 
   if (ids.length) {

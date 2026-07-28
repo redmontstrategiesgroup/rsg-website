@@ -14,6 +14,10 @@ export type NavId =
   | "leads"
   | "pipeline"
   | "conversations"
+  | "receptionist"
+  | "quotes"
+  | "loyalty"
+  | "inventory"
   | "automations"
   | "tasks"
   | "calendar"
@@ -191,6 +195,154 @@ export type WorkflowRun = {
   simulated: true;
 };
 
+/** A saved estimate/quote generated inside the demo. */
+export type QuoteRecord = {
+  id: string;
+  contact: string;
+  /** Linked demo lead, when the quote was built from a record. */
+  leadId?: string;
+  lines: { label: string; amount: number }[];
+  total: number;
+  status: "draft" | "sent" | "accepted";
+  createdAt: string;
+};
+
+export type QuoteFieldOption = { label: string; amount: number };
+
+export type QuoteField = {
+  id: string;
+  label: string;
+  options: QuoteFieldOption[];
+  helper?: string;
+};
+
+/** Config for the industry's instant-quote / estimate builder. */
+export type QuoteConfig = {
+  /** e.g. "Instant project estimate" */
+  title: string;
+  description: string;
+  /** What the generated document is called, e.g. "Estimate", "Treatment plan". */
+  documentLabel: string;
+  base: { label: string; amount: number };
+  fields: QuoteField[];
+  /** Stage a linked lead moves to when its quote is sent (if the stage exists). */
+  sentStageId?: string;
+  /** Stage a linked lead moves to when its quote is accepted (if the stage exists). */
+  acceptedStageId?: string;
+  disclaimer: string;
+};
+
+/* ------------------------------------------------------------------ */
+/* Loyalty module (industries that sell to repeat customers)           */
+/* ------------------------------------------------------------------ */
+
+export type LoyaltyTier = {
+  id: string;
+  label: string;
+  /** Points needed to reach the tier. */
+  threshold: number;
+  perks: string;
+};
+
+export type LoyaltyReward = {
+  id: string;
+  label: string;
+  /** Points required to redeem. */
+  cost: number;
+  redeemedThisMonth: number;
+};
+
+export type LoyaltyMember = {
+  id: string;
+  name: string;
+  /** LoyaltyTier id. */
+  tierId: string;
+  points: number;
+  visits: number;
+  joined: string;
+  lastActivity: string;
+};
+
+export type LoyaltyActivityItem = {
+  id: string;
+  member: string;
+  action: string;
+  time: string;
+};
+
+/** Config for the loyalty & referral module (rendered when nav includes "loyalty"). */
+export type LoyaltyConfig = {
+  programName: string;
+  description: string;
+  pointsPerDollar: number;
+  /** Baseline program stats shown alongside live session counts. */
+  baseline: { issued: number; redeemed: number; members: number; referrals: number };
+  tiers: LoyaltyTier[];
+  rewards: LoyaltyReward[];
+  members: LoyaltyMember[];
+  activity: LoyaltyActivityItem[];
+  /** Reward-notification template previewed in the demo ({first_name}, {reward}, {points}). */
+  notificationPreview: string;
+};
+
+/* ------------------------------------------------------------------ */
+/* Inventory module (product-based industries)                         */
+/* ------------------------------------------------------------------ */
+
+export type ProductStatus =
+  | "in-stock"
+  | "low-stock"
+  | "reorder"
+  | "overstocked"
+  | "out-of-stock"
+  | "slow-moving";
+
+export type Product = {
+  id: string;
+  sku: string;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  reorderPoint: number;
+  /** Average units sold per week. */
+  velocity: number;
+  status: ProductStatus;
+  supplier: string;
+  lastReorder: string;
+};
+
+/** Config for the inventory module (rendered when nav includes "inventory"). */
+export type InventoryConfig = {
+  title: string;
+  description: string;
+  products: Product[];
+};
+
+/** One turn in the scripted AI receptionist conversation. */
+export type ReceptionistNode = {
+  id: string;
+  /** What the AI receptionist says. */
+  say: string;
+  /** Caption under the bubble, e.g. "Checks the live schedule". */
+  meta?: string;
+  /** Caller reply options. Omit on terminal nodes. */
+  choices?: { id: string; label: string; next: string }[];
+  /** Terminal node: what the system did, applied as real demo effects. */
+  outcome?: { summary: string[]; effects: Effect[] };
+};
+
+/** Config for the interactive AI receptionist simulation. */
+export type ReceptionistConfig = {
+  /** e.g. "After-hours call — burst pipe" */
+  scenarioLabel: string;
+  description: string;
+  /** Who the visitor role-plays, e.g. "a homeowner calling after hours". */
+  callerRole: string;
+  start: string;
+  nodes: ReceptionistNode[];
+};
+
 export type TemplateTone = "professional" | "friendly" | "premium" | "direct" | "conversational";
 
 export type Template = {
@@ -258,10 +410,21 @@ export type Effect =
   | { kind: "reopenTask"; taskId: string }
   | { kind: "activity"; item: ActivityItem }
   | { kind: "calendar"; event: CalendarEvent }
+  | { kind: "calendarUpdate"; eventId: string; patch: Partial<CalendarEvent> }
   | { kind: "appointmentStatus"; eventId: string; status: AppointmentStatus }
   | { kind: "review"; item: ReviewItem }
   | { kind: "reviewStatus"; reviewId: string; status: ReviewItem["status"]; rating?: number }
   | { kind: "workflowRun"; run: WorkflowRun }
+  | { kind: "quote"; quote: QuoteRecord }
+  | { kind: "quoteStatus"; quoteId: string; status: QuoteRecord["status"] }
+  /* loyalty module */
+  | { kind: "loyaltyPoints"; memberId: string; delta: number; reason: string }
+  | { kind: "loyaltyRedeem"; memberId: string; rewardId: string }
+  | { kind: "loyaltyTier"; memberId: string; tierId: string }
+  | { kind: "loyaltyReward"; reward: LoyaltyReward }
+  | { kind: "loyaltyActivity"; item: LoyaltyActivityItem }
+  /* inventory module */
+  | { kind: "stock"; productId: string; delta: number }
   | { kind: "notify"; notification: DemoNotification };
 
 export type ScenarioStep = {
@@ -341,6 +504,14 @@ export type IndustryConfig = {
   automations: Automation[];
   templates: Template[];
   intakeFields: IntakeField[];
+  /** Instant-quote / estimate builder for this industry. */
+  quote: QuoteConfig;
+  /** Interactive AI receptionist conversation for this industry. */
+  receptionist: ReceptionistConfig;
+  /** Loyalty & referral module (only rendered when nav includes "loyalty"). */
+  loyalty?: LoyaltyConfig;
+  /** Inventory module (only rendered when nav includes "inventory"). */
+  inventory?: InventoryConfig;
   appointmentTypes: AppointmentType[];
   /** Bookable day options for the demo scheduler. */
   scheduleDays: { day: string; date: string }[];
@@ -360,6 +531,17 @@ export type IndustryConfig = {
     effects: Effect[];
   }[];
   builderFlow: { title: string; steps: { label: string; sub?: string }[] };
+  /**
+   * Industry-specific service list for the "request this system" form.
+   * Falls back to the generic SERVICE_OPTIONS when omitted.
+   */
+  requestServices?: string[];
+  /**
+   * Extra qualification questions on the request form (e.g. retail asks for
+   * business type, locations, channels). Rendered as selects; answers travel
+   * with the lead as demo metadata.
+   */
+  requestExtras?: { id: string; label: string; options: string[]; helper?: string }[];
   breakdown: BreakdownConfig;
   cta: { headline: string; button: string };
   seo: { title: string; description: string };

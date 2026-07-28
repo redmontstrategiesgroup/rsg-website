@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, FlaskConical, History, RotateCcw, Zap } from "lucide-react";
+import { ChevronDown, FlaskConical, History, PlusCircle, RotateCcw, Zap } from "lucide-react";
 import { testAutomationEffects } from "../engine";
 import type { Automation } from "../types";
 import { PanelHeading, SampleDataTag, StatusPill } from "./primitives";
@@ -43,6 +43,7 @@ function AutomationCard({
   state,
   dispatch,
   track,
+  openRequest,
 }: ViewProps & { automation: Automation }) {
   const [open, setOpen] = useState(false);
   const runs = state.workflowRuns.filter((r) => r.automationId === automation.id);
@@ -90,6 +91,14 @@ function AutomationCard({
           ariaLabel={`Test ${automation.name}`}
         >
           <FlaskConical size={10} aria-hidden /> Test
+        </SmallButton>
+        <SmallButton
+          onClick={() =>
+            openRequest({ feature: "Automated follow-up sequences", source: "automation_card" })
+          }
+          ariaLabel={`Add ${automation.name} to my system`}
+        >
+          <PlusCircle size={10} aria-hidden /> Add to my system
         </SmallButton>
         <SmallButton onClick={() => setOpen((v) => !v)} ariaLabel={`${open ? "Collapse" : "Edit"} ${automation.name}`}>
           <ChevronDown size={11} className={`transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />

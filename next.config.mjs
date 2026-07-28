@@ -18,6 +18,61 @@ const nextConfig = {
         destination: "/book",
         permanent: true,
       },
+      // Old thin industry pages → the three specialized verticals (Jul 2026).
+      {
+        source: "/home-service-business-consulting-ai-automation",
+        destination: "/industries/homeservices",
+        permanent: true,
+      },
+      {
+        source: "/contractor-business-systems",
+        destination: "/industries/homeservices",
+        permanent: true,
+      },
+      {
+        source: "/dental-wellness-office-ai-strategy",
+        destination: "/industries/dentalpractices",
+        permanent: true,
+      },
+      {
+        source: "/med-spa-business-consulting-ai-automation",
+        destination: "/industries/dentalpractices",
+        permanent: true,
+      },
+      {
+        source: "/retail-business-systems",
+        destination: "/industries/retail",
+        permanent: true,
+      },
+      {
+        source: "/gym-fitness-studio-business-systems",
+        destination: "/industries/additional",
+        permanent: true,
+      },
+      // De-hyphenated URL migration (Jul 2026). Old hyphenated slugs → new
+      // slugs; local SEO service pages also drop the "-plymouth-county-ma" tail.
+      { source: "/ai-strategy-implementation-plymouth-county-ma", destination: "/aistrategy", permanent: true },
+      { source: "/ai-automation-plymouth-county-ma", destination: "/aiautomation", permanent: true },
+      { source: "/business-consulting-plymouth-county-ma", destination: "/businessconsulting", permanent: true },
+      { source: "/business-systems-audit-plymouth-county-ma", destination: "/systemsaudit", permanent: true },
+      { source: "/crm-pipeline-systems-plymouth-county-ma", destination: "/crmsystems", permanent: true },
+      { source: "/operations-consulting-plymouth-county-ma", destination: "/operationsconsulting", permanent: true },
+      { source: "/service-area-plymouth-county-south-shore-ma", destination: "/servicearea", permanent: true },
+      { source: "/web-development-digital-infrastructure-plymouth-county-ma", destination: "/webdevelopment", permanent: true },
+      { source: "/managed-services", destination: "/managedservices", permanent: true },
+      { source: "/thank-you", destination: "/thankyou", permanent: true },
+      { source: "/services/custom-private-ai-systems", destination: "/services/customprivateaisystems", permanent: true },
+      { source: "/industries/home-services", destination: "/industries/homeservices", permanent: true },
+      { source: "/industries/dental-practices", destination: "/industries/dentalpractices", permanent: true },
+      { source: "/booking/not-eligible", destination: "/booking/noteligible", permanent: true },
+      { source: "/demo-preview/:path*", destination: "/demopreview/:path*", permanent: true },
+      { source: "/demos/med-spa", destination: "/demos/medspa", permanent: true },
+      // De-hyphenated API routes (308 preserves method + body for POST callers).
+      { source: "/api/demo-request", destination: "/api/demorequest", permanent: true },
+      { source: "/api/private-ai/:path*", destination: "/api/privateai/:path*", permanent: true },
+      { source: "/api/admin/private-ai", destination: "/api/admin/privateai", permanent: true },
+      { source: "/api/admin/managed-services", destination: "/api/admin/managedservices", permanent: true },
+      { source: "/api/portal/managed-services", destination: "/api/portal/managedservices", permanent: true },
     ];
   },
   async headers() {
@@ -54,6 +109,19 @@ const nextConfig = {
               "camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=()",
           },
           { key: "X-DNS-Prefetch-Control", value: "on" },
+        ],
+      },
+      {
+        // The demo pages embed /demopreview/* in a same-origin iframe for
+        // the mobile-preview toggle. Same-origin framing only — cross-site
+        // clickjacking remains blocked.
+        source: "/demopreview/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'"),
+          },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
         ],
       },
     ];

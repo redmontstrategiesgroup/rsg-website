@@ -8,19 +8,25 @@ import {
   useRef,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowRight,
+  Award,
   Bell,
+  Bot,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  FileText,
+  Package,
   ListVideo,
   Loader2,
+  Monitor,
   Play,
   RotateCcw,
   ShieldCheck,
+  Smartphone,
+  Wand2,
   X,
   LayoutDashboard,
   Users,
@@ -53,6 +59,11 @@ import { LeadsView, PipelineView } from "./ui/LeadsViews";
 import { ConversationsView } from "./ui/ConversationsView";
 import { AutomationsView } from "./ui/AutomationsView";
 import { SettingsView } from "./ui/SettingsView";
+import { QuotesView } from "./ui/QuotesView";
+import { ReceptionistView } from "./ui/ReceptionistView";
+import { LoyaltyView } from "./ui/LoyaltyView";
+import { InventoryView } from "./ui/InventoryView";
+import { RequestSystemDialog } from "./RequestSystemDialog";
 import { SmallButton } from "./ui/fields";
 
 const NAV_ICONS: Record<NavId, LucideIcon> = {
@@ -60,6 +71,10 @@ const NAV_ICONS: Record<NavId, LucideIcon> = {
   leads: Users,
   pipeline: Kanban,
   conversations: MessageSquare,
+  receptionist: Bot,
+  quotes: FileText,
+  loyalty: Award,
+  inventory: Package,
   automations: Zap,
   tasks: CheckSquare,
   calendar: CalendarDays,
@@ -76,25 +91,26 @@ const AUTOPLAY_STEP_MS = 6500;
 const QUICK_SCENARIO_STEP_MS = 4200;
 const TOAST_MS = 6000;
 
-const CONTACT_INDUSTRY: Record<string, string> = {
-  "med-spa": "Med spa / aesthetic clinic",
-  contractors: "Home services / contracting",
-  gyms: "Gym / fitness studio",
-  dental: "Dental office",
-};
-
-export function DemoOS({ config }: { config: IndustryConfig }) {
-  const router = useRouter();
+export function DemoOS({
+  config,
+  embedded = false,
+}: {
+  config: IndustryConfig;
+  /** Chrome-free variant rendered inside the mobile-preview iframe. */
+  embedded?: boolean;
+}) {
   const [state, dispatch] = useReducer(demoReducer, config, initialDemoState);
   const [hydrated, setHydrated] = useState(false);
   const [tab, setTab] = useState<NavId>(config.nav[0]?.id ?? "overview");
   const [playing, setPlaying] = useState(false);
-  const [_tourOpen, _setTourOpen] = useState(false);
   const [runningScenario, setRunningScenario] = useState<{ id: string; step: number; total: number } | null>(null);
   const [scenarioMenu, setScenarioMenu] = useState(false);
+  const [simMenu, setSimMenu] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [ctaOpen, setCtaOpen] = useState(false);
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [frameKey, setFrameKey] = useState(0);
+  const [request, setRequest] = useState<{ feature?: string; source: string } | null>(null);
   const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
   const tourSnapshot = useRef<DemoState | null>(null);
 
@@ -102,6 +118,7 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
   useEffect(() => {
     const stored = loadSession(config.slug);
     if (stored) dispatch({ type: "reset", state: stored });
+    else if (embedded) dispatch({ type: "intro-seen" });
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.slug]);
@@ -241,7 +258,48 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
     setTab(config.nav[0]?.id ?? "overview");
     clearSession(config.slug);
     dispatch({ type: "reset", state: { ...initialDemoState(config), introSeen: true } });
+    setFrameKey((k) => k + 1); // reload the mobile-preview iframe if it's open
   }, [clearTimers, config]);
+
+  /* ---------------------------------------------- device preview */
+  /** The mobile iframe and this component share the same localStorage
+      session, so whichever surface was used last wins on switch. */
+  const switchDevice = useCallback(
+    (next: "desktop" | "mobile") => {
+      if (next === device) return;
+      if (next === "mobile") {
+        clearTimers();
+        setPlaying(false);
+        setScenarioMenu(false);
+        setSimMenu(false);
+        track("previewed the mobile experience");
+      } else {
+        const stored = loadSession(config.slug);
+        if (stored) dispatch({ type: "reset", state: { ...stored, introSeen: true } });
+      }
+      setDevice(next);
+    },
+    [device, clearTimers, config.slug, track],
+  );
+
+  /* ---------------------------------------------- one-click simulations */
+  const runSimAction = useCallback(
+    (action: NonNullable<IndustryConfig["simActions"]>[number]) => {
+      setSimMenu(false);
+      if (action.tab) setTab(action.tab);
+      applyEffectsStaggered(action.effects);
+      track(`simulated: ${action.label.toLowerCase()}`);
+    },
+    [applyEffectsStaggered, track],
+  );
+
+  /* ---------------------------------------------- request-system dialog */
+  const openRequest = useCallback(
+    (opts?: { feature?: string; source?: string }) => {
+      setRequest({ feature: opts?.feature, source: opts?.source ?? "demo_os" });
+    },
+    [],
+  );
 
   /* ---------------------------------------------- role-aware nav */
   const role = config.roles.find((r) => r.id === state.settings.role) ?? config.roles[0];
@@ -263,8 +321,8 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
   );
 
   const viewProps = useMemo(
-    () => ({ state, config, dispatch, track }),
-    [state, config, track],
+    () => ({ state, config, dispatch, track, openRequest }),
+    [state, config, track, openRequest],
   );
 
   const view = useMemo(() => {
@@ -277,6 +335,14 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
         return <PipelineView {...viewProps} />;
       case "conversations":
         return <ConversationsView {...viewProps} />;
+      case "receptionist":
+        return <ReceptionistView {...viewProps} />;
+      case "quotes":
+        return <QuotesView {...viewProps} />;
+      case "loyalty":
+        return <LoyaltyView {...viewProps} />;
+      case "inventory":
+        return <InventoryView {...viewProps} />;
       case "automations":
         return <AutomationsView {...viewProps} />;
       case "tasks":
@@ -294,14 +360,12 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
     }
   }, [tab, viewProps]);
 
-  const openContactWithContext = () => {
-    trackEvent("demo_cta_click", { demo: config.slug, cta: "build_in_os" });
-    router.push("/book");
-  };
+  const mobilePreview = !embedded && device === "mobile";
 
   return (
-    <div style={{ ["--demo-accent" as string]: accent }}>
+    <div id={embedded ? undefined : "demo-os"} className="scroll-mt-24" style={{ ["--demo-accent" as string]: accent }}>
       {/* ------------------------------------------------ Control deck */}
+      {!embedded && (
       <div className="mb-5 rounded-xl border border-white/10 bg-base-900/80">
         <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center">
           <div className="min-w-0 flex-1">
@@ -318,16 +382,23 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
                   : config.scenario.title}
             </p>
             <p className="mt-1 text-xs leading-relaxed text-white/50">
-              {runningScenario
-                ? config.scenarios.find((s) => s.id === runningScenario.id)?.description
-                : currentStep
-                  ? currentStep.detail
-                  : config.scenario.intro}
+              {mobilePreview
+                ? "Mobile preview — the same live session, rendered the way your team would see it on a phone. Switch back to desktop for the guided tour."
+                : runningScenario
+                  ? config.scenarios.find((s) => s.id === runningScenario.id)?.description
+                  : currentStep
+                    ? currentStep.detail
+                    : config.scenario.intro}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {!tourDone && (
-              <button type="button" onClick={() => setPlaying((p) => !p)} className="btn-primary px-5 py-2.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setPlaying((p) => !p)}
+                disabled={mobilePreview}
+                className="btn-primary px-5 py-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+              >
                 {playing ? (
                   <>
                     <Loader2 size={13} className="mr-2 animate-spin" aria-hidden /> Pause tour
@@ -344,7 +415,7 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
               <button
                 type="button"
                 onClick={prevStep}
-                disabled={playing}
+                disabled={playing || mobilePreview}
                 className="btn-ghost px-4 py-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Previous tour step"
               >
@@ -355,7 +426,7 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
               <button
                 type="button"
                 onClick={nextStep}
-                disabled={playing}
+                disabled={playing || mobilePreview}
                 className="btn-ghost px-4 py-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Next tour step"
               >
@@ -368,12 +439,56 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
                 <CheckCircle2 size={13} aria-hidden /> Tour complete
               </span>
             )}
+            {(config.simActions?.length ?? 0) > 0 && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSimMenu((v) => !v);
+                    setScenarioMenu(false);
+                  }}
+                  disabled={mobilePreview}
+                  aria-expanded={simMenu}
+                  className="btn-ghost px-4 py-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Wand2 size={13} className="mr-1.5" aria-hidden />
+                  Simulate
+                </button>
+                {simMenu && (
+                  <div className="absolute right-0 top-11 z-40 w-72 rounded-lg border border-white/10 bg-base-800 shadow-lift">
+                    <p className="border-b border-white/[0.08] px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
+                      One-click simulations
+                    </p>
+                    <ul>
+                      {config.simActions?.map((action) => (
+                        <li key={action.id} className="border-b border-white/[0.06] last:border-0">
+                          <button
+                            type="button"
+                            onClick={() => runSimAction(action)}
+                            disabled={!!runningScenario}
+                            className="w-full px-3 py-2.5 text-left transition-colors hover:bg-white/[0.04] focus:outline-none focus-visible:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <p className="text-xs text-white/80">{action.label}</p>
+                            <p className="mt-0.5 text-[0.64rem] leading-snug text-white/40">{action.description}</p>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+            {config.scenarios.length > 0 && (
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setScenarioMenu((v) => !v)}
+                onClick={() => {
+                  setScenarioMenu((v) => !v);
+                  setSimMenu(false);
+                }}
+                disabled={mobilePreview}
                 aria-expanded={scenarioMenu}
-                className="btn-ghost px-4 py-2.5 text-xs"
+                className="btn-ghost px-4 py-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ListVideo size={13} className="mr-1.5" aria-hidden />
                 Scenarios
@@ -415,6 +530,34 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
                 </div>
               )}
             </div>
+            )}
+            {/* Desktop/mobile preview toggle — only meaningful on large screens */}
+            <div
+              className="hidden items-center rounded border border-white/15 lg:inline-flex"
+              role="group"
+              aria-label="Preview device"
+            >
+              {(
+                [
+                  { id: "desktop", icon: Monitor, label: "Desktop preview" },
+                  { id: "mobile", icon: Smartphone, label: "Mobile preview" },
+                ] as const
+              ).map(({ id, icon: Icon, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => switchDevice(id)}
+                  aria-pressed={device === id}
+                  aria-label={label}
+                  title={label}
+                  className={`inline-flex items-center px-3 py-2.5 text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson ${
+                    device === id ? "bg-white/[0.08] text-white" : "text-white/45 hover:text-white"
+                  }`}
+                >
+                  <Icon size={13} aria-hidden />
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               onClick={() => setConfirmReset(true)}
@@ -441,8 +584,25 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
           </ol>
         </div>
       </div>
+      )}
+
+      {/* ------------------------------------------------ Mobile preview frame */}
+      {mobilePreview && (
+        <div className="flex justify-center">
+          <div className="w-[24.5rem] max-w-full rounded-[2rem] border border-white/15 bg-base-900 p-2.5 shadow-lift">
+            <div className="mx-auto mb-2 h-1.5 w-16 rounded-full bg-white/15" aria-hidden />
+            <iframe
+              key={frameKey}
+              src={`/demopreview/${config.slug}`}
+              title={`${config.osName} mobile preview`}
+              className="h-[42rem] w-full rounded-[1.4rem] border border-white/10 bg-base"
+            />
+          </div>
+        </div>
+      )}
 
       {/* ------------------------------------------------ OS window */}
+      {!mobilePreview && (
       <div className="relative overflow-hidden rounded-xl border border-white/10 bg-base-900 shadow-lift">
         {/* Window chrome */}
         <div className="flex items-center gap-3 border-b border-white/[0.08] bg-base-800/60 px-4 py-3">
@@ -549,7 +709,10 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
           </p>
           <button
             type="button"
-            onClick={() => setCtaOpen(true)}
+            onClick={() => {
+              trackEvent("demo_cta_click", { demo: config.slug, cta: "build_in_os" });
+              openRequest({ source: "os_footer" });
+            }}
             className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
             style={{ color: accent === "#b3243a" ? "#d94b5e" : accent }}
           >
@@ -578,13 +741,14 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
           ))}
         </div>
       </div>
+      )}
 
       <div className="mt-3 flex justify-center">
         <SampleDataTag />
       </div>
 
       {/* ------------------------------------------------ Intro dialog */}
-      {hydrated && !state.introSeen && (
+      {hydrated && !state.introSeen && !embedded && (
         <Modal
           title="This is an interactive demonstration"
           subtitle={config.systemName}
@@ -629,42 +793,14 @@ export function DemoOS({ config }: { config: IndustryConfig }) {
         />
       )}
 
-      {/* ------------------------------------------------ CTA context dialog */}
-      {ctaOpen && (
-        <Modal
-          title="Build this for my business"
-          subtitle="Here's the demo context we'll pre-fill into the inquiry form — you can review and edit all of it before sending."
-          onClose={() => setCtaOpen(false)}
-        >
-          <ul className="space-y-1.5 text-xs text-white/65">
-            <li>• Demo viewed: {config.systemName}</li>
-            <li>• Industry: {CONTACT_INDUSTRY[config.slug] ?? config.industry}</li>
-            {state.settings.businessName !== config.businessName && (
-              <li>• Business name: {state.settings.businessName}</li>
-            )}
-            {state.explored.length > 0 && (
-              <li>• Features explored: {state.explored.slice(0, 8).join(", ")}</li>
-            )}
-            {Object.keys(state.scenarioRuns).length > 0 && (
-              <li>• Scenarios completed: {Object.keys(state.scenarioRuns).length}</li>
-            )}
-            {state.settings.personalization.problem && (
-              <li>• Main operational problem: {state.settings.personalization.problem}</li>
-            )}
-          </ul>
-          <p className="mt-3 text-[0.64rem] leading-relaxed text-white/35">
-            Nothing is sent until you submit the form yourself. This context appears in the visible
-            message field where you can change or delete it.
-          </p>
-          <div className="mt-4 flex justify-end gap-2">
-            <button type="button" onClick={() => setCtaOpen(false)} className="btn-ghost px-4 py-2 text-xs">
-              Cancel
-            </button>
-            <button type="button" onClick={openContactWithContext} className="btn-primary px-4 py-2 text-xs">
-              Continue to inquiry form
-            </button>
-          </div>
-        </Modal>
+      {/* ------------------------------------------------ Request-system dialog */}
+      {request && (
+        <RequestSystemDialog
+          config={config}
+          initialFeature={request.feature}
+          source={request.source}
+          onClose={() => setRequest(null)}
+        />
       )}
     </div>
   );

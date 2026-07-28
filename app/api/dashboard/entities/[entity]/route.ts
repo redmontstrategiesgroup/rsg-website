@@ -16,7 +16,10 @@ const schemas = {
 } as const;
 
 export async function POST(request: Request, context: { params: Promise<{ entity: string }> }) {
-  const ctx = await requireAdmin();
+  // Dashboard writes (create/approve/dismiss records) require an elevated
+  // permission — not just any authenticated admin — so viewer/consultant/
+  // contractor roles can't mutate executive-intelligence records.
+  const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;
   const limited = await rateLimitAdminMutator(request, ctx.admin.id);
   if (limited) return limited;

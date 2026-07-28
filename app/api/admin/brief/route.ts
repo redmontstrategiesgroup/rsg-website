@@ -55,7 +55,9 @@ type SessionEvent = {
 };
 
 export async function POST(request: Request) {
-  const ctx = await requireAdmin();
+  // Lead pre-call research tool — gate on manage_leads (mirrors the admin UI
+  // capability flag at app/admin/page.tsx) so RBAC + forced-MFA apply. (audit L2)
+  const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;
 
   if (!(await rateLimit(`brief:${clientIp(request)}`, 6, 10 * 60_000))) {

@@ -25,6 +25,16 @@ import { cookies } from "next/headers";
  * per-process secret (sessions simply reset when the dev server restarts).
  */
 let cachedSecret: string | null = null;
+/**
+ * Shared HMAC signing secret. Fails closed in production (throws without a
+ * 16+ char AUTH_SECRET); development uses a per-process random secret.
+ * Exported so other signed-token flows (e.g. the MFA pending ticket) share
+ * the same guarantees instead of a weaker inline fallback.
+ */
+export function getAuthSecret(): string {
+  return getSecret();
+}
+
 function getSecret(): string {
   if (cachedSecret) return cachedSecret;
   const configured = process.env.AUTH_SECRET;
@@ -66,6 +76,17 @@ export function verifyPassword(password: string, stored: string): boolean {
   const expected = Buffer.from(digest, "hex");
   if (candidate.length !== expected.length) return false;
   return timingSafeEqual(candidate, expected);
+}
+
+/**
+ * A fixed valid scrypt hash used only to burn the same CPU as a real password
+ * check when an account doesn't exist — closes the login timing side-channel
+ * that would otherwise reveal whether an email is registered.
+ */
+let decoyHash: string | null = null;
+export function verifyPasswordDecoy(password: string): void {
+  decoyHash ??= hashPassword("rsg-decoy-account-password");
+  verifyPassword(password, decoyHash);
 }
 
 /* ------------------------------ Tokens ------------------------------- */

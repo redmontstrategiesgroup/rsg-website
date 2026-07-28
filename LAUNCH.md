@@ -180,7 +180,7 @@ On the LIVE site (not localhost):
         (with lead score, timeline, attribution)
   - [ ] Auto-reply arrives at the address you submitted
   - [ ] Row appears in Supabase → Table Editor → `leads`
-  - [ ] You were redirected to /thank-you with the booking button
+  - [ ] You were redirected to /thankyou with the booking button
 - [ ] Visit `yourdomain.com/?utm_source=launchtest`, submit the form again,
       confirm `utm_source = launchtest` on the Supabase row.
 - [ ] Turnstile widget shows on the form and submission passes.

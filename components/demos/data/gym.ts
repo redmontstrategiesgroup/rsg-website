@@ -2,10 +2,8 @@ import type { IndustryConfig } from "../types";
 import {
   DEMO_APPOINTMENT_TYPES,
   DEMO_INTAKE_FIELDS,
-  DEMO_ROLES,
   DEMO_SAMPLE_CUSTOMER,
   DEMO_SCHEDULE_DAYS,
-  DEMO_STAFF,
   DEMO_TEMPLATES,
   DEMO_TERMINOLOGY,
 } from "./shared";
@@ -35,18 +33,51 @@ export const gymConfig: IndustryConfig = {
   accentLabel: "Member Conversion",
   terminology: DEMO_TERMINOLOGY,
   leadsLabel: "Leads & members",
-  staff: DEMO_STAFF,
-  roles: DEMO_ROLES,
+  staff: [
+    { id: "staff-dre", name: "Coach Dre", role: "Head boxing coach" },
+    { id: "staff-bri", name: "Coach Bri", role: "Strength & conditioning" },
+    { id: "staff-riley", name: "Riley", role: "Front desk" },
+    { id: "staff-tasha", name: "Tasha", role: "Membership manager" },
+  ],
+  roles: [
+    {
+      id: "owner",
+      label: "Owner",
+      description: "Full access — conversion numbers, campaigns, and settings.",
+      nav: [
+        "overview", "leads", "pipeline", "conversations", "receptionist", "quotes",
+        "automations", "tasks", "calendar", "campaigns", "analytics", "settings",
+      ],
+    },
+    {
+      id: "manager",
+      label: "Membership manager",
+      description: "Leads, offers, follow-up, and the class schedule.",
+      nav: [
+        "overview", "leads", "pipeline", "conversations", "receptionist", "quotes",
+        "tasks", "calendar", "campaigns",
+      ],
+    },
+    {
+      id: "staff",
+      label: "Coach",
+      description: "The day's classes, trial attendees, and their notes.",
+      nav: ["overview", "calendar", "tasks", "leads"],
+    },
+  ],
   nav: [
     { id: "overview", label: "Overview" },
     { id: "leads", label: "Leads" },
     { id: "pipeline", label: "Pipeline" },
     { id: "conversations", label: "Conversations" },
+    { id: "receptionist", label: "AI Front Desk" },
+    { id: "quotes", label: "Membership Quotes" },
     { id: "automations", label: "Automations" },
     { id: "tasks", label: "Tasks" },
     { id: "calendar", label: "Class Schedule" },
     { id: "campaigns", label: "Campaigns" },
     { id: "analytics", label: "Analytics" },
+    { id: "settings", label: "Settings" },
   ],
   metrics: [
     { id: "inquiries", label: "New trial inquiries", value: 31, delta: "+8 this week", deltaDir: "up" },
@@ -186,6 +217,144 @@ export const gymConfig: IndustryConfig = {
   ],
   templates: DEMO_TEMPLATES,
   intakeFields: DEMO_INTAKE_FIELDS,
+  quote: {
+    title: "Instant membership quote",
+    description:
+      "The same pricing tool a prospect can use on your website after a trial. Pick the program and options — generated quotes become offers with automated follow-up.",
+    documentLabel: "Membership quote",
+    base: { label: "Enrollment & onboarding session", amount: 49 },
+    fields: [
+      {
+        id: "program",
+        label: "Program (first month)",
+        options: [
+          { label: "Unlimited boxing", amount: 149 },
+          { label: "Kickboxing classes", amount: 139 },
+          { label: "Strength & conditioning", amount: 179 },
+          { label: "Youth boxing", amount: 129 },
+          { label: "Group fitness — mornings", amount: 139 },
+        ],
+      },
+      {
+        id: "pt",
+        label: "Personal training add-on",
+        options: [
+          { label: "None", amount: 0 },
+          { label: "PT 1×/week", amount: 240 },
+          { label: "PT 2×/week", amount: 480 },
+        ],
+      },
+      {
+        id: "commitment",
+        label: "Commitment",
+        options: [
+          { label: "Month-to-month", amount: 0 },
+          { label: "12-month rate lock", amount: -20 },
+        ],
+        helper: "Longer commitments trade a discount for retention.",
+      },
+      {
+        id: "family",
+        label: "Family add-on",
+        options: [
+          { label: "Just me", amount: 0 },
+          { label: "+1 family member", amount: 99 },
+        ],
+      },
+    ],
+    sentStageId: "offer",
+    acceptedStageId: "member",
+    disclaimer: "Demo pricing for illustration — real offers follow your rate card and promos.",
+  },
+  receptionist: {
+    scenarioLabel: "After-hours inquiry — trial class",
+    description: "It's 9:50 PM. Someone just watched your highlight reel and calls the gym — everyone's gone home.",
+    callerRole: "a first-timer who wants to try a boxing class",
+    start: "greet",
+    nodes: [
+      {
+        id: "greet",
+        say: "You've reached Forge Boxing & Performance! The coaches are done for the night, but I'm the gym's automated assistant and I can get you booked right now. What are you looking to do?",
+        choices: [
+          { id: "c-trial", label: "I've never boxed — can I try a class first?", next: "goal" },
+          { id: "c-price", label: "How much is a membership?", next: "price" },
+          { id: "c-resched", label: "I booked a trial Saturday but can't make it.", next: "resched" },
+        ],
+      },
+      {
+        id: "price",
+        say: "Unlimited boxing runs $149/month, no contract — and your first class is free, so you can see the vibe before paying anything. Want me to book you into a beginner-friendly class?",
+        meta: "Pricing rules from your playbook",
+        choices: [
+          { id: "c-trial2", label: "Yeah, let's book a trial.", next: "goal" },
+        ],
+      },
+      {
+        id: "resched",
+        say: "No problem — I found your Saturday 10:00 AM kickboxing trial. I can move you to Tuesday 6:30 PM or next Saturday. Which is better?",
+        meta: "Looks up the live schedule",
+        choices: [
+          { id: "c-tue", label: "Tuesday 6:30 works.", next: "done-resched" },
+          { id: "c-nextsat", label: "Next Saturday, please.", next: "done-resched" },
+        ],
+      },
+      {
+        id: "done-resched",
+        say: "Done — you're rebooked and the reminders moved with you. See you on the mats!",
+        outcome: {
+          summary: [
+            "The trial was rescheduled instead of quietly becoming a no-show.",
+            "Reminders re-armed around the new class time automatically.",
+            "The change is on the lead's record for the coach to see.",
+          ],
+          effects: [
+            { kind: "activity", item: { id: "a-ai-resched", icon: "calendar", text: "AI front desk rescheduled a Saturday kickboxing trial to Tuesday 6:30 PM — reminders updated.", time: "Just now" } },
+            { kind: "notify", notification: { id: "n-ai-resched", title: "Trial saved from a no-show", body: "Rescheduled at 9:50 PM with zero staff time.", tone: "success" } },
+          ],
+        },
+      },
+      {
+        id: "goal",
+        say: "Love it — total beginners are our favorite. Quick question so I put you in the right class: is this more about fitness, learning to box, or blowing off steam?",
+        meta: "Qualifying questions",
+        choices: [
+          { id: "c-fit", label: "Fitness — I want to get in shape.", next: "times" },
+          { id: "c-learn", label: "I actually want to learn to box.", next: "times" },
+        ],
+      },
+      {
+        id: "times",
+        say: "Perfect. Boxing Fundamentals with Coach Dre is beginner-only — Tuesday 6:30 PM or Saturday 10:00 AM both have space, and your first class is free. Which one?",
+        meta: "Checks the live class schedule",
+        choices: [
+          { id: "c-tue2", label: "Tuesday evening.", next: "done-trial" },
+          { id: "c-sat", label: "Saturday morning.", next: "done-trial" },
+        ],
+      },
+      {
+        id: "done-trial",
+        say: "You're in — free trial booked with Coach Dre. I'm texting your confirmation, what to bring, and a parking tip. Reply here any time. See you soon! 🥊",
+        outcome: {
+          summary: [
+            "A qualified lead was created at 9:50 PM — goal and experience level captured.",
+            "The free trial went straight onto the class roster with reminders queued.",
+            "Coach Dre got a heads-up task, and the call summary is in Conversations.",
+          ],
+          effects: [
+            { kind: "lead", lead: { id: "l-ai-trial", name: "Casey Morgan", service: "Boxing fundamentals — free trial", source: "After-hours call", stageId: "trial-booked", value: 149, lastActivity: "Just now", temp: "hot", note: "Total beginner, fitness goal · booked by AI front desk at 9:50 PM", assignee: "Coach Dre" } },
+            { kind: "calendar", event: { id: "cal-ai-trial", day: "Tue", date: "Jul 14", time: "6:30 PM", title: "Free trial (fundamentals) — Casey Morgan", withWhom: "Coach Dre", status: "confirmed" } },
+            { kind: "task", task: { id: "t-ai-trial", title: "New trial Tuesday 6:30 — Casey Morgan (beginner, fitness goal). Say hi by name.", assignee: "Coach Dre", due: "Tue", auto: true } },
+            { kind: "conversation", conversation: { id: "c-ai-trial", contact: "Casey Morgan", channel: "phone", topic: "After-hours call — trial booked", unread: true, messages: [
+              { id: "ai-t-1", from: "system", meta: "AI front desk · call summary", text: "After-hours call handled: first-time boxer, fitness goal. Free trial booked Tue 6:30 PM with Coach Dre. Confirmation + what-to-bring guide texted.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "inquiries", delta: 1 },
+            { kind: "metric", id: "trials", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-trial", title: "Trial booked at 9:50 PM", body: "Casey Morgan — fundamentals, Tuesday 6:30 PM. Nobody was at the desk.", tone: "success" } },
+          ],
+        },
+      },
+    ],
+  },
   appointmentTypes: DEMO_APPOINTMENT_TYPES,
   scheduleDays: DEMO_SCHEDULE_DAYS,
   sampleCustomer: DEMO_SAMPLE_CUSTOMER,
@@ -373,6 +542,16 @@ export const gymConfig: IndustryConfig = {
         effects: [
           { kind: "activity", item: { id: "a-s11", icon: "campaign", text: "Referral request scheduled for Chris Duval's 60-day milestone (guest pass).", time: "Just now" } },
           { kind: "notify", notification: { id: "n-s11", title: "Scenario complete", body: "Inquiry → no-show → recovered → member → future referral. One lead, zero dropped balls.", tone: "success" } },
+        ],
+      },
+      {
+        id: "s-12",
+        title: "Now try it yourself",
+        detail:
+          "Take a 9:50 PM call as the AI front desk's caller, price a membership in Membership Quotes, or reschedule a trial on the class schedule. Everything here is safe to touch.",
+        tab: "receptionist",
+        effects: [
+          { kind: "notify", notification: { id: "n-s12", title: "Your turn", body: "Try the AI front desk call, then build a membership quote.", tone: "default" } },
         ],
       },
     ],

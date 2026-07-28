@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
         "/portal",
         "/login",
         "/api/",
-        "/thank-you",
+        "/thankyou",
       ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,

@@ -179,6 +179,7 @@ export type ContactInfo = {
   employeeCount?: string;
   monthlyRevenueRange?: string;
   heardAbout?: string;
+  preferredContact?: string;
 };
 
 export type Attribution = {

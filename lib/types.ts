@@ -77,10 +77,40 @@ export type ClientRecord = ClientPublic & {
 export type AdminRole =
   | "owner"
   | "administrator"
+  | "manager"
   | "scheduler"
   | "consultant"
   | "sales"
+  | "employee"
+  | "contractor"
+  | "security_reviewer"
   | "viewer";
+
+export const ADMIN_ROLES: AdminRole[] = [
+  "owner",
+  "administrator",
+  "manager",
+  "scheduler",
+  "consultant",
+  "sales",
+  "employee",
+  "contractor",
+  "security_reviewer",
+  "viewer",
+];
+
+export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
+  owner: "Owner",
+  administrator: "Administrator",
+  manager: "Manager",
+  scheduler: "Scheduler",
+  consultant: "Consultant",
+  sales: "Sales",
+  employee: "Employee",
+  contractor: "Contractor",
+  security_reviewer: "Security Reviewer",
+  viewer: "Viewer",
+};
 
 export type AdminRecord = {
   id: string;
@@ -201,6 +231,37 @@ export type Lead = {
   owner?: string;
   /** Soft-archive timestamp (ISO). */
   archivedAt?: string;
+  /** Interactive-demo context, when the lead came from a demo request. */
+  demo?: DemoRequestMeta;
+  /** Booking-funnel ongoing-support answers (managed services). */
+  servicePlanAnswers?: Record<string, string>;
+  /** Recommended managed-service plan key (auto-computed, admin-editable). */
+  recommendedPlan?: string;
+};
+
+/** Demo-session context attached to leads sourced from the interactive demos. */
+export type DemoRequestMeta = {
+  /** Demo slug, e.g. "contractors". */
+  slug: string;
+  /** e.g. "RSG Contractor Lead System". */
+  system: string;
+  /** Business category shown on the demo, e.g. "Contractors & Home Services". */
+  businessCategory: string;
+  /** Feature areas the visitor actually used during the session. */
+  featuresExplored: string[];
+  /** Services the visitor selected in the request form. */
+  featuresRequested: string[];
+  /** Number of guided scenarios the visitor ran. */
+  scenariosRun?: number;
+  /** Business name the visitor typed into the demo's personalization. */
+  demoBusinessName?: string;
+  /** Estimated business size from the request form. */
+  businessSize?: string;
+  /** Preferred meeting date (YYYY-MM-DD) and time window, if given. */
+  preferredDate?: string;
+  preferredTime?: string;
+  /** Industry-specific qualification answers keyed by question id. */
+  extras?: Record<string, string>;
 };
 
 /** Marketing email list entry (captured by the email popup). */

@@ -2,10 +2,8 @@ import type { IndustryConfig } from "../types";
 import {
   DEMO_APPOINTMENT_TYPES,
   DEMO_INTAKE_FIELDS,
-  DEMO_ROLES,
   DEMO_SAMPLE_CUSTOMER,
   DEMO_SCHEDULE_DAYS,
-  DEMO_STAFF,
   DEMO_TEMPLATES,
   DEMO_TERMINOLOGY,
 } from "./shared";
@@ -41,19 +39,52 @@ export const contractorConfig: IndustryConfig = {
     appointments: "Estimates",
   },
   leadsLabel: "Leads & jobs",
-  staff: DEMO_STAFF,
-  roles: DEMO_ROLES,
+  staff: [
+    { id: "staff-mike", name: "Mike (sales)", role: "Sales & quotes" },
+    { id: "staff-dave", name: "Dave (estimator)", role: "Estimator" },
+    { id: "staff-sam", name: "Sam (crew lead)", role: "Crew lead" },
+    { id: "staff-office", name: "Office", role: "Admin & dispatch" },
+  ],
+  roles: [
+    {
+      id: "owner",
+      label: "Owner",
+      description: "Full access — pipeline value, campaigns, analytics, and settings.",
+      nav: [
+        "overview", "leads", "pipeline", "conversations", "receptionist", "quotes",
+        "automations", "tasks", "calendar", "reviews", "campaigns", "analytics", "settings",
+      ],
+    },
+    {
+      id: "manager",
+      label: "Office manager",
+      description: "Runs intake, scheduling, quotes, and customer communication.",
+      nav: [
+        "overview", "leads", "pipeline", "conversations", "receptionist", "quotes",
+        "tasks", "calendar", "reviews",
+      ],
+    },
+    {
+      id: "staff",
+      label: "Estimator / crew",
+      description: "Sees the day's schedule, assigned leads, and open tasks.",
+      nav: ["overview", "leads", "tasks", "calendar"],
+    },
+  ],
   nav: [
     { id: "overview", label: "Overview" },
     { id: "leads", label: "Leads" },
     { id: "pipeline", label: "Pipeline" },
     { id: "conversations", label: "Conversations" },
+    { id: "receptionist", label: "AI Receptionist" },
+    { id: "quotes", label: "Quotes" },
     { id: "automations", label: "Automations" },
     { id: "tasks", label: "Tasks" },
-    { id: "calendar", label: "Schedule" },
+    { id: "calendar", label: "Schedule & Dispatch" },
     { id: "reviews", label: "Reviews" },
     { id: "campaigns", label: "Campaigns" },
     { id: "analytics", label: "Analytics" },
+    { id: "settings", label: "Settings" },
   ],
   metrics: [
     { id: "requests", label: "New estimate requests", value: 18, delta: "+5 this week", deltaDir: "up" },
@@ -202,6 +233,188 @@ export const contractorConfig: IndustryConfig = {
   ],
   templates: DEMO_TEMPLATES,
   intakeFields: DEMO_INTAKE_FIELDS,
+  quote: {
+    title: "Instant project estimate",
+    description:
+      "The same calculator a homeowner can use on your website. Pick the project and options — the number updates live, and generated quotes become records with automated follow-up.",
+    documentLabel: "Quote",
+    base: { label: "Site visit, permits & project management", amount: 1800 },
+    fields: [
+      {
+        id: "project",
+        label: "Project type",
+        options: [
+          { label: "Composite deck (up to 300 sq ft)", amount: 14500 },
+          { label: "Bathroom renovation", amount: 18500 },
+          { label: "Kitchen remodel", amount: 34000 },
+          { label: "Roof replacement (asphalt)", amount: 15500 },
+          { label: "Siding repair", amount: 4200 },
+        ],
+      },
+      {
+        id: "scope",
+        label: "Scope",
+        options: [
+          { label: "Standard", amount: 0 },
+          { label: "Large / added square footage", amount: 6500 },
+          { label: "Small / partial", amount: -2500 },
+        ],
+      },
+      {
+        id: "finish",
+        label: "Finish level",
+        options: [
+          { label: "Builder grade", amount: 0 },
+          { label: "Mid-range", amount: 3800 },
+          { label: "Premium", amount: 9500 },
+        ],
+      },
+      {
+        id: "timeline",
+        label: "Timeline",
+        options: [
+          { label: "Flexible", amount: 0 },
+          { label: "Priority start (2–3 weeks)", amount: 1500 },
+        ],
+        helper: "Rush scheduling adds crew-overtime allowance.",
+      },
+    ],
+    sentStageId: "quote-sent",
+    acceptedStageId: "approved",
+    disclaimer: "Demo calculator with sample pricing — real quotes are priced after a site visit.",
+  },
+  receptionist: {
+    scenarioLabel: "After-hours call — storm damage",
+    description: "It's 9:40 PM. The office line rings — every crew is home for the night.",
+    callerRole: "a homeowner whose roof just started leaking",
+    start: "greet",
+    nodes: [
+      {
+        id: "greet",
+        say: "Thanks for calling Hartwell Contracting — you've reached our automated assistant. The crews are off-site right now, but I can get your project moving tonight. What can we help with?",
+        choices: [
+          { id: "c-leak", label: "My roof is leaking after the storm — water's coming into the bedroom.", next: "triage" },
+          { id: "c-deck", label: "I'd like an estimate for rebuilding my deck.", next: "deck-size" },
+          { id: "c-hours", label: "What are your hours?", next: "hours" },
+        ],
+      },
+      {
+        id: "hours",
+        say: "The office is staffed 7 AM to 5 PM, Monday through Saturday — but I can capture your project details and get you scheduled any time. Was there a project I can help with?",
+        choices: [
+          { id: "c-leak2", label: "Actually yes — my roof started leaking tonight.", next: "triage" },
+          { id: "c-deck2", label: "Yes — a deck rebuild estimate.", next: "deck-size" },
+        ],
+      },
+      {
+        id: "triage",
+        say: "That sounds urgent, so I'm flagging it for our on-call estimator right now. Roughly how much water is coming in?",
+        meta: "Urgency detection",
+        choices: [
+          { id: "c-drip", label: "A slow drip near the window.", next: "address" },
+          { id: "c-steady", label: "A steady stream — I've got a bucket under it.", next: "address" },
+        ],
+      },
+      {
+        id: "address",
+        say: "Got it — I've noted the severity. What's the property address so I can route the right crew?",
+        meta: "Collects job details",
+        choices: [
+          { id: "c-addr", label: "42 Colonial Drive, Marshfield.", next: "book" },
+        ],
+      },
+      {
+        id: "book",
+        say: "Thanks — Dave covers Marshfield. I can have him out tomorrow at 8:00 AM to tarp and inspect, or I can page the emergency line tonight for an after-hours surcharge. Which works better?",
+        meta: "Checks the live schedule",
+        choices: [
+          { id: "c-morning", label: "Tomorrow at 8 AM is fine.", next: "done-roof" },
+          { id: "c-tonight", label: "Please send someone tonight.", next: "done-roof-tonight" },
+        ],
+      },
+      {
+        id: "done-roof",
+        say: "You're booked: roof leak inspection, tomorrow 8:00 AM at 42 Colonial Drive with Dave. I've texted you a confirmation and sent Dave the storm-damage notes. If anything changes overnight, reply here any time.",
+        outcome: {
+          summary: [
+            "A lead was created with the address, severity, and storm-damage notes attached.",
+            "Tomorrow's 8:00 AM inspection was booked directly onto Dave's schedule.",
+            "A prep task was assigned to Dave, and the whole call transcript landed in Conversations.",
+          ],
+          effects: [
+            { kind: "lead", lead: { id: "l-ai-roof", name: "Pat Delaney", service: "Roof leak — storm damage", source: "After-hours call", stageId: "est-scheduled", value: 8500, lastActivity: "Just now", temp: "hot", note: "Steady leak into bedroom · 42 Colonial Dr, Marshfield · AI receptionist booked 8 AM inspection", assignee: "Dave (estimator)" } },
+            { kind: "calendar", event: { id: "cal-ai-roof", day: "Fri", date: "Jul 17", time: "8:00 AM", title: "Storm-damage inspection — Pat Delaney", withWhom: "Dave (estimator)", status: "confirmed" } },
+            { kind: "task", task: { id: "t-ai-roof", title: "Review storm-damage call notes before 8 AM inspection — Pat Delaney (42 Colonial Dr)", assignee: "Dave (estimator)", due: "Tomorrow", priority: "high", auto: true } },
+            { kind: "conversation", conversation: { id: "c-ai-roof", contact: "Pat Delaney", channel: "phone", topic: "After-hours call — roof leak", unread: true, messages: [
+              { id: "ai-r-1", from: "system", meta: "AI receptionist · call summary", text: "After-hours call handled: roof leak (steady stream) at 42 Colonial Dr, Marshfield. Inspection booked Fri 8:00 AM with Dave. Caller notified of confirmation by text.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "requests", delta: 1 },
+            { kind: "metric", id: "estimates", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-roof", title: "After-hours call converted", body: "Pat Delaney — roof leak booked for 8 AM. No human touched it.", tone: "success" } },
+          ],
+        },
+      },
+      {
+        id: "done-roof-tonight",
+        say: "Understood — I've paged the on-call line and marked this as an emergency dispatch. Someone will call you back within 15 minutes to confirm tonight's visit. Your details and photos link are already in the job record.",
+        outcome: {
+          summary: [
+            "An emergency lead was created and flagged hot, with the on-call estimator paged.",
+            "A 15-minute callback task went to the on-call rotation.",
+            "The call transcript and severity notes landed in Conversations for the crew.",
+          ],
+          effects: [
+            { kind: "lead", lead: { id: "l-ai-roof-em", name: "Pat Delaney", service: "Roof leak — emergency dispatch", source: "After-hours call", stageId: "contacted", value: 9800, lastActivity: "Just now", temp: "hot", note: "EMERGENCY — steady leak · 42 Colonial Dr, Marshfield · on-call paged by AI receptionist", assignee: "Dave (estimator)" } },
+            { kind: "task", task: { id: "t-ai-roof-em", title: "URGENT: call Pat Delaney back within 15 min — emergency roof leak, 42 Colonial Dr", assignee: "Dave (estimator)", due: "Now", priority: "high", auto: true } },
+            { kind: "conversation", conversation: { id: "c-ai-roof-em", contact: "Pat Delaney", channel: "phone", topic: "EMERGENCY — roof leak dispatch", unread: true, messages: [
+              { id: "ai-re-1", from: "system", meta: "AI receptionist · call summary", text: "Emergency after-hours call: steady roof leak at 42 Colonial Dr, Marshfield. On-call estimator paged; caller promised a callback within 15 minutes.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "requests", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-roof-em", title: "Emergency dispatch triggered", body: "Roof leak flagged urgent — on-call rotation paged. Simulated.", tone: "alert" } },
+          ],
+        },
+      },
+      {
+        id: "deck-size",
+        say: "Happy to help with that. Roughly how big is the deck, and are you thinking wood or composite?",
+        meta: "Collects job details",
+        choices: [
+          { id: "c-deck-comp", label: "About 300 square feet — we'd like composite.", next: "deck-book" },
+          { id: "c-deck-wood", label: "Smaller, maybe 180 square feet, pressure-treated wood.", next: "deck-book" },
+        ],
+      },
+      {
+        id: "deck-book",
+        say: "Perfect — I've started your estimate file. Dave has Saturday 10:00 AM or Tuesday 1:30 PM open for an on-site measure. Which suits you?",
+        meta: "Checks the live schedule",
+        choices: [
+          { id: "c-deck-sat", label: "Saturday at 10 works.", next: "done-deck" },
+          { id: "c-deck-tue", label: "Tuesday afternoon, please.", next: "done-deck" },
+        ],
+      },
+      {
+        id: "done-deck",
+        say: "You're all set — estimate visit booked with Dave. I've texted the confirmation, and you can reply with photos any time to speed up the quote. Thanks for calling Hartwell!",
+        outcome: {
+          summary: [
+            "A deck-estimate lead was created with size and material preferences captured.",
+            "The estimate visit was booked on Dave's schedule with confirmation and reminders queued.",
+            "The transcript is in Conversations, so no detail is lost between the call and the visit.",
+          ],
+          effects: [
+            { kind: "lead", lead: { id: "l-ai-deck", name: "Chris Nolan", service: "Deck rebuild — estimate", source: "After-hours call", stageId: "est-scheduled", value: 16800, lastActivity: "Just now", temp: "warm", note: "~300 sq ft composite · booked via AI receptionist after hours", assignee: "Dave (estimator)" } },
+            { kind: "calendar", event: { id: "cal-ai-deck", day: "Sat", date: "Jul 18", time: "10:00 AM", title: "Deck estimate — Chris Nolan", withWhom: "Dave (estimator)", status: "confirmed" } },
+            { kind: "conversation", conversation: { id: "c-ai-deck", contact: "Chris Nolan", channel: "phone", topic: "After-hours call — deck estimate", messages: [
+              { id: "ai-d-1", from: "system", meta: "AI receptionist · call summary", text: "After-hours call handled: ~300 sq ft composite deck rebuild. Estimate visit booked Sat 10:00 AM with Dave. Photo request sent by text.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "requests", delta: 1 },
+            { kind: "metric", id: "estimates", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-deck", title: "After-hours estimate booked", body: "Chris Nolan — deck rebuild, Saturday 10 AM. Captured while everyone slept.", tone: "success" } },
+          ],
+        },
+      },
+    ],
+  },
   appointmentTypes: DEMO_APPOINTMENT_TYPES,
   scheduleDays: DEMO_SCHEDULE_DAYS,
   sampleCustomer: DEMO_SAMPLE_CUSTOMER,
@@ -382,9 +595,311 @@ export const contractorConfig: IndustryConfig = {
           { kind: "notify", notification: { id: "n-s11", title: "Scenario complete", body: "Web form → instant reply → quote → automated follow-up → $19,500 job won.", tone: "success" } },
         ],
       },
+      {
+        id: "s-12",
+        title: "Now try it yourself",
+        detail:
+          "Take an after-hours call as the AI receptionist's caller, build an instant quote in the Quotes tab, or drag a lead through the pipeline. Everything here is safe to touch.",
+        tab: "receptionist",
+        effects: [
+          { kind: "notify", notification: { id: "n-s12", title: "Your turn", body: "Try the AI receptionist call, then build a quote in the Quotes tab.", tone: "default" } },
+        ],
+      },
     ],
   },
-  scenarios: [],
+  scenarios: [
+    {
+      id: "scn-missed-call-dispatch",
+      label: "Missed call to booked job",
+      description:
+        "The whole crew is on a roof when the office line rings out. Watch the text-back catch the lead, qualify it, and put a crew member on the schedule — before anyone climbs down.",
+      steps: [
+        {
+          id: "sc-mc-1",
+          title: "A call rings out on the office line",
+          detail:
+            "11:52 AM — Rosa Alvarez calls while every crew is mid-job. Within 60 seconds the missed-call automation texts her back, so the lead never reaches a competitor's voicemail.",
+          tab: "conversations",
+          effects: [
+            { kind: "activity", item: { id: "a-sc-mc1", icon: "call", text: "Missed call from Rosa Alvarez — text-back sent in 38 seconds.", time: "Just now" } },
+            {
+              kind: "conversation",
+              conversation: {
+                id: "c-sc-alvarez",
+                contact: "Rosa Alvarez",
+                channel: "sms",
+                topic: "Missed call — deck stair repair",
+                unread: true,
+                messages: [
+                  { id: "sc-ra-1", from: "system", meta: "Automated · Missed-call text-back", text: "Hi, this is Hartwell Contracting — sorry we missed your call, the crews are out on job sites. What project can we help with? A few details (and photos) get you priced faster.", time: "Just now" },
+                ],
+              },
+            },
+            { kind: "workflowRun", run: { id: "wr-sc-mc", automationId: "auto-3", name: "Missed-call text-back", detail: "Simulated run: rang-out call from Rosa Alvarez answered by text within 60 seconds.", time: "Just now", simulated: true } },
+          ],
+        },
+        {
+          id: "sc-mc-2",
+          title: "The AI qualifies the job by text",
+          detail:
+            "The assistant asks for the service, address, and urgency. Rosa replies with photos — two cracked deck stairs and a party this Saturday. A hot lead record is created automatically.",
+          tab: "conversations",
+          effects: [
+            { kind: "message", conversationId: "c-sc-alvarez", message: { id: "sc-ra-2", from: "contact", text: "The bottom two steps on our deck cracked through — someone nearly went down. We're hosting a party Saturday. Photos attached.", time: "Just now" } },
+            { kind: "message", conversationId: "c-sc-alvarez", message: { id: "sc-ra-3", from: "system", meta: "Automated · Qualification", text: "Got it — cracked deck stairs, safety issue, needed before Saturday. What's the property address so we can route the nearest crew?", time: "Just now" } },
+            { kind: "message", conversationId: "c-sc-alvarez", message: { id: "sc-ra-4", from: "contact", text: "9 Pinehurst Rd, Scituate.", time: "Just now" } },
+            { kind: "lead", lead: { id: "l-sc-alvarez", name: "Rosa Alvarez", service: "Deck stair rebuild — safety repair", source: "Missed call", stageId: "new", value: 2400, lastActivity: "Just now", temp: "hot", note: "2 cracked stairs · 9 Pinehurst Rd, Scituate · party Saturday — needs same-week fix · photos attached" } },
+            { kind: "metric", id: "requests", delta: 1 },
+            { kind: "activity", item: { id: "a-sc-mc2", icon: "message", text: "Rosa Alvarez qualified by text: deck stair safety repair, needed before Saturday.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-mc-3",
+          title: "A repair slot comes off the live schedule",
+          detail:
+            "The system sees Friday afternoon open on Sam's route and offers it. Rosa takes it — the small-repair visit lands on the calendar without a single callback.",
+          tab: "calendar",
+          effects: [
+            { kind: "message", conversationId: "c-sc-alvarez", message: { id: "sc-ra-5", from: "system", meta: "Automated · Scheduling", text: "We can have a crew lead at 9 Pinehurst Rd this Friday at 3:30 PM to rebuild the stairs — small repairs are priced on site before any work starts. Want that slot?", time: "Just now" } },
+            { kind: "message", conversationId: "c-sc-alvarez", message: { id: "sc-ra-6", from: "contact", text: "Yes — Friday 3:30 works. Thank you!", time: "Just now" } },
+            { kind: "calendar", event: { id: "cal-sc-alvarez", day: "Fri", date: "Jul 17", time: "3:30 PM", title: "Deck stair rebuild — Rosa Alvarez", withWhom: "Sam (crew lead)", status: "confirmed", note: "Safety repair · photos on file · price on site" } },
+            { kind: "stage", leadId: "l-sc-alvarez", stageId: "scheduled" },
+          ],
+        },
+        {
+          id: "sc-mc-4",
+          title: "A dispatch ticket goes to the crew lead",
+          detail:
+            "Sam gets a dispatch ticket with the address, photos, urgency, and the full text thread attached. No sticky notes, no 'who took this call?'",
+          tab: "tasks",
+          effects: [
+            { kind: "task", task: { id: "t-sc-alvarez", title: "Dispatch: Fri 3:30 PM — deck stair rebuild @ 9 Pinehurst Rd (Alvarez). Party Saturday, safety flag. Photos + thread on the lead record.", assignee: "Sam (crew lead)", due: "Fri", priority: "high", auto: true } },
+            { kind: "updateLead", leadId: "l-sc-alvarez", patch: { assignee: "Sam (crew lead)", lastActivity: "Just now" } },
+            { kind: "conversationMeta", conversationId: "c-sc-alvarez", patch: { assignee: "Sam (crew lead)", unread: false } },
+            { kind: "activity", item: { id: "a-sc-mc4", icon: "task", text: "Dispatch ticket created for Sam — Alvarez stair rebuild, Friday 3:30 PM.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-mc-5",
+          title: "Rosa gets a confirmation with the details",
+          detail:
+            "A confirmation text goes out with the day, time, and who's coming — and she can reply to this same thread right up until the truck arrives.",
+          tab: "conversations",
+          effects: [
+            { kind: "message", conversationId: "c-sc-alvarez", message: { id: "sc-ra-7", from: "system", meta: "Automated · Confirmation", text: "You're booked: deck stair rebuild, Friday 3:30 PM at 9 Pinehurst Rd with Sam, our crew lead. He has your photos. Reply here any time if anything changes.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-mc-6",
+          title: "The numbers move",
+          detail:
+            "A call nobody could answer became a booked $2,400 job in one text thread. That's the math on every missed call the system catches.",
+          tab: "overview",
+          effects: [
+            { kind: "metric", id: "jobs-won", delta: 1 },
+            { kind: "metric", id: "pipeline-value", delta: 2400 },
+            { kind: "notify", notification: { id: "n-sc-mc", title: "Missed call converted", body: "Rosa Alvarez — $2,400 stair rebuild booked and dispatched to Sam. No human answered the phone.", tone: "success" } },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scn-quote-to-paid",
+      label: "Estimate to collected invoice",
+      description:
+        "Follow Anita Patel's 320 sq ft deck from the estimate visit through the quote, the automated nudge, approval, the build, and the paid invoice — with a review request at the end.",
+      steps: [
+        {
+          id: "sc-q-1",
+          title: "Dave prices the deck after the site visit",
+          detail:
+            "Thursday's estimate visit wraps and Dave builds the quote from the walkthrough: $19,800 for the composite deck. The moment it's marked sent, the follow-up sequence arms itself.",
+          tab: "quotes",
+          effects: [
+            { kind: "appointmentStatus", eventId: "cal-2", status: "completed" },
+            { kind: "quote", quote: { id: "q-sc-patel", contact: "Anita Patel", leadId: "l-patel", lines: [
+              { label: "Composite deck — 320 sq ft", amount: 16500 },
+              { label: "Rail & lighting upgrade", amount: 2100 },
+              { label: "Site prep, permits & management", amount: 1200 },
+            ], total: 19800, status: "sent", createdAt: "Just now" } },
+            { kind: "stage", leadId: "l-patel", stageId: "quote-sent" },
+            { kind: "metric", id: "quotes-sent", delta: 1 },
+            { kind: "activity", item: { id: "a-sc-q1", icon: "automation", text: "Quote delivered to Anita Patel ($19,800 deck) — follow-up sequence armed.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-q-2",
+          title: "The quote lands in her texts",
+          detail:
+            "Anita gets the quote link the minute Dave hits send — same thread she'll use for every question, update, and invoice later.",
+          tab: "conversations",
+          effects: [
+            {
+              kind: "conversation",
+              conversation: {
+                id: "c-sc-patel",
+                contact: "Anita Patel",
+                channel: "sms",
+                topic: "Composite deck — quote & build",
+                unread: true,
+                messages: [
+                  { id: "sc-ap-1", from: "system", meta: "Automated · Quote delivery", text: "Hi Anita, your deck quote from Hartwell Contracting is ready: hartwell.demo/quote/2534 — $19,800 for the 320 sq ft composite build with rail lighting. Dave's happy to walk through it, just reply here.", time: "Just now" },
+                ],
+              },
+            },
+            { kind: "metric", id: "quotes-waiting", delta: 1 },
+            { kind: "workflowRun", run: { id: "wr-sc-q", automationId: "auto-2", name: "Quote follow-up sequence", detail: "Simulated run: delivery confirmed for quote #2534, day-2 / day-5 / day-10 nudges queued.", time: "Just now", simulated: true } },
+          ],
+        },
+        {
+          id: "sc-q-3",
+          title: "Two quiet days — the nudge goes out",
+          detail:
+            "No reply by day 2, so the system sends a friendly check-in on its own. If anyone on the team had replied manually, the sequence would have paused instantly.",
+          tab: "conversations",
+          effects: [
+            { kind: "message", conversationId: "c-sc-patel", message: { id: "sc-ap-2", from: "system", meta: "Automated · Day-2 follow-up", text: "Hi Anita, checking in on the deck quote. If timing or budget is the question, we can phase the build or trim the lighting package. Want Dave to give you a call?", time: "Just now" } },
+            { kind: "stage", leadId: "l-patel", stageId: "follow-up" },
+            { kind: "activity", item: { id: "a-sc-q3", icon: "alert", text: "Quote aging: day-2 follow-up sent to Anita Patel automatically.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-q-4",
+          title: "Anita approves the job",
+          detail:
+            "The nudge did its work. She replies, the quote flips to accepted, the lead moves to Approved, and sales is notified the second she engages.",
+          tab: "pipeline",
+          effects: [
+            { kind: "message", conversationId: "c-sc-patel", message: { id: "sc-ap-3", from: "contact", text: "Sorry for the slow reply — we're in. Keep the lighting. When can you start?", time: "Just now" } },
+            { kind: "quoteStatus", quoteId: "q-sc-patel", status: "accepted" },
+            { kind: "stage", leadId: "l-patel", stageId: "approved" },
+            { kind: "metric", id: "quotes-waiting", delta: -1 },
+            { kind: "metric", id: "jobs-won", delta: 1 },
+            { kind: "notify", notification: { id: "n-sc-q4", title: "Quote accepted: Anita Patel", body: "$19,800 composite deck approved off the day-2 follow-up.", tone: "success" } },
+          ],
+        },
+        {
+          id: "sc-q-5",
+          title: "The build hits the production schedule",
+          detail:
+            "The job lands on Crew B's calendar for Monday, a materials task goes to the office, and Anita gets the start-date notice — all from one stage change.",
+          tab: "calendar",
+          effects: [
+            { kind: "calendar", event: { id: "cal-sc-patel", day: "Mon", date: "Jul 20", time: "7:00 AM", title: "Deck build start — Anita Patel", withWhom: "Crew B · Sam (crew lead)", status: "confirmed" } },
+            { kind: "stage", leadId: "l-patel", stageId: "scheduled" },
+            { kind: "task", task: { id: "t-sc-patel-mat", title: "Order composite decking, rail kit & lighting for Patel build — on site by Monday 7 AM", assignee: "Office", due: "Fri", priority: "high", auto: true } },
+            { kind: "message", conversationId: "c-sc-patel", message: { id: "sc-ap-4", from: "system", meta: "Automated · Job scheduled", text: "Great news — your deck build starts Monday, Jul 20 at 7:00 AM. Crew B with Sam, our crew lead. Materials arrive Friday; we'll text progress updates as we go.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-q-6",
+          title: "Work wraps — the invoice goes out itself",
+          detail:
+            "The crew marks the job complete. Anita gets the completion notice with the final invoice link, and the office gets a collect-payment ticket — nobody has to remember to bill.",
+          tab: "tasks",
+          effects: [
+            { kind: "stage", leadId: "l-patel", stageId: "completed" },
+            { kind: "appointmentStatus", eventId: "cal-sc-patel", status: "completed" },
+            { kind: "message", conversationId: "c-sc-patel", message: { id: "sc-ap-5", from: "system", meta: "Automated · Completion & invoice", text: "Your deck is done — Sam walked the punch list this afternoon. Final invoice ($19,800): hartwell.demo/pay/2534. Card or ACH both work. Thank you for choosing Hartwell!", time: "Just now" } },
+            { kind: "task", task: { id: "t-sc-patel-inv", title: "Collect final payment — Patel deck ($19,800). Invoice link texted; card & ACH accepted.", assignee: "Office", due: "Today", priority: "high", auto: true } },
+            { kind: "activity", item: { id: "a-sc-q6", icon: "automation", text: "Patel deck marked complete — invoice sent and payment task created.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-q-7",
+          title: "Payment clears, review request follows",
+          detail:
+            "Anita pays by card the same evening. The payment task closes, the post-job automation asks her for feedback, and $19,800 lands in the numbers.",
+          tab: "reviews",
+          effects: [
+            { kind: "completeTask", taskId: "t-sc-patel-inv" },
+            { kind: "review", item: { id: "r-sc-patel", name: "Anita Patel", service: "Composite deck — 320 sq ft", status: "requested", time: "Just now" } },
+            { kind: "metric", id: "pipeline-value", delta: 19800 },
+            { kind: "activity", item: { id: "a-sc-q7", icon: "review", text: "Invoice paid — review request sent to Anita Patel after positive feedback check.", time: "Just now" } },
+            { kind: "notify", notification: { id: "n-sc-q7", title: "Scenario complete", body: "Estimate → quote → automated nudge → approval → build → paid invoice → review request. $19,800 collected.", tone: "success" } },
+          ],
+        },
+      ],
+    },
+    {
+      id: "scn-reactivation-route",
+      label: "Maintenance list wakes up",
+      description:
+        "Past customers are the cheapest jobs you'll ever book. Watch the seasonal segment go out, a past window customer reply, and a maintenance visit land on the neighborhood route.",
+      steps: [
+        {
+          id: "sc-re-1",
+          title: "The fall segment goes out",
+          detail:
+            "The reactivation automation pulls every past exterior customer 12+ months out and sends the gutter & roof-check offer — 23 texts, zero office time.",
+          tab: "campaigns",
+          effects: [
+            { kind: "workflowRun", run: { id: "wr-sc-re", automationId: "auto-6", name: "Maintenance reactivation", detail: "Simulated run: seasonal gutter & roof-check offer sent to 23 past exterior customers.", time: "Just now", simulated: true } },
+            { kind: "activity", item: { id: "a-sc-re1", icon: "campaign", text: "Fall maintenance segment sent to 23 past customers (gutter & roof checks).", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-re-2",
+          title: "A past customer replies",
+          detail:
+            "Lisa Chen — window replacement, completed last quarter — texts back within the hour. Her reply threads straight into the inbox with her history attached.",
+          tab: "conversations",
+          effects: [
+            {
+              kind: "conversation",
+              conversation: {
+                id: "c-sc-chen",
+                contact: "Lisa Chen",
+                channel: "sms",
+                topic: "Fall maintenance — gutter & roof check",
+                unread: true,
+                messages: [
+                  { id: "sc-lc-1", from: "system", meta: "Automated · Reactivation campaign", text: "Hi Lisa, it's Hartwell Contracting. Fall's coming — we're booking gutter cleanings and roof checkups for past customers first. Want us to add you to the route?", time: "Just now" },
+                  { id: "sc-lc-2", from: "contact", text: "Yes please — same house. The back gutters were overflowing in that last storm.", time: "Just now" },
+                ],
+              },
+            },
+            { kind: "notify", notification: { id: "n-sc-re2", title: "Reactivation reply", body: "Lisa Chen wants on the fall route — gutters overflowing in the last storm.", tone: "success" } },
+          ],
+        },
+        {
+          id: "sc-re-3",
+          title: "A maintenance job is created from her record",
+          detail:
+            "No forms, no re-typing. The system opens a new job on her existing record — address, history, and gate notes carried over from the window project.",
+          tab: "leads",
+          effects: [
+            { kind: "lead", lead: { id: "l-sc-chen-maint", name: "Lisa Chen", service: "Gutter cleaning & roof check", source: "Reactivation", stageId: "new", value: 950, lastActivity: "Just now", temp: "warm", note: "Past customer — window replacement completed. Back gutters overflowing. Address & access notes carried from prior job." } },
+            { kind: "metric", id: "requests", delta: 1 },
+            { kind: "activity", item: { id: "a-sc-re3", icon: "pipeline", text: "Maintenance job opened from Lisa Chen's customer record — no re-entry.", time: "Just now" } },
+          ],
+        },
+        {
+          id: "sc-re-4",
+          title: "Booked onto Tuesday's neighborhood route",
+          detail:
+            "The scheduler slots her onto the route already passing her street Tuesday morning. Confirmation goes out in the same thread.",
+          tab: "calendar",
+          effects: [
+            { kind: "message", conversationId: "c-sc-chen", message: { id: "sc-lc-3", from: "system", meta: "Automated · Confirmation", text: "You're on the route: gutter cleaning & roof check, Tuesday Jul 21 at 8:30 AM. Crew B is already in your neighborhood that morning. We'll text when they're on the way.", time: "Just now" } },
+            { kind: "calendar", event: { id: "cal-sc-chen", day: "Tue", date: "Jul 21", time: "8:30 AM", title: "Gutter cleaning & roof check — Lisa Chen", withWhom: "Crew B", status: "confirmed" } },
+            { kind: "stage", leadId: "l-sc-chen-maint", stageId: "scheduled" },
+          ],
+        },
+        {
+          id: "sc-re-5",
+          title: "Revenue from a list that was doing nothing",
+          detail:
+            "A $950 route stop from one automated text — and 22 more offers are still out working. The old customer list quietly becomes a booking channel.",
+          tab: "overview",
+          effects: [
+            { kind: "metric", id: "pipeline-value", delta: 950 },
+            { kind: "notify", notification: { id: "n-sc-re5", title: "Reactivation booked", body: "Lisa Chen — $950 maintenance visit on Tuesday's route. Simulated campaign, real workflow.", tone: "success" } },
+          ],
+        },
+      ],
+    },
+  ],
   simActions: [
     {
       id: "sim-missed-call",
@@ -457,6 +972,32 @@ export const contractorConfig: IndustryConfig = {
         { kind: "metric", id: "requests", delta: 1 },
         { kind: "notify", notification: { id: "n-sim-re", title: "Reactivation response", body: "A $9,200 fence quote from May replied: 'Ready to move forward.'", tone: "success" } },
         { kind: "activity", item: { id: "a-sim-re2", icon: "message", text: "May fence quote re-engaged — office notified for scheduling.", time: "Just now" } },
+      ],
+    },
+    {
+      id: "sim-job-complete",
+      label: "Complete a job",
+      description: "The Diaz fence wraps — invoice and review request go out on their own.",
+      tab: "tasks",
+      effects: [
+        { kind: "stage", leadId: "l-diaz", stageId: "completed" },
+        { kind: "appointmentStatus", eventId: "cal-3", status: "completed" },
+        {
+          kind: "conversation",
+          conversation: {
+            id: "c-sim-diaz",
+            contact: "Robert Diaz",
+            channel: "sms",
+            topic: "Fence job — completion & invoice",
+            messages: [
+              { id: "rd-1", from: "system", meta: "Automated · Completion & invoice", text: "Your fence installation is complete — the crew walked the gate hardware and latches before leaving. Final invoice ($8,900): hartwell.demo/pay/2507. Reply here with any punch-list items.", time: "Just now" },
+            ],
+          },
+        },
+        { kind: "task", task: { id: "t-sim-diaz-inv", title: "Collect final payment — Diaz fence ($8,900). Invoice link delivered by text.", assignee: "Office", due: "Today", priority: "high", auto: true } },
+        { kind: "review", item: { id: "r-sim-diaz", name: "Robert Diaz", service: "Fence installation", status: "requested", time: "Just now" } },
+        { kind: "activity", item: { id: "a-sim-jc", icon: "review", text: "Diaz fence marked complete — invoice sent, review request queued after feedback check.", time: "Just now" } },
+        { kind: "notify", notification: { id: "n-sim-jc", title: "Job completed", body: "Diaz fence — completion notice, invoice, and review request all fired automatically.", tone: "success" } },
       ],
     },
   ],

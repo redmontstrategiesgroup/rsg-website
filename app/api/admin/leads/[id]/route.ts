@@ -27,6 +27,13 @@ const PatchSchema = z.object({
   notes: z.string().max(8000).optional(),
   owner: z.string().max(200).optional(),
   archivedAt: z.string().datetime().nullable().optional(),
+  /** Managed-service plan recommendation ("" clears it). */
+  recommendedPlan: z
+    .union([
+      z.literal(""),
+      z.enum(["maintain", "optimize", "scale", "managed_infrastructure"]),
+    ])
+    .optional(),
 });
 
 export async function PATCH(

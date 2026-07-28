@@ -8,17 +8,22 @@ const CAPABILITIES = [
   {
     name: "Business Consulting",
     body: "We find the bottlenecks across operations, sales, and lead flow, then fix them.",
-    href: "/business-consulting-plymouth-county-ma",
+    href: "/businessconsulting",
   },
   {
     name: "AI Strategy & Implementation",
     body: "We use AI only where it removes real work and speeds up execution.",
-    href: "/ai-strategy-implementation-plymouth-county-ma",
+    href: "/aistrategy",
+  },
+  {
+    name: "Custom Private AI Systems",
+    body: "AI built around your workflows, data, and security—local, private cloud, or managed.",
+    href: "/services/customprivateaisystems",
   },
   {
     name: "Web Development & Digital Infrastructure",
     body: "We build the websites, CRMs, booking flows, and dashboards the business runs on.",
-    href: "/web-development-digital-infrastructure-plymouth-county-ma",
+    href: "/webdevelopment",
   },
 ];
 

@@ -2,6 +2,31 @@ import { randomUUID } from "node:crypto";
 import { requireSupabase, normalizePhone, extractDomain } from "./db";
 import type { ContactInfo, Attribution, QualificationOutcome } from "./types";
 import { logActivity } from "./analytics";
+import {
+  recommendPlan,
+  sanitizeServicePlanAnswers,
+} from "@/lib/managed-services/recommend";
+
+/**
+ * Managed-services fields for the lead row, derived from the optional
+ * ongoing-support answers. Never throws — a recommendation failure must
+ * never break booking.
+ */
+function servicePlanLeadFields(
+  answers: Record<string, unknown> | undefined
+): Record<string, unknown> {
+  try {
+    const sanitized = sanitizeServicePlanAnswers(answers?.servicePlan);
+    if (!sanitized) return {};
+    const rec = recommendPlan(sanitized);
+    return {
+      service_plan_answers: sanitized,
+      recommended_plan: rec?.planKey ?? null,
+    };
+  } catch {
+    return {};
+  }
+}
 
 export async function findExistingLead(input: {
   email: string;
@@ -93,14 +118,25 @@ export async function upsertSchedulingLead(input: {
     employee_count: input.contact.employeeCount ?? "",
     monthly_revenue_range: input.contact.monthlyRevenueRange ?? "",
     heard_about: input.contact.heardAbout ?? "",
+    preferred_contact: input.contact.preferredContact ?? "",
     service_requested: input.serviceName ?? "",
     biggest_problem: problem,
     improvement_goal: improve,
     status: input.status,
-    lead_score: input.qualificationScore ?? 0,
-    qualification_score: input.qualificationScore ?? null,
-    qualification_outcome: input.qualificationOutcome ?? null,
-    qualification_snapshot: input.qualificationSnapshot ?? null,
+    // Only touch qualification fields when the caller supplies them, so the
+    // simplified (unscored) intake never wipes an existing lead's history.
+    ...(input.qualificationScore !== undefined
+      ? {
+          lead_score: input.qualificationScore,
+          qualification_score: input.qualificationScore,
+        }
+      : {}),
+    ...(input.qualificationOutcome !== undefined
+      ? { qualification_outcome: input.qualificationOutcome }
+      : {}),
+    ...(input.qualificationSnapshot !== undefined
+      ? { qualification_snapshot: input.qualificationSnapshot }
+      : {}),
     session_token: input.sessionToken ?? null,
     is_test: input.isTest ?? false,
     consent_at: input.consentAt ?? null,
@@ -112,6 +148,8 @@ export async function upsertSchedulingLead(input: {
     utm_campaign: input.attribution?.utmCampaign ?? "",
     utm_content: input.attribution?.utmContent ?? "",
     utm_term: input.attribution?.utmTerm ?? "",
+    // Ongoing support & management answers → stored plan recommendation.
+    ...servicePlanLeadFields(input.answers),
     updated_at: new Date().toISOString(),
   };
 

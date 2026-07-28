@@ -24,8 +24,12 @@ import {
   ExternalLink,
   Link2,
   Calendar,
+  Cpu,
+  ShieldAlert,
+  Wrench,
+  Route,
 } from "lucide-react";
-import type { ClientPublic, Lead, LeadStatus, Subscriber } from "@/lib/types";
+import type { AdminRole, ClientPublic, Lead, LeadStatus, Subscriber } from "@/lib/types";
 import { LEAD_STATUSES } from "@/lib/types";
 import type { AnalyticsSummary } from "@/lib/analytics";
 import { formatMetricValue } from "@/lib/format";
@@ -33,24 +37,74 @@ import { Logo } from "@/components/Logo";
 import { postJson, patchJson } from "@/lib/api";
 import { ConnectAdminPanel } from "@/components/admin/ConnectAdminPanel";
 import { SchedulingAdminPanel } from "@/components/admin/SchedulingAdminPanel";
+import { PrivateAiAdminPanel } from "@/components/admin/PrivateAiAdminPanel";
+import { SecurityCenterPanel } from "@/components/admin/SecurityCenterPanel";
+import { IndustriesAdminPanel } from "@/components/admin/IndustriesAdminPanel";
+import { ManagedServicesAdminPanel } from "@/components/admin/ManagedServicesAdminPanel";
+import { LifecycleAdminPanel } from "@/components/admin/LifecycleAdminPanel";
 
-type Tab = "clients" | "leads" | "analytics" | "brief" | "connect" | "scheduling";
+type Tab =
+  | "clients"
+  | "lifecycle"
+  | "leads"
+  | "analytics"
+  | "brief"
+  | "connect"
+  | "industries"
+  | "managed"
+  | "scheduling"
+  | "private-ai"
+  | "security";
+
+export type AdminCaps = {
+  clients: boolean;
+  leads: boolean;
+  analytics: boolean;
+  scheduling: boolean;
+  connect: boolean;
+  privateAi: boolean;
+  brief: boolean;
+  security: boolean;
+};
 
 export function AdminConsole({
   adminEmail,
+  caps,
+  mfaEnabled = false,
+  mfaSetupRequired = false,
   initialClients,
   leads: initialLeads,
   subscribers = [],
   analytics,
 }: {
   adminEmail: string;
+  /** Server-resolved role. Enforcement is server-side; `caps` drives the UI. */
+  role: AdminRole;
+  caps: AdminCaps;
+  mfaEnabled?: boolean;
+  mfaSetupRequired?: boolean;
   initialClients: ClientPublic[];
   leads: Lead[];
   subscribers?: Subscriber[];
   analytics?: AnalyticsSummary;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("clients");
+  // Tabs available to this role, in display order. Real enforcement is
+  // server-side on every API route; this keeps the UI honest to the role.
+  const availableTabs: Tab[] = [
+    caps.clients && ("clients" as Tab),
+    (caps.leads || caps.clients) && ("lifecycle" as Tab),
+    caps.leads && ("leads" as Tab),
+    caps.analytics && ("analytics" as Tab),
+    caps.scheduling && ("scheduling" as Tab),
+    caps.connect && ("connect" as Tab),
+    caps.connect && ("industries" as Tab),
+    caps.clients && ("managed" as Tab),
+    caps.privateAi && ("private-ai" as Tab),
+    caps.security && ("security" as Tab),
+    caps.brief && ("brief" as Tab),
+  ].filter(Boolean) as Tab[];
+  const [tab, setTab] = useState<Tab>(availableTabs[0] ?? "security");
   const [clients, setClients] = useState(initialClients);
   const [leads, setLeads] = useState(initialLeads);
   const [selectedId, setSelectedId] = useState(initialClients[0]?.id ?? "");
@@ -150,46 +204,101 @@ export function AdminConsole({
           </Link>
         </div>
 
+        {mfaSetupRequired && tab !== "security" && (
+          <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-crimson/40 bg-crimson/[0.08] px-4 py-3 text-sm text-white/80">
+            <ShieldAlert size={16} className="text-crimson-light" />
+            <span>
+              Multifactor authentication is required for your role. Some actions
+              are blocked until you enroll.
+            </span>
+            <button
+              onClick={() => setTab("security")}
+              className="rounded-lg border border-crimson/40 px-3 py-1.5 text-xs font-medium text-crimson-light transition-colors hover:border-crimson/60"
+            >
+              Set up MFA
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="mt-8 flex gap-2 overflow-x-auto border-b border-white/10">
-          {[
-            { id: "clients" as Tab, label: "Clients", icon: Users, count: clients.length, badge: 0 },
-            {
-              id: "leads" as Tab,
-              label: "Leads",
-              icon: Inbox,
-              count: leads.length,
-              badge: newLeadCount,
-            },
-            {
-              id: "analytics" as Tab,
-              label: "Analytics",
-              icon: BarChart3,
-              count: analytics?.totalViews ?? 0,
-              badge: 0,
-            },
-            {
-              id: "scheduling" as Tab,
-              label: "Scheduling",
-              icon: Calendar,
-              count: null,
-              badge: 0,
-            },
-            {
-              id: "connect" as Tab,
-              label: "Connect Page",
-              icon: Link2,
-              count: null,
-              badge: 0,
-            },
-            {
-              id: "brief" as Tab,
-              label: "Audit Brief",
-              icon: FileSearch,
-              count: null,
-              badge: 0,
-            },
-          ].map((t) => {
+          {(
+            [
+              { id: "clients" as Tab, label: "Clients", icon: Users, count: clients.length, badge: 0 },
+              {
+                id: "lifecycle" as Tab,
+                label: "Client OS",
+                icon: Route,
+                count: null,
+                badge: 0,
+              },
+              {
+                id: "leads" as Tab,
+                label: "Leads",
+                icon: Inbox,
+                count: leads.length,
+                badge: newLeadCount,
+              },
+              {
+                id: "analytics" as Tab,
+                label: "Analytics",
+                icon: BarChart3,
+                count: analytics?.totalViews ?? 0,
+                badge: 0,
+              },
+              {
+                id: "scheduling" as Tab,
+                label: "Scheduling",
+                icon: Calendar,
+                count: null,
+                badge: 0,
+              },
+              {
+                id: "connect" as Tab,
+                label: "Connect Page",
+                icon: Link2,
+                count: null,
+                badge: 0,
+              },
+              {
+                id: "industries" as Tab,
+                label: "Industries",
+                icon: Building2,
+                count: null,
+                badge: 0,
+              },
+              {
+                id: "managed" as Tab,
+                label: "Managed Services",
+                icon: Wrench,
+                count: null,
+                badge: 0,
+              },
+              {
+                id: "private-ai" as Tab,
+                label: "Private AI",
+                icon: Cpu,
+                count: null,
+                badge: 0,
+              },
+              {
+                id: "security" as Tab,
+                label: "Security",
+                icon: ShieldCheck,
+                count: null,
+                badge: 0,
+              },
+              {
+                id: "brief" as Tab,
+                label: "Audit Brief",
+                icon: FileSearch,
+                count: null,
+                badge: 0,
+              },
+            ] as { id: Tab; label: string; icon: typeof Users; count: number | null; badge: number }[]
+          )
+            .filter((t) => availableTabs.includes(t.id))
+            .map((t) => {
             const active = tab === t.id;
             const Icon = t.icon;
             return (
@@ -224,7 +333,7 @@ export function AdminConsole({
         </div>
 
         <div className="mt-8">
-          {tab === "clients" ? (
+          {tab === "clients" && caps.clients ? (
             <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
               {/* Client list */}
               <aside className="space-y-2">
@@ -281,19 +390,36 @@ export function AdminConsole({
                 </p>
               )}
             </div>
-          ) : tab === "leads" ? (
+          ) : tab === "leads" && caps.leads ? (
             <div className="space-y-10">
               <LeadsTable leads={leads} onLeadsChange={setLeads} />
               <SubscribersPanel subscribers={subscribers} />
             </div>
-          ) : tab === "analytics" ? (
+          ) : tab === "analytics" && caps.analytics ? (
             <AnalyticsPanel analytics={analytics} />
-          ) : tab === "connect" ? (
+          ) : tab === "connect" && caps.connect ? (
             <ConnectAdminPanel />
-          ) : tab === "scheduling" ? (
+          ) : tab === "industries" && caps.connect ? (
+            <IndustriesAdminPanel />
+          ) : tab === "lifecycle" && (caps.leads || caps.clients) ? (
+            <LifecycleAdminPanel />
+          ) : tab === "managed" && caps.clients ? (
+            <ManagedServicesAdminPanel />
+          ) : tab === "scheduling" && caps.scheduling ? (
             <SchedulingAdminPanel />
-          ) : (
+          ) : tab === "private-ai" && caps.privateAi ? (
+            <PrivateAiAdminPanel />
+          ) : tab === "security" && caps.security ? (
+            <SecurityCenterPanel
+              mfaEnabled={mfaEnabled}
+              mfaSetupRequired={mfaSetupRequired}
+            />
+          ) : tab === "brief" && caps.brief ? (
             <BriefPanel />
+          ) : (
+            <p className="text-white/50">
+              You don’t have access to this section.
+            </p>
           )}
         </div>
       </main>
@@ -1016,6 +1142,8 @@ function LeadsTable({
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
+  const [sourceFilter, setSourceFilter] = useState("");
+  const [segmentFilter, setSegmentFilter] = useState("");
 
   async function refresh() {
     setRefreshing(true);
@@ -1043,6 +1171,7 @@ function LeadsTable({
         status: patch.status,
         notes: patch.notes,
         owner: patch.owner,
+        recommendedPlan: patch.recommendedPlan,
         archivedAt: patch.status === "archived" ? new Date().toISOString() : undefined,
       });
       const data = await res.json().catch(() => ({}));
@@ -1081,22 +1210,77 @@ function LeadsTable({
     );
   }
 
+  const extrasText = (l: Lead) => Object.values(l.demo?.extras ?? {}).join(" ").toLowerCase();
+  const visible = leads.filter((l) => {
+    if (sourceFilter && (l.source ?? "website_contact_form") !== sourceFilter) return false;
+    switch (segmentFilter) {
+      case "retail":
+        return /retail|ecommerce/i.test(l.industry ?? "") || l.demo?.slug === "retail";
+      case "demo":
+        return Boolean(l.demo);
+      case "high-retail":
+        return (
+          (/retail|ecommerce/i.test(l.industry ?? "") || l.demo?.slug === "retail") &&
+          (l.score ?? 0) >= 60
+        );
+      case "multi-location":
+        return /locations/.test(extrasText(l)) && !/1 location/.test(extrasText(l));
+      case "ecommerce":
+        return /online|both|ecommerce/.test(extrasText(l)) || /ecommerce/i.test(l.industry ?? "");
+      case "full-system":
+        return (l.demo?.featuresRequested ?? []).some((s) => /complete|full/i.test(s));
+      default:
+        return true;
+    }
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-white/45">
           {leads.filter((l) => (l.status ?? "new") === "new").length} new ·{" "}
-          {leads.length} total
+          {visible.length} shown · {leads.length} total
         </p>
-        <button
-          type="button"
-          onClick={refresh}
-          disabled={refreshing}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm text-white/70 hover:text-white disabled:opacity-50"
-        >
-          <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-          Refresh
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="sr-only" htmlFor="lead-source-filter">Filter by source</label>
+          <select
+            id="lead-source-filter"
+            value={sourceFilter}
+            onChange={(e) => setSourceFilter(e.target.value)}
+            className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm text-white/70 focus:border-crimson/60 focus:outline-none [&>option]:bg-base-900"
+          >
+            <option value="">All sources</option>
+            <option value="interactive_demo">Interactive Demo</option>
+            <option value="website_contact_form">Contact form</option>
+            <option value="website_chat">Chat</option>
+            <option value="website_connect_page">Connect page</option>
+            <option value="website_booking_funnel">Booking funnel</option>
+          </select>
+          <label className="sr-only" htmlFor="lead-segment-filter">Quick segment filter</label>
+          <select
+            id="lead-segment-filter"
+            value={segmentFilter}
+            onChange={(e) => setSegmentFilter(e.target.value)}
+            className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm text-white/70 focus:border-crimson/60 focus:outline-none [&>option]:bg-base-900"
+          >
+            <option value="">All leads</option>
+            <option value="retail">Retail leads</option>
+            <option value="demo">Demo leads</option>
+            <option value="high-retail">High-value retail</option>
+            <option value="multi-location">Multi-location retailers</option>
+            <option value="ecommerce">Ecommerce retailers</option>
+            <option value="full-system">Wants a full system</option>
+          </select>
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm text-white/70 hover:text-white disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -1106,7 +1290,12 @@ function LeadsTable({
       )}
 
       <div className="space-y-3">
-        {leads.map((l, i) => {
+        {visible.length === 0 && (
+          <p className="rounded-xl border border-white/10 bg-white/[0.02] p-6 text-center text-sm text-white/40">
+            No leads match these filters.
+          </p>
+        )}
+        {visible.map((l, i) => {
           const rowId = l.id ?? `local-${i}`;
           const open = expandedId === rowId;
           const status = (l.status ?? "new") as LeadStatus;
@@ -1180,11 +1369,70 @@ function LeadsTable({
                     </div>
                   </div>
 
+                  {l.demo && (
+                    <div className="rounded-lg border border-crimson/25 bg-crimson/[0.05] p-3.5">
+                      <p className="font-mono text-[0.54rem] uppercase tracking-label text-crimson-light">
+                        Interactive demo request — {l.demo.system}
+                      </p>
+                      <div className="mt-2.5 grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/40">
+                            Features explored in demo
+                          </p>
+                          {l.demo.featuresExplored.length ? (
+                            <div className="mt-1.5 flex flex-wrap gap-1.5">
+                              {l.demo.featuresExplored.map((f) => (
+                                <span key={f} className="rounded border border-white/10 bg-white/[0.04] px-2 py-0.5 text-xs text-white/65">
+                                  {f}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="mt-1.5 text-sm text-white/45">—</p>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/40">
+                            Services requested
+                          </p>
+                          {l.demo.featuresRequested.length ? (
+                            <div className="mt-1.5 flex flex-wrap gap-1.5">
+                              {l.demo.featuresRequested.map((f) => (
+                                <span key={f} className="rounded border border-crimson/30 bg-crimson/10 px-2 py-0.5 text-xs text-white/80">
+                                  {f}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="mt-1.5 text-sm text-white/45">—</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-4 text-xs text-white/55">
+                        <span>Demo page: /demos/{l.demo.slug}</span>
+                        <span>Business size: {l.demo.businessSize || "—"}</span>
+                        <span>
+                          Preferred meeting:{" "}
+                          {[l.demo.preferredDate, l.demo.preferredTime].filter(Boolean).join(" · ") || "—"}
+                        </span>
+                        {typeof l.demo.scenariosRun === "number" && l.demo.scenariosRun > 0 && (
+                          <span>Scenarios run: {l.demo.scenariosRun}</span>
+                        )}
+                        {l.demo.demoBusinessName && <span>Typed business name: {l.demo.demoBusinessName}</span>}
+                        {Object.entries(l.demo.extras ?? {}).map(([k, v]) => (
+                          <span key={k} className="capitalize">
+                            {k.replace(/[-_]/g, " ")}: <span className="normal-case">{v}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap gap-4 text-sm text-white/55">
                     <span>Industry: {l.industry || "—"}</span>
                     <span>Timeline: {l.timeline || "—"}</span>
                     <span>Preferred: {l.preferredContact || "—"}</span>
-                    <span>Source: {l.source === "website_chat" ? "Chat" : l.source === "website_connect_page" ? "Connect page" : "Contact form"}</span>
+                    <span>Source: {l.source === "website_chat" ? "Chat" : l.source === "website_connect_page" ? "Connect page" : l.source === "interactive_demo" ? "Interactive Demo" : "Contact form"}</span>
                     {l.website ? (
                       <a
                         href={l.website.startsWith("http") ? l.website : `https://${l.website}`}
@@ -1223,6 +1471,39 @@ function LeadsTable({
                   {l.id ? (() => {
                     const leadId = l.id;
                     return (
+                    <>
+                    <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3.5">
+                      <p className="font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                        Recommended plan
+                      </p>
+                      {l.servicePlanAnswers &&
+                        Object.keys(l.servicePlanAnswers).length > 0 && (
+                          <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+                            {Object.entries(l.servicePlanAnswers)
+                              .map(
+                                ([k, v]) =>
+                                  `${k.replace(/[_-]/g, " ")}: ${String(v).replace(/[_-]/g, " ")}`
+                              )
+                              .join(" · ")}
+                          </p>
+                        )}
+                      <select
+                        value={l.recommendedPlan ?? ""}
+                        disabled={savingId === leadId}
+                        onChange={(e) =>
+                          patchLead(leadId, { recommendedPlan: e.target.value })
+                        }
+                        className={`${inputClass} mt-2 max-w-[260px]`}
+                      >
+                        <option value="">None</option>
+                        <option value="maintain">Maintain</option>
+                        <option value="optimize">Optimize</option>
+                        <option value="scale">Scale</option>
+                        <option value="managed_infrastructure">
+                          Managed Infrastructure
+                        </option>
+                      </select>
+                    </div>
                     <div className="grid gap-3 sm:grid-cols-[220px_1fr_auto]">
                       <label className="block">
                         <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/40">
@@ -1282,6 +1563,7 @@ function LeadsTable({
                         </button>
                       </div>
                     </div>
+                    </>
                     );
                   })() : (
                     <p className="text-sm text-white/40">

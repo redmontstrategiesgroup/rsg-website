@@ -9,7 +9,7 @@ import { BuilderShowcase } from "@/components/demos/BuilderShowcase";
 
 const TITLE = "Industry Operating System Demos | Redmont Strategies Group";
 const DESCRIPTION =
-  "Explore interactive operating system demos built for med spas, contractors, gyms, and dental offices — real workflows, pipelines, follow-up sequences, and dashboards.";
+  "Explore interactive operating system demos built for retail stores, med spas, contractors, gyms, and dental offices — real workflows, pipelines, follow-up sequences, and dashboards.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -70,7 +70,7 @@ export default function DemosPage() {
         <Reveal>
           <span className="label">The demo systems</span>
           <h2 className="display mt-4 text-2xl sm:text-3xl">
-            Four industries. Four operating systems.
+            Five industries. Five operating systems.
           </h2>
         </Reveal>
         <div className="mt-10">
@@ -112,7 +112,7 @@ export default function DemosPage() {
               businesses respond faster, follow up consistently, and cut
               administrative work.
             </p>
-            <div className="mt-9 flex justify-center">
+            <div className="mt-9 flex flex-wrap justify-center gap-3">
               <TrackedLink
                 href="/book"
                 event="demo_cta_click"
@@ -121,6 +121,14 @@ export default function DemosPage() {
               >
                 Book a Strategy Call
                 <ArrowRight size={15} className="ml-2" aria-hidden />
+              </TrackedLink>
+              <TrackedLink
+                href="/services/customprivateaisystems"
+                event="demo_cta_click"
+                eventProps={{ demo: "landing", cta: "private_ai" }}
+                className="btn-ghost"
+              >
+                Custom Private AI Systems
               </TrackedLink>
             </div>
           </div>

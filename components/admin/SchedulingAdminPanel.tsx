@@ -327,8 +327,8 @@ export function SchedulingAdminPanel() {
                   <tr className="border-b border-white/10">
                     <th className="py-2 pr-3">When</th>
                     <th className="py-2 pr-3">Lead</th>
+                    <th className="py-2 pr-3">Help with</th>
                     <th className="py-2 pr-3">Type</th>
-                    <th className="py-2 pr-3">Score</th>
                     <th className="py-2 pr-3">Status</th>
                     <th className="py-2">Actions</th>
                   </tr>
@@ -342,14 +342,19 @@ export function SchedulingAdminPanel() {
                       lead_id?: string;
                       manage_token?: string;
                       appointment_types?: { name?: string };
+                      services?: { name?: string; slug?: string };
                       leads?: {
                         name?: string;
                         business_name?: string;
                         email?: string;
+                        service_requested?: string;
                         qualification_score?: number;
                         qualification_outcome?: string;
                       };
                     };
+                    const category =
+                      row.services?.name || row.leads?.service_requested || "—";
+                    const notSure = row.services?.slug === "not-sure";
                     return (
                       <tr key={row.id} className="border-b border-white/5">
                         <td className="py-3 pr-3 text-xs text-white/60">
@@ -368,13 +373,20 @@ export function SchedulingAdminPanel() {
                           </div>
                         </td>
                         <td className="py-3 pr-3 text-white/70">
-                          {row.appointment_types?.name}
+                          {category}
+                          {notSure && (
+                            <span className="ml-2 inline-block border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-[0.6rem] uppercase tracking-wider text-amber-200/90">
+                              Not sure yet
+                            </span>
+                          )}
                         </td>
                         <td className="py-3 pr-3 text-white/60">
-                          {row.leads?.qualification_score ?? "—"}
-                          <span className="block text-[0.65rem] text-white/35">
-                            {row.leads?.qualification_outcome}
-                          </span>
+                          {row.appointment_types?.name}
+                          {row.leads?.qualification_score != null && (
+                            <span className="block text-[0.65rem] text-white/35">
+                              Score {row.leads.qualification_score}
+                            </span>
+                          )}
                         </td>
                         <td className="py-3 pr-3">{row.status}</td>
                         <td className="py-3">

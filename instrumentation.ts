@@ -1,7 +1,10 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { getEnv } = await import("./lib/env");
+    const { getEnv, requireSupabaseInProduction } = await import("./lib/env");
     getEnv();
+    // Fail closed: a production boot without Supabase must not start and then
+    // silently degrade lead persistence to email-only. (audit M1)
+    requireSupabaseInProduction();
     await import("./sentry.server.config");
   }
   if (process.env.NEXT_RUNTIME === "edge") {

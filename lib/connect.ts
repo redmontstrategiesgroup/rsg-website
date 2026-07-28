@@ -100,15 +100,33 @@ export async function getConnectSettings(): Promise<ConnectSettings> {
   return mergeConnectSettings(file ?? defaults, defaults);
 }
 
+const LEGACY_LINKEDIN =
+  "https://www.linkedin.com/company/redmont-strategies-group";
+const AI_BADGE_LABELS = new Set(["Official RSG Page", "Featured", "New", "Popular"]);
+
 function mergeConnectSettings(
   settings: ConnectSettings,
   defaults: ConnectSettings
 ): ConnectSettings {
+  const linkedin = settings.socialLinkedin || defaults.socialLinkedin;
+  const badgeLabel = AI_BADGE_LABELS.has(settings.badgeLabel.trim())
+    ? ""
+    : settings.badgeLabel;
+  const campaignBadge = AI_BADGE_LABELS.has(settings.campaignBadge.trim())
+    ? ""
+    : settings.campaignBadge;
+
   return {
     ...settings,
-    socialLinkedin: settings.socialLinkedin || defaults.socialLinkedin,
+    badgeLabel,
+    campaignBadge,
+    socialLinkedin:
+      !linkedin || linkedin === LEGACY_LINKEDIN
+        ? defaults.socialLinkedin
+        : linkedin,
     socialInstagram: settings.socialInstagram || defaults.socialInstagram,
-    socialFacebook: settings.socialFacebook || defaults.socialFacebook,
+    // Facebook is no longer shown on the connect page.
+    socialFacebook: "",
     socialEmail: settings.socialEmail || defaults.socialEmail,
   };
 }
@@ -119,6 +137,7 @@ export async function saveConnectSettings(
 ): Promise<ConnectSettings> {
   const next: ConnectSettings = {
     ...settings,
+    socialFacebook: "",
     updatedAt: new Date().toISOString(),
   };
   const supabase = getSupabase();
@@ -180,7 +199,12 @@ export async function getConnectLinks(): Promise<ConnectLink[]> {
   }
   const file = await readJson<ConnectLink[] | null>(LINKS_FILE, null);
   if (file && file.length) {
-    return file.filter((l) => !retired.has(l.id));
+    return file
+      .filter((l) => !retired.has(l.id))
+      .map((l) => ({
+        ...l,
+        badge: AI_BADGE_LABELS.has(String(l.badge)) ? "" : l.badge,
+      }));
   }
   const defaults = defaultConnectLinks();
   await writeJson(LINKS_FILE, defaults);
@@ -425,13 +449,14 @@ function rowToSettings(row: Record<string, unknown>): ConnectSettings {
 }
 
 function rowToLink(row: Record<string, unknown>): ConnectLink {
+  const rawBadge = String(row.badge ?? "");
   return {
     id: String(row.id),
     title: String(row.title),
     description: String(row.description ?? ""),
     url: String(row.url),
     icon: String(row.icon ?? "link"),
-    badge: String(row.badge ?? ""),
+    badge: AI_BADGE_LABELS.has(rawBadge) ? "" : rawBadge,
     displayOrder: Number(row.display_order ?? 0),
     featured: Boolean(row.featured),
     active: row.active !== false,

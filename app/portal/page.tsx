@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getSession } from "@/lib/auth";
 import { getClientById, isSessionLive } from "@/lib/store";
 import { toPublic } from "@/lib/seed";
+import { getPortalManagedData } from "@/lib/managed-services/portal-data";
+import type { PortalManagedData } from "@/lib/managed-services/portal-data";
 import { Dashboard } from "@/components/portal/Dashboard";
 
 export const runtime = "nodejs";
@@ -25,5 +27,14 @@ export default async function PortalPage() {
   const client = await getClientById(session.sub);
   if (!client) redirect("/login");
 
-  return <Dashboard client={toPublic(client)} />;
+  // Managed-services data is additive — the portal must render even when
+  // its stores are unavailable, so failures degrade to the empty state.
+  let managed: PortalManagedData | null = null;
+  try {
+    managed = await getPortalManagedData(client.id);
+  } catch (err) {
+    console.warn("[portal] managed-services data unavailable.", err);
+  }
+
+  return <Dashboard client={toPublic(client)} managed={managed} />;
 }
