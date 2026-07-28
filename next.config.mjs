@@ -124,6 +124,18 @@ const nextConfig = {
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
         ],
       },
+      {
+        // The Observatory app (public/apps/observatory) is embedded in a
+        // same-origin iframe by the authenticated /portal/observatory page.
+        source: "/apps/observatory/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'"),
+          },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
+      },
     ];
   },
 };
