@@ -182,7 +182,7 @@
         <div class="chat-log" id="chat-log"></div>
         <div class="quickrow" id="chat-quick"></div>
         <div class="chat-input">
-          <button class="btn mic" id="chat-mic" title="Voice input">🎙</button>
+          <button class="btn mic" id="chat-mic" title="Voice input" aria-label="Voice input">🎙</button>
           <input id="chat-text" placeholder="say something… (they'll remember it)" autocomplete="off" />
           <button class="btn primary" id="chat-send">SEND</button>
         </div>

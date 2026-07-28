@@ -55,6 +55,137 @@ const state = {
 const DECK_MODES = ["product", "electronics", "access"];
 const isDeckMode = () => DECK_MODES.includes(state.mode);
 
+// ================================================================ session
+/* THE FORGE used to hold everything in memory only: a full pipeline run —
+   safety screen through validation and docs, plus any AI spend — was gone on
+   F5, with nothing written to storage. This persists the *inputs and
+   decisions*, never the derived geometry.
+
+   That split is the whole design. `rebuildDeck()` and the per-mode forge
+   functions are deterministic and offline: given the same spec they produce
+   the same model, electronics, PCB, firmware and validation. So there is no
+   reason to serialise three.js meshes or blob-URL renders (which would not
+   survive a reload anyway) — restore the spec and re-derive.
+
+   Deliberately NOT saved: `project.concepts` (each carries a `patch` closure;
+   re-derived with deckConcepts()), `part.model` / `enc.model` (three.js),
+   `renderURL` (a blob URL, dead across reloads), and `inspectImage`.
+
+   Storage is namespaced `forge.*` per CONTRACTS.md. Writes are guarded: a
+   failure must be reported, never a silent "saved". */
+const SESSION_KEY = "forge.session.v1";
+let _restoring = false;          // suppresses toasts while replaying a session
+let _demoBoot = false;           // the boot demo is not the user's work
+let _sessionBroken = false;      // stop nagging after the first failed write
+
+function saveSession() {
+  if (_restoring || _demoBoot) return;   // never persist a replay or the demo
+  const P = state.project;
+  const payload = {
+    v: 1,
+    savedAt: new Date().toISOString(),
+    mode: state.mode,
+    sentence: $("#prompt-input")?.value ?? "",
+    spec: state.spec,
+    project: {
+      requirements: P.requirements,
+      complexity: P.complexity,
+      conceptsPending: P.conceptsPending,
+      conceptChosen: P.conceptChosen,
+      dfmAcked: P.dfmAcked,
+      reviewAcknowledged: P.reviewAcknowledged,
+      exportedOnce: P.exportedOnce,
+      blocked: P.blocked,
+    },
+    versions: state.versions,
+    firmware: state.firmware,
+    part: { type: state.part.type, params: state.part.params },
+    enc: { cfg: state.enc.cfg },
+    wood: state.wood ? { cfg: state.wood.cfg } : null,
+    repair: state.repair ? { type: state.repair.type, refMM: state.repair.refMM } : null,
+  };
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+    _sessionBroken = false;
+  } catch (e) {
+    console.error("THE FORGE: could not save session", e);
+    if (!_sessionBroken) {
+      _sessionBroken = true;
+      toast("Could not save your work — browser storage is full. This design will be lost on refresh.", "err");
+    }
+  }
+}
+
+function loadSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+    return s && s.v === 1 ? s : null;
+  } catch { return null; }
+}
+
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch { /* nothing to clear */ }
+}
+
+/** Replay a saved session. Returns true if anything was restored. */
+async function restoreSession() {
+  const s = loadSession();
+  if (!s) return false;
+
+  _restoring = true;
+  try {
+    setMode(s.mode || "product");
+    if ($("#prompt-input") && s.sentence) $("#prompt-input").value = s.sentence;
+
+    const P = state.project;
+    Object.assign(P, s.project || {}, { concepts: [] });
+    state.versions = s.versions || [];
+    state.firmware = s.firmware || "";
+
+    if (isDeckMode()) {
+      if (!s.spec) return false;
+      state.spec = s.spec;
+      syncModulePanel(); syncParamPanel();
+      if (P.conceptsPending) {
+        // Paused at Gate 2 before any geometry existed — re-derive the choices
+        // (deterministic) and put the user back in front of them.
+        P.concepts = deckConcepts(state.spec);
+        paintStages(state.mode);
+        renderOverview(); renderRequirements(); paintVersions(); paintCxChip();
+        selectTab("overview");
+      } else {
+        await rebuildDeck({ animate: false, fromStage: 5 });
+        paintVersions();
+      }
+    } else if (state.mode === "part" && s.part) {
+      state.part.type = s.part.type || state.part.type;
+      state.part.params = s.part.params || {};
+      syncPartPanel();
+      await forgePart();
+    } else if (state.mode === "enclosure" && s.enc?.cfg) {
+      applyEnclosureCfg(s.enc.cfg);
+      await forgeEnclosure();
+    } else if (state.mode === "woodworking" && s.wood?.cfg) {
+      applyWoodCfg(s.wood.cfg);
+      await forgeWood();
+    } else if (state.mode === "repair" && s.repair) {
+      if ($("#repair-type")) $("#repair-type").value = s.repair.type;
+      if ($("#repair-ref")) $("#repair-ref").value = s.repair.refMM;
+      await forgeRepair();
+    } else {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    // A saved session from an older build must never brick the app. Drop it.
+    console.error("THE FORGE: session restore failed — starting fresh", e);
+    clearSession();
+    return false;
+  } finally {
+    _restoring = false;
+  }
+}
+
 // ================================================================ pipeline UI
 const STAGES = {
   product: ["Safety screen", "Interpret intent", "Requirements", "Complexity rating", "Design concepts", "Ergonomic layout", "Mechanical design", "Electronics", "PCB routing", "Firmware", "Validation", "Docs & renders"],
@@ -100,6 +231,7 @@ async function forgeDeck(sentence, { silent = false, autoConcept = false } = {})
       state.spec = null;
       renderOverview(); paintCxChip(); selectTab("overview");
       toast("Request outside supported scope — see Overview", "err");
+      saveSession();
       return;
     }
     // stage 1: interpret
@@ -141,6 +273,7 @@ async function forgeDeck(sentence, { silent = false, autoConcept = false } = {})
     } else if (!silent) {
       toast("⚒ " + state.spec.name + ": pick a design concept to continue (Gate 2)", "");
     }
+    saveSession();
   } finally { btn.disabled = false; }
 }
 
@@ -180,6 +313,7 @@ async function rebuildDeck({ animate = false, fromStage = 5 } = {}) {
   refreshGates();
   renderAllPanes();
   updateViewerDims();
+  saveSession();
 }
 
 // `model` is passed in: validation runs a stage before setModel(), so
@@ -237,6 +371,7 @@ async function forgePart() {
   refreshGates();
   renderOverview(); renderRequirements(); renderEngineering();
   toast(`🔩 ${t.name} generated — L${P.complexity.level}, drawing + STL/STEP/DXF ready`, "ok");
+  saveSession();
 }
 
 async function forgeEnclosure() {
@@ -256,6 +391,7 @@ async function forgeEnclosure() {
   refreshGates();
   renderOverview(); renderRequirements(); renderEngineering(); renderEnclosureBOM(); renderEnclosureAssembly();
   toast(`📦 Enclosure generated — base + lid, ${P.checks.filter(c => c.sev === "fail").length ? "DFM issues found" : "DFM clean"}`, "ok");
+  saveSession();
 }
 
 async function forgeWood() {
@@ -274,6 +410,7 @@ async function forgeWood() {
   refreshGates();
   renderWoodPanes(); renderRequirements();
   toast(`🪵 ${plan.name} — ${plan.priceStr} suggested price`, "ok");
+  saveSession();
 }
 
 async function forgeRepair() {
@@ -292,6 +429,7 @@ async function forgeRepair() {
   refreshGates();
   renderRepairPanes(); renderRequirements();
   toast(`🔧 ${plan.name} rebuilt — ${plan.grams} g, ${plan.minutes} min print`, "ok");
+  saveSession();
 }
 
 // ================================================================ dispatcher
@@ -1014,9 +1152,9 @@ function syncParamPanel() {
   if (!s) return;
   $("#param-rows").innerHTML = DECK_PARAMS.map(p =>
     `<div class="param-row"><label>${p.label}</label>
-     <input type="number" data-p="${p.key}" value="${s.geometry[p.key]}" min="${p.min}" max="${p.max}" step="${p.step}"></div>`).join("") +
+     <input type="number" aria-label="${p.label}" data-p="${p.key}" value="${s.geometry[p.key]}" min="${p.min}" max="${p.max}" step="${p.step}"></div>`).join("") +
     `<div class="param-row"><label>Jack edge</label>
-      <select data-p="jackEdge"><option value="rear" ${s.geometry.jackEdge === "rear" ? "selected" : ""}>rear</option><option value="side" ${s.geometry.jackEdge === "side" ? "selected" : ""}>side</option></select></div>
+      <select aria-label="Jack edge" data-p="jackEdge"><option value="rear" ${s.geometry.jackEdge === "rear" ? "selected" : ""}>rear</option><option value="side" ${s.geometry.jackEdge === "side" ? "selected" : ""}>side</option></select></div>
      <div class="param-row"><label class="chk"><input type="checkbox" data-p="snapFit" ${s.geometry.snapFit ? "checked" : ""}> Snap-fit lid</label>
       <label class="chk"><input type="checkbox" data-p="usbRibs" ${s.geometry.usbRibs ? "checked" : ""}> USB ribs</label></div>`;
   $("#param-rows").querySelectorAll("[data-p]").forEach(el => {
@@ -1062,7 +1200,7 @@ function syncPartPanel() {
   const t = PART_TYPES[state.part.type];
   $("#part-params").innerHTML = t.params.map(p =>
     `<div class="param-row"><label>${p.label}</label>
-     <input type="number" data-pp="${p.key}" value="${state.part.params[p.key] ?? p.def}" min="${p.min}" max="${p.max}" step="${p.step}"></div>`).join("");
+     <input type="number" aria-label="${p.label}" data-pp="${p.key}" value="${state.part.params[p.key] ?? p.def}" min="${p.min}" max="${p.max}" step="${p.step}"></div>`).join("");
   $("#part-meta").textContent = `${t.material} · ${t.process}`;
   $("#part-params").querySelectorAll("[data-pp]").forEach(el => {
     el.onchange = () => { state.part.params[el.dataset.pp] = +el.value; if (state.part.model) guard(forgePart); };
@@ -1074,6 +1212,26 @@ function readPartParams() {
   for (const par of t.params) p[par.key] = state.part.params[par.key] ?? par.def;
   return p;
 }
+/* Inverses of the two readers below — used by restoreSession() to put a saved
+   configuration back into the panel before re-running the (deterministic)
+   generator. `ports` is derived from `board` in readEnclosureCfg(), so it is
+   not written back here. */
+function applyEnclosureCfg(cfg) {
+  if (!cfg) return;
+  const set = (sel, v) => { const el = $(sel); if (el != null && v != null) el.value = v; };
+  const check = (sel, v) => { const el = $(sel); if (el) el.checked = !!v; };
+  set("#enc-w", cfg.w); set("#enc-d", cfg.d); set("#enc-h", cfg.h);
+  set("#enc-wall", cfg.wall); set("#enc-board", cfg.board); set("#enc-fan", cfg.fan);
+  check("#enc-vents", cfg.vents); check("#enc-wallmount", cfg.wallMount); check("#enc-gland", cfg.gland);
+}
+
+function applyWoodCfg(cfg) {
+  if (!cfg) return;
+  const set = (sel, v) => { const el = $(sel); if (el != null && v != null) el.value = v; };
+  set("#wood-type", cfg.type); set("#wood-l", cfg.l); set("#wood-w", cfg.w);
+  set("#wood-t", cfg.t); set("#wood-species", cfg.species);
+}
+
 function readEnclosureCfg() {
   return {
     w: +$("#enc-w").value || 105, d: +$("#enc-d").value || 76, h: +$("#enc-h").value || 40,
@@ -1272,6 +1430,8 @@ function refreshAIStatus() {
 }
 
 function toast(msg, cls = "") {
+  // Replaying a saved session must be quiet — the user did not just do this.
+  if (_restoring) return;
   const t = document.createElement("div");
   t.className = "toast " + cls;
   t.textContent = msg;
@@ -1289,7 +1449,25 @@ refreshAIStatus();
 setMode("product");
 /* Diagnostics handle — lets the accessibility checks assert the camera really
    moves when the tap controls are used, not merely that buttons render. */
-window.FORGE = { cameraState, setView, orbitStep, zoomStep };
-// flagship demo: full pipeline; concept auto-selected and labelled as such,
-// requirements interview intentionally left open so Gate 1 shows real blockers.
-forgeDeck(EXAMPLES[0], { silent: true, autoConcept: true });
+window.FORGE = { cameraState, setView, orbitStep, zoomStep, saveSession, clearSession, loadSession };
+
+/* Boot: the user's own work wins over the demo.
+   A returning user picks up exactly where they left off — the design, the
+   revision history, the gates they had cleared. Only a first visit (or a
+   session the user discarded) gets the flagship demo below. */
+(async () => {
+  if (await restoreSession()) {
+    toast("Restored your last design — " + (state.spec?.name || state.mode), "ok");
+    return;
+  }
+  // flagship demo: full pipeline; concept auto-selected and labelled as such,
+  // requirements interview intentionally left open so Gate 1 shows real blockers.
+  //
+  // Not persisted: the demo is not the user's work, and saving it would mean
+  // every second visit says "restored your last design" about something they
+  // never made — and would hide the demo from them forever. The first real
+  // edit or re-forge saves normally.
+  _demoBoot = true;
+  try { await forgeDeck(EXAMPLES[0], { silent: true, autoConcept: true }); }
+  finally { _demoBoot = false; }
+})();

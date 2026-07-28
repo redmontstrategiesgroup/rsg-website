@@ -40,14 +40,14 @@
   <div class="header-actions">
     <span id="cx-chip" class="cx-chip" title="Design Complexity Rating">L–</span>
     <span id="ai-status" class="ai-status offline" title="Claude API status">OFFLINE ENGINE</span>
-    <button id="btn-settings" class="icon-btn" title="Settings">⚙</button>
+    <button id="btn-settings" class="icon-btn" title="Settings" aria-label="Settings">⚙</button>
   </div>
 </header>
 
 <!-- ============ COMMAND BAR ============ -->
 <section id="command-bar">
   <div class="command-inner">
-    <textarea id="prompt-input" rows="1" spellcheck="false"
+    <textarea id="prompt-input" rows="1" spellcheck="false" aria-label="Describe the part to manufacture"
       placeholder="Design a one-handed control deck that lets me operate two computers, three monitors, voice commands, foot pedals, and a PiKVM."></textarea>
     <button id="btn-forge" class="forge-btn"><span class="forge-btn-icon">⚒</span> FORGE&nbsp;IT</button>
   </div>
@@ -81,11 +81,11 @@
       <div class="field-row">
         <label>Usable fingers</label>
         <div class="finger-picker" id="finger-picker">
-          <button data-f="thumb"  class="active" title="Thumb">👍</button>
-          <button data-f="index"  class="active" title="Index">☝</button>
-          <button data-f="middle" class="active" title="Middle">🖕</button>
-          <button data-f="ring"   class="active" title="Ring">💍</button>
-          <button data-f="pinky"  class="active" title="Pinky">🤙</button>
+          <button data-f="thumb"  class="active" title="Thumb" aria-label="Thumb">👍</button>
+          <button data-f="index"  class="active" title="Index" aria-label="Index">☝</button>
+          <button data-f="middle" class="active" title="Middle" aria-label="Middle">🖕</button>
+          <button data-f="ring"   class="active" title="Ring" aria-label="Ring">💍</button>
+          <button data-f="pinky"  class="active" title="Pinky" aria-label="Pinky">🤙</button>
         </div>
       </div>
       <div class="field-row">
@@ -112,7 +112,7 @@
     <div class="panel" id="edit-panel">
       <h3 class="panel-title">CONVERSATIONAL EDIT</h3>
       <div class="field-row">
-        <input type="text" id="edit-input" placeholder='"make it 20mm wider", "wall 3mm", "jacks on the side"'>
+        <input type="text" id="edit-input" aria-label="Conversational edit instruction" placeholder='"make it 20mm wider", "wall 3mm", "jacks on the side"'>
       </div>
       <button id="edit-apply" class="bar-btn" style="width:100%">Apply edit</button>
       <p class="hint">Edits update the specification, regenerate affected geometry, rerun validation and create a revision.</p>
@@ -122,7 +122,7 @@
     <div class="panel mode-panel hidden" id="part-panel">
       <h3 class="panel-title">PART TYPE</h3>
       <div class="field-row">
-        <select id="part-type"></select>
+        <select id="part-type" aria-label="Part type"></select>
       </div>
       <div id="part-params"></div>
       <p class="hint" id="part-meta"></p>
@@ -131,7 +131,7 @@
     <!-- Enclosure-mode inputs -->
     <div class="panel mode-panel hidden" id="enclosure-panel">
       <h3 class="panel-title">ENCLOSURE</h3>
-      <div class="field-row"><label>Preset</label>
+      <div class="field-row"><label for="enc-preset">Preset</label>
         <select id="enc-preset">
           <option value="custom">Custom</option>
           <option value="pinode">Raspberry Pi control node</option>
@@ -140,12 +140,12 @@
         </select>
       </div>
       <div class="field-row triple">
-        <div><label>Int. W</label><input type="number" id="enc-w" value="105"></div>
-        <div><label>D</label><input type="number" id="enc-d" value="76"></div>
-        <div><label>H</label><input type="number" id="enc-h" value="40"></div>
+        <div><label for="enc-w">Int. W</label><input type="number" id="enc-w" value="105"></div>
+        <div><label for="enc-d">D</label><input type="number" id="enc-d" value="76"></div>
+        <div><label for="enc-h">H</label><input type="number" id="enc-h" value="40"></div>
       </div>
-      <div class="field-row"><label>Wall (mm)</label><input type="number" id="enc-wall" value="2.4" step="0.2"></div>
-      <div class="field-row"><label>Board fittings</label>
+      <div class="field-row"><label for="enc-wall">Wall (mm)</label><input type="number" id="enc-wall" value="2.4" step="0.2"></div>
+      <div class="field-row"><label for="enc-board">Board fittings</label>
         <select id="enc-board">
           <option value="none">None</option>
           <option value="pi4" selected>Raspberry Pi 4B</option>
@@ -158,7 +158,7 @@
         <label class="chk"><input type="checkbox" id="enc-wallmount" checked> Wall-mount tabs</label>
         <label class="chk"><input type="checkbox" id="enc-gland"> M12 cable gland (bottom)</label>
       </div>
-      <div class="field-row"><label>Fan</label>
+      <div class="field-row"><label for="enc-fan">Fan</label>
         <select id="enc-fan"><option value="0">None</option><option value="30">30 mm</option><option value="40" selected>40 mm</option></select>
       </div>
     </div>
@@ -166,7 +166,7 @@
     <!-- Woodworking-mode inputs -->
     <div class="panel mode-panel hidden" id="wood-panel">
       <h3 class="panel-title">STOCK / SPACE</h3>
-      <div class="field-row"><label>Design</label>
+      <div class="field-row"><label for="wood-type">Design</label>
         <select id="wood-type">
           <option value="desk">Live-edge desk</option>
           <option value="shelf">Wall shelf unit</option>
@@ -176,11 +176,11 @@
         </select>
       </div>
       <div class="field-row triple">
-        <div><label>Slab L (mm)</label><input type="number" id="wood-l" value="1800"></div>
-        <div><label>W (mm)</label><input type="number" id="wood-w" value="700"></div>
-        <div><label>T (mm)</label><input type="number" id="wood-t" value="45"></div>
+        <div><label for="wood-l">Slab L (mm)</label><input type="number" id="wood-l" value="1800"></div>
+        <div><label for="wood-w">W (mm)</label><input type="number" id="wood-w" value="700"></div>
+        <div><label for="wood-t">T (mm)</label><input type="number" id="wood-t" value="45"></div>
       </div>
-      <div class="field-row"><label>Species</label>
+      <div class="field-row"><label for="wood-species">Species</label>
         <select id="wood-species">
           <option value="walnut">Black walnut</option>
           <option value="oak">White oak</option>
@@ -205,7 +205,7 @@
         </label>
         <span id="repair-photo-name" class="hint"></span>
       </div>
-      <div class="field-row"><label>Part type</label>
+      <div class="field-row"><label for="repair-type">Part type</label>
         <select id="repair-type">
           <option value="knob">Appliance knob</option>
           <option value="gear">Gear / sprocket</option>
@@ -215,7 +215,7 @@
         </select>
       </div>
       <div id="repair-dims"></div>
-      <div class="field-row"><label>Reference dimension (mm) — measure any feature with calipers</label>
+      <div class="field-row"><label for="repair-ref">Reference dimension (mm) — measure any feature with calipers</label>
         <input type="number" id="repair-ref" value="30" step="0.1">
       </div>
     </div>
@@ -329,10 +329,10 @@
   inspection with a frontier model. Without a key, The Forge runs on its built-in
   offline parametric engine. The key is stored only in this browser (localStorage)
   and sent only to <span class="mono">api.anthropic.com</span>.</p>
-  <div class="field-row"><label>Claude API key</label>
+  <div class="field-row"><label for="set-apikey">Claude API key</label>
     <input type="password" id="set-apikey" placeholder="sk-ant-…" autocomplete="off">
   </div>
-  <div class="field-row"><label>Model</label>
+  <div class="field-row"><label for="set-model">Model</label>
     <select id="set-model">
       <option value="claude-fable-5">Claude Fable 5 (recommended)</option>
       <option value="claude-opus-4-8">Claude Opus 4.8</option>

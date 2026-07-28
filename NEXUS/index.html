@@ -24,10 +24,10 @@
       <div class="brand">NEXUS<span class="brand-sub">v0.1 · Rusthook District</span></div>
       <div class="clock"><span id="clock-day">DAY 1</span><span id="clock-time">06:00</span><span id="clock-phase" class="phase">dawn</span></div>
       <div class="speed">
-        <button id="spd-pause" class="spd" title="Pause">⏸</button>
-        <button id="spd-1" class="spd active" title="Normal speed">▶</button>
-        <button id="spd-4" class="spd" title="Fast">▶▶</button>
-        <button id="spd-day" class="spd wide" title="Simulate to next morning">SKIP DAY ⤳</button>
+        <button id="spd-pause" class="spd" title="Pause" aria-label="Pause">⏸</button>
+        <button id="spd-1" class="spd active" title="Normal speed" aria-label="Normal speed">▶</button>
+        <button id="spd-4" class="spd" title="Fast" aria-label="Fast forward">▶▶</button>
+        <button id="spd-day" class="spd wide" title="Simulate to next morning" aria-label="Skip to next morning">SKIP DAY ⤳</button>
       </div>
       <div class="wallet" title="Your money">$<span id="player-money">600</span></div>
       <div class="ticker"><span id="ticker-text">A new stranger arrives in Rusthook…</span></div>
@@ -54,7 +54,7 @@
           <button data-tab="feed" class="tab">PULSE</button>
           <button data-tab="news" class="tab">NEWS</button>
           <button data-tab="god" class="tab god">GOD</button>
-          <button data-tab="settings" class="tab">⚙</button>
+          <button data-tab="settings" class="tab" aria-label="Settings">⚙</button>
         </nav>
         <section id="tab-city" class="tabpane active"></section>
         <section id="tab-people" class="tabpane"></section>
