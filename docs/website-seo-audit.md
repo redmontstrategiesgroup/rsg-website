@@ -1,5 +1,14 @@
 # SEO Audit — Redmont Strategies Group
 
+> This audit used to live at `Website/seo-audit.md`, beside a static export of the
+> marketing site. That export has been removed: its HTML had been migrated to
+> de-hyphenated slugs while its compiled `_next` chunks had not, so every page in
+> it requested JavaScript that was not on disk. The site is built and deployed
+> from `basic website/` (Next.js, Vercel project `rsg-website`); the export was a
+> stale second copy with nothing unique in it — its brand assets were
+> byte-identical to `basic website/public/`. Recover it from git history if ever
+> needed. The URL findings below still apply, and still argue for hyphens.
+
 **Domain:** https://redmontstrategiesgroup.com
 **Audit type:** Full site audit (30 pages)
 **Date:** July 25, 2026
