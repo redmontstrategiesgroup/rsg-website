@@ -82,13 +82,43 @@ window.OBS = { VERSION: "2.0.0", ENGINE: "obs-engine-1" };
       }
       return this.data;
     },
+    // Returns true if the write reached storage. Callers that show a "saved"
+    // affordance must honour false.
+    //
+    // This used to fail twice over: on quota it silently deleted the user's
+    // reports down to the last 5 (and audit to 200) to make room, and if that
+    // still failed it gave up with no signal at all — so the app carried on
+    // presenting a clean UI over work that existed only in memory. js/db.js
+    // already names the trim as "a data-loss bug, not a storage strategy";
+    // this is the shipping path saying the same thing.
+    //
+    // Now: never destroy the user's records to make room, and never fail
+    // quietly. Trimming the audit log IS still allowed — it is append-only
+    // telemetry, capped at 500 above, and losing its tail costs the user
+    // nothing they authored — but reports and scenarios are theirs.
+    lastError: null,
     save() {
-      try { localStorage.setItem(LS, JSON.stringify(this.data)); }
-      catch { /* trim biggest items and retry once */
-        this.data.reports = this.data.reports.slice(-5);
-        this.data.audit = this.data.audit.slice(-200);
-        try { localStorage.setItem(LS, JSON.stringify(this.data)); } catch { /* give up quietly; session-only */ }
+      const write = () => {
+        try { localStorage.setItem(LS, JSON.stringify(this.data)); return true; }
+        catch (e) { this.lastError = e; return false; }
+      };
+
+      if (write()) { this.lastError = null; return true; }
+
+      // One retry after dropping only the disposable tail of the audit log.
+      const keptAudit = this.data.audit;
+      this.data.audit = keptAudit.slice(-200);
+      if (write()) { this.lastError = null; return true; }
+      this.data.audit = keptAudit;   // retry failed — put it back, lose nothing
+
+      // Out of room. Say so, every time, and point at the way out.
+      console.error("Observatory: save failed — working in memory only", this.lastError);
+      if (OBS.ui && typeof OBS.ui.toast === "function") {
+        OBS.ui.toast(
+          "Could not save — browser storage is full. Your work is in memory only " +
+          "and will be lost on refresh. Export a report, or clear storage.", "bad");
       }
+      return false;
     },
     reset() { localStorage.removeItem(LS); location.reload(); },
   };

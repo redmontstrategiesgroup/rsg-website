@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- dev-only error beacon: injected only under ?rsgtest=1 (see shared/rsg-testkit.js) -->
-  <script>if(location.search.indexOf("rsgtest=1")>=0)document.write('<script src="/shared/rsg-testkit.js"><\/script>');</script>
+  <!-- The portfolio copy of this file injects a dev-only error beacon from
+       /shared/rsg-testkit.js under ?rsgtest=1. That path does not exist in this
+       deployment (there is no /shared here), so the tag only ever produced a
+       404 — and shipping test tooling to production is not something to fix by
+       deploying the test tooling. Removed deliberately; run the beacon against
+       the portfolio copy under serve.py, where the runner actually lives. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NEXUS Observatory — The World That Remembers</title>
   <meta name="description" content="NEXUS Observatory: build a living model of a real system, change one decision, and observe the likely consequences across time — with assumptions, uncertainty and causal traces exposed." />
@@ -52,7 +56,7 @@
     </main>
 
     <aside id="inspector" class="inspector">
-      <div class="insp-head"><span>INSPECTOR</span><button class="btn small" id="insp-close">✕</button></div>
+      <div class="insp-head"><span>INSPECTOR</span><button class="btn small" id="insp-close" aria-label="Close inspector">✕</button></div>
       <div id="insp-body" class="insp-body"></div>
     </aside>
   </div>
