@@ -19,6 +19,26 @@ const CSRF_COOKIE = "rsg_csrf";
 const CSRF_HEADER = "x-csrf-token";
 const ADMIN_COOKIE = "rsg_admin";
 
+/**
+ * Correlation id — minted here, at the entry point, and propagated forward on
+ * the request headers so route handlers and every provider call they make log
+ * under the same id. Echoed on the response so a browser error report and the
+ * server-side trail can be joined.
+ *
+ * Middleware runs on the edge runtime, so this file must NOT import
+ * lib/integration-log (node:async_hooks). The header is the contract between
+ * them; the constant is duplicated deliberately.
+ */
+const CORRELATION_HEADER = "x-correlation-id";
+
+/** Sanitize before echoing an attacker-controllable header into our logs. */
+function inboundCorrelationId(request: NextRequest): string | null {
+  const raw = request.headers.get(CORRELATION_HEADER);
+  if (!raw) return null;
+  const trimmed = raw.trim().slice(0, 64);
+  return /^[A-Za-z0-9._:-]+$/.test(trimmed) ? trimmed : null;
+}
+
 /** Obvious non-browser/scripted clients — blocked from mutating API calls. */
 const BOT_UA =
   /\b(bot|crawl|spider|scrape|slurp|curl|wget|python-requests|python-urllib|aiohttp|scrapy|httpclient|libwww|okhttp|go-http-client|java\/|phantomjs|headlesschrome)\b/i;
@@ -43,7 +63,21 @@ function looksLikeAdminToken(token: string | undefined): boolean {
 }
 
 export function middleware(request: NextRequest) {
+  const correlationId = inboundCorrelationId(request) ?? crypto.randomUUID();
+  const response = handle(request, correlationId);
+  response.headers.set(CORRELATION_HEADER, correlationId);
+  return response;
+}
+
+function handle(request: NextRequest, correlationId: string) {
   const { pathname } = request.nextUrl;
+
+  /** Pass the request through with the correlation id visible to the handler. */
+  const forward = () => {
+    const headers = new Headers(request.headers);
+    headers.set(CORRELATION_HEADER, correlationId);
+    return NextResponse.next({ request: { headers } });
+  };
 
   // Second-layer gate for admin UI (API handlers still call getAdminSession).
   const isAdminUi =
@@ -64,17 +98,17 @@ export function middleware(request: NextRequest) {
     // rate limit in the route handler, so CSRF and browser user-agent checks do
     // not apply to this exact endpoint.
     if (pathname === "/api/briefs/ingest") {
-      return NextResponse.next();
+      return forward();
     }
     // Cron jobs authenticate via shared secret, not browser CSRF cookies.
     if (pathname === "/api/cron/scheduling") {
-      return NextResponse.next();
+      return forward();
     }
     // Stripe webhooks are server-to-server and authenticate via signature
     // verification (constructEvent) plus a unique-event replay guard in the
     // route handler. Browser CSRF and user-agent checks do not apply.
     if (pathname === "/api/stripe/webhook") {
-      return NextResponse.next();
+      return forward();
     }
     // Health checks are GET-only; nothing to exempt here for mutating.
 
@@ -110,12 +144,12 @@ export function middleware(request: NextRequest) {
       return forbidden("Missing or invalid CSRF token. Refresh and try again.");
     }
 
-    return NextResponse.next();
+    return forward();
   }
 
   // Non-mutating traffic: make sure the CSRF token cookie exists so client
   // scripts can echo it on their next POST.
-  const response = NextResponse.next();
+  const response = forward();
   if (!request.cookies.get(CSRF_COOKIE)) {
     response.cookies.set(CSRF_COOKIE, crypto.randomUUID().replace(/-/g, ""), {
       sameSite: "lax",

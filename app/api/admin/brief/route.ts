@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { isAdminContext, requireAdmin } from "@/lib/admin-auth";
 import { rateLimit, rateLimitResponse, clientIp } from "@/lib/security";
 import { toStr } from "@/lib/validate";
+import { callProvider } from "@/lib/integration-log";
 
 export const runtime = "nodejs";
 // Agent runs can take a few minutes (web research in its environment).
@@ -101,11 +102,20 @@ export async function POST(request: Request) {
       const say = (text: string) => controller.enqueue(encoder.encode(text));
       let sessionId: string | null = null;
       try {
-        const session = await client.beta.sessions.create({
-          agent: { type: "agent", id: AGENT_ID },
-          environment_id: ENVIRONMENT_ID,
-          title: `Audit brief: ${url}`,
-        });
+        // Session creation is where this path fails in practice — bad key,
+        // rate limit, agent/environment misconfigured. Everything after it
+        // depends on the session existing, so classifying this one call
+        // separates "Anthropic rejected us" from "the agent ran and produced
+        // nothing", which look identical from the streamed output.
+        const session = await callProvider(
+          { provider: "anthropic", operation: "ai.brief.session_create" },
+          () =>
+            client.beta.sessions.create({
+              agent: { type: "agent", id: AGENT_ID },
+              environment_id: ENVIRONMENT_ID,
+              title: `Audit brief: ${url}`,
+            })
+        );
         sessionId = session.id;
         say(`Researching ${url} …\n\n`);
 

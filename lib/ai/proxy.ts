@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { rateLimit } from "@/lib/security";
+import { callProvider, IntegrationError, recordSkipped } from "@/lib/integration-log";
 
 /**
  * Shared server-side Anthropic proxy for the mounted apps (Observatory, Forge,
@@ -81,9 +82,20 @@ export type AiCallMeta = { tenantId: string; app: string };
 /** Key present → not paused → under per-tenant rate limit. Throws AiError otherwise. */
 async function preflight({ tenantId, app }: AiCallMeta): Promise<void> {
   if (!process.env.ANTHROPIC_API_KEY) {
+    // Recorded, not just thrown: an unset key on one deploy makes every AI
+    // feature fail identically and quietly, and "nothing is in the call log"
+    // is indistinguishable from "nobody used it" unless the skip is written.
+    await recordSkipped(
+      { provider: "anthropic", operation: `ai.preflight.${app}`, tenantId },
+      "ANTHROPIC_API_KEY not set"
+    );
     throw new AiError("not_configured", "AI is not configured on this server.");
   }
   if (await aiPaused()) {
+    await recordSkipped(
+      { provider: "anthropic", operation: `ai.preflight.${app}`, tenantId },
+      "AI paused by admin kill-switch"
+    );
     throw new AiError("paused", "AI features are temporarily paused.");
   }
   if (!(await rateLimit(`ai:${app}:${tenantId}`, PER_TENANT_BURST, BURST_WINDOW_MS))) {
@@ -148,21 +160,39 @@ export async function generateStructured<T>(opts: {
 
   let message: Anthropic.Message;
   try {
-    message = await client.messages.create({
-      model,
-      max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
-      system: [{ type: "text", text: opts.system, cache_control: { type: "ephemeral" } }],
-      tools: [
-        {
-          name: opts.schema.name,
-          description: opts.schema.description,
-          input_schema: opts.schema.input_schema,
-        },
-      ],
-      tool_choice: { type: "tool", name: opts.schema.name },
-      messages: toMessages(opts.input),
-    });
+    message = await callProvider(
+      {
+        provider: "anthropic",
+        operation: `ai.generate_structured.${opts.app}`,
+        tenantId: opts.tenantId,
+        // Per-tenant health: one client hitting a wall (their prompts tripping
+        // refusals, their volume hitting a ceiling) is invisible in an
+        // aggregate error rate, which is exactly the case that never alerts.
+        connectionId: opts.tenantId,
+      },
+      () =>
+        client.messages.create({
+          model,
+          max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
+          system: [{ type: "text", text: opts.system, cache_control: { type: "ephemeral" } }],
+          tools: [
+            {
+              name: opts.schema.name,
+              description: opts.schema.description,
+              input_schema: opts.schema.input_schema,
+            },
+          ],
+          tool_choice: { type: "tool", name: opts.schema.name },
+          messages: toMessages(opts.input),
+        })
+    );
   } catch (err) {
+    // Classified and recorded by callProvider; map to the route-facing shape.
+    // Rate limiting is kept distinct from a generic upstream failure so the
+    // caller returns 429 rather than 502 — different retry behavior.
+    if (err instanceof IntegrationError && err.errorClass === "rate_limited") {
+      throw new AiError("rate_limited", err.userMessage);
+    }
     throw new AiError("upstream", `AI request failed: ${(err as Error).message}`);
   }
 
@@ -223,21 +253,39 @@ export async function streamText(opts: {
       try {
         const convo: Anthropic.MessageParam[] = [...opts.messages];
         for (let round = 0; round < maxRounds; round++) {
-          const stream = client.messages.stream({
-            model,
-            max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
-            system: [{ type: "text", text: opts.system, cache_control: { type: "ephemeral" } }],
-            ...(opts.tools?.length ? { tools: opts.tools } : {}),
-            messages: convo,
-          });
+          // The whole round is one recorded call: duration covers the full
+          // stream, and a mid-stream disconnect is classified the same way a
+          // non-streaming failure would be. A stream that dies halfway is
+          // otherwise invisible — the user got bytes, so nothing looks failed.
+          const final = await callProvider(
+            {
+              provider: "anthropic",
+              operation: `ai.stream.${opts.app}`,
+              tenantId: opts.tenantId,
+              connectionId: opts.tenantId,
+              attempt: round + 1,
+            },
+            async () => {
+              const stream = client.messages.stream({
+                model,
+                max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
+                system: [
+                  { type: "text", text: opts.system, cache_control: { type: "ephemeral" } },
+                ],
+                ...(opts.tools?.length ? { tools: opts.tools } : {}),
+                messages: convo,
+              });
 
-          for await (const event of stream) {
-            if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-              controller.enqueue(encoder.encode(event.delta.text));
+              for await (const event of stream) {
+                if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+                  controller.enqueue(encoder.encode(event.delta.text));
+                }
+              }
+
+              return stream.finalMessage();
             }
-          }
+          );
 
-          const final = await stream.finalMessage();
           await reportUsage(opts.onUsage, {
             tenantId: opts.tenantId,
             app: opts.app,

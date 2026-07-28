@@ -10,6 +10,7 @@ import {
   RSG_GUARDRAILS,
 } from "@/lib/chat-knowledge";
 import { isEmail, toStr } from "@/lib/validate";
+import { callProvider } from "@/lib/integration-log";
 import type { Lead } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -294,34 +295,49 @@ export async function POST(request: Request) {
         const convo: Anthropic.MessageParam[] = [...incoming];
 
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-          const stream = client.messages.stream({
-            model: MODEL,
-            max_tokens: MAX_OUTPUT_TOKENS,
-            thinking: { type: "adaptive" },
-            output_config: { effort: "low" },
-            // Prompt caching: the tools + system prefix is identical on every
-            // request, so cache reads cut its input cost ~90% within the TTL.
-            system: [
-              {
-                type: "text",
-                text: system,
-                cache_control: { type: "ephemeral" },
-              },
-            ],
-            tools: [SUBMIT_LEAD_TOOL],
-            messages: convo,
-          });
+          // The public chatbot is the highest-volume AI path in the app and
+          // the most visible when it breaks. The whole round is one recorded
+          // call, so a mid-stream failure is classified the same way a
+          // non-streaming one is — otherwise a stream that dies after emitting
+          // bytes looks like a success to everything downstream.
+          const final = await callProvider(
+            {
+              provider: "anthropic",
+              operation: "ai.stream.public_chat",
+              attempt: round + 1,
+            },
+            async () => {
+              const stream = client.messages.stream({
+                model: MODEL,
+                max_tokens: MAX_OUTPUT_TOKENS,
+                thinking: { type: "adaptive" },
+                output_config: { effort: "low" },
+                // Prompt caching: the tools + system prefix is identical on
+                // every request, so cache reads cut its input cost ~90%
+                // within the TTL.
+                system: [
+                  {
+                    type: "text",
+                    text: system,
+                    cache_control: { type: "ephemeral" },
+                  },
+                ],
+                tools: [SUBMIT_LEAD_TOOL],
+                messages: convo,
+              });
 
-          for await (const event of stream) {
-            if (
-              event.type === "content_block_delta" &&
-              event.delta.type === "text_delta"
-            ) {
-              controller.enqueue(encoder.encode(event.delta.text));
+              for await (const event of stream) {
+                if (
+                  event.type === "content_block_delta" &&
+                  event.delta.type === "text_delta"
+                ) {
+                  controller.enqueue(encoder.encode(event.delta.text));
+                }
+              }
+
+              return stream.finalMessage();
             }
-          }
-
-          const final = await stream.finalMessage();
+          );
 
           if (final.stop_reason === "tool_use") {
             convo.push({ role: "assistant", content: final.content });

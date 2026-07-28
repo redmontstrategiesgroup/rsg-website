@@ -5,6 +5,7 @@ import { rateLimit, rateLimitResponse, clientIp } from "@/lib/security";
 import { DEFAULT_CONTACT_TO_EMAIL } from "@/lib/leads";
 import type { Subscriber } from "@/lib/types";
 import { Resend } from "resend";
+import { callProvider } from "@/lib/integration-log";
 
 export const runtime = "nodejs";
 
@@ -14,14 +15,27 @@ async function notifyOwner(sub: Subscriber): Promise<void> {
   const to = process.env.CONTACT_TO_EMAIL?.trim() || DEFAULT_CONTACT_TO_EMAIL;
   try {
     const resend = new Resend(apiKey);
-    await resend.emails.send({
-      from: process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
-      to,
-      subject: `New email signup: ${sub.email}`,
-      text: `A visitor subscribed via the website (${sub.source}) at ${sub.subscribedAt}.\n\nEmail: ${sub.email}`,
-    });
-  } catch (err) {
-    console.error("[subscribe] owner notification failed:", err);
+    await callProvider(
+      { provider: "resend", operation: "email.send.subscriber_notice" },
+      async () => {
+        const { data, error } = await resend.emails.send({
+          from:
+            process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
+          to,
+          subject: `New email signup: ${sub.email}`,
+          text: `A visitor subscribed via the website (${sub.source}) at ${sub.subscribedAt}.\n\nEmail: ${sub.email}`,
+        });
+        if (error) {
+          throw Object.assign(new Error(error.message), {
+            name: error.name,
+            status: (error as { statusCode?: number }).statusCode,
+          });
+        }
+        return data;
+      }
+    );
+  } catch {
+    // Non-fatal — the subscriber is already saved. Recorded by callProvider.
   }
 }
 

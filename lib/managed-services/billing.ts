@@ -12,8 +12,26 @@
 
 import Stripe from "stripe";
 import type { BillingFrequency, ManagedServicePlan } from "./types";
+import { callProvider } from "@/lib/integration-log";
 
 let cachedStripe: Stripe | null = null;
+
+/**
+ * Instrumented Stripe call. Use for anything whose failure changes what a
+ * client sees or is charged — every such call belongs in the log with its
+ * Stripe request id, because that id is the first thing Stripe support asks
+ * for and it is unrecoverable after the fact.
+ */
+export function stripeCall<T>(
+  operation: string,
+  fn: () => Promise<T>,
+  meta?: { tenantId?: string | null }
+): Promise<T> {
+  return callProvider(
+    { provider: "stripe", operation, tenantId: meta?.tenantId ?? null },
+    fn
+  );
+}
 
 export function isStripeConfigured(): boolean {
   return Boolean(process.env.STRIPE_SECRET_KEY);
@@ -49,21 +67,32 @@ export async function ensureStripeCustomer(input: {
 
   if (input.existingCustomerId) {
     try {
-      const customer = await stripe.customers.retrieve(input.existingCustomerId);
+      const customer = await stripeCall(
+        "customer.retrieve",
+        () => stripe.customers.retrieve(input.existingCustomerId!),
+        { tenantId: input.clientId }
+      );
       if (customer && !customer.deleted) return customer.id;
     } catch {
-      // Fall through and create a fresh customer.
+      // Fall through and create a fresh customer. Recorded by stripeCall —
+      // previously this swallowed an auth failure as silently as a genuinely
+      // missing customer, and the two need very different responses.
     }
   }
 
-  const customer = await stripe.customers.create({
-    email: input.email,
-    name: input.name,
-    metadata: {
-      rsg_client_id: input.clientId,
-      rsg_company: input.company ?? "",
-    },
-  });
+  const customer = await stripeCall(
+    "customer.create",
+    () =>
+      stripe.customers.create({
+        email: input.email,
+        name: input.name,
+        metadata: {
+          rsg_client_id: input.clientId,
+          rsg_company: input.company ?? "",
+        },
+      }),
+    { tenantId: input.clientId }
+  );
   return customer.id;
 }
 

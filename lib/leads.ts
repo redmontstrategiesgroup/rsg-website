@@ -4,6 +4,7 @@ import { saveLead, findRecentLeadByEmail } from "./store";
 import { getSupabase } from "./supabase";
 import { DEFAULT_CONTACT_TO_EMAIL } from "./lead-score";
 import type { Lead } from "./types";
+import { callProvider } from "@/lib/integration-log";
 
 export { scoreLead, DEFAULT_CONTACT_TO_EMAIL } from "./lead-score";
 
@@ -218,32 +219,37 @@ async function emailOwner(lead: Lead): Promise<boolean> {
 
   try {
     const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
-      from: process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
-      to,
-      ...(lead.email ? { replyTo: lead.email } : {}),
-      subject,
-      html,
-      text: textBody,
-    });
-    if (error) {
-      console.error("[leads] Resend send failed:", error.message);
-      const { enqueueEmailJob } = await import("@/lib/email-jobs");
-      await enqueueEmailJob("contact_notification", {
-        to,
-        from:
-          process.env.CONTACT_FROM_EMAIL ??
-          "RSG Website <onboarding@resend.dev>",
-        replyTo: lead.email || undefined,
-        subject,
-        html,
-        text: textBody,
-      });
-      return false;
-    }
+    await callProvider(
+      { provider: "resend", operation: "email.send.lead_notification" },
+      async () => {
+        const { data, error } = await resend.emails.send({
+          from:
+            process.env.CONTACT_FROM_EMAIL ??
+            "RSG Website <onboarding@resend.dev>",
+          to,
+          ...(lead.email ? { replyTo: lead.email } : {}),
+          subject,
+          html,
+          text: textBody,
+        });
+        // Resend reports failures in-band; rethrow so the wrapper classifies
+        // it the same way it classifies a thrown network error. Previously the
+        // two took separate paths with identical fallback code.
+        if (error) {
+          throw Object.assign(new Error(error.message), {
+            name: error.name,
+            status: (error as { statusCode?: number }).statusCode,
+          });
+        }
+        return data;
+      }
+    );
     return true;
-  } catch (err) {
-    console.error("[leads] Resend error:", err);
+  } catch {
+    // Already classified, redacted, and recorded. The lead is never lost —
+    // it falls through to the durable retry queue, which carries this
+    // request's correlation id forward so the eventual delivery (or dead
+    // letter, hours later) joins back to this request.
     const { enqueueEmailJob } = await import("@/lib/email-jobs");
     await enqueueEmailJob("contact_notification", {
       to,

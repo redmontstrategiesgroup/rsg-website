@@ -19,7 +19,13 @@ import {
   constructWebhookEvent,
   describeDefaultPaymentMethod,
   getStripe,
+  stripeCall,
 } from "@/lib/managed-services/billing";
+import {
+  recordDeadLettered,
+  recordInboundEvent,
+  withCorrelation,
+} from "@/lib/integration-log";
 import {
   claimStripeEvent,
   createServiceRequest,
@@ -169,12 +175,19 @@ async function handleCheckoutCompleted(event: Stripe.Event): Promise<void> {
   const stripe = getStripe();
   if (stripe && stripeSubscriptionId) {
     try {
-      const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      const stripeSub = await stripeCall(
+        "subscription.retrieve",
+        () => stripe.subscriptions.retrieve(stripeSubscriptionId),
+        { tenantId: clientId }
+      );
       const period = subscriptionPeriod(stripeSub);
       periodStart = period.start;
       periodEnd = period.end;
-    } catch (err) {
-      console.warn("[stripe-webhook] subscription retrieve failed.", err);
+    } catch {
+      // Non-fatal: the subscription activates without period dates and the
+      // next customer.subscription.updated fills them in. Recorded by
+      // stripeCall — a console.warn here meant a persistently failing
+      // retrieve left every subscription without billing periods, silently.
     }
   }
 
@@ -549,6 +562,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  // Stripe's event id IS the correlation id. It is stable across Stripe's own
+  // delivery retries, so every attempt at the same event — ours and theirs —
+  // groups under one id. A minted uuid would scatter them.
+  return withCorrelation(event.id, () => handleEvent(event));
+}
+
+async function handleEvent(event: Stripe.Event) {
+  // Touch the connection on arrival. This is what detects a webhook that
+  // silently STOPPED arriving — a revoked endpoint or a changed URL produces
+  // no errors and no logs on our side, only a last_success_at that stops
+  // moving. Nothing else in the system would notice.
+  await recordInboundEvent({
+    provider: "stripe",
+    operation: `webhook.${event.type}`,
+    connectionId: "webhook",
+  });
+
   // Replay guard — claim the event id exactly once, before processing.
   // A storage failure here (as opposed to a duplicate) returns 500 so
   // Stripe retries: nothing was claimed and nothing was processed.
@@ -594,11 +624,30 @@ export async function POST(request: Request) {
         break;
     }
   } catch (err) {
-    // Our storage failed mid-processing. Return 500 so Stripe retries.
-    // Because the event id was already claimed above, the retry will be
-    // treated as a duplicate and skipped — acceptable: the failure is
-    // logged here and surfaced in the subscription event trail for
-    // manual reconciliation.
+    // Our storage failed mid-processing. Return 500 so Stripe retries — but
+    // the event id was already claimed above, so that retry is treated as a
+    // duplicate and skipped. This event is therefore PERMANENTLY DROPPED and
+    // needs manual reconciliation.
+    //
+    // The original comment here claimed the failure was "surfaced for manual
+    // reconciliation" via an admin email and the event trail. Neither happens
+    // on this path: the throw skipped both, leaving only a console line. A
+    // dropped billing event that nobody is told about is the exact shape of
+    // the failure a customer reports to you weeks later.
+    //
+    // Recording it as dead_lettered puts it on the health endpoint, where
+    // sustained non-zero DLQ arrivals is its own alert.
+    await recordDeadLettered({
+      provider: "stripe",
+      operation: `webhook.${event.type}`,
+      connectionId: "webhook",
+      correlationId: event.id,
+      attempt: 1,
+      errorClass: "our_bug",
+      errorMessage: `Event claimed then processing failed — permanently dropped, needs manual reconciliation. ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    });
     console.error(`[stripe-webhook] ${event.type} processing failed.`, err);
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }

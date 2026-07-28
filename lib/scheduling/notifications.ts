@@ -1,8 +1,8 @@
-import { createHmac } from "node:crypto";
 import { Resend } from "resend";
 import { DEFAULT_CONTACT_TO_EMAIL } from "@/lib/lead-score";
 import { requireSupabase, siteUrl } from "./db";
 import { buildIcs } from "./ics";
+import { callProvider, recordSkipped } from "@/lib/integration-log";
 
 export type TemplateVars = Record<string, string | number | undefined | null>;
 
@@ -135,43 +135,51 @@ export async function sendTemplatedEmail(input: {
       bookingId: input.bookingId,
       leadId: input.leadId,
     });
+    await recordSkipped(
+      { provider: "resend", operation: `email.send.${input.templateKey}` },
+      "RESEND_API_KEY not set"
+    );
     return { ok: false, error: "Email not configured" };
   }
 
   try {
     const resend = new Resend(apiKey);
-    const result = await resend.emails.send({
-      from: fromAddress(settings),
-      to: recipients,
-      replyTo: settings.reply_to,
-      subject,
-      html,
-      text,
-      attachments: input.ics
-        ? [
-            {
-              filename: input.ics.filename,
-              content: Buffer.from(input.ics.content).toString("base64"),
-              contentType: `text/calendar; method=${input.ics.method ?? "REQUEST"}; charset=UTF-8`,
-            },
-          ]
-        : undefined,
-    });
-
-    if (result.error) {
-      await logDelivery({
-        templateKey: input.templateKey,
-        recipient: recipients.join(","),
-        subject,
-        status: "failed",
-        error: result.error.message,
-        bookingId: input.bookingId,
-        leadId: input.leadId,
-      });
-      // Notify internal of failure
-      await sendInternalFailure(result.error.message, input.leadId, input.bookingId);
-      return { ok: false, error: result.error.message };
-    }
+    // notification_deliveries stays the per-recipient record (it answers "did
+    // THIS booking confirmation go out"). callProvider additionally folds the
+    // attempt into the shared Resend connection health, so a broken key shows
+    // up in one place across every email path in the app, not just this one.
+    const result = await callProvider(
+      {
+        provider: "resend",
+        operation: `email.send.${input.templateKey}`,
+      },
+      async () => {
+        const sent = await resend.emails.send({
+          from: fromAddress(settings),
+          to: recipients,
+          replyTo: settings.reply_to,
+          subject,
+          html,
+          text,
+          attachments: input.ics
+            ? [
+                {
+                  filename: input.ics.filename,
+                  content: Buffer.from(input.ics.content).toString("base64"),
+                  contentType: `text/calendar; method=${input.ics.method ?? "REQUEST"}; charset=UTF-8`,
+                },
+              ]
+            : undefined,
+        });
+        if (sent.error) {
+          throw Object.assign(new Error(sent.error.message), {
+            name: sent.error.name,
+            status: (sent.error as { statusCode?: number }).statusCode,
+          });
+        }
+        return sent;
+      }
+    );
 
     await logDelivery({
       templateKey: input.templateKey,
@@ -194,6 +202,13 @@ export async function sendTemplatedEmail(input: {
       bookingId: input.bookingId,
       leadId: input.leadId,
     });
+    // The internal-failure notice is itself an email sent through this same
+    // function. When Resend is what's broken, every notice fails and notifies
+    // about its own failure — unbounded recursion precisely during an outage.
+    // Break the cycle at the one template that closes it.
+    if (input.templateKey !== "internal_email_failed") {
+      await sendInternalFailure(message, input.leadId, input.bookingId);
+    }
     return { ok: false, error: message };
   }
 }
@@ -281,6 +296,7 @@ export function buildBookingIcsAttachment(input: {
   };
 }
 
-export function signWebhookPayload(secret: string, body: string): string {
-  return createHmac("sha256", secret).update(body).digest("hex");
-}
+// signWebhookPayload was removed in the outbox hardening change. It signed the
+// body with no timestamp, so a captured request stayed valid forever and could
+// be replayed indefinitely. Outbound signing now lives in lib/webhooks/sign.ts,
+// which binds a timestamp into the signed material and rejects stale ones.

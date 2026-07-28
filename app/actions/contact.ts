@@ -6,6 +6,7 @@ import { Resend } from "resend";
 import { processLead, scoreLead } from "@/lib/leads";
 import { rateLimit } from "@/lib/security";
 import type { Lead } from "@/lib/types";
+import { callProvider } from "@/lib/integration-log";
 
 /**
  * Contact form server action. All secrets stay server-side.
@@ -153,16 +154,29 @@ async function autoReply(lead: Lead): Promise<void> {
 
   try {
     const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
-      from: process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
-      to: lead.email,
-      subject: "Your request was received — Redmont Strategies Group",
-      html,
-      text: textBody,
-    });
-    if (error) console.error("[contact] Auto-reply failed:", error.message);
-  } catch (err) {
-    console.error("[contact] Auto-reply error:", err);
+    await callProvider(
+      { provider: "resend", operation: "email.send.contact_autoreply" },
+      async () => {
+        const { data, error } = await resend.emails.send({
+          from:
+            process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
+          to: lead.email,
+          subject: "Your request was received — Redmont Strategies Group",
+          html,
+          text: textBody,
+        });
+        if (error) {
+          throw Object.assign(new Error(error.message), {
+            name: error.name,
+            status: (error as { statusCode?: number }).statusCode,
+          });
+        }
+        return data;
+      }
+    );
+  } catch {
+    // Non-fatal — the lead is already captured; only the courtesy auto-reply
+    // failed. Recorded by callProvider against the Resend connection.
   }
 }
 
