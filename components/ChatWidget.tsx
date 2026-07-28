@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { postJson } from "@/lib/api";
 import { trackEvent } from "@/lib/events";
+import { clampViewportHeight } from "@/lib/mobile";
 
 /** Emitted by /api/chat when a lead is submitted mid-conversation. */
 const QUALIFIED_LEAD_SENTINEL = "⁣";
@@ -53,8 +54,25 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const updateViewportHeight = () => {
+      const nextHeight = window.visualViewport?.height ?? window.innerHeight;
+      setViewportHeight(nextHeight);
+    };
+
+    updateViewportHeight();
+    window.addEventListener("resize", updateViewportHeight);
+    window.visualViewport?.addEventListener("resize", updateViewportHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateViewportHeight);
+      window.visualViewport?.removeEventListener("resize", updateViewportHeight);
+    };
+  }, []);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -151,6 +169,7 @@ export function ChatWidget() {
   }
 
   const showQuickReplies = messages.length === 1 && !busy;
+  const panelHeight = clampViewportHeight(viewportHeight || 800);
 
   return (
     <>
@@ -160,7 +179,7 @@ export function ChatWidget() {
             setOpen(true);
             trackEvent("chatbot_open");
           }}
-          className="fixed bottom-5 right-5 z-50 border border-white/20 bg-base-900 px-5 py-3 text-[0.65rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white"
+          className="fixed bottom-3 right-3 z-50 border border-white/20 bg-base-900 px-4 py-3 text-[0.65rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white sm:bottom-5 sm:right-5"
           aria-label="Open chat with Redmont Strategies Group"
         >
           Chat
@@ -176,7 +195,8 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-4 right-4 z-50 flex h-[min(620px,calc(100dvh-5rem))] w-[min(400px,calc(100%-2rem))] flex-col border border-white/15 bg-base-900 shadow-lift sm:bottom-6 sm:right-6"
+            className="fixed inset-x-3 bottom-3 z-50 flex flex-col overflow-hidden rounded-xl border border-white/15 bg-base-900 shadow-lift sm:bottom-6 sm:right-6 sm:left-auto sm:w-[min(400px,calc(100%-2rem))]"
+            style={{ height: `min(${panelHeight}px, calc(100dvh - 1.5rem))`, maxHeight: "calc(100dvh - 1.5rem)" }}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div className="flex items-center gap-3">
@@ -257,12 +277,12 @@ export function ChatWidget() {
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask a question"
                   maxLength={2000}
-                  className="w-full border border-white/15 bg-transparent px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-none"
+                  className="w-full border border-white/15 bg-transparent px-3.5 py-3 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-none"
                 />
                 <button
                   type="submit"
                   disabled={busy || !input.trim()}
-                  className="shrink-0 border border-white/20 px-4 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-white/75 transition-colors hover:border-white/45 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="shrink-0 border border-white/20 px-4 py-3 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-white/75 transition-colors hover:border-white/45 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Send
                 </button>
