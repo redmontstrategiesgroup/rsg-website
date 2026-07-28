@@ -9,8 +9,6 @@ import { trackEvent } from "@/lib/events";
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
-  { label: "Managed Services", href: "/managedservices" },
-  { label: "Security", href: "/security" },
   { label: "Process", href: "/process" },
   { label: "Industries", href: "/industries" },
   { label: "Demos", href: "/demos" },
@@ -49,11 +47,11 @@ export function Navbar() {
           : "border-b border-transparent"
       }`}
     >
-      <nav className="container-px relative flex h-16 items-center justify-between sm:h-20">
+      <nav className="container-px relative flex h-16 items-center sm:h-20">
         <Link
           href="/"
           aria-label="Redmont Strategies Group home"
-          className="flex min-w-0 items-center"
+          className="relative z-10 flex min-w-0 items-center"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -63,7 +61,7 @@ export function Navbar() {
           />
         </Link>
 
-        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 lg:flex">
+        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center justify-center gap-8 md:flex lg:gap-9">
           {NAV_LINKS.map((link) => {
             const active = pathname === link.href;
             return (
@@ -80,7 +78,7 @@ export function Navbar() {
           })}
         </div>
 
-        <div className="hidden lg:block">
+        <div className="ml-auto hidden lg:block">
           <Link
             href="/book"
             onClick={() =>
