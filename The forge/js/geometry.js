@@ -21,7 +21,14 @@ const M = {
 
 const D2 = Math.PI / 2;
 
-export { M, roundedRectPath, wallSegments, extrudeUp, box, cyl, tag, circleHole, rectHole };
+export { M, roundedRectPath, wallSegments, extrudeUp, box, cyl, ring, tag, hardware, circleHole, rectHole };
+
+/** Mark a mesh/group as bought hardware so it never reaches a print file. */
+function hardware(obj, name) {
+  obj.userData.partName = `${name} (hardware)`;
+  obj.traverse?.(c => { c.userData.partName = c.userData.partName || obj.userData.partName; });
+  return obj;
+}
 
 // ---------------------------------------------------------------- helpers
 function roundedRectPath(target, w, d, r) {
@@ -88,6 +95,18 @@ function wallSegments(w, d, r, wall, gaps) {
       cur.o.push(outer[i]); cur.n.push(innerR[i]);
     } else cur = null;
   }
+  // Uninterrupted ring → emit a true annulus (outer contour + inner contour as a
+  // hole). Tracing outer-forward/inner-backward instead closes the ring with a
+  // zero-width slit, whose two coincident edges are shared by four faces — a
+  // non-manifold solid that renders correctly and is not a valid solid.
+  if (runs.length === 1 && runs[0].o.length === outer.length) {
+    const s = new THREE.Shape();
+    polyInto(s, outer);
+    const hole = new THREE.Path();
+    polyInto(hole, innerR.slice().reverse());
+    s.holes.push(hole);
+    return [s];
+  }
   // merge last+first run (wraps around start point) if both exist and touch
   if (runs.length > 1) {
     const a = runs[0], z = runs[runs.length - 1];
@@ -100,12 +119,30 @@ function wallSegments(w, d, r, wall, gaps) {
     .filter(rn => rn.o.length > 2)
     .map(rn => {
       const s = new THREE.Shape();
-      s.moveTo(rn.o[0].x, rn.o[0].y);
-      for (const p of rn.o) s.lineTo(p.x, p.y);
-      for (let i = rn.n.length - 1; i >= 0; i--) s.lineTo(rn.n[i].x, rn.n[i].y);
-      s.closePath();
+      polyInto(s, [...rn.o, ...rn.n.slice().reverse()]);
       return s;
     });
+}
+
+/** Trace a point list into a Shape/Path, skipping repeats (zero-length edges). */
+function polyInto(target, pts) {
+  let last = null;
+  for (const p of pts) {
+    if (last && Math.hypot(p.x - last.x, p.y - last.y) < 1e-6) continue;
+    last ? target.lineTo(p.x, p.y) : target.moveTo(p.x, p.y);
+    last = p;
+  }
+  target.closePath();
+  return target;
+}
+
+/** Annulus in plan view (outer circle with a concentric bore). */
+function ring(cx, cy, rOut, rIn, seg = 32) {
+  const s = new THREE.Shape();
+  s.absarc(cx, cy, rOut, 0, Math.PI * 2, false);
+  s.holes.push(circleHole(cx, cy, rIn));
+  s.curveSegments = seg;
+  return s;
 }
 
 function resample(pts, count) {
@@ -164,8 +201,33 @@ export function buildDeckModel(spec) {
   const segs = wallSegments(deck.w, deck.d, deck.r, G.wallMM, gaps);
   const shellMat = M.shell();
   for (const s of segs) shell.add(extrudeUp(s, deck.h, shellMat));
-  // floor
-  shell.add(extrudeUp(roundedRectPath(null, deck.w - 1.2, deck.d - 1.2, Math.max(1, deck.r - 0.6)), 3, shellMat));
+
+  // ---------- floor ----------
+  // Deliberately 0.6 mm inside the outer face so it interpenetrates the wall
+  // rather than sharing a face with it: coincident faces are ambiguous to
+  // boolean and mesh tooling, a real overlap is not.
+  const magnets = !!spec.modules.magnets;
+  const floorW = deck.w - 1.2, floorD = deck.d - 1.2, floorR = Math.max(1, deck.r - 0.6);
+  const floorH = magnets ? 1.2 + P.MAGNET_H : 3;      // base + pocket layer
+  const magnetPts = [];
+  if (magnets) {
+    const mx = deck.w / 2 - 9, mz = deck.d / 2 - 9;
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      magnetPts.push([sx * mx, sz * mz], [sx * (mx - 12), sz * mz]);
+    }
+  }
+  if (magnets) {
+    // solid base 0…1.2 plus a pocketed layer starting 0.4 mm lower, so the two
+    // layers interpenetrate instead of meeting on a shared plane. The pocket
+    // floor is the base's top face at 1.2 → MAGNET_H deep, flush at the top.
+    shell.add(extrudeUp(roundedRectPath(null, floorW, floorD, floorR), 1.2, shellMat));
+    const pocketLayer = roundedRectPath(null, floorW, floorD, floorR);
+    for (const [px, pz] of magnetPts)
+      pocketLayer.holes.push(circleHole(px, -pz, (P.MAGNET_D + P.MAGNET_FIT) / 2));
+    shell.add(extrudeUp(pocketLayer, P.MAGNET_H + 0.4, shellMat, 0.8));
+  } else {
+    shell.add(extrudeUp(roundedRectPath(null, floorW, floorD, floorR), 3, shellMat));
+  }
   // lintels over each gap (close the wall above the opening)
   const lintelH = deck.h - 11.5;
   for (const g of gaps) {
@@ -183,37 +245,48 @@ export function buildDeckModel(spec) {
     shell.add(box(2.4, deck.h - 4, 12, shellMat, usb.x - 10, (deck.h - 4) / 2 + 3, zWall + 6));
     shell.add(box(2.4, deck.h - 4, 12, shellMat, usb.x + 10, (deck.h - 4) / 2 + 3, zWall + 6));
   }
-  // magnet pockets (visual: magnets)
-  if (spec.modules.magnets) {
-    const mx = deck.w / 2 - 9, mz = deck.d / 2 - 9;
-    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-      shell.add(cyl(3, 3, 3, M.magnet(), sx * mx, 4.5, sz * mz));
-      shell.add(cyl(3, 3, 3, M.magnet(), sx * (mx - 12), 4.5, sz * mz));
-    }
+  // insert bosses under each plate screw — the assembly manual tells the builder
+  // to press heat-set inserts into these, so they have to exist in the print.
+  // 5.4 mm in from the edge so the Ø7.2 boss overlaps the wall by 0.6 mm
+  // instead of standing tangent to it, and it starts 0.8 mm below the floor
+  // top so the two fuse rather than meet face-to-face.
+  const screwPts = [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1]]
+    .map(([ax, az]) => [ax * (deck.w / 2 - 5.4), az * (deck.d / 2 - 5.4)]);
+  if (!G.snapFit) {
+    for (const [bx, bz] of screwPts)
+      shell.add(extrudeUp(ring(bx, -bz, P.BOSS_OD / 2, P.BOSS_BORE / 2, 24), deck.h - floorH + 0.8, shellMat, floorH - 0.8));
   }
   tag(shell, "Bottom shell (printed)", 0, -34, 0);
   root.add(shell);
 
+  // magnets are bought parts sitting in the printed pockets, not printed solids
+  if (magnets) {
+    for (const [px, pz] of magnetPts)
+      root.add(hardware(cyl(P.MAGNET_D / 2, P.MAGNET_D / 2, P.MAGNET_H, M.magnet(), px, 1.2 + P.MAGNET_H / 2, pz), "N52 magnet"));
+  }
+
   // ---------- top plate with cutouts ----------
   const plateShape = roundedRectPath(null, deck.w, deck.d, deck.r);
   for (const p of parts) {
-    if (p.type === "key") plateShape.holes.push(squareHole(p.x, p.y, 14, p.rot));
+    if (p.type === "key") plateShape.holes.push(squareHole(p.x, p.y, P.PLATE_CUTOUT, p.rot));
     else if (p.type === "encoder") plateShape.holes.push(circleHole(p.x, p.y, 3.6));
     else if (p.type === "trackball") plateShape.holes.push(circleHole(p.x, p.y, p.d / 2 - 1.5));
     else if (p.type === "oled") plateShape.holes.push(rectHole(p.x, p.y, DIMS.OLED_W - 2, 14));
   }
   const plate = extrudeUp(plateShape, G.plateMM, M.plate(), plateY);
   const plateG = new THREE.Group(); plateG.name = "plate"; plateG.add(plate);
-  // corner screws
-  const sx = deck.w / 2 - 6, sz = deck.d / 2 - 6;
-  for (const [ax, az] of [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1]]) {
-    if (!G.snapFit) plateG.add(cyl(1.9, 1.9, 1.6, M.steel(), ax * sx, plateY + G.plateMM, az * sz));
-  }
   tag(plateG, "Switch plate (printed)", 0, 34, 0);
   root.add(plateG);
+  // screw heads are bought hardware — tagged after the plate so tag() can't
+  // inherit "(printed)" onto them and push steel into print.stl
+  if (!G.snapFit) {
+    for (const [bx, bz] of screwPts)
+      root.add(hardware(cyl(1.9, 1.9, 1.6, M.steel(), bx, plateY + G.plateMM, bz), "M3×8 screw"));
+  }
 
   // ---------- main PCB under plate ----------
-  const pcb = box(deck.w - 14, 1.6, deck.d - 26, M.pcb(), 0, plateY - 7, 2);
+  // inset to clear the Ø7.2 insert bosses standing at 6 mm from each edge
+  const pcb = box(deck.w - 24, 1.6, deck.d - 30, M.pcb(), 0, plateY - 7, 2);
   tag(pcb, "Main PCB (2-layer)", 0, 14, 0);
   root.add(pcb);
 
@@ -409,7 +482,9 @@ export function buildRepairPart(type, dims) {
     s.holes.push(circleHole(0, 0, Math.max(2, rOut * 0.18)));
     g.add(extrudeUp(s, Math.max(4, dims.ref * 0.2), mat));
   } else if (type === "bracket") {
-    const L = dims.ref, t = Math.max(3, L * 0.12);
+    // leg must stay thicker than the Ø4.2 hole plus two perimeters each side,
+    // or the hole breaks the outline and the part is no longer a closed solid
+    const L = dims.ref, t = Math.max(4.2 + 1.6, L * 0.12);
     const s = new THREE.Shape();
     s.moveTo(0, 0); s.lineTo(L, 0); s.lineTo(L, t); s.lineTo(t, t); s.lineTo(t, L); s.lineTo(0, L); s.closePath();
     s.holes.push(circleHole(L * 0.65, t / 2, 2.1));

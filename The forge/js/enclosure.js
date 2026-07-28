@@ -49,6 +49,8 @@ export function buildEnclosure(cfg) {
     return { edge: p.edge, at: p.at, width: sz.w + 1.2, h: sz.h };
   });
   const base = new THREE.Group();
+  // 0.5 mm inside the outer face so the floor interpenetrates the wall instead
+  // of sharing a face with it (coincident faces are ambiguous to mesh tooling)
   const floorShape = roundedRectPath(null, W - 1, D - 1, r);
   if (cfg.gland) floorShape.holes.push(circleHole(0, 0, 6.3));          // M12 gland → 12.5 mm hole
   base.add(extrudeUp(floorShape, 3, shellMat));
@@ -143,8 +145,16 @@ export function buildEnclosure(cfg) {
     tag(gl, "M12 cable gland", 0, -22, 0);
     root.add(gl);
   }
-  root.userData.enclosureDims = { W, D, H: H + 2.6 };
+  // overall envelope includes the wall-mount tabs (W/2 → W/2+16 each side);
+  // reporting the body alone understates the printed footprint by 32 mm
+  root.userData.enclosureDims = { W, D, H: H + 2.6, ...overallDims(cfg) };
   return root;
+}
+
+/** Printed envelope including wall-mount tabs — what has to fit the bed. */
+export function overallDims(cfg) {
+  const W = cfg.w + 2 * cfg.wall, D = cfg.d + 2 * cfg.wall;
+  return { overallW: W + (cfg.wallMount ? 32 : 0), overallD: D, overallH: cfg.h + 3 + 2.6 };
 }
 
 /** Drawing plan + DXF entities for the lid (flat, laser-cuttable). */
@@ -155,9 +165,12 @@ export function enclosurePlan(cfg) {
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) holes.push({ x: W / 2 + sx * bx, y: D / 2 + sz * bz, r: 1.7 });
   if (cfg.fan) holes.push({ x: W / 2, y: D / 2 - (-D * 0.12), r: cfg.fan / 2 - 1 });
   if (cfg.gland) holes.push({ x: W / 2, y: D / 2, r: 6.3 });
+  const ov = overallDims(cfg);
   return {
     w: W, d: D, h: H, holes,
+    overallW: ov.overallW, overallD: ov.overallD,
     notes: [
+      `Body ${W.toFixed(0)}×${D.toFixed(0)} mm; printed envelope ${ov.overallW.toFixed(0)}×${ov.overallD.toFixed(0)} mm${cfg.wallMount ? " including wall-mount tabs" : ""}`,
       `Base + lid, PETG, ${cfg.wall} mm walls, no supports`,
       cfg.vents ? "Vent slots 3.2 mm — face DOWN when wall-mounted outdoors" : "Sealed body (no vents)",
       BOARDS[cfg.board]?.name ? `Standoffs: ${BOARDS[cfg.board].name} (${BOARDS[cfg.board].insert || "—"})` : "No board fittings",
@@ -186,8 +199,13 @@ export function enclosureDFM(cfg, printerBed = 220) {
   const out = [];
   const rule = (id, cond, fail, pass, sev = "fail") =>
     out.push({ id, sev: cond ? "pass" : sev, area: "DFM/FDM", text: cond ? pass : fail, basis: "rule" });
+  const ov = overallDims(cfg);
   rule("wall", cfg.wall >= 1.6, `Wall ${cfg.wall} mm under 1.6 mm minimum for an enclosure`, `Wall ${cfg.wall} mm ≥ 1.6 mm`);
-  rule("bed", Math.max(W, D) <= printerBed, `Enclosure ${W.toFixed(0)}×${D.toFixed(0)} exceeds the ${printerBed} mm bed`, `${W.toFixed(0)}×${D.toFixed(0)} mm fits the ${printerBed} mm bed`);
+  // measured against the printed envelope, not the body: the wall-mount tabs
+  // add 32 mm and they have to go on the bed too
+  rule("bed", Math.max(ov.overallW, ov.overallD) <= printerBed,
+    `Enclosure ${ov.overallW.toFixed(0)}×${ov.overallD.toFixed(0)} mm (including tabs) exceeds the ${printerBed} mm bed`,
+    `${ov.overallW.toFixed(0)}×${ov.overallD.toFixed(0)} mm printed envelope fits the ${printerBed} mm bed`);
   rule("vent-bridge", !cfg.vents || true, "", "Vent slots 3.2 mm — self-bridging", "warn");
   if (cfg.fan) rule("fan-holes", true, "", `Fan pilot holes Ø3.2 for M3 self-tap (${cfg.fan} mm pattern)`, "warn");
   if (cfg.gland) rule("gland-floor", cfg.wall >= 2.4, "Floor too thin for gland torque — use ≥ 2.4 mm", "Floor thick enough for gland nut torque");

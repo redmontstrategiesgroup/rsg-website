@@ -22,6 +22,7 @@ export function download(name, data, mime = "application/octet-stream") {
  */
 export function toSTL(root, filter = () => true) {
   root.updateWorldMatrix(true, true);
+  const S = modelScale(root);
   const tris = [];
   const v = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
   const n = new THREE.Vector3();
@@ -30,7 +31,7 @@ export function toSTL(root, filter = () => true) {
     const geo = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry;
     const pos = geo.getAttribute("position");
     for (let i = 0; i < pos.count; i += 3) {
-      for (let k = 0; k < 3; k++) v[k].fromBufferAttribute(pos, i + k).applyMatrix4(mesh.matrixWorld);
+      for (let k = 0; k < 3; k++) v[k].fromBufferAttribute(pos, i + k).applyMatrix4(mesh.matrixWorld).multiplyScalar(S);
       n.copy(v[1]).sub(v[0]).cross(new THREE.Vector3().copy(v[2]).sub(v[0])).normalize();
       tris.push([n.clone(), v[0].clone(), v[1].clone(), v[2].clone()]);
     }
@@ -57,7 +58,17 @@ export function toSTL(root, filter = () => true) {
 
 export function printedPartFilter(mesh) {
   const n = mesh.userData.partName || "";
-  return n.includes("(printed)");
+  return n.includes("(printed)") && !n.includes("(hardware)");
+}
+
+/**
+ * Viewer-only scale factor to undo on export. Wood pieces are displayed at
+ * 0.14 so they share a scene with a 200 mm deck; without this the STL is
+ * dimensionally perfect and 7× too small — the defect no viewer can show.
+ */
+export function modelScale(root) {
+  const s = root?.userData?.realScale;
+  return Number.isFinite(s) && s > 0 ? s : 1;
 }
 
 // ---------------------------------------------------------------- minimal ZIP (store)

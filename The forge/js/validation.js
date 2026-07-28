@@ -30,10 +30,23 @@ export function dfmFDM(spec) {
   rule("warp", d.deck.w < 230 || spec.material !== "ABS",
     "Large flat ABS part — high warp risk; use PETG or add brim + enclosure",
     `PETG on a ${d.deck.w.toFixed(0)} mm footprint — low warp risk; 6 mm brim recommended`, "warn");
-  rule("hole-comp", true, "",
-    "All plate cutouts pre-compensated +0.15 mm for FDM shrinkage", "warn", "rule (applied in generator)");
-  rule("inserts", true, "",
-    "6 insert bosses Ø7.2 mm for M3×5.7 heat-set inserts — above the 2× insert-diameter minimum wall", "warn");
+  // Both of these used to be rule(id, true, …) — passes that could not fail and
+  // described geometry the generator never built. They now read the same
+  // constants the generator cuts from, so the claim and the part cannot diverge.
+  const comp = DIMS.PLATE_CUTOUT - 14.0;
+  rule("hole-comp", comp > 0,
+    `Plate cutouts are cut at ${DIMS.PLATE_CUTOUT} mm — no FDM compensation over the 14.00 mm MX nominal`,
+    `Plate cutouts cut at ${DIMS.PLATE_CUTOUT.toFixed(2)} mm = 14.00 MX nominal +${comp.toFixed(2)} mm FDM compensation`,
+    "warn", "measured against DIMS.PLATE_CUTOUT (the value the generator cuts)");
+  const bossWall = (DIMS.BOSS_OD - DIMS.BOSS_BORE) / 2;
+  if (g.snapFit) {
+    rule("inserts", true, "", "Snap-fit lid — no fasteners, no insert bosses required", "warn", "spec");
+  } else {
+    rule("inserts", bossWall >= 1.2,
+      `Insert boss wall ${bossWall.toFixed(2)} mm (Ø${DIMS.BOSS_OD} over a Ø${DIMS.BOSS_BORE} bore) is too thin to take insertion pressure`,
+      `${DIMS.PLATE_SCREWS} insert bosses Ø${DIMS.BOSS_OD} mm with a Ø${DIMS.BOSS_BORE} mm bore for M3×5.7 heat-set inserts — ${bossWall.toFixed(2)} mm boss wall`,
+      "warn", "calculated from DIMS.BOSS_OD / BOSS_BORE (the boss the generator builds)");
+  }
   return out;
 }
 

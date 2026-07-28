@@ -11,6 +11,15 @@ const KNOB_D = 20;                // aluminum knob diameter
 const OLED_W = 27, OLED_H = 19.5; // 0.96" module active outline
 const TB_HOUSING = 8;             // trackball bezel around ball
 
+// Manufacturing constants shared by the generator, the drawings and the DFM
+// checks, so a claim in validation.js can never drift from the cut geometry.
+const PLATE_CUTOUT = 14.15;       // MX 14.00 nominal + 0.15 FDM compensation
+const BOSS_OD = 7.2;              // insert boss outer Ø
+const BOSS_BORE = 4.0;            // bore for an M3×5.7 heat-set insert
+const PLATE_SCREWS = 6;           // lid fasteners when snapFit is off
+const MAGNET_D = 6, MAGNET_H = 3; // N52 puck
+const MAGNET_FIT = 0.4;           // pocket clearance on Ø
+
 const FINGERS = [
   { id: "index",  angle: 108, lenF: 0.96 },
   { id: "middle", angle: 94,  lenF: 1.00 },
@@ -223,4 +232,7 @@ function bbox(parts) {
   return { minX, minY, maxX, maxY };
 }
 
-export const DIMS = { KEY_PITCH, KEY_SIZE, ENC_BODY, KNOB_D, OLED_W, OLED_H, TB_HOUSING };
+export const DIMS = {
+  KEY_PITCH, KEY_SIZE, ENC_BODY, KNOB_D, OLED_W, OLED_H, TB_HOUSING,
+  PLATE_CUTOUT, BOSS_OD, BOSS_BORE, PLATE_SCREWS, MAGNET_D, MAGNET_H, MAGNET_FIT,
+};

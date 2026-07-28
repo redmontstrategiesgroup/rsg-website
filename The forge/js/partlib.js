@@ -12,8 +12,10 @@ const P = (key, label, def, min, max, step = 0.5) => ({ key, label, def, min, ma
 export const PART_TYPES = {
   bracket: {
     name: "L-bracket", process: "FDM / CNC", material: "PETG or 6061 aluminum",
+    // thick default 6: a Ø4.2 hole through a 4 mm leg breaks the outline and
+    // the part stops being a closed solid (see partDFM "bracket-hole")
     params: [P("legA", "Leg A length (mm)", 40, 15, 120), P("legB", "Leg B length (mm)", 40, 15, 120),
-      P("width", "Width (mm)", 20, 8, 80), P("thick", "Thickness (mm)", 4, 2, 12),
+      P("width", "Width (mm)", 20, 8, 80), P("thick", "Thickness (mm)", 6, 2, 12),
       P("holeD", "Hole Ø (mm)", 4.2, 2, 10), P("fillet", "Corner gusset (mm)", 8, 0, 30)],
     build(p) {
       const s = new THREE.Shape();
@@ -21,8 +23,8 @@ export const PART_TYPES = {
       if (p.fillet > 0) { s.lineTo(p.thick + p.fillet, p.thick); s.lineTo(p.thick, p.thick + p.fillet); }
       else s.lineTo(p.thick, p.thick);
       s.lineTo(p.thick, p.legB); s.lineTo(0, p.legB); s.closePath();
-      s.holes.push(circle(p.legA * 0.7, p.thick / 2 + 0.01, p.holeD / 2));
-      s.holes.push(circle(p.thick / 2 + 0.01, p.legB * 0.7, p.holeD / 2));
+      s.holes.push(circle(p.legA * 0.7, p.thick / 2, p.holeD / 2));
+      s.holes.push(circle(p.thick / 2, p.legB * 0.7, p.holeD / 2));
       const g = new THREE.Group();
       const m = extrudeUp(s, p.width, mat());
       m.rotation.x = -Math.PI / 2; m.rotation.z = 0;
@@ -54,7 +56,9 @@ export const PART_TYPES = {
   },
   adapter: {
     name: "Adapter plate", process: "FDM / laser / CNC", material: "PETG, acrylic, or aluminum",
-    params: [P("w", "Width (mm)", 80, 20, 200), P("d", "Depth (mm)", 60, 20, 200), P("thick", "Thickness (mm)", 5, 2, 15),
+    // 85×85 default: the 75 mm VESA pattern needs 75 + holeØ + land in BOTH
+    // axes, so the old 80×60 plate put all four pattern-B holes off the part
+    params: [P("w", "Width (mm)", 85, 20, 200), P("d", "Depth (mm)", 85, 20, 200), P("thick", "Thickness (mm)", 5, 2, 15),
       P("patAw", "Pattern A pitch X (mm)", 58, 10, 180), P("patAd", "Pattern A pitch Y (mm)", 49, 10, 180), P("holeA", "Pattern A hole Ø", 2.8, 2, 8),
       P("patBw", "Pattern B pitch X (mm)", 75, 10, 180), P("patBd", "Pattern B pitch Y (mm)", 75, 10, 180), P("holeB", "Pattern B hole Ø", 4.2, 2, 8)],
     build(p) {
@@ -113,7 +117,18 @@ export const PART_TYPES = {
       g.add(b);
       return g;
     },
-    plan: p => ({ w: p.base + p.cableD + 6, d: p.width, h: p.cableD + 6, holes: [{ x: p.base - 4, y: p.width / 2, r: p.holeD / 2 }], notes: [`Grips Ø${p.cableD} mm bundle (+0.4 clearance)`, "2 walls + 25% gyroid for spring action", "Orient clip opening up"] }),
+    plan: p => {
+      // measured off the built geometry: clip ring spans -(r+t)…, base runs to
+      // base + r*0.4 in X; the extrusion depth is the clip width
+      const r = p.cableD / 2 + 0.4, t = 2.2;
+      const xMin = -(r + t), xMax = p.base + r * 0.4;
+      const yMin = Math.min(1.5 - t, -p.width / 2), yMax = Math.max(2 * r + 1.5 + t, p.width / 2);
+      return {
+        w: xMax - xMin, d: yMax - yMin, h: p.width,
+        holes: [{ x: p.base - 4 + r * 0.4 - xMin, y: -yMin, r: p.holeD / 2 }],
+        notes: [`Grips Ø${p.cableD} mm bundle (+0.4 clearance)`, "2 walls + 25% gyroid for spring action", "Orient clip opening up"],
+      };
+    },
   },
   drilljig: {
     name: "Drill guide jig", process: "FDM", material: "PETG (hardened bushings optional)",
@@ -133,7 +148,8 @@ export const PART_TYPES = {
     plan: p => {
       const L = (p.holes - 1) * p.pitch + 30, W = p.edge + 22;
       return {
-        w: L, d: W, h: p.thick,
+        // the fence adds 6 mm of depth and hangs 14 mm below the base
+        w: L, d: W + 6, h: p.thick + 14,
         holes: Array.from({ length: p.holes }, (_, i) => ({ x: 15 + i * p.pitch, y: W - p.edge, r: p.drillD / 2 + 0.15 })),
         notes: [`${p.holes}× Ø${p.drillD} guides at ${p.pitch} mm pitch, ${p.edge} mm from the fence`, `Guide bores +0.15 mm; press in Ø${p.drillD} steel bushings for repeated use`, "Clamp fence against the reference edge — never drill hand-held", `Jig thickness ${p.thick} mm keeps the bit square`],
       };
@@ -167,7 +183,24 @@ export function partDFM(typeId, p, printerBed = 220) {
     out.push({ id, sev: cond ? "pass" : sev, area: "DFM/FDM", text: cond ? pass : fail, basis: "rule" });
   const plan = PART_TYPES[typeId].plan(p);
   rule("bed", Math.max(plan.w, plan.d) <= printerBed, `Part ${plan.w.toFixed(0)}×${plan.d.toFixed(0)} exceeds the ${printerBed} mm bed`, `Fits the ${printerBed} mm bed`);
-  if (typeId === "bracket") rule("bracket-orient", true, "", "Layer orientation crosses the bend — full strength", "warn");
+  if (typeId === "bracket") {
+    rule("bracket-orient", true, "", "Layer orientation crosses the bend — full strength", "warn");
+    // a hole wider than the leg breaks the outline: the cap can no longer be
+    // triangulated and the export is an open, non-solid mesh
+    const land = (p.thick - p.holeD) / 2;
+    rule("bracket-hole", land >= 0.8,
+      `Ø${p.holeD} hole through a ${p.thick} mm leg leaves ${land.toFixed(2)} mm of material each side — the hole breaks through the part outline and the model is not a closed solid. Increase thickness to ≥ ${(p.holeD + 1.6).toFixed(1)} mm or reduce the hole to ≤ ${(p.thick - 1.6).toFixed(1)} mm`,
+      `Ø${p.holeD} hole in a ${p.thick} mm leg — ${land.toFixed(2)} mm of material each side (≥ 0.8 mm, two perimeters)`);
+  }
+  if (typeId === "adapter") {
+    const fits = (pw, pd, hd) => pw + hd + 4 <= p.w && pd + hd + 4 <= p.d;
+    rule("adapter-patA", fits(p.patAw, p.patAd, p.holeA),
+      `Pattern A ${p.patAw}×${p.patAd} (Ø${p.holeA}) does not fit inside the ${p.w}×${p.d} plate with 2 mm of land — holes fall off the part`,
+      `Pattern A ${p.patAw}×${p.patAd} fits the ${p.w}×${p.d} plate`);
+    rule("adapter-patB", fits(p.patBw, p.patBd, p.holeB),
+      `Pattern B ${p.patBw}×${p.patBd} (Ø${p.holeB}) does not fit inside the ${p.w}×${p.d} plate with 2 mm of land — holes fall off the part`,
+      `Pattern B ${p.patBw}×${p.patBd} fits the ${p.w}×${p.d} plate`);
+  }
   if (typeId === "spacer") rule("bore", p.id >= 1.5, "Bore under 1.5 mm won't print round", `Bore Ø${p.id} printable`);
   if (typeId === "drilljig") rule("guide-wall", (p.pitch - p.drillD) > 6, "Guide walls thinner than 6 mm between holes", "Guide wall thickness OK");
   if (typeId === "cover") rule("clearance", p.clear >= 0.15, "Fit clearance under 0.15 mm will bind on FDM", `Clearance ${p.clear} mm within FDM capability`);

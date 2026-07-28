@@ -4,6 +4,8 @@
 // source of truth; these are derived exports.
 
 import * as THREE from "three";
+import { modelScale } from "./exports.js";
+import { DIMS } from "./layout.js";
 
 // ---------------------------------------------------------------- dimensioned drawing (SVG)
 export function deckDrawingSVG(spec) {
@@ -136,7 +138,7 @@ export function plateDXF(spec) {
   const d = spec.derived.deck;
   const ents = [{ type: "poly", closed: true, pts: roundedRectPts(d.w, d.d, d.r) }];
   for (const p of spec.derived.parts) {
-    if (p.type === "key") ents.push({ type: "poly", closed: true, pts: rotSquare(p.x, p.y, 14, p.rot) });
+    if (p.type === "key") ents.push({ type: "poly", closed: true, pts: rotSquare(p.x, p.y, DIMS.PLATE_CUTOUT, p.rot) });
     else if (p.type === "encoder") ents.push({ type: "circle", x: p.x, y: p.y, r: 3.6 });
     else if (p.type === "trackball") ents.push({ type: "circle", x: p.x, y: p.y, r: p.d / 2 - 1.5 });
     else if (p.type === "oled") ents.push({ type: "poly", closed: true, pts: rotSquareWH(p.x, p.y, 25, 14, 0) });
@@ -163,6 +165,7 @@ function rotSquareWH(cx, cy, w, h, rotDeg) {
 // ---------------------------------------------------------------- mesh collection
 function collectMesh(root, filter) {
   root.updateWorldMatrix(true, true);
+  const S = modelScale(root);
   const verts = [], tris = [];
   const map = new Map();
   const v = new THREE.Vector3();
@@ -174,7 +177,7 @@ function collectMesh(root, filter) {
     for (let i = 0; i < pos.count; i += 3) {
       const tri = [];
       for (let k = 0; k < 3; k++) {
-        v.fromBufferAttribute(pos, i + k).applyMatrix4(mesh.matrixWorld);
+        v.fromBufferAttribute(pos, i + k).applyMatrix4(mesh.matrixWorld).multiplyScalar(S);
         // three (y-up) → CAD (z-up)
         const x = v.x, y = -v.z, z = v.y;
         const kk = key(x, y, z);
@@ -254,7 +257,7 @@ DATA;
 #13=UNCERTAINTY_MEASURE_WITH_UNIT(LENGTH_MEASURE(0.005),#10,'DISTANCE_ACCURACY_VALUE','');
 #14=(GEOMETRIC_REPRESENTATION_CONTEXT(3)GLOBAL_UNCERTAINTY_ASSIGNED_CONTEXT((#13))GLOBAL_UNIT_ASSIGNED_CONTEXT((#10,#11,#12))REPRESENTATION_CONTEXT('',''));
 #20=COORDINATES_LIST('',${verts.length},(${coordList}));
-#21=TRIANGULATED_FACE('',#20,${verts.length},$,(${triList}),$);
+#21=TRIANGULATED_FACE('',#20,${verts.length},(),$,(),(${triList}));
 #22=TESSELLATED_SHAPE_REPRESENTATION('',(#21),#14);
 #23=SHAPE_DEFINITION_REPRESENTATION(#8,#22);
 ENDSEC;
