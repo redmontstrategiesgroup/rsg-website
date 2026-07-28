@@ -461,9 +461,18 @@ function CreateClientForm({
       setForm((f) => ({ ...f, [k]: e.target.value }));
 
   function generatePassword() {
-    // Readable, strong-enough temporary password.
-    const rand = Math.random().toString(36).slice(2, 8);
-    const pw = `RSG-${rand}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // This value becomes the client's actual portal password, so it must come
+    // from a CSPRNG. Math.random() is seeded predictably and its internal state
+    // is recoverable from a handful of outputs — fine for a jitter, not for a
+    // credential. Alphabet excludes look-alike characters (0/O, 1/l/I) because
+    // these get read aloud and retyped.
+    const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    const bytes = new Uint32Array(16);
+    crypto.getRandomValues(bytes);
+    // Rejection-free modulo bias is irrelevant at this alphabet size relative
+    // to 2^32, so index directly.
+    const body = Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+    const pw = `RSG-${body.slice(0, 6)}-${body.slice(6, 12)}-${body.slice(12)}`;
     setForm((f) => ({ ...f, password: pw }));
     setCopied(false);
   }

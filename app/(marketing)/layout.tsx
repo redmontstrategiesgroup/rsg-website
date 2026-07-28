@@ -5,6 +5,7 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 import { CookieConsent } from "@/components/CookieConsent";
 import { EmailCapture } from "@/components/EmailCapture";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
+import { SkipLink } from "@/components/SkipLink";
 
 export default function MarketingLayout({
   children,
@@ -14,8 +15,16 @@ export default function MarketingLayout({
   return (
     <>
       <SmoothScroll />
+      <SkipLink />
       <Navbar />
-      {children}
+      {/*
+        Skip-link target. tabIndex={-1} makes it programmatically focusable so
+        the jump moves focus, not just scroll position — without it, the next
+        Tab would return to the top of the nav in most browsers.
+      */}
+      <div id="main-content" tabIndex={-1} className="focus:outline-none">
+        {children}
+      </div>
       <Footer />
       <ChatWidget />
       <CookieConsent />
