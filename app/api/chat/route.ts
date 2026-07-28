@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+// Type-only: this route no longer constructs a client — every Anthropic call
+// goes through lib/ai/proxy.
+import type Anthropic from "@anthropic-ai/sdk";
 import { rateLimit, rateLimitResponse, clientIp } from "@/lib/security";
 import { processLead, scoreLead } from "@/lib/leads";
 import {
@@ -10,7 +12,7 @@ import {
   RSG_GUARDRAILS,
 } from "@/lib/chat-knowledge";
 import { isEmail, toStr } from "@/lib/validate";
-import { callProvider } from "@/lib/integration-log";
+import { AiError, streamText } from "@/lib/ai/proxy";
 import type { Lead } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -286,105 +288,54 @@ export async function POST(request: Request) {
     ? `${SYSTEM_PROMPT}\n\n# Booking\nA booking calendar exists. When a visitor wants to book a strategy call, share this exact link: ${bookingUrl}`
     : `${SYSTEM_PROMPT}\n\n# Booking\nThere is no online booking calendar. When a visitor wants to book a strategy call, direct them to the contact form in the Contact section of this site (or collect their details here with submit_lead).`;
 
-  const client = new Anthropic();
-  const encoder = new TextEncoder();
-
-  const readable = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      try {
-        const convo: Anthropic.MessageParam[] = [...incoming];
-
-        for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-          // The public chatbot is the highest-volume AI path in the app and
-          // the most visible when it breaks. The whole round is one recorded
-          // call, so a mid-stream failure is classified the same way a
-          // non-streaming one is — otherwise a stream that dies after emitting
-          // bytes looks like a success to everything downstream.
-          const final = await callProvider(
-            {
-              provider: "anthropic",
-              operation: "ai.stream.public_chat",
-              attempt: round + 1,
-            },
-            async () => {
-              const stream = client.messages.stream({
-                model: MODEL,
-                max_tokens: MAX_OUTPUT_TOKENS,
-                thinking: { type: "adaptive" },
-                output_config: { effort: "low" },
-                // Prompt caching: the tools + system prefix is identical on
-                // every request, so cache reads cut its input cost ~90%
-                // within the TTL.
-                system: [
-                  {
-                    type: "text",
-                    text: system,
-                    cache_control: { type: "ephemeral" },
-                  },
-                ],
-                tools: [SUBMIT_LEAD_TOOL],
-                messages: convo,
-              });
-
-              for await (const event of stream) {
-                if (
-                  event.type === "content_block_delta" &&
-                  event.delta.type === "text_delta"
-                ) {
-                  controller.enqueue(encoder.encode(event.delta.text));
-                }
-              }
-
-              return stream.finalMessage();
-            }
-          );
-
-          if (final.stop_reason === "tool_use") {
-            convo.push({ role: "assistant", content: final.content });
-            const results: Anthropic.ToolResultBlockParam[] = [];
-            let leadCaptured = false;
-            for (const block of final.content) {
-              if (block.type === "tool_use") {
-                let result = "Unknown tool.";
-                if (block.name === "submit_lead") {
-                  const outcome = await handleSubmitLead(block.input);
-                  result = outcome.result;
-                  leadCaptured ||= outcome.submitted;
-                }
-                results.push({
-                  type: "tool_result",
-                  tool_use_id: block.id,
-                  content: result,
-                });
-              }
-            }
-            if (leadCaptured) {
-              controller.enqueue(encoder.encode(QUALIFIED_LEAD_SENTINEL));
-            }
-            convo.push({ role: "user", content: results });
-            continue; // let the model confirm to the visitor
-          }
-
-          if (final.stop_reason === "refusal") {
-            controller.enqueue(
-              encoder.encode(
-                "I can't help with that one. Is there anything about your business or how RSG works that I can answer?"
-              )
-            );
-          }
-          break;
-        }
-      } catch (err) {
-        console.error("[/api/chat]", err);
-        controller.enqueue(
-          encoder.encode(
-            "Something went wrong on our end. Please try again, or reach us through the contact form in the Contact section."
-          )
-        );
-      }
-      controller.close();
-    },
-  });
+  // Routed through lib/ai/proxy rather than a local `new Anthropic()`, so every
+  // Anthropic call in the app goes through one place: the same preflight, the
+  // same error classification, the same integration logging. This route keeps
+  // its own kill-switch check and its own (stricter) layered rate limits above
+  // — the proxy's are defense in depth behind them, not a replacement.
+  //
+  // No onUsage: this is a public surface with no client id, and
+  // ai_usage.client_id is a NOT NULL foreign key to clients(id). Public chat
+  // spend is therefore still unmetered — bounded by the rate limits above, but
+  // not attributed. Closing that needs a schema change, not a refactor.
+  let readable: ReadableStream<Uint8Array>;
+  try {
+    readable = await streamText({
+      // Not a client id. Keys the proxy's per-caller burst limit to the IP;
+      // connectionId stays constant so health tracking does not grow a row per
+      // visitor.
+      tenantId: `ip:${ip}`,
+      connectionId: "public",
+      app: "public_chat",
+      model: MODEL,
+      maxTokens: MAX_OUTPUT_TOKENS,
+      maxToolRounds: MAX_TOOL_ROUNDS,
+      thinking: { type: "adaptive" },
+      outputConfig: { effort: "low" },
+      system,
+      messages: incoming,
+      tools: [SUBMIT_LEAD_TOOL],
+      onTool: async (name, input, emit) => {
+        if (name !== "submit_lead") return "Unknown tool.";
+        const outcome = await handleSubmitLead(input);
+        // The widget reacts to this the moment the lead lands, rather than
+        // waiting for the model's confirmation turn — hence emit (to the
+        // visitor) alongside the returned result (to the model).
+        if (outcome.submitted) emit(QUALIFIED_LEAD_SENTINEL);
+        return outcome.result;
+      },
+      refusalText:
+        "I can't help with that one. Is there anything about your business or how RSG works that I can answer?",
+      errorText:
+        "Something went wrong on our end. Please try again, or reach us through the contact form in the Contact section.",
+    });
+  } catch (err) {
+    // Preflight rejected before any bytes were sent, so this can still be a
+    // real status code rather than an in-band apology.
+    console.error("[/api/chat] preflight", err);
+    const status = err instanceof AiError ? err.status : 503;
+    return NextResponse.json({ error: LIMIT_MESSAGE }, { status });
+  }
 
   return new Response(readable, {
     headers: {

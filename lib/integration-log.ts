@@ -133,6 +133,37 @@ export function correlationFromRequest(request: Request): string {
   return ensureCorrelationId(request.headers.get(CORRELATION_HEADER));
 }
 
+/**
+ * The id to log under, resolved in priority order:
+ *
+ *   1. explicitly passed by the caller (a resumed queue job)
+ *   2. the ambient AsyncLocalStorage store (inside withCorrelation)
+ *   3. the INBOUND REQUEST HEADER that middleware set
+ *   4. a fresh uuid
+ *
+ * Step 3 is what stops the trail dying at the route boundary. Middleware mints
+ * the id and forwards it on the request headers, but that only reaches a
+ * provider call if the route wrapped itself in withCorrelation — and 59 route
+ * handlers will not all remember to. Reading the header here makes propagation
+ * automatic: a browser error report quoting x-correlation-id joins to the
+ * provider call without any per-route code.
+ *
+ * next/headers throws outside a request scope (cron scripts, tests), which is
+ * exactly when there is no header to find, so the throw is the answer.
+ */
+async function resolveCorrelationId(explicit?: string | null): Promise<string> {
+  const known = cleanCorrelationId(explicit) ?? correlationStore.getStore();
+  if (known) return known;
+  try {
+    const { headers } = await import("next/headers");
+    const inbound = cleanCorrelationId((await headers()).get(CORRELATION_HEADER));
+    if (inbound) return inbound;
+  } catch {
+    /* not in a request scope — fall through to a fresh id */
+  }
+  return randomUUID();
+}
+
 // ---------------------------------------------------------------------------
 // Redaction
 //
@@ -563,7 +594,7 @@ export async function callProvider<T>(
   spec: CallSpec,
   fn: () => Promise<T>
 ): Promise<T> {
-  const correlationId = ensureCorrelationId(spec.correlationId);
+  const correlationId = await resolveCorrelationId(spec.correlationId);
   const connectionId = spec.connectionId ?? "default";
   const attempt = spec.attempt ?? 1;
   const startedAt = Date.now();
@@ -638,7 +669,7 @@ export async function recordSkipped(
   reason: string
 ): Promise<void> {
   await flush({
-    correlationId: ensureCorrelationId(),
+    correlationId: await resolveCorrelationId(),
     provider: spec.provider,
     connectionId: spec.connectionId ?? "default",
     tenantId: spec.tenantId ?? null,
@@ -669,7 +700,7 @@ export async function recordDeadLettered(input: {
   errorMessage: string;
 }): Promise<void> {
   await flush({
-    correlationId: ensureCorrelationId(input.correlationId),
+    correlationId: await resolveCorrelationId(input.correlationId),
     provider: input.provider,
     connectionId: input.connectionId ?? "default",
     tenantId: input.tenantId ?? null,
@@ -697,7 +728,7 @@ export async function recordInboundEvent(input: {
   correlationId?: string;
 }): Promise<void> {
   await flush({
-    correlationId: ensureCorrelationId(input.correlationId),
+    correlationId: await resolveCorrelationId(input.correlationId),
     provider: input.provider,
     connectionId: input.connectionId ?? "webhook",
     tenantId: input.tenantId ?? null,

@@ -217,8 +217,21 @@ export async function generateStructured<T>(opts: {
   return toolUse.input as T;
 }
 
-/** Dispatch a tool call to app code; returns the tool_result string for the model. */
-export type ToolHandler = (name: string, input: unknown) => Promise<string> | string;
+/**
+ * Dispatch a tool call to app code; returns the tool_result string for the
+ * model.
+ *
+ * `emit` writes directly into the response stream the visitor is reading, which
+ * is different from the return value (that goes to the MODEL). A handler needs
+ * it when a tool has a side effect the CLIENT must know about immediately —
+ * the chat route emits a sentinel the moment a lead is captured so the widget
+ * can react without waiting for the model's confirmation turn.
+ */
+export type ToolHandler = (
+  name: string,
+  input: unknown,
+  emit: (text: string) => void,
+) => Promise<string> | string;
 
 /**
  * Streaming plain-text reply, with an optional agentic tool loop. Returns a
@@ -231,7 +244,21 @@ export type ToolHandler = (name: string, input: unknown) => Promise<string> | st
  * message (the response has already begun) and logged server-side.
  */
 export async function streamText(opts: {
+  /**
+   * Client id for a tenant app. Public, unauthenticated surfaces have no
+   * client — they pass a stable non-uuid key (e.g. `ip:1.2.3.4`) so the
+   * per-caller rate limit still applies. Such a caller MUST NOT pass onUsage:
+   * ai_usage.client_id is a NOT NULL foreign key to clients(id), so there is
+   * nowhere to attribute non-tenant usage today.
+   */
   tenantId: string;
+  /**
+   * Health-tracking bucket for integration_connections. Defaults to tenantId,
+   * which is right for tenant apps (bounded by client count) and WRONG for a
+   * public surface keyed by IP — that would create one health row per visitor.
+   * Public callers pass a single constant like "public".
+   */
+  connectionId?: string;
   app: string;
   system: string;
   messages: Anthropic.MessageParam[];
@@ -241,6 +268,14 @@ export async function streamText(opts: {
   onTool?: ToolHandler;
   maxToolRounds?: number;
   onUsage?: OnUsage;
+  /** Extended thinking configuration, passed through to the API. */
+  thinking?: Anthropic.ThinkingConfigParam;
+  /** Output effort/format configuration, passed through to the API. */
+  outputConfig?: Anthropic.OutputConfig;
+  /** Shown in-band when the model declines. Caller-specific copy. */
+  refusalText?: string;
+  /** Shown in-band on a mid-stream error, after bytes have already been sent. */
+  errorText?: string;
 }): Promise<ReadableStream<Uint8Array>> {
   await preflight(opts);
   const model = opts.model ?? DEFAULT_MODEL;
@@ -250,6 +285,9 @@ export async function streamText(opts: {
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
+      /** Write straight to the visitor's stream — see ToolHandler's `emit`. */
+      const emit = (text: string) => controller.enqueue(encoder.encode(text));
+
       try {
         const convo: Anthropic.MessageParam[] = [...opts.messages];
         for (let round = 0; round < maxRounds; round++) {
@@ -262,7 +300,7 @@ export async function streamText(opts: {
               provider: "anthropic",
               operation: `ai.stream.${opts.app}`,
               tenantId: opts.tenantId,
-              connectionId: opts.tenantId,
+              connectionId: opts.connectionId ?? opts.tenantId,
               attempt: round + 1,
             },
             async () => {
@@ -273,12 +311,14 @@ export async function streamText(opts: {
                   { type: "text", text: opts.system, cache_control: { type: "ephemeral" } },
                 ],
                 ...(opts.tools?.length ? { tools: opts.tools } : {}),
+                ...(opts.thinking ? { thinking: opts.thinking } : {}),
+                ...(opts.outputConfig ? { output_config: opts.outputConfig } : {}),
                 messages: convo,
               });
 
               for await (const event of stream) {
                 if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-                  controller.enqueue(encoder.encode(event.delta.text));
+                  emit(event.delta.text);
                 }
               }
 
@@ -301,7 +341,7 @@ export async function streamText(opts: {
               if (block.type === "tool_use") {
                 let result: string;
                 try {
-                  result = await opts.onTool(block.name, block.input);
+                  result = await opts.onTool(block.name, block.input, emit);
                 } catch (e) {
                   result = `Tool error: ${(e as Error).message}`;
                 }
@@ -313,13 +353,15 @@ export async function streamText(opts: {
           }
 
           if (final.stop_reason === "refusal") {
-            controller.enqueue(encoder.encode("[The assistant declined to respond to that.]"));
+            emit(opts.refusalText ?? "[The assistant declined to respond to that.]");
           }
           break;
         }
       } catch (err) {
-        controller.enqueue(
-          encoder.encode("The assistant hit an error. Please try again in a moment."),
+        // The response has already begun, so the only way to tell the visitor
+        // is in-band. Already classified and recorded by callProvider.
+        emit(
+          opts.errorText ?? "The assistant hit an error. Please try again in a moment.",
         );
         console.error(`[ai/proxy:${opts.app}] stream error`, err);
       }
