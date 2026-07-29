@@ -22,7 +22,6 @@ const SERVICE_LINKS = [
     label: "Business Systems Audit",
     href: "/systemsaudit",
   },
-  { label: "Managed Services", href: "/managedservices" },
   {
     label: "Business Consulting",
     href: "/businessconsulting",
@@ -35,10 +34,6 @@ const SERVICE_LINKS = [
   {
     label: "Custom Private AI Systems",
     href: "/services/customprivateaisystems",
-  },
-  {
-    label: "Secure Systems Standard",
-    href: "/security",
   },
   {
     label: "Operations Consulting",
@@ -75,14 +70,11 @@ const INDUSTRY_LINKS = [
 
 const COMPANY_LINKS = [
   { label: "Services", href: "/services" },
-  { label: "Managed Services", href: "/managedservices" },
   { label: "Process", href: "/process" },
   { label: "Industries", href: "/industries" },
-  { label: "Security", href: "/security" },
   { label: "Demo Systems", href: "/demos" },
   { label: "Connect", href: "/connect" },
   { label: "Service Area", href: "/servicearea" },
-  { label: "FAQ", href: "/faq" },
   { label: "Book", href: "/book" },
   { label: "Client Login", href: "/login" },
   { label: "Admin Portal", href: "/admin" },

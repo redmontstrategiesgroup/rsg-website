@@ -18,15 +18,10 @@ export function Manifesto() {
           </div>
           <div className="lg:col-span-4 lg:col-start-9 lg:pt-12">
             <Reveal y={12} delay={0.1}>
-              <div className="space-y-6 border-t border-white/15 pt-6 text-[1.02rem] leading-relaxed text-white/55">
-                <p>
-                  Businesses lose time, leads, and revenue when their website,
-                  follow-up, CRM, and operations work in isolation.
-                </p>
-                <p>
-                  RSG finds the gaps and builds practical systems to close them.
-                </p>
-              </div>
+              <p className="border-t border-white/15 pt-6 text-[1.02rem] leading-relaxed text-white/55">
+                Businesses lose time, leads, and revenue when their website,
+                follow-up, CRM, and operations work in isolation.
+              </p>
             </Reveal>
           </div>
         </div>

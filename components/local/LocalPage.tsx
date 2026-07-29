@@ -404,19 +404,6 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
                 </a>
               </p>
             </div>
-            {!isAuditPage && (
-              <p className="mt-8 max-w-2xl text-sm leading-relaxed text-white/45">
-                Not ready for a call? Start with a{" "}
-                <Link
-                  href="/book"
-                  className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
-                >
-                  Business Systems Audit
-                </Link>{" "}
-                and see exactly where the business is losing time, leads, and
-                revenue.
-              </p>
-            )}
           </div>
         </Reveal>
 

@@ -30,17 +30,9 @@ export function WhyRSGSection() {
               </h2>
             </Reveal>
             <Reveal y={12} delay={0.16}>
-              <div className="mt-8 max-w-lg space-y-5 text-[1.02rem] leading-relaxed text-white/55">
-                <p>
-                  RSG does not push random AI tools or generic automation
-                  packages. We diagnose the business first, identify the weak
-                  points, create the plan, and build systems around the way the
-                  business actually operates.
-                </p>
-                <p className="text-white/75">
-                  AI is only useful when it solves a real business problem.
-                </p>
-              </div>
+              <p className="mt-8 max-w-lg text-[1.05rem] leading-relaxed text-white/75">
+                AI is only useful when it solves a real business problem.
+              </p>
             </Reveal>
           </div>
 

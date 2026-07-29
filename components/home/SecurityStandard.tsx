@@ -37,10 +37,8 @@ export function SecurityStandard({
             </Reveal>
             <Reveal y={12} delay={0.14}>
               <p className="mt-6 max-w-md text-[1.02rem] leading-relaxed text-white/55">
-                RSG does not simply connect tools and hope they work. Permissions,
-                approvals, backups, logs, testing, and recovery procedures are
-                designed into the system from the beginning — because these
-                systems run real operations and hold sensitive data.
+                Permissions, approvals, backups, logs, testing, and recovery are
+                designed into the system from day one.
               </p>
             </Reveal>
             <Reveal y={12} delay={0.2}>
