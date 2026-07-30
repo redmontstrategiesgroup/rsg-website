@@ -60,24 +60,6 @@ const integrationSchema = z.object({
   connects: mediumReq,
 });
 
-const roiInputSchema = z.object({
-  id: shortReq,
-  label: shortReq,
-  min: z.number().finite(),
-  max: z.number().finite(),
-  step: z.number().finite().positive(),
-  defaultValue: z.number().finite(),
-  format: z.enum(["number", "currency", "percent"]),
-  helper: medium.optional(),
-});
-
-const roiAssumptionSchema = z.object({
-  id: shortReq,
-  label: shortReq,
-  value: z.number().finite(),
-  helper: medium.optional(),
-});
-
 const complianceItemSchema = z.object({
   title: shortReq,
   detail: long.min(1),
@@ -152,14 +134,6 @@ export const verticalSchema = z.object({
     disclaimer: long.min(1),
     items: z.array(integrationSchema).max(20),
   }),
-  roi: z.object({
-    title: shortReq,
-    intro: long,
-    disclaimer: long.min(1),
-    inputs: z.array(roiInputSchema).max(10),
-    assumptions: z.array(roiAssumptionSchema).max(10),
-    recommendedSystemId: shortReq,
-  }),
   compliance: z.object({
     title: shortReq,
     intro: long,
@@ -183,7 +157,3 @@ export const verticalSchema = z.object({
   faqs: z.array(z.object({ q: mediumReq, a: long.min(1) })).max(10),
   seo: z.object({ title: shortReq, description: mediumReq }),
 });
-
-export const secondaryIndustriesSchema = z
-  .array(z.object({ name: shortReq, overlap: mediumReq }))
-  .max(16);

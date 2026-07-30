@@ -12,7 +12,7 @@ export function IntegrationsSection({ vertical }: { vertical: IndustryVertical }
 
   return (
     <section id="integrations" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Connects to your stack</p>
@@ -27,11 +27,11 @@ export function IntegrationsSection({ vertical }: { vertical: IndustryVertical }
           </Reveal>
         </div>
 
-        <div className="mt-14 space-y-10">
+        <div className="mt-9 sm:mt-14 space-y-10">
           {categories.map((cat, ci) => (
             <Reveal key={cat} y={12} delay={Math.min(ci * 0.05, 0.2)}>
               <div>
-                <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/35">{cat}</p>
+                <p className="font-mono text-[0.7rem] sm:text-[0.58rem] uppercase tracking-label text-white/35">{cat}</p>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {items
                     .filter((i) => i.category === cat)
@@ -51,7 +51,7 @@ export function IntegrationsSection({ vertical }: { vertical: IndustryVertical }
         </div>
 
         <Reveal y={10} delay={0.1}>
-          <p className="mt-12 max-w-3xl border-l-2 border-white/15 pl-4 text-[0.78rem] leading-relaxed text-white/40">
+          <p className="mt-8 sm:mt-12 max-w-3xl border-l-2 border-white/15 pl-4 text-[0.78rem] leading-relaxed text-white/40">
             {disclaimer}
           </p>
         </Reveal>

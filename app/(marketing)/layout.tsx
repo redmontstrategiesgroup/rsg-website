@@ -1,9 +1,8 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { ChatWidget } from "@/components/ChatWidget";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { CookieConsent } from "@/components/CookieConsent";
-import { EmailCapture } from "@/components/EmailCapture";
+import { DeferredChrome } from "@/components/DeferredChrome";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { SkipLink } from "@/components/SkipLink";
 
@@ -26,9 +25,9 @@ export default function MarketingLayout({
         {children}
       </div>
       <Footer />
-      <ChatWidget />
       <CookieConsent />
-      <EmailCapture />
+      {/* Chat + email prompt, loaded on demand — see DeferredChrome. */}
+      <DeferredChrome />
       <AnalyticsTracker />
     </>
   );

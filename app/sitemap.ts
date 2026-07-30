@@ -6,7 +6,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes: { path: string; priority: number }[] = [
     { path: "", priority: 1 },
     { path: "/services", priority: 0.8 },
-    { path: "/managedservices", priority: 0.9 },
     { path: "/security", priority: 0.8 },
     { path: "/process", priority: 0.7 },
     { path: "/industries", priority: 0.7 },
@@ -38,7 +37,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/industries/homeservices", priority: 0.85 },
     { path: "/industries/dentalpractices", priority: 0.85 },
     { path: "/industries/retail", priority: 0.85 },
-    { path: "/industries/additional", priority: 0.5 },
     // Service area
     { path: "/servicearea", priority: 0.6 },
     // Legal

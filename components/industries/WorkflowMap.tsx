@@ -40,7 +40,7 @@ export function WorkflowMap({
 
   return (
     <section id="workflow" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">The full workflow</p>
@@ -59,13 +59,13 @@ export function WorkflowMap({
 
         <Reveal y={14} delay={0.1}>
           <div
-            className={`mt-14 ${
+            className={`mt-9 sm:mt-14 ${
               variant === "journey" ? "grid gap-8 lg:grid-cols-12" : "space-y-8"
             }`}
           >
             {/* Stage selector */}
             {variant === "pipeline" && (
-              <div className="-mx-6 overflow-x-auto px-6 pb-2 sm:mx-0 sm:px-0" role="tablist" aria-label="Workflow stages">
+              <div className="-mx-6 min-w-0 max-w-full overflow-x-auto px-6 pb-2 sm:mx-0 sm:px-0" role="tablist" aria-label="Workflow stages">
                 <ol className="flex min-w-max items-stretch gap-0">
                   {stages.map((s, i) => (
                     <li key={s.id} className="flex items-center">
@@ -134,7 +134,7 @@ export function WorkflowMap({
                     </li>
                   ))}
                 </ol>
-                <p className="mt-3 flex items-center gap-2 font-mono text-[0.55rem] uppercase tracking-label text-white/30">
+                <p className="mt-3 flex items-center gap-2 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
                   <ArrowRight size={11} aria-hidden />
                   Stage {stages.length} feeds stage 1 — the lifecycle is a loop, not a funnel
                 </p>
@@ -151,12 +151,12 @@ export function WorkflowMap({
               <div className="overflow-hidden rounded-xl border border-white/10 bg-base-900/70">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-crimson/40 bg-crimson/10 font-mono text-[0.62rem] text-crimson-light">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-crimson/40 bg-crimson/10 font-mono text-[0.72rem] sm:text-[0.62rem] text-crimson-light">
                       {activeIndex + 1}
                     </span>
                     <h3 className="font-display text-lg text-white">{active.label}</h3>
                   </div>
-                  <span className="font-mono text-[0.55rem] uppercase tracking-label text-white/30">
+                  <span className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
                     Stage {activeIndex + 1} of {stages.length}
                   </span>
                 </div>
@@ -183,7 +183,7 @@ export function WorkflowMap({
                     <p className="inline-flex items-center gap-2 rounded-lg border border-crimson/30 bg-crimson/[0.08] px-3 py-2 text-sm text-white/85">
                       {active.system}
                     </p>
-                    <p className="mt-3 font-mono text-[0.55rem] uppercase tracking-label text-white/30">
+                    <p className="mt-3 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
                       Automation opportunities
                     </p>
                     <ul className="mt-2 space-y-2">
@@ -206,7 +206,7 @@ export function WorkflowMap({
                         </li>
                       ))}
                     </ul>
-                    <p className="mt-5 font-mono text-[0.55rem] uppercase tracking-label text-white/30">
+                    <p className="mt-5 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
                       Recommended integrations
                     </p>
                     <ul className="mt-2 flex flex-wrap gap-2">
@@ -260,7 +260,7 @@ function StageButton({
           active ? "bg-crimson/[0.08] text-white" : "text-white/45 hover:bg-white/[0.03] hover:text-white/75"
         }`}
       >
-        <span className="font-mono text-[0.55rem] uppercase tracking-label text-white/30">
+        <span className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
           {String(index + 1).padStart(2, "0")}
         </span>
         <span className="mt-0.5 block text-sm leading-snug">{stage.label}</span>
@@ -281,7 +281,7 @@ function StageButton({
             : "border-white/10 bg-white/[0.02] hover:border-white/25"
         }`}
       >
-        <span className={`font-mono text-[0.55rem] ${active ? "text-crimson-light" : "text-white/30"}`}>
+        <span className={`font-mono text-[0.7rem] sm:text-[0.55rem] ${active ? "text-crimson-light" : "text-white/30"}`}>
           {String(index + 1).padStart(2, "0")}
         </span>
         <span className={`mt-1 text-[0.78rem] leading-snug ${active ? "text-white" : "text-white/55"}`}>
@@ -302,7 +302,7 @@ function StageButton({
       }`}
     >
       <span
-        className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-[0.62rem] transition-colors ${
+        className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-[0.72rem] sm:text-[0.62rem] transition-colors ${
           active
             ? "border-crimson bg-crimson/15 text-crimson-light shadow-glow-sm"
             : "border-white/15 bg-white/[0.03] text-white/45"
@@ -311,7 +311,7 @@ function StageButton({
         {index + 1}
       </span>
       <span
-        className={`max-w-[6.5rem] text-center text-[0.62rem] leading-tight ${
+        className={`max-w-[6.5rem] text-center text-[0.72rem] sm:text-[0.62rem] leading-tight ${
           active ? "text-white" : "text-white/45"
         }`}
       >
@@ -335,7 +335,7 @@ function DetailCell({
   return (
     <div className="bg-base-900 p-6">
       <p
-        className={`flex items-center gap-2 font-mono text-[0.55rem] uppercase tracking-label ${
+        className={`flex items-center gap-2 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label ${
           tone === "risk" ? "text-crimson-light/80" : "text-white/35"
         }`}
       >

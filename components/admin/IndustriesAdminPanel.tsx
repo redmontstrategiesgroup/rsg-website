@@ -12,17 +12,13 @@ import {
 } from "lucide-react";
 import { postJson, putJson } from "@/lib/api";
 import { checkCompleteness } from "@/lib/industries/completeness";
-import type {
-  CompletenessReport,
-  IndustryVertical,
-  SecondaryIndustry,
-} from "@/lib/industries/types";
+import type { CompletenessReport, IndustryVertical } from "@/lib/industries/types";
 
 /**
- * Admin management for the industry verticals: every section is editable,
- * a live completeness checklist gates publishing, and the secondary-
- * industries list is managed here too. Complex sections edit as validated
- * JSON; the server re-validates everything with zod on save.
+ * Admin management for the three industry verticals: every section is
+ * editable and a live completeness checklist gates publishing. Complex
+ * sections edit as validated JSON; the server re-validates everything with
+ * zod on save.
  */
 
 type VerticalRow = { vertical: IndustryVertical; completeness: CompletenessReport };
@@ -38,7 +34,6 @@ const SECTION_DEFS: { key: keyof IndustryVertical; label: string; hint: string }
   { key: "systemsIntro", label: "Systems intro", hint: "Paragraph above the system cards" },
   { key: "systems", label: "Recommended systems", hint: "Named RSG systems with outcomes and pricing" },
   { key: "integrations", label: "Integrations", hint: "Items with connects-text plus the disclaimer" },
-  { key: "roi", label: "ROI calculator", hint: "Inputs, assumption rates, disclaimer" },
   { key: "compliance", label: "Compliance", hint: "Industry-specific practices and disclaimer" },
   { key: "caseStudy", label: "Case study", hint: "Illustrative scenario (or verified results)" },
   { key: "ctas", label: "CTAs", hint: "Primary and secondary calls to action" },
@@ -49,7 +44,6 @@ const SECTION_DEFS: { key: keyof IndustryVertical; label: string; hint: string }
 
 export function IndustriesAdminPanel() {
   const [rows, setRows] = useState<VerticalRow[]>([]);
-  const [secondary, setSecondary] = useState<SecondaryIndustry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [activeSlug, setActiveSlug] = useState<string>("");
@@ -60,9 +54,8 @@ export function IndustriesAdminPanel() {
     try {
       const res = await fetch("/api/admin/industries");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = (await res.json()) as { verticals: VerticalRow[]; secondary: SecondaryIndustry[] };
+      const data = (await res.json()) as { verticals: VerticalRow[] };
       setRows(data.verticals);
-      setSecondary(data.secondary);
       setActiveSlug((prev) => prev || data.verticals[0]?.vertical.slug || "");
     } catch {
       setLoadError("Couldn't load industry content. Refresh to try again.");
@@ -124,8 +117,6 @@ export function IndustriesAdminPanel() {
           />
         ) : null
       )}
-
-      <SecondaryEditor industries={secondary} onSaved={setSecondary} />
     </div>
   );
 }
@@ -428,117 +419,3 @@ function SectionEditor({
   );
 }
 
-function SecondaryEditor({
-  industries,
-  onSaved,
-}: {
-  industries: SecondaryIndustry[];
-  onSaved: (items: SecondaryIndustry[]) => void;
-}) {
-  const [items, setItems] = useState<SecondaryIndustry[]>(industries);
-  const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    setItems(industries);
-  }, [industries]);
-
-  const update = (i: number, patch: Partial<SecondaryIndustry>) => {
-    setItems((prev) => prev.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
-    setDirty(true);
-    setMessage("");
-  };
-
-  async function save() {
-    setSaving(true);
-    setMessage("");
-    try {
-      const cleaned = items.filter((i) => i.name.trim() && i.overlap.trim());
-      const res = await postJson("/api/admin/industries", {
-        action: "save_secondary",
-        industries: cleaned,
-      });
-      const data = (await res.json()) as { secondary?: SecondaryIndustry[]; error?: string };
-      if (!res.ok || !data.secondary) {
-        setMessage(data.error ?? "Save failed.");
-        return;
-      }
-      setItems(data.secondary);
-      setDirty(false);
-      setMessage("Saved.");
-      onSaved(data.secondary);
-    } catch {
-      setMessage("Save failed — check your connection.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="font-display text-lg text-white">Additional industries</p>
-          <p className="mt-1 text-[0.78rem] text-white/40">
-            Shown on /industries/additional — name plus the honest overlap with an existing system.
-            No specialized claims.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setItems((prev) => [...prev, { name: "", overlap: "" }]);
-              setDirty(true);
-            }}
-            className="rounded-lg border border-white/12 px-3 py-2 text-sm text-white/55 transition-colors hover:border-white/30 hover:text-white"
-          >
-            Add industry
-          </button>
-          <button
-            type="button"
-            onClick={save}
-            disabled={!dirty || saving}
-            className="btn-primary !px-4 !py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {saving ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Save size={14} className="mr-2" />}
-            Save list
-          </button>
-        </div>
-      </div>
-      {message && <p className="mt-3 text-sm text-white/55">{message}</p>}
-      <div className="mt-5 space-y-3">
-        {items.map((item, i) => (
-          <div key={i} className="grid gap-3 sm:grid-cols-12">
-            <input
-              value={item.name}
-              onChange={(e) => update(i, { name: e.target.value })}
-              placeholder="Industry name"
-              maxLength={200}
-              className="rounded-lg border border-white/12 bg-white/[0.03] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none sm:col-span-3"
-            />
-            <input
-              value={item.overlap}
-              onChange={(e) => update(i, { overlap: e.target.value })}
-              placeholder="Honest overlap with an existing RSG system"
-              maxLength={600}
-              className="rounded-lg border border-white/12 bg-white/[0.03] px-3 py-2 text-sm text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none sm:col-span-8"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                setItems((prev) => prev.filter((_, idx) => idx !== i));
-                setDirty(true);
-              }}
-              aria-label={`Remove ${item.name || "row"}`}
-              className="flex items-center justify-center rounded-lg border border-white/12 text-white/45 transition-colors hover:border-crimson/50 hover:text-crimson-light sm:col-span-1"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}

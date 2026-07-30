@@ -1,14 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Reveal } from "../Reveal";
 import { trackEvent } from "@/lib/events";
 
 export function Hero() {
   return (
     <section className="relative">
-      <div className="container-px grid items-center gap-16 pb-28 pt-40 sm:pt-52 lg:grid-cols-12 lg:gap-8 lg:pb-36">
+      {/*
+        Mobile hero is deliberately compact: pt-28 clears the 64px fixed nav
+        with room to breathe rather than the 160px it used to reserve, so the
+        headline, the promise, and the one CTA all land above the fold on a
+        small phone instead of the CTA sitting a scroll away.
+      */}
+      <div className="container-px grid items-center gap-16 pb-16 pt-28 sm:pb-28 sm:pt-52 lg:grid-cols-12 lg:gap-8 lg:pb-36">
         <div className="lg:col-span-7">
           <Reveal y={12}>
             <h1 className="display text-[2.35rem] leading-[1.02] sm:text-[4.4rem] sm:leading-[0.99] lg:text-[5.2rem]">
@@ -18,17 +23,17 @@ export function Hero() {
             </h1>
           </Reveal>
           <Reveal y={12} delay={0.1}>
-            <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/55">
+            <p className="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-white/55 sm:mt-8 sm:text-lg">
               Redmont Strategies Group helps service businesses fix lead flow,
               follow-up, and operations — then builds the systems to run them.
             </p>
           </Reveal>
           <Reveal y={12} delay={0.18}>
-            <div className="mt-12">
+            <div className="mt-8 sm:mt-12">
               <Link
                 href="/book"
                 onClick={() => trackEvent("book_strategy_call_click", { location: "hero" })}
-                className="btn-primary"
+                className="btn-primary w-full sm:w-auto"
               >
                 Book a Strategy Call
               </Link>
@@ -36,14 +41,15 @@ export function Hero() {
           </Reveal>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.1, delay: 0.3 }}
-          className="hidden lg:col-span-5 lg:block"
-        >
+        {/*
+          Desktop-only diagram. The fade-in is CSS (animate-fade-up) rather
+          than framer-motion — that removed the library from the marketing
+          critical path entirely, and it is never downloaded on a phone where
+          this element does not render at all.
+        */}
+        <div className="hidden lg:col-span-5 lg:block lg:animate-fade-up lg:[animation-delay:0.3s] lg:[animation-fill-mode:backwards]">
           <SystemsModel />
-        </motion.div>
+        </div>
       </div>
     </section>
   );

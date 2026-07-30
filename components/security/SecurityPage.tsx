@@ -23,13 +23,21 @@ import {
 function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-white/[0.08]">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+      {/* Decorative only — hidden on phones, where the blur and grid cost
+          compositing work and add nothing to the message. */}
+      <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute inset-0 bg-grid opacity-[0.16]" />
         <div className="absolute left-1/2 top-[-20%] h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-crimson/[0.08] blur-[140px]" />
       </div>
-      <div className="container-px py-24 sm:py-32">
-        <nav className="mb-8 flex items-center gap-2 text-xs text-white/40">
-          <Link href="/" className="transition-colors hover:text-white/70">
+      <div className="container-px py-16 sm:py-32">
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-8 flex items-center gap-2 text-xs text-white/40"
+        >
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center transition-colors hover:text-white/70 lg:min-h-0"
+          >
             Home
           </Link>
           <span>/</span>
@@ -99,7 +107,7 @@ const PHILOSOPHY = [
 function Philosophy() {
   return (
     <section id="philosophy" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Security-first development</p>
@@ -118,7 +126,7 @@ function Philosophy() {
             </p>
           </Reveal>
         </div>
-        <div className="mt-14 grid gap-3 sm:grid-cols-2">
+        <div className="mt-9 sm:mt-14 grid gap-3 sm:grid-cols-2">
           {PHILOSOPHY.map((p, i) => (
             <Reveal key={p.title} y={12} delay={(i % 2) * 0.06}>
               <div className="h-full border border-white/10 bg-white/[0.02] p-6 sm:p-7">
@@ -138,7 +146,7 @@ function Philosophy() {
 function Pillars() {
   return (
     <section id="standard" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">The standard, area by area</p>
@@ -150,7 +158,7 @@ function Pillars() {
           </Reveal>
         </div>
 
-        <div className="mt-14 space-y-4">
+        <div className="mt-9 sm:mt-14 space-y-4">
           {SECURITY_PILLARS.map((pillar, i) => {
             const Icon = pillar.icon;
             return (
@@ -224,7 +232,7 @@ const HIGH_RISK = [
 function ApprovalFlow() {
   return (
     <section id="ai-approvals" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Human-in-the-loop</p>
@@ -246,7 +254,7 @@ function ApprovalFlow() {
 
         {/* Flow */}
         <Reveal y={12} delay={0.16}>
-          <div className="mt-12 flex flex-wrap items-center gap-3">
+          <div className="mt-8 sm:mt-12 flex flex-wrap items-center gap-3">
             {APPROVAL_FLOW.map((s, i) => (
               <div key={s.key} className="flex items-center gap-3">
                 <div className="flex items-center gap-2.5 border border-white/10 bg-white/[0.02] px-4 py-3">
@@ -290,7 +298,7 @@ function ApprovalFlow() {
 function Framework() {
   return (
     <section id="framework" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Framework-informed development</p>
@@ -309,7 +317,7 @@ function Framework() {
           </Reveal>
         </div>
 
-        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 sm:mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {FRAMEWORK_STAGES.map((stage, i) => (
             <Reveal key={stage.name} y={12} delay={(i % 4) * 0.05}>
               <div className="h-full border border-white/10 bg-white/[0.02] p-5">
@@ -329,7 +337,7 @@ function Framework() {
         </div>
 
         {/* OWASP risks */}
-        <div className="mt-12">
+        <div className="mt-8 sm:mt-12">
           <p className="label">OWASP-informed AI risks, in plain terms</p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {OWASP_AI_RISKS.map((r) => (
@@ -342,7 +350,7 @@ function Framework() {
         </div>
 
         {/* Compliance posture */}
-        <div className="mt-12 border border-white/10 bg-white/[0.02] p-6 sm:p-7">
+        <div className="mt-8 sm:mt-12 border border-white/10 bg-white/[0.02] p-6 sm:p-7">
           <p className="label">An honest word on compliance</p>
           <ul className="mt-4 space-y-2.5">
             {COMPLIANCE_STATEMENTS.map((s) => (
@@ -363,7 +371,7 @@ function Framework() {
 function Packages() {
   return (
     <section id="packages" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Security packaging</p>
@@ -382,7 +390,7 @@ function Packages() {
           </Reveal>
         </div>
 
-        <div className="mt-12 grid gap-3 lg:grid-cols-2">
+        <div className="mt-8 sm:mt-12 grid gap-3 lg:grid-cols-2">
           {SECURITY_PACKAGES.map((pkg, i) => (
             <Reveal key={pkg.id} y={12} delay={(i % 2) * 0.06}>
               <div className="h-full border border-white/10 bg-white/[0.02] p-6 sm:p-7">
@@ -415,7 +423,7 @@ function Packages() {
 function Faq() {
   return (
     <section id="faq" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Questions</p>
@@ -426,7 +434,7 @@ function Faq() {
             </h2>
           </Reveal>
         </div>
-        <div className="mt-12 max-w-3xl">
+        <div className="mt-8 sm:mt-12 max-w-3xl">
           {SECURITY_FAQS.map((item) => (
             <details key={item.q} className="group border-t border-white/[0.08] last:border-b">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 [&::-webkit-details-marker]:hidden">
@@ -450,7 +458,7 @@ function Faq() {
 function Cta() {
   return (
     <section id="contact" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Next step</p>
@@ -496,7 +504,7 @@ function Cta() {
 
 export function SecurityControlGrid() {
   return (
-    <div className="mt-12 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-8 sm:mt-12 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
       {HOMEPAGE_CONTROL_GRID.map((c) => (
         <div
           key={c}

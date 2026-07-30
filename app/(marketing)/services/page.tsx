@@ -4,7 +4,6 @@ import { Capabilities } from "@/components/home/Capabilities";
 import { OperatingModel } from "@/components/home/OperatingModel";
 import { EngagementOptions } from "@/components/home/EngagementOptions";
 import { SecurityIncluded } from "@/components/security/SecurityIncluded";
-import { AfterLaunchSection } from "@/components/managed-services/AfterLaunch";
 
 export const metadata: Metadata = {
   title: "Services | Redmont Strategies Group",
@@ -27,7 +26,6 @@ export default function ServicesPage() {
       <OperatingModel />
       <SecurityIncluded variant="operations" />
       <EngagementOptions />
-      <AfterLaunchSection service="consulting" />
     </PageShell>
   );
 }

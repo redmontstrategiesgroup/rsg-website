@@ -8,7 +8,6 @@ import { ProblemsSection } from "@/components/industries/ProblemsSection";
 import { WorkflowMap } from "@/components/industries/WorkflowMap";
 import { SystemsGrid } from "@/components/industries/SystemsGrid";
 import { DemoSection } from "@/components/industries/DemoSection";
-import { RoiCalculator } from "@/components/industries/RoiCalculator";
 import { CaseStudySection } from "@/components/industries/CaseStudySection";
 import { IntegrationsSection } from "@/components/industries/IntegrationsSection";
 import { ComplianceSection } from "@/components/industries/ComplianceSection";
@@ -40,9 +39,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * Retail composition intentionally differs from the other verticals:
- * a tile wall of problems, a looping lifecycle workflow, and the revenue
- * calculator elevated ahead of systems — retail owners think in numbers
- * first, tools second.
+ * a tile wall of problems and a looping lifecycle workflow ahead of the
+ * systems grid — retail owners think in the shape of the cycle first,
+ * tools second.
  */
 export default async function RetailPage() {
   const vertical = await getVertical(SLUG);
@@ -58,7 +57,6 @@ export default async function RetailPage() {
         heading="Twelve gaps between your locations, your inventory, and your customers."
       />
       <WorkflowMap vertical={vertical} variant="loop" />
-      <RoiCalculator vertical={vertical} />
       <SystemsGrid vertical={vertical} />
       <DemoSection vertical={vertical} />
       <CaseStudySection vertical={vertical} />

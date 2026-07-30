@@ -61,7 +61,7 @@ export default async function PreparePage({
   }
 
   return (
-    <main className="relative overflow-hidden pb-24 pt-28 sm:pt-32">
+    <main className="relative overflow-hidden pb-16 pt-24 sm:pb-24 sm:pt-32">
       <div className="container-px relative">
         <div className="mx-auto max-w-2xl">
           <p className="label mb-4">Before your consultation</p>
@@ -74,7 +74,7 @@ export default async function PreparePage({
             automatically, and nothing here is required to keep your
             appointment.
           </p>
-          <div className="mt-12">{content}</div>
+          <div className="mt-8 sm:mt-12">{content}</div>
         </div>
       </div>
     </main>

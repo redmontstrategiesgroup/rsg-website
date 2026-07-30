@@ -26,7 +26,7 @@ export function DeploymentCompare() {
 
   return (
     <section id="deployment" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Deployment options</p>
         </Reveal>
@@ -54,7 +54,7 @@ export function DeploymentCompare() {
                 role="tab"
                 aria-selected={selected}
                 onClick={() => setActive(opt.id)}
-                className={`rounded-lg border px-3.5 py-2 text-sm transition-colors ${
+                className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 lg:min-h-0 ${
                   selected
                     ? "border-crimson/45 bg-crimson/10 text-white"
                     : "border-white/10 text-white/50 hover:border-white/25 hover:text-white"
@@ -77,7 +77,7 @@ export function DeploymentCompare() {
             </p>
             <div className="mt-8 grid gap-8 lg:grid-cols-2">
               <div>
-                <p className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                   Suitable for
                 </p>
                 <ul className="mt-3 space-y-2">

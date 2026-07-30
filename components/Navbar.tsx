@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { trackEvent } from "@/lib/events";
+
+const MENU_ID = "mobile-nav";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -12,13 +14,13 @@ const NAV_LINKS = [
   { label: "Process", href: "/process" },
   { label: "Industries", href: "/industries" },
   { label: "Demos", href: "/demos" },
-  { label: "Book", href: "/book" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -38,6 +40,19 @@ export function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  // Escape closes the menu and returns focus to the button that opened it,
+  // so keyboard users are never stranded inside an open panel.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMobileOpen(false);
+      toggleRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
@@ -47,10 +62,11 @@ export function Navbar() {
       }`}
     >
       <nav className="container-px relative flex h-16 items-center justify-between sm:h-20">
+        {/* min-h-11 makes the wordmark a 44px target without resizing it. */}
         <Link
           href="/"
           aria-label="Redmont Strategies Group home"
-          className="flex min-w-0 items-center"
+          className="flex min-h-11 min-w-0 items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 lg:min-h-0"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -89,34 +105,52 @@ export function Navbar() {
           </Link>
         </div>
 
+        {/* 44px square — the minimum comfortable touch target, up from 40. */}
         <button
+          ref={toggleRef}
           type="button"
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-white/15 text-white lg:hidden"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-white/15 text-white transition-colors hover:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
+          aria-controls={MENU_ID}
         >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </nav>
 
+      {/*
+        One-thumb menu: every row is a 56px-tall full-width target, the
+        current page is marked with aria-current rather than colour alone,
+        and the booking CTA sits last so it lands nearest the thumb.
+      */}
       {mobileOpen && (
-        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-white/10 bg-base sm:max-h-[calc(100dvh-5rem)] lg:hidden">
-          <div className="container-px flex flex-col py-4">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="border-b border-white/[0.06] px-1 py-4 text-base text-white/70 transition-colors hover:text-white"
-              >
-                {link.label}
-              </Link>
-            ))}
+        <nav
+          id={MENU_ID}
+          aria-label="Main menu"
+          className="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-white/10 bg-base sm:max-h-[calc(100dvh-5rem)] lg:hidden"
+        >
+          <div className="container-px flex flex-col py-3">
+            {NAV_LINKS.map((link) => {
+              const active = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex min-h-14 items-center border-b border-white/[0.06] px-1 text-[1.05rem] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
+                    active ? "text-white" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}
-              className="border-b border-white/[0.06] px-1 py-4 text-base text-white/70 transition-colors hover:text-white"
+              className="flex min-h-14 items-center border-b border-white/[0.06] px-1 text-[1.05rem] text-white/70 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               Client Login
             </Link>
@@ -128,12 +162,12 @@ export function Navbar() {
                   location: "nav_mobile",
                 });
               }}
-              className="btn-primary mt-5 w-full"
+              className="btn-primary mt-4 w-full"
             >
               Book a Strategy Call
             </Link>
           </div>
-        </div>
+        </nav>
       )}
     </header>
   );

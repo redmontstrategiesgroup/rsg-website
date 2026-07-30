@@ -10,7 +10,9 @@ const TRUST_ICONS = [Shield, Server, Lock, Users, Headphones];
 export function PrivateAiHero() {
   return (
     <section className="relative overflow-hidden border-b border-white/[0.08]">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+      {/* Decorative only — hidden on phones, where the blur and grid cost
+          compositing work and add nothing to the message. */}
+      <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute inset-0 bg-grid opacity-[0.18]" />
         <div className="absolute left-1/2 top-[-20%] h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-crimson/[0.08] blur-[140px]" />
         <div className="absolute bottom-0 right-0 h-[280px] w-[420px] rounded-full bg-white/[0.03] blur-[100px]" />
@@ -20,12 +22,21 @@ export function PrivateAiHero() {
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-7">
             <Reveal y={12}>
-              <nav aria-label="Breadcrumb" className="text-sm text-white/40">
-                <Link href="/" className="hover:text-white/70">
+              <nav
+                aria-label="Breadcrumb"
+                className="flex flex-wrap items-center text-sm text-white/40"
+              >
+                <Link
+                  href="/"
+                  className="inline-flex min-h-11 items-center hover:text-white/70 lg:min-h-0"
+                >
                   Home
                 </Link>
                 <span className="mx-2">/</span>
-                <Link href="/services" className="hover:text-white/70">
+                <Link
+                  href="/services"
+                  className="inline-flex min-h-11 items-center hover:text-white/70 lg:min-h-0"
+                >
                   Services
                 </Link>
                 <span className="mx-2">/</span>
@@ -95,7 +106,7 @@ export function PrivateAiHero() {
                 className="relative overflow-hidden rounded-2xl border border-white/12 bg-base-900/80 p-6 sm:p-8"
                 aria-hidden
               >
-                <p className="font-mono text-[0.55rem] uppercase tracking-label text-crimson-light">
+                <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light">
                   Controlled environment
                 </p>
                 <div className="mt-5 space-y-3">
@@ -120,7 +131,7 @@ export function PrivateAiHero() {
                 </p>
                 <Link
                   href={PRIVATE_AI_PATH + "#security"}
-                  className="mt-4 inline-flex text-sm text-crimson-light hover:underline"
+                  className="mt-4 inline-flex min-h-11 items-center text-sm text-crimson-light hover:underline lg:min-h-0"
                 >
                   View security architecture
                 </Link>

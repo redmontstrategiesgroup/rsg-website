@@ -11,7 +11,9 @@ export function VerticalCtaBand({ vertical }: { vertical: IndustryVertical }) {
   const { primary, secondary } = vertical.ctas;
   return (
     <section className="relative overflow-hidden border-t border-white/[0.08]">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+      {/* Decorative only — hidden on phones, where the blur and grid cost
+          compositing work and add nothing to the message. */}
+      <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute left-1/2 top-1/2 h-[360px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-crimson/[0.08] blur-[120px]" />
       </div>
       <div className="container-px py-24 text-center sm:py-32">

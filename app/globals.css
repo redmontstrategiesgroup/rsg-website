@@ -47,14 +47,63 @@ select optgroup {
   color: #111111;
 }
 
+/*
+  iOS Safari zooms the whole page when a focused field is under 16px, and
+  every form here was styled `text-sm` (14px) — so tapping any input on an
+  iPhone kicked the layout sideways and left the user pinching back out.
+  Setting the floor centrally fixes every form at once; from `sm` up the
+  original 14px returns, where no such zoom behaviour exists.
+
+  `!important` is deliberate: the fields carry Tailwind's `.text-sm`, whose
+  class specificity beats a bare element selector, and this floor has to hold
+  everywhere rather than be re-applied by hand at 30-odd call sites.
+*/
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* And a comfortable touch height to go with the readable text. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select {
+    min-height: 2.75rem;
+  }
+}
+
 @layer components {
   .container-px {
     @apply mx-auto w-full max-w-content px-6 sm:px-10 lg:px-14;
   }
 
-  /* Quiet small-caps section eyebrow */
+  /*
+    Section vertical rhythm. One class so every section on the site breathes
+    identically. Mobile is deliberately tighter than desktop: at 80px top and
+    bottom the homepage carried ~1,550px of pure padding — over two phone
+    screens of scrolling past nothing. From `sm` up these are the values the
+    site has always used, so desktop is untouched.
+  */
+  .section-y {
+    @apply py-14 sm:py-28;
+  }
+
+  /* Same rhythm, one step quieter — for stacked or sub-sections. */
+  .section-y-sm {
+    @apply py-12 sm:py-20;
+  }
+
+  /* Gap between a section's heading block and the content beneath it. */
+  .section-lead {
+    @apply mt-10 sm:mt-16;
+  }
+
+  /*
+    Quiet small-caps section eyebrow. 12px on phones (up from 10.9px, which
+    read as noise at arm's length) and the original size from `sm` up.
+  */
   .label {
-    @apply inline-flex items-center gap-3 text-[0.68rem] font-medium uppercase tracking-[0.22em] text-white/40;
+    @apply inline-flex items-center gap-3 text-[0.75rem] font-medium uppercase tracking-[0.2em] text-white/40 sm:text-[0.68rem] sm:tracking-[0.22em];
   }
 
   /* Editorial 12-column section grid */
@@ -71,19 +120,36 @@ select optgroup {
     @apply bg-gradient-to-b from-white via-white to-white/55 bg-clip-text text-transparent;
   }
 
+  /*
+    Buttons. `min-h-12` (48px) guarantees the touch target clears the 44px
+    floor even where a caller trims the padding, and `text-center` keeps
+    two-line labels tidy when a long CTA wraps on a 320px screen.
+  */
+
   /* Primary — solid deep ruby, sharp corners, no glow */
   .btn-primary {
-    @apply inline-flex items-center justify-center bg-crimson px-8 py-4 text-sm font-medium tracking-wide text-white transition-colors duration-200 hover:bg-crimson-light focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2 focus-visible:ring-offset-base;
+    @apply inline-flex min-h-12 items-center justify-center bg-crimson px-8 py-4 text-center text-sm font-medium tracking-wide text-white transition-colors duration-200 hover:bg-crimson-light focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2 focus-visible:ring-offset-base;
   }
 
   /* Ghost — plain hairline border, sharp corners */
   .btn-ghost {
-    @apply inline-flex items-center justify-center border border-white/20 px-8 py-4 text-sm font-medium tracking-wide text-white/85 transition-colors duration-200 hover:border-white/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20;
+    @apply inline-flex min-h-12 items-center justify-center border border-white/20 px-8 py-4 text-center text-sm font-medium tracking-wide text-white/85 transition-colors duration-200 hover:border-white/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20;
   }
 
   /* Quiet underlined text link */
   .link-underline {
     @apply text-sm font-medium text-white/80 underline decoration-white/25 underline-offset-8 transition-colors hover:text-white hover:decoration-white/60;
+  }
+
+  /*
+    Standalone "Learn more →" style link. These sit on their own line and act
+    as buttons, so they need a real touch target: min-h-11 (44px) gives them
+    one on mobile without changing how they look on desktop, where the text
+    box alone was only 20px tall.
+  */
+  /* Pair with `group` in the markup for the arrow nudge on hover. */
+  .link-arrow {
+    @apply inline-flex min-h-11 items-center gap-2.5 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:min-h-0;
   }
 
   /* Flat dark surface card */
@@ -94,6 +160,34 @@ select optgroup {
   .hairline {
     @apply h-px w-full bg-white/10;
   }
+}
+
+/*
+  Scroll reveals (components/Reveal.tsx + components/RevealObserver.tsx).
+
+  `[data-reveal]` nodes are visible by default — that is the whole point, and
+  why the server HTML no longer ships ~58 opacity:0 elements per page. The
+  animation only exists once the inline script in app/layout.tsx has set
+  data-reveal="on" on <html>, which it does before first paint and only for
+  wide viewports whose user has not asked for reduced motion.
+
+  Phones therefore get plain, immediately-painted content with no observer
+  and no animation JS; desktop keeps the reveal it has always had.
+*/
+html[data-reveal="on"] [data-reveal] {
+  opacity: 0;
+  transform: translateY(var(--reveal-y, 12px));
+  will-change: opacity, transform;
+}
+
+html[data-reveal="on"] [data-reveal][data-reveal-in] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  /* transition-delay is set per-node inline by <Reveal delay=…> */
+  will-change: auto;
 }
 
 /* Hero systems-visual motion (disabled for reduced-motion users) */
@@ -148,38 +242,3 @@ select optgroup {
 
 
 
-/* Range sliders on the industry ROI calculators */
-.roi-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.12);
-  outline: none;
-  cursor: pointer;
-}
-.roi-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 16px;
-  width: 16px;
-  border-radius: 9999px;
-  background: #d94b5e;
-  border: 2px solid #0c0c10;
-  box-shadow: 0 0 0 1px rgba(217, 75, 94, 0.5);
-  transition: transform 120ms ease;
-}
-.roi-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-.roi-slider::-moz-range-thumb {
-  height: 14px;
-  width: 14px;
-  border-radius: 9999px;
-  background: #d94b5e;
-  border: 2px solid #0c0c10;
-  box-shadow: 0 0 0 1px rgba(217, 75, 94, 0.5);
-}
-.roi-slider:focus-visible {
-  box-shadow: 0 0 0 2px rgba(179, 36, 58, 0.6);
-}

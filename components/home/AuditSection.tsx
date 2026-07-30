@@ -20,7 +20,7 @@ const AUDIT_AREAS = [
 export function AuditSection() {
   return (
     <section id="audit" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <Reveal y={12}>
@@ -52,7 +52,7 @@ export function AuditSection() {
 
           <div className="lg:col-span-6 lg:col-start-7">
             <Reveal y={12} delay={0.12}>
-              <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
+              <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
                 What the audit covers
               </p>
               <div className="mt-6 grid gap-x-10 sm:grid-cols-2">

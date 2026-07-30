@@ -14,7 +14,7 @@ const PRINCIPLES = [
 export function WhyRSGSection() {
   return (
     <section id="why" className="scroll-mt-24 border-y border-white/10 bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-6">
             <Reveal y={12}>
@@ -38,7 +38,7 @@ export function WhyRSGSection() {
 
           <div className="lg:col-span-4 lg:col-start-9 lg:pt-12">
             <Reveal y={12} delay={0.12}>
-              <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
+              <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
                 Principles
               </p>
               <ul className="mt-7">

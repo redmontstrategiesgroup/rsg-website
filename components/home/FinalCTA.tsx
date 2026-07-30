@@ -12,7 +12,7 @@ export function FinalCTA({
 }) {
   return (
     <section id="contact" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Next step</p>

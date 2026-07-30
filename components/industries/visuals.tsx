@@ -25,11 +25,11 @@ function Window({
           <span className="h-2 w-2 rounded-full bg-white/15" />
           <span className="h-2 w-2 rounded-full bg-white/15" />
           <span className="h-2 w-2 rounded-full bg-white/15" />
-          <span className="ml-3 font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+          <span className="ml-3 font-mono text-[0.7rem] sm:text-[0.58rem] uppercase tracking-label text-white/40">
             {title}
           </span>
         </div>
-        <span className="rounded-full border border-crimson/30 bg-crimson/10 px-2 py-0.5 font-mono text-[0.52rem] uppercase tracking-label text-crimson-light">
+        <span className="rounded-full border border-crimson/30 bg-crimson/10 px-2 py-0.5 font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-crimson-light">
           {chip}
         </span>
       </div>
@@ -41,7 +41,9 @@ function Window({
 function MiniStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2">
-      <p className="font-mono text-[0.5rem] uppercase tracking-label text-white/35">{label}</p>
+      <p className="font-mono text-[0.7rem] uppercase tracking-label text-white/35 sm:text-[0.5rem]">
+        {label}
+      </p>
       <p className={`mt-1 font-display text-sm ${accent ? "text-crimson-light" : "text-white/85"}`}>
         {value}
       </p>
@@ -70,19 +72,19 @@ export function DispatchBoardVisual() {
         </div>
 
         <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-3">
-          <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+          <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
             Dispatch — today
           </p>
           <div className="mt-2.5 space-y-2">
             {TECH_ROWS.map((t) => (
               <div key={t.name} className="flex items-center gap-2.5">
-                <span className="w-20 shrink-0 truncate text-[0.62rem] text-white/55">{t.name}</span>
+                <span className="w-20 shrink-0 truncate text-[0.72rem] sm:text-[0.62rem] text-white/55">{t.name}</span>
                 <div className="relative h-5 flex-1 rounded bg-white/[0.04]">
                   {t.jobs.map((j) => (
                     <span
                       key={j.label}
                       style={{ width: j.w, left: j.l }}
-                      className="absolute top-0 flex h-5 items-center overflow-hidden rounded border border-crimson/40 bg-crimson/20 px-1.5 text-[0.52rem] text-white/80"
+                      className="absolute top-0 flex h-5 items-center overflow-hidden rounded border border-crimson/40 bg-crimson/20 px-1.5 text-[0.7rem] sm:text-[0.52rem] text-white/80"
                     >
                       <span className="truncate">{j.label}</span>
                     </span>
@@ -95,7 +97,7 @@ export function DispatchBoardVisual() {
 
         <div className="flex items-center gap-2.5 rounded-lg border border-crimson/25 bg-crimson/[0.07] px-3 py-2.5">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-crimson-light" />
-          <p className="text-[0.62rem] leading-snug text-white/70">
+          <p className="text-[0.72rem] sm:text-[0.62rem] leading-snug text-white/70">
             Missed call recovered — texted back in 12s, qualified, booked for Thu 9:00 AM
           </p>
         </div>
@@ -127,12 +129,12 @@ export function OperatoryScheduleVisual() {
         <div className="grid grid-cols-3 gap-2">
           {OPERATORIES.map((op) => (
             <div key={op.name} className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5">
-              <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">{op.name}</p>
+              <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">{op.name}</p>
               <div className="mt-2 space-y-1.5">
                 {op.slots.map((s, i) => (
                   <div
                     key={i}
-                    className={`rounded border px-1.5 py-1 text-[0.55rem] ${
+                    className={`rounded border px-1.5 py-1 text-[0.7rem] sm:text-[0.55rem] ${
                       s.tone === "confirmed"
                         ? "border-white/10 bg-white/[0.05] text-white/70"
                         : s.tone === "risk"
@@ -152,7 +154,7 @@ export function OperatoryScheduleVisual() {
 
         <div className="flex items-center gap-2.5 rounded-lg border border-crimson/25 bg-crimson/[0.07] px-3 py-2.5">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-crimson-light" />
-          <p className="text-[0.62rem] leading-snug text-white/70">
+          <p className="text-[0.72rem] sm:text-[0.62rem] leading-snug text-white/70">
             2:30 consult confirmed by text — no-show risk cleared, intake forms already returned
           </p>
         </div>
@@ -178,7 +180,7 @@ export function LocationGridVisual() {
         <div className="grid grid-cols-3 gap-2">
           {LOCATIONS.map((l) => (
             <div key={l.name} className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5">
-              <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">{l.name}</p>
+              <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">{l.name}</p>
               <p className="mt-1 font-display text-sm text-white/85">{l.sales}</p>
               <svg viewBox="0 0 70 22" className="mt-1.5 h-5 w-full" preserveAspectRatio="none">
                 <polyline
@@ -201,7 +203,7 @@ export function LocationGridVisual() {
 
         <div className="flex items-center gap-2.5 rounded-lg border border-crimson/25 bg-crimson/[0.07] px-3 py-2.5">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-crimson-light" />
-          <p className="text-[0.62rem] leading-snug text-white/70">
+          <p className="text-[0.72rem] sm:text-[0.62rem] leading-snug text-white/70">
             Low stock: Waxed Canvas Jacket (M) at Harbor Row — reorder drafted, Main St has 4 units
           </p>
         </div>

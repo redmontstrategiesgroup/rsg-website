@@ -6,7 +6,7 @@ import type { IndustryVertical } from "@/lib/industries/types";
 export function FaqSection({ vertical }: { vertical: IndustryVertical }) {
   return (
     <section id="faq" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <Reveal y={12}>

@@ -4,7 +4,6 @@ import { PageShell } from "@/components/PageShell";
 import { Reveal } from "@/components/Reveal";
 import { CtaLink } from "@/components/local/CtaLink";
 import { SecurityIncluded } from "@/components/security/SecurityIncluded";
-import { AfterLaunchSection } from "@/components/managed-services/AfterLaunch";
 import {
   variantForSlug,
   type SecurityVariant,
@@ -53,11 +52,6 @@ export type LocalPageContent = {
   };
   /** Override the auto-selected "Security Included" control set for this page. */
   securityVariant?: SecurityVariant;
-  /**
-   * When set, renders the managed-services "What Happens After Launch?"
-   * section (keyed into SERVICE_PLAN_RECOMMENDATIONS) before the FAQ.
-   */
-  managedService?: string;
 };
 
 const PROCESS_STEPS = [
@@ -133,18 +127,18 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
       />
 
       {/* Header */}
-      <section className="container-px pb-14 pt-12 sm:pb-20 sm:pt-14">
+      <section className="container-px pb-10 pt-9 sm:pb-20 sm:pt-14">
         <nav
           aria-label="Breadcrumb"
-          className="font-mono text-[0.62rem] uppercase tracking-label text-white/35"
+          className="flex flex-wrap items-center font-mono text-[0.72rem] uppercase tracking-label text-white/35 sm:text-[0.62rem]"
         >
-          <Link href="/" className="transition-colors hover:text-white">
+          <Link href="/" className="inline-flex min-h-11 items-center transition-colors hover:text-white lg:min-h-0">
             Home
           </Link>
           <span aria-hidden="true" className="mx-2 text-white/20">
             /
           </span>
-          <Link href={c.parent.href} className="transition-colors hover:text-white">
+          <Link href={c.parent.href} className="inline-flex min-h-11 items-center transition-colors hover:text-white lg:min-h-0">
             {c.parent.label}
           </Link>
           <span aria-hidden="true" className="mx-2 text-white/20">
@@ -154,7 +148,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
         </nav>
 
         <Reveal y={12}>
-          <p className="label mt-12">{c.label}</p>
+          <p className="label mt-8 sm:mt-12">{c.label}</p>
         </Reveal>
         <Reveal y={12} delay={0.08}>
           <h1 className="display mt-6 max-w-3xl text-[2.4rem] leading-[1.05] sm:text-[3.3rem]">
@@ -185,7 +179,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
                 page={c.slug}
                 cta="audit_hero"
                 event="business_systems_audit_click"
-                className="link-underline"
+                className="link-underline inline-flex min-h-11 items-center lg:min-h-0"
               >
                 Get a Business Systems Audit
               </CtaLink>
@@ -205,7 +199,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
 
       {/* Problem */}
       <section className="border-y border-white/[0.08] bg-base-900">
-        <div className="container-px py-20 sm:py-28">
+        <div className="container-px section-y">
           <div className="section-grid">
             <div className="lg:col-span-5">
               <Reveal y={12}>
@@ -228,7 +222,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
       </section>
 
       {/* How RSG helps */}
-      <section className="container-px py-20 sm:py-28">
+      <section className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <Reveal y={12}>
@@ -251,11 +245,11 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
 
       {/* Includes + who it's for */}
       <section className="border-y border-white/[0.08] bg-base-900">
-        <div className="container-px py-20 sm:py-28">
+        <div className="container-px section-y">
           <div className="grid gap-14 lg:grid-cols-2 lg:gap-8">
             <Reveal y={12}>
               <div>
-                <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
+                <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
                   {c.includesHeading}
                 </p>
                 <div className="mt-6">
@@ -272,7 +266,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
             </Reveal>
             <Reveal y={12} delay={0.08}>
               <div>
-                <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
+                <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
                   {c.whoHeading}
                 </p>
                 <div className="mt-6">
@@ -295,7 +289,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
       <SecurityIncluded variant={c.securityVariant ?? variantForSlug(c.slug)} />
 
       {/* Process strip */}
-      <section className="container-px py-20 sm:py-28">
+      <section className="container-px section-y">
         <Reveal y={12}>
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <h2 className="display max-w-md text-[1.9rem] leading-[1.1] sm:text-[2.3rem]">
@@ -303,7 +297,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
             </h2>
             <Link
               href="/process"
-              className="group inline-flex items-center gap-2.5 text-sm font-medium text-white transition-colors hover:text-crimson-light"
+              className="link-arrow group text-white"
             >
               See the full process
               <ArrowRight
@@ -314,10 +308,10 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
           </div>
         </Reveal>
         <Reveal y={12} delay={0.1}>
-          <div className="mt-12 grid gap-x-8 border-t border-white/[0.08] sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-8 sm:mt-12 grid gap-x-8 border-t border-white/[0.08] sm:grid-cols-2 lg:grid-cols-5">
             {PROCESS_STEPS.map((step, i) => (
               <div key={step.name} className="py-6">
-                <span className="font-mono text-[0.62rem] text-white/25">
+                <span className="font-mono text-[0.72rem] sm:text-[0.62rem] text-white/25">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <p className="mt-2 text-[1.02rem] font-medium text-white">
@@ -333,11 +327,10 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
       </section>
 
       {/* Managed services (ongoing partnership) */}
-      {c.managedService ? <AfterLaunchSection service={c.managedService} /> : null}
 
       {/* FAQ */}
       <section className="border-y border-white/[0.08] bg-base-900">
-        <div className="container-px py-20 sm:py-28">
+        <div className="container-px section-y">
           <div className="section-grid">
             <div className="lg:col-span-5">
               <div className="lg:sticky lg:top-36">
@@ -375,7 +368,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
       </section>
 
       {/* Service area + CTA */}
-      <section className="container-px py-20 sm:py-28">
+      <section className="container-px section-y">
         <Reveal y={12}>
           <div className="max-w-3xl">
             <h2 className="display text-[1.9rem] leading-[1.1] sm:text-[2.3rem]">
@@ -409,8 +402,8 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
 
         {/* Related pages */}
         <Reveal y={12} delay={0.08}>
-          <div className="mt-16 border-t border-white/[0.08] pt-8">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
+          <div className="mt-10 sm:mt-16 border-t border-white/[0.08] pt-8">
+            <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Related
             </p>
             <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3">

@@ -22,7 +22,7 @@ export function ComplianceSection({
       id="compliance"
       className={`scroll-mt-24 ${emphasized ? "border-y border-crimson/20 bg-crimson/[0.03]" : ""}`}
     >
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-4">
             <Reveal y={12}>
@@ -49,7 +49,7 @@ export function ComplianceSection({
               {items.map((item, i) => (
                 <div key={item.title} className="bg-base-900 p-6">
                   <div className="flex items-baseline gap-3">
-                    <span className="font-mono text-[0.55rem] text-crimson-light/60">
+                    <span className="font-mono text-[0.7rem] sm:text-[0.55rem] text-crimson-light/60">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <h3 className="font-display text-[0.98rem] leading-snug text-white">{item.title}</h3>

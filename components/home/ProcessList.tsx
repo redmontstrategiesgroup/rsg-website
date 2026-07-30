@@ -32,7 +32,7 @@ export function ProcessList({
 }) {
   return (
     <section id="process" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-36">
@@ -50,7 +50,7 @@ export function ProcessList({
           <div className="lg:col-span-6 lg:col-start-7">
             {STEPS.map((step, i) => (
               <Reveal key={step.name} y={12} delay={i * 0.05}>
-                <div className="border-t border-white/[0.08] py-10 last:border-b sm:py-12">
+                <div className="border-t border-white/[0.08] py-7 last:border-b sm:py-12">
                   <p className="label">{String(i + 1).padStart(2, "0")}</p>
                   <h3 className="display mt-3 text-[1.35rem] text-white">
                     {step.name}

@@ -18,7 +18,9 @@ export function VerticalHero({
   const { hero } = vertical;
   return (
     <section className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+      {/* Decorative only — hidden on phones, where the blur and grid cost
+          compositing work and add nothing to the message. */}
+      <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute inset-0 bg-grid opacity-[0.25]" />
         <div className="absolute left-[12%] top-[-20%] h-[420px] w-[680px] rounded-full bg-crimson/[0.07] blur-[130px]" />
       </div>
@@ -26,15 +28,22 @@ export function VerticalHero({
       <div className="container-px grid items-center gap-14 pb-16 pt-10 sm:pt-14 lg:grid-cols-12 lg:gap-10 lg:pb-24">
         <div className="lg:col-span-6 xl:col-span-6">
           <Reveal y={12}>
+            {/* Crumbs are real navigation, so each link gets a 44px target. */}
             <nav
               aria-label="Breadcrumb"
-              className="font-mono text-[0.62rem] uppercase tracking-label text-white/35"
+              className="flex flex-wrap items-center font-mono text-[0.72rem] uppercase tracking-label text-white/35 sm:text-[0.62rem]"
             >
-              <Link href="/" className="transition-colors hover:text-white">
+              <Link
+                href="/"
+                className="inline-flex min-h-11 items-center transition-colors hover:text-white lg:min-h-0"
+              >
                 Home
               </Link>
               <span className="mx-2 text-white/20">/</span>
-              <Link href="/industries" className="transition-colors hover:text-white">
+              <Link
+                href="/industries"
+                className="inline-flex min-h-11 items-center transition-colors hover:text-white lg:min-h-0"
+              >
                 Industries
               </Link>
               <span className="mx-2 text-white/20">/</span>
@@ -80,7 +89,7 @@ export function VerticalHero({
               {vertical.audience.map((a) => (
                 <li
                   key={a}
-                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.68rem] text-white/55"
+                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.75rem] sm:text-[0.68rem] text-white/55"
                 >
                   {a}
                 </li>
@@ -92,7 +101,7 @@ export function VerticalHero({
         <div className="lg:col-span-6 xl:col-span-6">
           <Reveal y={20} delay={0.2}>
             {visual}
-            <p className="mt-3 text-right font-mono text-[0.55rem] uppercase tracking-label text-white/25">
+            <p className="mt-3 text-right font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/25">
               Simulated interface — sample data only
             </p>
           </Reveal>

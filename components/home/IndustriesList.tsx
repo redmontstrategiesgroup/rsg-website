@@ -6,8 +6,8 @@ import { Reveal } from "../Reveal";
 
 /**
  * Homepage industries section. RSG specializes in three verticals — each
- * with its own deep page, demo, and calculators — and says so plainly
- * instead of listing twenty industries it knows thinly.
+ * with its own deep page and working demo — and says so plainly instead of
+ * listing twenty industries it knows thinly.
  */
 const VERTICALS = [
   {
@@ -37,7 +37,7 @@ export function IndustriesList({
 }) {
   return (
     <section id="industries" className="scroll-mt-24 border-y border-white/10 bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Industries</p>
@@ -50,16 +50,16 @@ export function IndustriesList({
           </Reveal>
         </div>
 
-        <div className="mt-16 grid border-t border-white/[0.08] lg:grid-cols-3">
+        <div className="mt-10 sm:mt-16 grid border-t border-white/[0.08] lg:grid-cols-3">
           {VERTICALS.map((v, i) => (
             <Reveal key={v.name} y={12} delay={i * 0.08} className="h-full">
               <Link
                 href={v.href}
-                className={`group flex h-full flex-col border-b border-white/[0.08] py-12 pr-8 transition-colors lg:border-b-0 ${
+                className={`group flex h-full flex-col border-b border-white/[0.08] py-8 pr-8 sm:py-12 transition-colors lg:border-b-0 ${
                   i > 0 ? "lg:border-l lg:border-white/[0.08] lg:pl-10" : ""
                 }`}
               >
-                <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/35">
+                <p className="font-mono text-[0.7rem] sm:text-[0.58rem] uppercase tracking-label text-white/35">
                   {v.detail}
                 </p>
                 <h3 className="display mt-5 text-[1.35rem] leading-snug text-white transition-colors group-hover:text-crimson-light">
@@ -78,16 +78,9 @@ export function IndustriesList({
         </div>
 
         <Reveal y={10} delay={0.12}>
-          <p className="mt-12 text-sm leading-relaxed text-white/45">
+          <p className="mt-8 sm:mt-12 text-sm leading-relaxed text-white/45">
             Outside these verticals, RSG accepts a limited number of projects when the problem
-            matches a system we&apos;ve already built.{" "}
-            <Link
-              href="/industries/additional"
-              className="link-underline text-white/70 transition-colors hover:text-white"
-            >
-              See additional industries
-            </Link>
-            .
+            matches a system we&apos;ve already built.
           </p>
         </Reveal>
       </div>

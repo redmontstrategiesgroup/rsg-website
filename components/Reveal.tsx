@@ -1,74 +1,56 @@
-"use client";
-
-import { motion, useReducedMotion, type Variants } from "framer-motion";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 type RevealProps = {
   children: ReactNode;
   delay?: number;
   y?: number;
   className?: string;
+  /** Retained for API compatibility; reveals never replay. */
   once?: boolean;
 };
 
 /**
- * Lightweight scroll-into-view reveal. Respects reduced-motion preferences.
+ * Scroll-into-view reveal, driven entirely by CSS.
+ *
+ * Critically, this renders **visible** markup: the server HTML carries no
+ * opacity:0, so text paints on first frame and LCP is never gated on JS.
+ * The animation is opt-in and desktop-only — the inline script in the root
+ * layout sets `data-reveal="on"` on <html> before first paint when the
+ * viewport is wide and motion is welcome, and only then does the CSS in
+ * globals.css hide these nodes for RevealObserver to bring back in.
+ *
+ * On phones there is no observer, no framer-motion, and no hidden content —
+ * a plain <div> that costs nothing. This is a server component; it adds zero
+ * JavaScript to the 222 places it is used.
  */
-export function Reveal({
-  children,
-  delay = 0,
-  y = 18,
-  className,
-  once = true,
-}: RevealProps) {
-  const reduceMotion = useReducedMotion();
-
-  const variants: Variants = {
-    hidden: { opacity: 0, y: reduceMotion ? 0 : y },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] },
-    },
-  };
+export function Reveal({ children, delay = 0, y, className }: RevealProps) {
+  const style: CSSProperties = {};
+  if (delay) style.transitionDelay = `${delay}s`;
+  if (y != null) (style as Record<string, string>)["--reveal-y"] = `${y}px`;
 
   return (
-    <motion.div
+    <div
+      data-reveal=""
       className={className}
-      variants={variants}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once, margin: "-80px" }}
+      style={Object.keys(style).length ? style : undefined}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
 /**
- * Container that staggers its <Reveal> (or motion) children.
+ * Layout wrapper kept for API compatibility. Stagger is expressed by the
+ * `delay` prop on each child <Reveal>, so this is now a plain container.
  */
 export function RevealGroup({
   children,
   className,
-  stagger = 0.08,
 }: {
   children: ReactNode;
   className?: string;
+  /** Accepted and ignored — children carry their own delays. */
   stagger?: number;
 }) {
-  return (
-    <motion.div
-      className={className}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "-80px" }}
-      variants={{
-        hidden: {},
-        show: { transition: { staggerChildren: stagger } },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }

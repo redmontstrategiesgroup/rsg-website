@@ -46,9 +46,14 @@ const nextConfig = {
       },
       {
         source: "/gym-fitness-studio-business-systems",
-        destination: "/industries/additional",
+        destination: "/industries",
         permanent: true,
       },
+      // Retired pages (Jul 2026): the additional-industries page and the
+      // packaged managed-services plans. Every engagement is scoped and
+      // priced individually, so both were removed rather than rewritten.
+      { source: "/industries/additional", destination: "/industries", permanent: true },
+      { source: "/managedservices", destination: "/services", permanent: true },
       // De-hyphenated URL migration (Jul 2026). Old hyphenated slugs → new
       // slugs; local SEO service pages also drop the "-plymouth-county-ma" tail.
       { source: "/ai-strategy-implementation-plymouth-county-ma", destination: "/aistrategy", permanent: true },
@@ -59,7 +64,7 @@ const nextConfig = {
       { source: "/operations-consulting-plymouth-county-ma", destination: "/operationsconsulting", permanent: true },
       { source: "/service-area-plymouth-county-south-shore-ma", destination: "/servicearea", permanent: true },
       { source: "/web-development-digital-infrastructure-plymouth-county-ma", destination: "/webdevelopment", permanent: true },
-      { source: "/managed-services", destination: "/managedservices", permanent: true },
+      { source: "/managed-services", destination: "/services", permanent: true },
       { source: "/thank-you", destination: "/thankyou", permanent: true },
       { source: "/services/custom-private-ai-systems", destination: "/services/customprivateaisystems", permanent: true },
       { source: "/industries/home-services", destination: "/industries/homeservices", permanent: true },

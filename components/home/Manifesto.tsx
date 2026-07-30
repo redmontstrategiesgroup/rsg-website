@@ -5,7 +5,7 @@ import { Reveal } from "../Reveal";
 export function Manifesto() {
   return (
     <section className="bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-7">
             <Reveal y={12}>

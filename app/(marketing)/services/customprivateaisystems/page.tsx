@@ -14,7 +14,6 @@ import {
   PrivateAiCta,
 } from "@/components/private-ai/sections";
 import { PRIVATE_AI_FAQS, PRIVATE_AI_PATH } from "@/lib/private-ai/content";
-import { AfterLaunchSection } from "@/components/managed-services/AfterLaunch";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -113,10 +112,6 @@ export default function CustomPrivateAiSystemsPage() {
       <IndustryUseCases />
       <SystemDesigner />
       <ProcessSection />
-      <AfterLaunchSection
-        service="private_ai"
-        heading="What Happens After Deployment?"
-      />
       <PrivateAiFaq />
       <PrivateAiCta />
     </PageShell>

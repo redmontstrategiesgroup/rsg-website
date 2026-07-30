@@ -3,7 +3,6 @@ import { LocalPage, type LocalPageContent } from "@/components/local/LocalPage";
 
 const content: LocalPageContent = {
   slug: "crmsystems",
-  managedService: "crm_automation",
   label: "CRM & Pipeline Systems · Plymouth County, MA",
   h1: "CRM & Pipeline Systems in Plymouth County, MA",
   intro: [

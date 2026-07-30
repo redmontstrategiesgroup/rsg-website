@@ -27,7 +27,7 @@ export default function DemosPage() {
   return (
     <PageShell>
       <section>
-        <div className="container-px pb-16 pt-14 sm:pt-20">
+        <div className="container-px pb-16 pt-10 sm:pt-20">
           <Reveal>
             <span className="label">Industry demos</span>
             <h1 className="display mt-5 max-w-3xl text-4xl leading-[1.05] sm:text-5xl lg:text-6xl">
@@ -48,7 +48,7 @@ export default function DemosPage() {
       </section>
 
       <section className="border-y border-white/[0.07] bg-base-900/40">
-        <div className="container-px py-14 sm:py-16">
+        <div className="container-px py-10 sm:py-16">
           <div className="section-grid items-start">
             <Reveal className="lg:col-span-5">
               <h2 className="display text-2xl leading-tight sm:text-3xl">
@@ -66,7 +66,7 @@ export default function DemosPage() {
         </div>
       </section>
 
-      <section id="systems" className="container-px scroll-mt-24 py-14 sm:py-20">
+      <section id="systems" className="container-px scroll-mt-24 py-10 sm:py-20">
         <Reveal>
           <span className="label">The demo systems</span>
           <h2 className="display mt-4 text-2xl sm:text-3xl">
@@ -83,7 +83,7 @@ export default function DemosPage() {
       </section>
 
       <section className="border-t border-white/[0.07] bg-base-900/40">
-        <div className="container-px py-14 sm:py-20">
+        <div className="container-px py-10 sm:py-20">
           <Reveal>
             <span className="label">Automation builder</span>
             <h2 className="display mt-4 max-w-2xl text-2xl sm:text-3xl">
@@ -101,7 +101,7 @@ export default function DemosPage() {
         </div>
       </section>
 
-      <section className="container-px py-16 sm:py-24">
+      <section className="container-px py-12 sm:py-24">
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="display text-3xl leading-tight sm:text-4xl">

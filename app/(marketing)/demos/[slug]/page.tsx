@@ -68,7 +68,7 @@ export default async function DemoPage({ params }: { params: Promise<Params> }) 
       <ConversionSection demoSlug={config.slug} cta={config.cta} config={config} />
 
       {/* Other demo systems */}
-      <section className="container-px py-14 sm:py-16">
+      <section className="container-px py-10 sm:py-16">
         <Reveal>
           <span className="label">Keep exploring</span>
           <div className="mt-6 grid gap-3 sm:grid-cols-3">

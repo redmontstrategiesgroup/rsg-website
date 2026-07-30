@@ -79,7 +79,7 @@ function ChipButton({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`rounded-lg border px-3.5 py-2 text-left text-sm transition-colors ${
+      className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-left text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 lg:min-h-0 ${
         selected
           ? "border-crimson/45 bg-crimson/10 text-white"
           : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
@@ -207,7 +207,7 @@ export function SystemDesigner() {
       id="private-ai-designer"
       className="scroll-mt-24 border-b border-white/[0.08] bg-base-900/40"
     >
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Interactive demo</p>
         </Reveal>
@@ -228,7 +228,7 @@ export function SystemDesigner() {
             {STEPS.map((label, i) => (
               <li
                 key={label}
-                className={`rounded-md border px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-label ${
+                className={`rounded-md border px-2.5 py-1 font-mono text-[0.7rem] sm:text-[0.58rem] uppercase tracking-label ${
                   i === step
                     ? "border-crimson/40 text-crimson-light"
                     : i < step
@@ -610,7 +610,7 @@ export function SystemDesigner() {
 function ArchBlock({ title, body }: { title: string; body: string }) {
   return (
     <div className="border border-white/10 bg-white/[0.02] p-4">
-      <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+      <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
         {title}
       </p>
       <p className="mt-2 text-sm leading-relaxed text-white/70">{body}</p>
@@ -621,7 +621,7 @@ function ArchBlock({ title, body }: { title: string; body: string }) {
 function ArchList({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="border border-white/10 bg-white/[0.02] p-4">
-      <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+      <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
         {title}
       </p>
       <ul className="mt-2 space-y-1.5">

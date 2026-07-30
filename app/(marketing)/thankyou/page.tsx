@@ -15,7 +15,7 @@ export default function ThankYouPage() {
   return (
     <PageShell>
       <TrackPageEvent event="thank_you_page_view" />
-      <section className="container-px flex min-h-[70vh] items-center py-28 sm:py-36">
+      <section className="container-px flex min-h-[70vh] items-center py-16 sm:py-36">
         <div className="max-w-2xl">
           <div className="h-px w-12 bg-crimson-light/80" />
           <h1 className="display mt-9 text-[2.3rem] leading-[1.04] sm:text-[3.2rem]">
@@ -31,7 +31,7 @@ export default function ThankYouPage() {
           </p>
 
           <div className="mt-10 max-w-lg space-y-4 border-t border-white/10 pt-8">
-            <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+            <p className="font-mono text-[0.7rem] sm:text-[0.58rem] uppercase tracking-label text-white/40">
               What happens next
             </p>
             <ol className="space-y-3 text-sm leading-relaxed text-white/55">
@@ -52,7 +52,7 @@ export default function ThankYouPage() {
             </ol>
           </div>
 
-          <div className="mt-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-9">
+          <div className="mt-8 sm:mt-12 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-9">
             <TrackedLink
               href="/book"
               event="book_strategy_call_click"

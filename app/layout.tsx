@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { RevealObserver } from "@/components/RevealObserver";
 import { PHONE_TEL, SITE_URL } from "@/lib/site";
 
 // Body / UI
@@ -92,6 +93,23 @@ const WEBSITE_SCHEMA = {
   publisher: { "@type": "Organization", name: "Redmont Strategies Group" },
 };
 
+/**
+ * Runs synchronously as the first thing in <body>, before anything paints.
+ *
+ * Scroll reveals are a desktop flourish: this opts the document in only on a
+ * wide viewport whose user welcomes motion. Phones never set the flag, so
+ * [data-reveal] content stays visible and no observer or animation JS runs.
+ *
+ * The timer is a failsafe. If the flag is set but RevealObserver never boots
+ * — a chunk fails to load, hydration errors — it strips the flag and the page
+ * paints in full rather than leaving the body invisible.
+ */
+const REVEAL_BOOTSTRAP = `(function(){try{var d=document.documentElement;
+if(!matchMedia('(min-width:1024px)').matches)return;
+if(!matchMedia('(prefers-reduced-motion: no-preference)').matches)return;
+d.dataset.reveal='on';
+setTimeout(function(){if(!('revealReady' in d.dataset))d.removeAttribute('data-reveal')},2500)}catch(e){}})()`;
+
 export default function RootLayout({
   children,
 }: {
@@ -103,6 +121,7 @@ export default function RootLayout({
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrains.variable}`}
     >
       <body>
+        <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOTSTRAP }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_SCHEMA) }}
@@ -112,6 +131,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_SCHEMA) }}
         />
         {children}
+        <RevealObserver />
       </body>
     </html>
   );

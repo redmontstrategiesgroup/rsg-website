@@ -479,11 +479,8 @@ export function PlanServices({
                 month — with everything logged right here in your portal.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link href="/managedservices" className="btn-primary text-sm">
-                  Explore managed services
-                </Link>
-                <Link href="/book" className="btn-ghost text-sm">
-                  Talk it through
+                <Link href="/book" className="btn-primary text-sm">
+                  Talk through ongoing management
                 </Link>
               </div>
             </div>

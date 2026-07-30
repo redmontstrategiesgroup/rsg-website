@@ -3,7 +3,6 @@ import { LocalPage, type LocalPageContent } from "@/components/local/LocalPage";
 
 const content: LocalPageContent = {
   slug: "operationsconsulting",
-  managedService: "operations_system",
   label: "Operations Consulting · Plymouth County, MA",
   h1: "Operations Consulting in Plymouth County, MA",
   intro: [

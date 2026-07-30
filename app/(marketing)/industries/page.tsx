@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Industries: Home Services, Dental & Retail Systems | RSG",
     description:
-      "Deep systems for home services, dental & specialty healthcare, and retail — with interactive demos, workflow maps, and industry-specific calculators.",
+      "Deep systems for home services, dental & specialty healthcare, and retail — with interactive demos, workflow maps, and industry-specific assessments.",
     url: "/industries",
     images: ["/og.png"],
   },
@@ -31,10 +31,9 @@ const VERTICAL_BLURBS: Record<string, string> = {
 };
 
 /**
- * Industries hub: three deeply-specialized verticals presented as the main
- * event, with everything else honestly routed through the additional-
- * industries page. No industry gets listed here unless its page carries
- * real workflows, demos, and calculators.
+ * Industries hub: three deeply-specialized verticals, and nothing else. No
+ * industry gets listed here unless its page carries real workflows, a
+ * working demo, and an assessment.
  */
 export default async function IndustriesPage() {
   const verticals = (await getVerticals()).filter((v) => v.status === "published");
@@ -55,7 +54,7 @@ export default async function IndustriesPage() {
             <p className="mt-7 text-[1rem] leading-relaxed text-white/55">
               RSG is a specialized technology, automation, and AI partner for home service
               businesses, dental and specialty healthcare practices, and retail operations. Each
-              vertical below carries its own workflows, working demo, calculators, and compliance
+              vertical below carries its own workflows, working demo, assessment, and compliance
               practices — because a dispatch board and an operatory schedule are not the same
               problem with different logos.
             </p>
@@ -63,7 +62,7 @@ export default async function IndustriesPage() {
         </div>
       </section>
 
-      <section className="container-px py-14 sm:py-16">
+      <section className="container-px py-10 sm:py-16">
         <div className="space-y-6">
           {verticals.map((v, i) => (
             <Reveal key={v.slug} y={16} delay={i * 0.06}>
@@ -73,7 +72,7 @@ export default async function IndustriesPage() {
                     {v.audience.map((a) => (
                       <span
                         key={a}
-                        className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.65rem] text-white/50"
+                        className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.74rem] sm:text-[0.65rem] text-white/50"
                       >
                         {a}
                       </span>
@@ -94,21 +93,21 @@ export default async function IndustriesPage() {
                 <div className="flex flex-col justify-center gap-3 lg:col-span-4 lg:border-l lg:border-white/[0.08] lg:pl-8">
                   <Link
                     href={`/industries/${v.slug}`}
-                    className="group/link inline-flex items-center gap-2.5 text-sm font-medium text-white transition-colors hover:text-crimson-light"
+                    className="link-arrow group/link text-white"
                   >
                     Explore the {v.shortName.toLowerCase()} systems
                     <ArrowRight size={14} className="transition-transform group-hover/link:translate-x-1" aria-hidden />
                   </Link>
                   <Link
                     href={`/demos/${v.demoSlug}`}
-                    className="inline-flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
+                    className="inline-flex min-h-11 items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white lg:min-h-0"
                   >
                     <MousePointerClick size={14} aria-hidden />
                     Open the interactive demo
                   </Link>
                   <Link
                     href={`/industries/${v.slug}#assessment`}
-                    className="inline-flex items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white"
+                    className="inline-flex min-h-11 items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white lg:min-h-0"
                   >
                     Take the {v.shortName.toLowerCase()} assessment
                   </Link>
@@ -119,16 +118,17 @@ export default async function IndustriesPage() {
         </div>
 
         <Reveal y={12} delay={0.1}>
-          <div className="mt-14 flex flex-wrap items-center justify-between gap-6 rounded-xl border border-dashed border-white/15 bg-transparent px-8 py-7">
+          <div className="mt-9 sm:mt-14 flex flex-wrap items-center justify-between gap-6 rounded-xl border border-dashed border-white/15 bg-transparent px-8 py-7">
             <div>
               <h2 className="font-display text-lg text-white">Not in one of these industries?</h2>
               <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-white/50">
                 We take a limited number of projects outside our primary verticals — only when the
-                problem matches a system we&apos;ve already built.
+                problem matches a system we&apos;ve already built. An assessment tells both of us
+                quickly whether the overlap is real.
               </p>
             </div>
-            <Link href="/industries/additional" className="btn-ghost shrink-0">
-              Additional industries
+            <Link href="/book" className="btn-ghost shrink-0">
+              Request an evaluation
               <ArrowRight size={14} className="ml-2" aria-hidden />
             </Link>
           </div>

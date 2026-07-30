@@ -25,7 +25,7 @@ export function SecurityIncluded({
       id="security-included"
       className={`scroll-mt-24 border-y border-white/[0.08] bg-base-900 ${className}`}
     >
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <Reveal y={12}>
@@ -47,7 +47,7 @@ export function SecurityIncluded({
             <Reveal y={12} delay={0.16}>
               <Link
                 href="/security"
-                className="group mt-7 inline-flex items-center gap-2.5 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light"
+                className="link-arrow group mt-6 sm:mt-7"
               >
                 Review the RSG Secure Systems Standard
                 <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />

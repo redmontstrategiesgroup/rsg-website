@@ -21,9 +21,9 @@ export default async function BookPage({
 }) {
   const params = await searchParams;
   return (
-    <main className="relative overflow-hidden pb-24 pt-28 sm:pt-32">
+    <main className="relative overflow-hidden pb-16 pt-24 sm:pb-24 sm:pt-32">
       <div className="pointer-events-none absolute inset-0 bg-grid opacity-40" />
-      <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-crimson/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-32 top-20 hidden h-72 w-72 rounded-full bg-crimson/10 blur-3xl sm:block" />
       <div className="container-px relative">
         <div className="mx-auto max-w-2xl">
           <p className="label mb-4">Free consultation</p>
@@ -43,7 +43,7 @@ export default async function BookPage({
               </li>
             ))}
           </ul>
-          <div className="mt-12">
+          <div className="mt-8 sm:mt-12">
             <BookingFunnel
               presetServiceSlug={params.service}
               presetAppointmentSlug={params.type}

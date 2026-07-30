@@ -23,7 +23,7 @@ const PILLARS = [
 export function OperatingModel() {
   return (
     <section className="border-y border-white/10 bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <Reveal y={12}>
@@ -52,7 +52,7 @@ export function OperatingModel() {
                   {PILLARS.map((p) => (
                     <div key={p.group}>
                       <span className="block h-8 w-px bg-white/25" />
-                      <p className="text-[0.65rem] font-medium uppercase tracking-[0.22em] text-white/70">
+                      <p className="text-[0.74rem] sm:text-[0.65rem] font-medium uppercase tracking-[0.22em] text-white/70">
                         {p.group}
                       </p>
                       <p className="mt-1.5 text-xs leading-snug text-white/35">

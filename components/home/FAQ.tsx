@@ -38,7 +38,7 @@ const FAQS = [
   },
   {
     q: "Do you manage systems after launch?",
-    a: "Yes. RSG offers managed services: hosting, maintenance, optimization, AI management, and security handled continuously after your system goes live. There are four plans — Maintain, Optimize, Scale, and Managed Infrastructure — and current details live on the Managed Services page. Launch is the starting point, not the finish line.",
+    a: "Yes. Hosting, maintenance, optimization, AI management, and security can be handled continuously after your system goes live. What that covers is scoped to your systems and agreed before it starts. Launch is the starting point, not the finish line.",
   },
   {
     q: "What happens if we don't want ongoing management?",
@@ -53,7 +53,7 @@ export function FAQ({
 }) {
   return (
     <section id="faq" className="scroll-mt-24 border-y border-white/10 bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-36">

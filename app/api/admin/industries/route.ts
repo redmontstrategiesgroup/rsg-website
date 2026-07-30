@@ -6,14 +6,8 @@ import {
   requireAdmin,
 } from "@/lib/admin-auth";
 import { checkCompleteness } from "@/lib/industries/completeness";
-import { secondaryIndustriesSchema, verticalSchema } from "@/lib/industries/schema";
-import {
-  getSecondaryIndustries,
-  getVerticals,
-  resetVertical,
-  saveSecondaryIndustries,
-  saveVertical,
-} from "@/lib/industries/store";
+import { verticalSchema } from "@/lib/industries/schema";
+import { getVerticals, resetVertical, saveVertical } from "@/lib/industries/store";
 import { VERTICAL_SLUGS, type IndustryVertical, type VerticalSlug } from "@/lib/industries/types";
 
 export const runtime = "nodejs";
@@ -22,17 +16,13 @@ export async function GET() {
   const ctx = await requireAdmin("manage_clients");
   if (!isAdminContext(ctx)) return ctx;
 
-  const [verticals, secondary] = await Promise.all([
-    getVerticals(),
-    getSecondaryIndustries(),
-  ]);
+  const verticals = await getVerticals();
 
   return NextResponse.json({
     verticals: verticals.map((v) => ({
       vertical: v,
       completeness: checkCompleteness(v),
     })),
-    secondary,
   });
 }
 
@@ -88,7 +78,7 @@ export async function PUT(request: Request) {
   });
 }
 
-/** Actions: reset a vertical to authored defaults; save the secondary list. */
+/** Actions: reset a vertical to its authored defaults. */
 export async function POST(request: Request) {
   const ctx = await requireAdmin("manage_clients");
   if (!isAdminContext(ctx)) return ctx;
@@ -96,7 +86,7 @@ export async function POST(request: Request) {
   const limited = await rateLimitAdminMutator(request, ctx.admin.id);
   if (limited) return limited;
 
-  let body: { action?: string; slug?: string; industries?: unknown };
+  let body: { action?: string; slug?: string };
   try {
     body = await request.json();
   } catch {
@@ -109,20 +99,6 @@ export async function POST(request: Request) {
     }
     const vertical = await resetVertical(body.slug as VerticalSlug);
     return NextResponse.json({ vertical, completeness: checkCompleteness(vertical) });
-  }
-
-  if (body.action === "save_secondary") {
-    try {
-      const industries = secondaryIndustriesSchema.parse(body.industries);
-      const saved = await saveSecondaryIndustries(industries, ctx.admin.email);
-      return NextResponse.json({ secondary: saved });
-    } catch (err) {
-      const message =
-        err instanceof ZodError
-          ? err.issues[0]?.message ?? "Invalid industries."
-          : "Invalid industries.";
-      return NextResponse.json({ error: message }, { status: 400 });
-    }
   }
 
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });

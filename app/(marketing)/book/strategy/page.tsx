@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function BookStrategyPage() {
   return (
-    <main className="relative overflow-hidden pb-24 pt-28 sm:pt-32">
+    <main className="relative overflow-hidden pb-16 pt-24 sm:pb-24 sm:pt-32">
       <div className="container-px relative">
         <div className="mx-auto max-w-2xl">
           <p className="label mb-4">Strategy call</p>
@@ -16,7 +16,7 @@ export default function BookStrategyPage() {
             Tell us what you’re trying to improve, choose a convenient time, and
             we’ll help determine the best next step. Free, no obligation.
           </p>
-          <div className="mt-12">
+          <div className="mt-8 sm:mt-12">
             <BookingFunnel presetAppointmentSlug="strategy" />
           </div>
         </div>

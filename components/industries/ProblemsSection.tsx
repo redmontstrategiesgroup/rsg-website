@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/Reveal";
+import { MobileReveal } from "@/components/MobileReveal";
 import type { IndustryVertical } from "@/lib/industries/types";
 
 /**
@@ -19,7 +20,7 @@ export function ProblemsSection({
 
   return (
     <section id="problems" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Where it breaks</p>
@@ -33,11 +34,14 @@ export function ProblemsSection({
         </div>
 
         {variant === "tickets" && (
-          <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <MobileReveal
+            className="mt-10 grid gap-5 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3"
+            label={`Show all ${problems.length} problems`}
+          >
             {problems.map((p, i) => (
               <Reveal key={p.id} y={14} delay={(i % 3) * 0.06} className="h-full">
                 <article className="flex h-full flex-col rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-colors hover:border-white/20">
-                  <span className="font-mono text-[0.55rem] uppercase tracking-label text-crimson-light/70">
+                  <span className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light/70">
                     Ticket {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3 className="mt-3 font-display text-lg leading-snug text-white">{p.title}</h3>
@@ -50,17 +54,20 @@ export function ProblemsSection({
                 </article>
               </Reveal>
             ))}
-          </div>
+          </MobileReveal>
         )}
 
         {variant === "ledger" && (
-          <div className="mt-16 border-t border-white/[0.08]">
+          <MobileReveal
+            className="mt-10 border-t border-white/[0.08] sm:mt-16"
+            label={`Show all ${problems.length} problems`}
+          >
             {problems.map((p, i) => (
               <Reveal key={p.id} y={10} delay={Math.min(i * 0.03, 0.2)}>
                 <article className="grid gap-3 border-b border-white/[0.08] py-7 sm:grid-cols-12 sm:gap-8">
                   <div className="sm:col-span-4 lg:col-span-3">
                     <div className="flex items-baseline gap-3">
-                      <span className="font-mono text-[0.62rem] text-crimson-light/70">
+                      <span className="font-mono text-[0.72rem] sm:text-[0.62rem] text-crimson-light/70">
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       <h3 className="font-display text-lg leading-snug text-white">{p.title}</h3>
@@ -79,17 +86,20 @@ export function ProblemsSection({
                 </article>
               </Reveal>
             ))}
-          </div>
+          </MobileReveal>
         )}
 
         {variant === "tiles" && (
-          <div className="mt-16 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+          <MobileReveal
+            className="mt-10 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] sm:mt-16 sm:grid-cols-2 lg:grid-cols-4"
+            label={`Show all ${problems.length} problems`}
+          >
             {problems.map((p, i) => (
               <article
                 key={p.id}
                 className="group flex flex-col bg-base-900 p-6 transition-colors hover:bg-base-800"
               >
-                <span className="font-mono text-[0.55rem] uppercase tracking-label text-white/30 transition-colors group-hover:text-crimson-light/70">
+                <span className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30 transition-colors group-hover:text-crimson-light/70">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-3 font-display text-[1.02rem] leading-snug text-white">
@@ -99,11 +109,11 @@ export function ProblemsSection({
                   {p.detail}
                 </p>
                 {p.cost && (
-                  <p className="mt-3.5 text-[0.68rem] leading-relaxed text-crimson-light/75">{p.cost}</p>
+                  <p className="mt-3.5 text-[0.75rem] sm:text-[0.68rem] leading-relaxed text-crimson-light/75">{p.cost}</p>
                 )}
               </article>
             ))}
-          </div>
+          </MobileReveal>
         )}
       </div>
     </section>

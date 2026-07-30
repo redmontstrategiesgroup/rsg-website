@@ -8,7 +8,6 @@ import { ProblemsSection } from "@/components/industries/ProblemsSection";
 import { WorkflowMap } from "@/components/industries/WorkflowMap";
 import { SystemsGrid } from "@/components/industries/SystemsGrid";
 import { DemoSection } from "@/components/industries/DemoSection";
-import { RoiCalculator } from "@/components/industries/RoiCalculator";
 import { CaseStudySection } from "@/components/industries/CaseStudySection";
 import { IntegrationsSection } from "@/components/industries/IntegrationsSection";
 import { ComplianceSection } from "@/components/industries/ComplianceSection";
@@ -61,7 +60,6 @@ export default async function DentalPracticesPage() {
       <ComplianceSection vertical={vertical} emphasized />
       <SystemsGrid vertical={vertical} />
       <DemoSection vertical={vertical} />
-      <RoiCalculator vertical={vertical} />
       <CaseStudySection vertical={vertical} />
       <IntegrationsSection vertical={vertical} />
       <FaqSection vertical={vertical} />

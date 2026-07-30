@@ -62,10 +62,6 @@ const INDUSTRY_LINKS = [
     label: "Retail & Multi-Location",
     href: "/industries/retail",
   },
-  {
-    label: "Additional Industries",
-    href: "/industries/additional",
-  },
 ];
 
 const COMPANY_LINKS = [
@@ -99,9 +95,10 @@ export function Footer() {
               and the South Shore of Massachusetts. We help service and retail
               businesses fix operations, lead flow, and follow-up.
             </p>
+            {/* Tapping to call is a primary mobile action — give it a real target. */}
             <a
               href={`tel:${PHONE_TEL}`}
-              className="mt-8 inline-block text-sm text-white/55 transition-colors hover:text-white"
+              className="mt-6 inline-flex min-h-11 items-center text-sm text-white/55 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 sm:mt-8 lg:min-h-0"
             >
               {PHONE_DISPLAY}
             </a>
@@ -126,7 +123,7 @@ export function Footer() {
           </div>
 
           <div className="lg:col-span-3">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
+            <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Services
             </p>
             <ul className="mt-6 space-y-3">
@@ -144,7 +141,7 @@ export function Footer() {
           </div>
 
           <div className="lg:col-span-3">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
+            <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Industries
             </p>
             <ul className="mt-6 space-y-3">
@@ -162,7 +159,7 @@ export function Footer() {
           </div>
 
           <div className="lg:col-span-2">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
+            <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Company
             </p>
             <ul className="mt-6 space-y-3">

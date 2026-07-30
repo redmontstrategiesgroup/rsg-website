@@ -19,7 +19,7 @@ export function DemoSection({ vertical }: { vertical: IndustryVertical }) {
 
   return (
     <section id="demo" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5">
             <Reveal y={12}>
@@ -73,7 +73,7 @@ export function DemoSection({ vertical }: { vertical: IndustryVertical }) {
             <div className="grid gap-5 sm:grid-cols-2">
               <Reveal y={14} delay={0.12} className="h-full">
                 <div className="h-full rounded-xl border border-white/10 bg-base-900/70 p-6">
-                  <p className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     Inside the system
                   </p>
                   <ul className="mt-4 space-y-2.5">
@@ -88,7 +88,7 @@ export function DemoSection({ vertical }: { vertical: IndustryVertical }) {
               </Reveal>
               <Reveal y={14} delay={0.18} className="h-full">
                 <div className="h-full rounded-xl border border-crimson/25 bg-crimson/[0.04] p-6">
-                  <p className="flex items-center gap-2 font-mono text-[0.55rem] uppercase tracking-label text-crimson-light">
+                  <p className="flex items-center gap-2 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light">
                     <PlayCircle size={13} aria-hidden />
                     Run these yourself
                   </p>

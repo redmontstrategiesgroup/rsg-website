@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function StartPage() {
   return (
-    <main className="relative overflow-hidden pb-24 pt-28 sm:pt-32">
+    <main className="relative overflow-hidden pb-16 pt-24 sm:pb-24 sm:pt-32">
       <div className="container-px relative">
         <div className="mx-auto max-w-2xl">
           <p className="label mb-4">Start here</p>
@@ -21,7 +21,7 @@ export default function StartPage() {
             About {QUALIFICATION_ESTIMATED_MINUTES} minutes, in plain English.
             You&rsquo;ll get a clear next step — not a sales pitch.
           </p>
-          <div className="mt-12">
+          <div className="mt-8 sm:mt-12">
             <StartFlow />
           </div>
         </div>

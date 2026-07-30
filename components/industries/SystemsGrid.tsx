@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import { MobileReveal } from "@/components/MobileReveal";
 import { BuildSystemCta } from "@/components/demos/BuildSystemCta";
 import { demoBySlug } from "@/components/demos/data";
 import type { IndustryVertical } from "@/lib/industries/types";
@@ -20,7 +21,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
 
   return (
     <section id="systems" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Recommended systems</p>
@@ -37,10 +38,10 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
 
         {flagship && (
           <Reveal y={14} delay={0.1}>
-            <article className="mt-16 overflow-hidden rounded-xl border border-crimson/30 bg-crimson/[0.04]">
+            <article className="mt-10 sm:mt-16 overflow-hidden rounded-xl border border-crimson/30 bg-crimson/[0.04]">
               <div className="grid gap-8 p-8 sm:p-10 lg:grid-cols-12">
                 <div className="lg:col-span-7">
-                  <p className="font-mono text-[0.55rem] uppercase tracking-label text-crimson-light">
+                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light">
                     Flagship system
                   </p>
                   <h3 className="display mt-4 text-2xl text-white sm:text-[1.7rem]">{flagship.name}</h3>
@@ -59,26 +60,26 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
                 <div className="flex flex-col justify-between gap-8 lg:col-span-5 lg:border-l lg:border-white/[0.08] lg:pl-8">
                   <dl className="grid grid-cols-2 gap-5">
                     <div>
-                      <dt className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                      <dt className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                         Typical timeline
                       </dt>
                       <dd className="mt-1.5 font-display text-lg text-white/85">{flagship.timeline}</dd>
                     </div>
                     <div>
-                      <dt className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                      <dt className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                         Pricing
                       </dt>
                       <dd className="mt-1.5 font-display text-lg text-white/85">{flagship.pricing}</dd>
                     </div>
                     <div className="col-span-2">
-                      <dt className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                      <dt className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                         Works with
                       </dt>
                       <dd className="mt-2 flex flex-wrap gap-1.5">
                         {flagship.integrations.map((n) => (
                           <span
                             key={n}
-                            className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-0.5 text-[0.68rem] text-white/55"
+                            className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-0.5 text-[0.75rem] sm:text-[0.68rem] text-white/55"
                           >
                             {n}
                           </span>
@@ -96,7 +97,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
                     )}
                     <Link
                       href={`/demos/${vertical.demoSlug}`}
-                      className="group inline-flex items-center gap-2 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light"
+                      className="link-arrow group"
                     >
                       See it in the demo
                       <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" aria-hidden />
@@ -108,7 +109,11 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
           </Reveal>
         )}
 
-        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <MobileReveal
+          className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+          previewCount={3}
+          label={`Show all ${rest.length} systems`}
+        >
           {rest.map((s, i) => (
             <Reveal key={s.id} y={14} delay={(i % 3) * 0.06} className="h-full">
               <article className="flex h-full flex-col rounded-xl border border-white/10 bg-white/[0.02] p-7 transition-colors hover:border-white/20">
@@ -124,13 +129,13 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
                 </ul>
                 <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-white/[0.08] pt-5">
                   <div>
-                    <dt className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                    <dt className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
                       Timeline
                     </dt>
                     <dd className="mt-1 text-sm text-white/75">{s.timeline}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                    <dt className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
                       Pricing
                     </dt>
                     <dd className="mt-1 text-sm text-white/75">{s.pricing}</dd>
@@ -140,7 +145,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
                   {s.integrations.slice(0, 4).map((n) => (
                     <span
                       key={n}
-                      className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-0.5 text-[0.65rem] text-white/50"
+                      className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-0.5 text-[0.74rem] sm:text-[0.65rem] text-white/50"
                     >
                       {n}
                     </span>
@@ -151,7 +156,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
                     <BuildSystemCta
                       config={demoConfig}
                       source={`vertical_${vertical.slug}_${s.id}`}
-                      className="group inline-flex items-center gap-2 text-sm font-medium text-crimson-light transition-colors hover:text-white"
+                      className="link-arrow group text-crimson-light hover:text-white"
                     >
                       Build This System
                       <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" aria-hidden />
@@ -159,7 +164,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
                   )}
                   <Link
                     href={`/demos/${vertical.demoSlug}`}
-                    className="text-sm text-white/45 transition-colors hover:text-white"
+                    className="inline-flex min-h-11 items-center text-sm text-white/45 transition-colors hover:text-white lg:min-h-0"
                   >
                     View demo
                   </Link>
@@ -167,7 +172,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
               </article>
             </Reveal>
           ))}
-        </div>
+        </MobileReveal>
       </div>
     </section>
   );

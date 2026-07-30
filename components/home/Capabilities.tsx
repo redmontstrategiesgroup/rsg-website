@@ -34,7 +34,7 @@ export function Capabilities({
 }) {
   return (
     <section id="services" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">What RSG Does</p>
@@ -49,11 +49,11 @@ export function Capabilities({
           </Reveal>
         </div>
 
-        <div className="mt-24 grid border-t border-white/[0.08] sm:grid-cols-2">
+        <div className="mt-10 sm:mt-24 grid border-t border-white/[0.08] sm:grid-cols-2">
           {CAPABILITIES.map((c, i) => (
             <Reveal key={c.name} y={12} delay={(i % 2) * 0.08} className="h-full">
               <div
-                className={`flex h-full flex-col border-b border-white/[0.08] py-14 sm:py-16 ${
+                className={`flex h-full flex-col border-b border-white/[0.08] py-10 sm:py-16 ${
                   i % 2 === 1 ? "sm:border-l sm:border-white/[0.08] sm:pl-14" : "sm:pr-14"
                 }`}
               >
@@ -65,7 +65,7 @@ export function Capabilities({
                 </p>
                 <Link
                   href={c.href}
-                  className="group mt-7 inline-flex items-center gap-2.5 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light"
+                  className="link-arrow group mt-6 sm:mt-7"
                 >
                   Learn more
                   <ArrowRight

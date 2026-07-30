@@ -58,12 +58,17 @@ export function CookieConsent() {
   if (!visible) return null;
 
   return (
+    /*
+      On phones this sits above the chat launcher and spans the width, rather
+      than squeezing into the 216px left over beside it. From `sm` up it
+      returns to the original compact card in the corner.
+    */
     <div
       role="region"
       aria-label="Cookie notice"
-      className="fixed bottom-4 left-4 z-40 w-[min(380px,calc(100%-6.5rem))] border border-white/15 bg-base-900 p-6 shadow-lift sm:bottom-6 sm:left-6"
+      className="fixed inset-x-3 bottom-20 z-40 border border-white/15 bg-base-900 p-5 shadow-lift sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[min(380px,calc(100%-6.5rem))] sm:p-6"
     >
-      <p className="text-[0.62rem] font-medium uppercase tracking-[0.22em] text-white/40">
+      <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.22em] text-white/40">
         Cookies
       </p>
       <p className="mt-3 text-sm leading-relaxed text-white/60">
@@ -77,13 +82,17 @@ export function CookieConsent() {
         </Link>
         .
       </p>
-      <div className="mt-5 flex items-center gap-5">
-        <button onClick={accept} className="btn-primary px-6 py-2.5 text-[0.8rem]">
+      {/* Both controls clear 44px so neither is a mis-tap risk. */}
+      <div className="mt-5 flex items-center gap-3 sm:gap-5">
+        <button
+          onClick={accept}
+          className="btn-primary flex-1 px-6 py-2.5 text-[0.8rem] sm:flex-none"
+        >
           Accept
         </button>
         <button
           onClick={decline}
-          className="text-sm text-white/50 transition-colors hover:text-white"
+          className="inline-flex min-h-12 items-center justify-center px-4 text-sm text-white/50 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
         >
           Decline
         </button>

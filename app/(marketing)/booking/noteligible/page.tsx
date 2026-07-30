@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function BookingNotEligiblePage() {
   return (
-    <main className="relative overflow-hidden pb-24 pt-28 sm:pt-32">
+    <main className="relative overflow-hidden pb-16 pt-24 sm:pb-24 sm:pt-32">
       <div className="container-px relative max-w-2xl">
         <p className="label mb-4">Next steps</p>
         <h1 className="display text-4xl sm:text-5xl">

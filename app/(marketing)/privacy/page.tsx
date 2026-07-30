@@ -18,15 +18,15 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <PageShell>
-      <section className="container-px py-16 sm:py-24">
+      <section className="container-px py-12 sm:py-24">
         <div className="max-w-2xl">
           <p className="label">Legal</p>
           <h1 className="display mt-6 text-3xl sm:text-4xl">Privacy Policy</h1>
-          <p className="mt-3 font-mono text-[0.62rem] uppercase tracking-label text-white/35">
+          <p className="mt-3 font-mono text-[0.72rem] sm:text-[0.62rem] uppercase tracking-label text-white/35">
             Last updated: July 2026
           </p>
 
-          <div className="mt-12 space-y-10 text-sm leading-relaxed text-white/55">
+          <div className="mt-8 sm:mt-12 space-y-10 text-sm leading-relaxed text-white/55">
             <div>
               <h2 className="text-base font-medium text-white">
                 Information we collect

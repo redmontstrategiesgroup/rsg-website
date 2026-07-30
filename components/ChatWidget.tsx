@@ -179,7 +179,7 @@ export function ChatWidget() {
             setOpen(true);
             trackEvent("chatbot_open");
           }}
-          className="fixed bottom-3 right-3 z-50 border border-white/20 bg-base-900 px-4 py-3 text-[0.65rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white sm:bottom-5 sm:right-5"
+          className="fixed bottom-3 right-3 z-50 inline-flex min-h-12 items-center border border-white/20 bg-base-900 px-5 py-3 text-[0.74rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:bottom-5 sm:right-5 lg:min-h-0 sm:text-[0.65rem]"
           aria-label="Open chat with Redmont Strategies Group"
         >
           Chat
@@ -206,7 +206,7 @@ export function ChatWidget() {
                   alt="RSG"
                   className="h-6 w-auto"
                 />
-                <span className="text-[0.58rem] uppercase tracking-[0.24em] text-white/40">
+                <span className="text-[0.7rem] sm:text-[0.58rem] uppercase tracking-[0.24em] text-white/40">
                   Assistant
                 </span>
               </div>
@@ -282,7 +282,7 @@ export function ChatWidget() {
                 <button
                   type="submit"
                   disabled={busy || !input.trim()}
-                  className="shrink-0 border border-white/20 px-4 py-3 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-white/75 transition-colors hover:border-white/45 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="shrink-0 border border-white/20 px-4 py-3 text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.18em] text-white/75 transition-colors hover:border-white/45 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Send
                 </button>

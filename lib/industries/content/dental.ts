@@ -3,9 +3,8 @@ import type { IndustryVertical } from "../types";
 /**
  * Default content for the Dental & Specialty Healthcare Practices vertical.
  *
- * Every claim here is qualitative or simple arithmetic; projections are
- * labeled as modeled. ROI input and assumption ids must match dentalRoi()
- * in lib/industries/roi.ts. Demo copy describes the actual fictional
+ * Every claim here is qualitative; no page projects a dollar outcome and
+ * nothing is priced in advance. Demo copy describes the actual fictional
  * "Brightwater Dental" demo in components/demos/data/dental.ts.
  */
 export const dentalVertical: IndustryVertical = {
@@ -641,134 +640,6 @@ export const dentalVertical: IndustryVertical = {
     ],
   },
 
-  roi: {
-    title: "Estimate What the Gaps Are Costing Your Practice",
-    intro:
-      "Enter your own numbers — inquiries, no-shows, the unscheduled-plan backlog, the inactive list — and see what conservative, stated assumptions suggest is recoverable. Every assumption is shown and adjustable; nothing here is a promise.",
-    disclaimer:
-      "All results are estimates computed from the inputs you provide and the stated modeling assumptions. They are illustrations of potential opportunity, not guaranteed financial outcomes, and actual results depend on your practice, your market, and how the systems are implemented and used.",
-    inputs: [
-      {
-        id: "monthlyInquiries",
-        label: "New-patient inquiries per month",
-        min: 10,
-        max: 400,
-        step: 5,
-        defaultValue: 60,
-        format: "number",
-        helper: "Calls, web forms, and messages from prospective patients — not existing-patient traffic.",
-      },
-      {
-        id: "bookingRate",
-        label: "Current inquiry-to-booking rate",
-        min: 5,
-        max: 95,
-        step: 5,
-        defaultValue: 45,
-        format: "percent",
-        helper: "The share of inquiries that currently end up as booked appointments.",
-      },
-      {
-        id: "newPatientValue",
-        label: "First-year value of a new patient",
-        min: 200,
-        max: 5000,
-        step: 50,
-        defaultValue: 900,
-        format: "currency",
-        helper: "Typical first-year production per new patient — exams, hygiene, imaging, and initial treatment.",
-      },
-      {
-        id: "monthlyNoShows",
-        label: "No-shows per month",
-        min: 0,
-        max: 100,
-        step: 1,
-        defaultValue: 12,
-        format: "number",
-        helper: "Appointments per month lost to no-shows and last-minute cancellations that go unfilled.",
-      },
-      {
-        id: "unscheduledPlans",
-        label: "Unscheduled treatment plans on the books",
-        min: 0,
-        max: 500,
-        step: 5,
-        defaultValue: 60,
-        format: "number",
-        helper: "Plans that have been presented but never scheduled. Your PMS can usually report this number.",
-      },
-      {
-        id: "avgPlanValue",
-        label: "Average treatment-plan value",
-        min: 200,
-        max: 20000,
-        step: 100,
-        defaultValue: 1800,
-        format: "currency",
-        helper: "The average dollar value of a presented treatment plan at your practice.",
-      },
-      {
-        id: "inactivePatients",
-        label: "Inactive patients (12+ months)",
-        min: 0,
-        max: 5000,
-        step: 25,
-        defaultValue: 600,
-        format: "number",
-        helper: "Patients with no visit in over a year who haven't been marked as transferred or dismissed.",
-      },
-      {
-        id: "reactivationRate",
-        label: "Current annual reactivation rate",
-        min: 0,
-        max: 20,
-        step: 1,
-        defaultValue: 2,
-        format: "percent",
-        helper: "The share of your inactive list that comes back in a typical year today. If you don't track it, it's usually low.",
-      },
-    ],
-    assumptions: [
-      {
-        id: "bookingLift",
-        label: "Booking lift on currently-lost inquiries",
-        value: 0.12,
-        helper:
-          "Share of inquiries that currently slip away but book when every call and form is answered within a minute and offered online scheduling. Decimal: 0.12 = 12%. Applied only to inquiries that do not book today.",
-      },
-      {
-        id: "noShowReduction",
-        label: "No-show reduction",
-        value: 0.3,
-        helper:
-          "Modeled reduction in monthly no-shows once multi-touch confirmations, unconfirmed-patient flags, and waitlist backfill run consistently. Decimal: 0.3 = 30%.",
-      },
-      {
-        id: "planAcceptRate",
-        label: "Unscheduled-plan scheduling rate",
-        value: 0.2,
-        helper:
-          "Share of the current unscheduled-treatment backlog modeled to schedule with structured 30/60/90-day follow-up. Decimal: 0.2 = 20%. Counted once, not annually.",
-      },
-      {
-        id: "reactivationLift",
-        label: "Reactivation rate with campaigns",
-        value: 0.06,
-        helper:
-          "Modeled share of the inactive list that returns with segmented reactivation campaigns. Decimal: 0.06 = 6%. Only the lift above your current rate is counted.",
-      },
-      {
-        id: "reactivatedValue",
-        label: "First-year value of a reactivated patient",
-        value: 320,
-        helper:
-          "Modeled first-year production for a returning patient — typically hygiene, exam, and imaging. A dollar figure, not a rate.",
-      },
-    ],
-    recommendedSystemId: "front-desk-assistant",
-  },
-
   compliance: {
     title: "PHI, HIPAA, and Where the Automation Stops",
     intro:
@@ -873,7 +744,7 @@ export const dentalVertical: IndustryVertical = {
       {
         label: "Modeled no-show reduction",
         value:
-          "Roughly 30% fewer unfilled no-show slots once confirmations, flags, and waitlist backfill run consistently — the same assumption used in our ROI calculator",
+          "Fewer unfilled no-show slots once confirmations, flags, and waitlist backfill run consistently",
       },
       {
         label: "Modeled booking lift",
@@ -901,7 +772,7 @@ export const dentalVertical: IndustryVertical = {
       href: "#assessment",
     },
     secondary: [
-      { label: "Find Missed Patient Opportunities", href: "#roi" },
+      { label: "Map My Patient Journey", href: "#workflow" },
       { label: "Explore the Dental Practice Demo", href: "/demos/dental" },
       { label: "Build My Patient Growth System", href: "/book" },
     ],

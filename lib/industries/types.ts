@@ -3,14 +3,17 @@
  *
  * Three primary verticals (home services, dental & specialty healthcare,
  * retail & multi-location) each carry deeply industry-specific content:
- * problems, workflow stages, named systems, integrations, ROI assumptions,
- * compliance items, an illustrative case study, CTAs, and an assessment.
+ * problems, workflow stages, named systems, integrations, compliance
+ * items, an illustrative case study, CTAs, and an assessment.
  *
  * Defaults live in lib/industries/content/*. Admins can override any
  * vertical from the admin console; overrides persist via Supabase with a
  * dev file fallback (lib/industries/store.ts). One typed object drives the
- * page, the JSON-LD, the ROI calculator, and the assessment form, so none
- * of them can drift apart.
+ * page, the JSON-LD, and the assessment form, so none of them can drift
+ * apart.
+ *
+ * Systems quote "Custom quote" rather than a number — every engagement is
+ * scoped and priced individually, and no page projects a dollar outcome.
  */
 
 export type VerticalSlug = "home-services" | "dental-practices" | "retail";
@@ -74,7 +77,7 @@ export type RsgSystem = {
   pricing: string;
   /** Names from the vertical's integration list this system works with. */
   integrations: string[];
-  /** Featured on the page and used as the ROI recommendation when set. */
+  /** Featured at the top of the systems grid when set. */
   flagship?: boolean;
 };
 
@@ -83,38 +86,6 @@ export type VerticalIntegration = {
   category: string;
   /** What information or workflow it connects — never a bare logo. */
   connects: string;
-};
-
-export type RoiInputFormat = "number" | "currency" | "percent";
-
-export type RoiInput = {
-  /** Must match an input id the vertical's compute function expects (lib/industries/roi.ts). */
-  id: string;
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  defaultValue: number;
-  format: RoiInputFormat;
-  helper?: string;
-};
-
-/** Admin-tunable modeling rate used by the ROI compute functions. */
-export type RoiAssumption = {
-  id: string;
-  label: string;
-  /** Rates are decimals (0.25 = 25%); dollar figures are plain numbers. */
-  value: number;
-  helper?: string;
-};
-
-export type RoiResultLine = {
-  id: string;
-  label: string;
-  value: number;
-  format: "currency" | "number";
-  period: "monthly" | "annual" | "one-time";
-  detail?: string;
 };
 
 export type ComplianceItem = {
@@ -226,15 +197,6 @@ export type IndustryVertical = {
     disclaimer: string;
     items: VerticalIntegration[];
   };
-  roi: {
-    title: string;
-    intro: string;
-    disclaimer: string;
-    inputs: RoiInput[];
-    assumptions: RoiAssumption[];
-    /** System recommended alongside the results. */
-    recommendedSystemId: string;
-  };
   compliance: {
     title: string;
     intro: string;
@@ -250,13 +212,6 @@ export type IndustryVertical = {
   assessment: VerticalAssessment;
   faqs: VerticalFaq[];
   seo: VerticalSeo;
-};
-
-/** A secondary industry RSG can evaluate — deliberately not a full page. */
-export type SecondaryIndustry = {
-  name: string;
-  /** The operational overlap with an existing RSG system, stated honestly. */
-  overlap: string;
 };
 
 export type CompletenessCheck = {

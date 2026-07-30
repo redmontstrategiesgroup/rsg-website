@@ -65,7 +65,7 @@ export default async function AssessmentPage({
   }
 
   return (
-    <main className="relative overflow-hidden pb-24 pt-28 sm:pt-32">
+    <main className="relative overflow-hidden pb-16 pt-24 sm:pb-24 sm:pt-32">
       <div className="container-px relative">
         <div className="mx-auto max-w-2xl">
           <p className="label mb-4">Business Systems Assessment</p>
@@ -76,7 +76,7 @@ export default async function AssessmentPage({
             10–15 minutes, in plain English. Your progress saves as you go, and
             you&rsquo;ll get a preliminary summary the moment you finish.
           </p>
-          <div className="mt-12">{content}</div>
+          <div className="mt-8 sm:mt-12">{content}</div>
         </div>
       </div>
     </main>

@@ -13,7 +13,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
 
   return (
     <section id="case-study" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">{cs.verified ? "Case study" : "Example implementation"}</p>
@@ -34,7 +34,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
         </div>
 
         <Reveal y={14} delay={0.1}>
-          <div className="mt-14 overflow-hidden rounded-xl border border-white/10">
+          <div className="mt-9 sm:mt-14 overflow-hidden rounded-xl border border-white/10">
             {/* Profile strip */}
             <div className="grid gap-px bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
               <ProfileCell label="Business" value={cs.businessType} />
@@ -44,7 +44,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
             </div>
 
             <div className="border-t border-white/[0.08] bg-base-900 p-7 sm:p-9">
-              <p className="font-mono text-[0.55rem] uppercase tracking-label text-crimson-light/80">
+              <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light/80">
                 The operational problem
               </p>
               <p className="mt-3 max-w-3xl text-[0.95rem] leading-relaxed text-white/60">{cs.problem}</p>
@@ -52,13 +52,13 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
               {/* Before / after */}
               <div className="mt-10 grid gap-6 lg:grid-cols-2">
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6">
-                  <p className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     Workflow before
                   </p>
                   <ol className="mt-4 space-y-3">
                     {cs.beforeWorkflow.map((step, i) => (
                       <li key={step} className="flex gap-3 text-sm leading-relaxed text-white/50">
-                        <span className="font-mono text-[0.62rem] text-white/30">
+                        <span className="font-mono text-[0.72rem] sm:text-[0.62rem] text-white/30">
                           {String(i + 1).padStart(2, "0")}
                         </span>
                         {step}
@@ -67,13 +67,13 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
                   </ol>
                 </div>
                 <div className="rounded-xl border border-crimson/30 bg-crimson/[0.05] p-6">
-                  <p className="font-mono text-[0.55rem] uppercase tracking-label text-crimson-light">
+                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light">
                     Workflow after
                   </p>
                   <ol className="mt-4 space-y-3">
                     {cs.afterWorkflow.map((step, i) => (
                       <li key={step} className="flex gap-3 text-sm leading-relaxed text-white/65">
-                        <span className="font-mono text-[0.62rem] text-crimson-light/60">
+                        <span className="font-mono text-[0.72rem] sm:text-[0.62rem] text-crimson-light/60">
                           {String(i + 1).padStart(2, "0")}
                         </span>
                         {step}
@@ -86,7 +86,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
               {/* Implementation + KPIs + projections */}
               <div className="mt-10 grid gap-8 lg:grid-cols-12">
                 <div className="lg:col-span-5">
-                  <p className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     Proposed RSG implementation
                   </p>
                   <ul className="mt-4 space-y-2.5">
@@ -99,7 +99,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
                   </ul>
                 </div>
                 <div className="lg:col-span-3">
-                  <p className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     KPIs monitored
                   </p>
                   <ul className="mt-4 flex flex-wrap gap-2">
@@ -114,7 +114,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
                   </ul>
                 </div>
                 <div className="lg:col-span-4">
-                  <p className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     {cs.verified ? "Results" : "Projected outcomes"}
                   </p>
                   <dl className="mt-4 space-y-3">
@@ -144,7 +144,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
 function ProfileCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-base-900 px-6 py-5">
-      <p className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">{label}</p>
+      <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">{label}</p>
       <p className="mt-1.5 text-sm leading-snug text-white/75">{value}</p>
     </div>
   );

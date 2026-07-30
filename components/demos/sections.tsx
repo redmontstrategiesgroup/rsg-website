@@ -11,12 +11,12 @@ import type { IndustryConfig } from "./types";
 
 export function DemoPageHeader({ config }: { config: IndustryConfig }) {
   return (
-    <section className="container-px pb-10 pt-12 sm:pt-16">
+    <section className="container-px pb-8 pt-9 sm:pt-16">
       <Reveal>
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/demos"
-            className="text-[0.68rem] font-medium uppercase tracking-[0.2em] text-white/40 transition-colors hover:text-white"
+            className="text-[0.75rem] sm:text-[0.68rem] font-medium uppercase tracking-[0.2em] text-white/40 transition-colors hover:text-white"
           >
             Demo Systems
           </Link>
@@ -34,7 +34,7 @@ export function DemoPageHeader({ config }: { config: IndustryConfig }) {
       </Reveal>
       <Reveal delay={0.1}>
         <div className="mt-8 max-w-3xl border-l-2 border-crimson bg-white/[0.02] px-5 py-4">
-          <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/40">
+          <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/40">
             The operational problem
           </p>
           <p className="mt-2 text-sm leading-relaxed text-white/70">{config.problem}</p>
@@ -54,7 +54,7 @@ export function AutomationFlow({
   flow: IndustryConfig["builderFlow"];
 }) {
   return (
-    <div className="overflow-x-auto pb-3 no-scrollbar">
+    <div className="min-w-0 max-w-full overflow-x-auto pb-3 no-scrollbar">
       <ol className="flex min-w-max items-stretch gap-0 px-1 py-2">
         {flow.steps.map((step, i) => (
           <li key={step.label} className="flex items-center">
@@ -67,11 +67,11 @@ export function AutomationFlow({
                     : "border-white/10 bg-white/[0.025]"
               }`}
             >
-              <span className="absolute -top-2 left-3 rounded bg-base px-1.5 text-[0.55rem] font-medium uppercase tracking-wider text-white/35">
+              <span className="absolute -top-2 left-3 rounded bg-base px-1.5 text-[0.7rem] sm:text-[0.55rem] font-medium uppercase tracking-wider text-white/35">
                 {i === 0 ? "Trigger" : `Step ${i}`}
               </span>
               <p className="text-xs font-medium leading-snug text-white/85">{step.label}</p>
-              {step.sub && <p className="mt-1 text-[0.62rem] leading-snug text-white/40">{step.sub}</p>}
+              {step.sub && <p className="mt-1 text-[0.72rem] sm:text-[0.62rem] leading-snug text-white/40">{step.sub}</p>}
             </div>
             {i < flow.steps.length - 1 && (
               <span className="relative mx-1 block h-px w-6 shrink-0 bg-white/20" aria-hidden>
@@ -87,7 +87,7 @@ export function AutomationFlow({
 
 export function BuilderSection({ config }: { config: IndustryConfig }) {
   return (
-    <section className="container-px py-14 sm:py-20">
+    <section className="container-px py-10 sm:py-20">
       <Reveal>
         <span className="label">Automation builder</span>
         <h2 className="display mt-4 text-2xl sm:text-3xl">
@@ -131,7 +131,7 @@ export function SystemBreakdown({ config }: { config: IndustryConfig }) {
   ];
   return (
     <section className="border-y border-white/[0.07] bg-base-900/40">
-      <div className="container-px py-14 sm:py-20">
+      <div className="container-px py-10 sm:py-20">
         <Reveal>
           <span className="label">System breakdown</span>
           <h2 className="display mt-4 max-w-2xl text-2xl sm:text-3xl">
@@ -162,7 +162,7 @@ export function SystemBreakdown({ config }: { config: IndustryConfig }) {
           })}
         </div>
 
-        <Reveal className="mt-14">
+        <Reveal className="mt-9 sm:mt-14">
           <div className="flex items-center gap-2.5">
             <ShieldCheck size={15} className="text-crimson-light" aria-hidden />
             <h3 className="text-sm font-medium text-white">Potential integrations</h3>
@@ -178,7 +178,7 @@ export function SystemBreakdown({ config }: { config: IndustryConfig }) {
                 className="rounded border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/60"
               >
                 {integration}
-                <span className="ml-2 text-[0.58rem] uppercase tracking-wider text-white/30">
+                <span className="ml-2 text-[0.7rem] sm:text-[0.58rem] uppercase tracking-wider text-white/30">
                   Configurable
                 </span>
               </li>
@@ -228,7 +228,7 @@ export function ConversionSection({
 }) {
   return (
     <section className="border-t border-white/[0.07] bg-base-900/40">
-      <div className="container-px py-16 sm:py-24">
+      <div className="container-px py-12 sm:py-24">
         <div className="section-grid items-start">
           <Reveal className="lg:col-span-5">
             <span className="label">Implementation</span>

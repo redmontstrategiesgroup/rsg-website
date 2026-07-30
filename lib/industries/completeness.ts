@@ -97,16 +97,6 @@ export function checkCompleteness(v: IndustryVertical): CompletenessReport {
     `${integrations.length}/10+ integrations, each explaining what it connects, plus the availability disclaimer.`
   );
 
-  add(
-    "roi",
-    "ROI calculator",
-    (v.roi?.inputs?.length ?? 0) >= 6 &&
-      (v.roi?.assumptions?.length ?? 0) >= 3 &&
-      filled(v.roi?.disclaimer) &&
-      filled(v.roi?.recommendedSystemId),
-    "6+ inputs, tunable assumptions, an estimates-only disclaimer, and a recommended system."
-  );
-
   const compliance = v.compliance?.items ?? [];
   add(
     "compliance",

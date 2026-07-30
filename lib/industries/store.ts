@@ -12,10 +12,9 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { getSupabase } from "../supabase";
-import { DEFAULT_VERTICALS, DEFAULT_SECONDARY_INDUSTRIES } from "./content";
+import { DEFAULT_VERTICALS } from "./content";
 import type {
   IndustryVertical,
-  SecondaryIndustry,
   VerticalSlug,
 } from "./types";
 import { VERTICAL_SLUGS } from "./types";
@@ -28,7 +27,6 @@ const DATA_DIR =
 
 const VERTICALS_FILE = path.join(DATA_DIR, "industry-verticals.json");
 
-const SECONDARY_KEY = "additional-industries";
 
 type StoredOverrides = Partial<Record<string, unknown>>;
 
@@ -163,40 +161,3 @@ export async function resetVertical(slug: VerticalSlug): Promise<IndustryVertica
   return DEFAULT_VERTICALS[slug];
 }
 
-export async function getSecondaryIndustries(): Promise<SecondaryIndustry[]> {
-  const overrides = await readOverrides();
-  const stored = overrides.get(SECONDARY_KEY) as
-    | { industries?: SecondaryIndustry[] }
-    | undefined;
-  const items = stored?.industries;
-  if (Array.isArray(items) && items.length > 0) {
-    return items.filter((i) => i && typeof i.name === "string" && i.name.trim());
-  }
-  return DEFAULT_SECONDARY_INDUSTRIES;
-}
-
-export async function saveSecondaryIndustries(
-  industries: SecondaryIndustry[],
-  updatedBy?: string
-): Promise<SecondaryIndustry[]> {
-  const content = { industries };
-  const supabase = getSupabase();
-  if (supabase) {
-    try {
-      const { error } = await supabase.from("industry_verticals").upsert({
-        slug: SECONDARY_KEY,
-        content,
-        status: "published",
-        updated_at: new Date().toISOString(),
-        updated_by: updatedBy ?? null,
-      });
-      if (error) throw error;
-    } catch (err) {
-      console.warn("[industries] Supabase write failed.", err);
-    }
-  }
-  const file = await readJson<StoredOverrides>(VERTICALS_FILE, {});
-  file[SECONDARY_KEY] = content;
-  await writeJson(VERTICALS_FILE, file);
-  return industries;
-}

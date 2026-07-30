@@ -5,7 +5,7 @@ import type { IndustryVertical } from "../types";
  *
  * Voice: direct, premium consulting. No invented statistics, no client
  * names. The case study is an illustrative scenario and is labeled as such.
- * ROI input/assumption ids must match homeServicesRoi in lib/industries/roi.ts.
+ * No page projects a dollar outcome and nothing is priced in advance.
  */
 export const homeServicesVertical: IndustryVertical = {
   slug: "home-services",
@@ -658,134 +658,6 @@ export const homeServicesVertical: IndustryVertical = {
     ],
   },
 
-  roi: {
-    title: "Estimate What the Leaks Are Costing You",
-    intro:
-      "Enter your own numbers — call volume, job value, close rate — and the calculator models what missed calls, unchased estimates, and unasked reviews are worth in your business. Every assumption is shown and adjustable; nothing is hidden in the math.",
-    disclaimer:
-      "All results are estimates computed from the numbers you enter and the stated assumptions. They are modeled scenarios, not guaranteed financial outcomes. Actual results depend on your market, pricing, seasonality, and how consistently the systems are operated.",
-    inputs: [
-      {
-        id: "monthlyLeads",
-        label: "Leads per month",
-        min: 10,
-        max: 500,
-        step: 5,
-        defaultValue: 60,
-        format: "number",
-        helper: "All inbound opportunities: calls, forms, LSA, ads, and referrals.",
-      },
-      {
-        id: "missedCallPct",
-        label: "Calls that go unanswered",
-        min: 0,
-        max: 60,
-        step: 1,
-        defaultValue: 25,
-        format: "percent",
-        helper: "Include after-hours calls and calls missed while crews are on jobs.",
-      },
-      {
-        id: "bookingRate",
-        label: "Booking rate on leads you reach",
-        min: 10,
-        max: 90,
-        step: 5,
-        defaultValue: 55,
-        format: "percent",
-        helper: "Of the leads you actually talk to, the share that books a visit.",
-      },
-      {
-        id: "avgJobValue",
-        label: "Average job value",
-        min: 200,
-        max: 20000,
-        step: 100,
-        defaultValue: 1800,
-        format: "currency",
-        helper: "Blend service calls and installs into one average ticket.",
-      },
-      {
-        id: "estimateCloseRate",
-        label: "Estimate close rate",
-        min: 5,
-        max: 80,
-        step: 5,
-        defaultValue: 35,
-        format: "percent",
-        helper: "Your close rate on estimates that do get an active follow-up.",
-      },
-      {
-        id: "uncontactedEstimates",
-        label: "Estimates per month never followed up",
-        min: 0,
-        max: 100,
-        step: 1,
-        defaultValue: 8,
-        format: "number",
-        helper: "Quotes that go out and never get a second touch. Be honest.",
-      },
-      {
-        id: "monthlyJobs",
-        label: "Jobs completed per month",
-        min: 5,
-        max: 400,
-        step: 5,
-        defaultValue: 45,
-        format: "number",
-        helper: "Completed, invoiced jobs across all crews.",
-      },
-      {
-        id: "reviewRequestRate",
-        label: "Completed jobs asked for a review today",
-        min: 0,
-        max: 100,
-        step: 5,
-        defaultValue: 10,
-        format: "percent",
-        helper: "The share of finished jobs where someone actually asks.",
-      },
-    ],
-    assumptions: [
-      {
-        id: "missedCallRecovery",
-        label: "Missed-caller recovery rate",
-        value: 0.5,
-        helper:
-          "Share of missed callers assumed to respond to an instant text-back. Set at half — some have already reached the next company on the list.",
-      },
-      {
-        id: "followUpDampener",
-        label: "Late-estimate close dampener",
-        value: 0.6,
-        helper:
-          "Estimates revived by follow-up close below fresh ones, so recovered estimates are counted at 60% of your normal close rate.",
-      },
-      {
-        id: "maintenanceEnrollRate",
-        label: "Maintenance-plan enrollment rate",
-        value: 0.08,
-        helper:
-          "Share of completed jobs assumed to enroll in a maintenance plan when it's offered on every job — modeled conservatively at 8%.",
-      },
-      {
-        id: "maintenancePlanValue",
-        label: "Annual maintenance-plan value",
-        value: 348,
-        helper:
-          "Modeled at $29/month per enrolled customer. Swap in your own plan pricing.",
-      },
-      {
-        id: "reviewTargetRate",
-        label: "Automated review-request rate",
-        value: 0.5,
-        helper:
-          "The request rate an automated post-payment ask typically reaches — half of completed jobs. Only the lift above your current rate is counted.",
-      },
-    ],
-    recommendedSystemId: "service-command-center",
-  },
-
   compliance: {
     title: "Compliance & Risk, Handled Like Adults",
     intro:
@@ -904,7 +776,7 @@ export const homeServicesVertical: IndustryVertical = {
       },
     ],
     projectionNote:
-      "These outcomes are modeled from the scenario's stated inputs and the same adjustable assumptions used in the calculator above. They are projections, not measured client results, and they are not a guarantee of any financial outcome.",
+      "These outcomes are modeled from the scenario's stated inputs. They are projections, not measured client results, and they are not a guarantee of any financial outcome.",
   },
 
   ctas: {

@@ -20,7 +20,7 @@ export function SecurityStandard({
       id="security"
       className="scroll-mt-24 border-y border-white/10 bg-base-900"
     >
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <Reveal y={12}>
@@ -53,7 +53,7 @@ export function SecurityStandard({
                 <Link
                   href="/audit"
                   onClick={() => trackEvent("security_cta_click", { location: "home", cta: "risk_assessment" })}
-                  className="group inline-flex items-center gap-2 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light sm:ml-2"
+                  className="link-arrow group sm:ml-2"
                 >
                   Request a Risk Assessment
                   <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />

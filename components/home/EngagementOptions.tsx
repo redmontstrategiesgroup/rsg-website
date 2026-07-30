@@ -47,7 +47,7 @@ const ENGAGEMENTS = [
 export function EngagementOptions() {
   return (
     <section id="engagements" className="scroll-mt-24">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Engagement Options</p>
@@ -59,7 +59,7 @@ export function EngagementOptions() {
           </Reveal>
         </div>
 
-        <div className="mt-24">
+        <div className="mt-10 sm:mt-24">
           {ENGAGEMENTS.map((e, i) => (
             <Reveal key={e.name} y={12} delay={i * 0.06}>
               <article className="grid gap-8 border-t border-white/[0.08] py-14 last:border-b sm:py-16 lg:grid-cols-12 lg:gap-8">
@@ -89,7 +89,7 @@ export function EngagementOptions() {
                         { location: `engagement_${e.index}` }
                       )
                     }
-                    className="group inline-flex items-center gap-2.5 text-sm font-medium text-white transition-colors hover:text-crimson-light"
+                    className="link-arrow group text-white"
                   >
                     {e.cta}
                     <ArrowRight

@@ -4,8 +4,8 @@ import type { IndustryVertical } from "../types";
  * Default content for the Retail & Multi-Location Businesses vertical.
  *
  * Honesty rules: no invented statistics, no client names, no guarantees.
- * The case study is explicitly illustrative; all ROI figures are estimates
- * driven by the visitor's own inputs and the stated assumptions.
+ * The case study is explicitly illustrative. No page projects a dollar
+ * outcome and nothing is priced in advance.
  */
 export const retailVertical: IndustryVertical = {
   slug: "retail",
@@ -659,134 +659,6 @@ export const retailVertical: IndustryVertical = {
     ],
   },
 
-  roi: {
-    title: "Estimate what the gaps are costing you",
-    intro:
-      "Enter your own numbers — revenue by channel, cart abandonment, repeat rate, locations — and see what abandoned carts, one-time buyers, inventory losses, and manual reporting add up to. Every assumption in the model is shown and can be questioned.",
-    disclaimer:
-      "All results are estimates calculated from the inputs you provide and the stated modeling assumptions. They illustrate potential opportunity — they are not guaranteed financial outcomes, and actual results depend on your business, your market, and how any system is implemented and operated.",
-    inputs: [
-      {
-        id: "monthlyOnlineRevenue",
-        label: "Monthly online revenue",
-        min: 0,
-        max: 500000,
-        step: 1000,
-        defaultValue: 25000,
-        format: "currency",
-        helper: "Completed online orders per month, before returns.",
-      },
-      {
-        id: "monthlyStoreRevenue",
-        label: "Monthly in-store revenue",
-        min: 0,
-        max: 1000000,
-        step: 5000,
-        defaultValue: 60000,
-        format: "currency",
-        helper: "Register sales across all locations combined.",
-      },
-      {
-        id: "abandonedCartRate",
-        label: "Abandoned-cart rate",
-        min: 0,
-        max: 90,
-        step: 5,
-        defaultValue: 65,
-        format: "percent",
-        helper: "Share of online checkouts that start but never complete.",
-      },
-      {
-        id: "avgOrderValue",
-        label: "Average order value",
-        min: 10,
-        max: 500,
-        step: 5,
-        defaultValue: 85,
-        format: "currency",
-        helper: "Across store and online orders.",
-      },
-      {
-        id: "activeCustomers",
-        label: "Active customers",
-        min: 100,
-        max: 50000,
-        step: 100,
-        defaultValue: 2500,
-        format: "number",
-        helper: "Customers who purchased at least once in the last 12 months.",
-      },
-      {
-        id: "repeatPurchaseRate",
-        label: "Repeat-purchase rate",
-        min: 0,
-        max: 90,
-        step: 5,
-        defaultValue: 25,
-        format: "percent",
-        helper: "Share of customers who have bought more than once.",
-      },
-      {
-        id: "locations",
-        label: "Number of locations",
-        min: 1,
-        max: 25,
-        step: 1,
-        defaultValue: 2,
-        format: "number",
-        helper: "Physical stores; an online store counts as a channel, not a location.",
-      },
-      {
-        id: "inventoryLossRate",
-        label: "Inventory loss rate",
-        min: 0,
-        max: 15,
-        step: 1,
-        defaultValue: 4,
-        format: "percent",
-        helper: "Revenue lost to stockouts, shrink, and write-downs, as a share of sales.",
-      },
-    ],
-    assumptions: [
-      {
-        id: "cartRecoveryRate",
-        label: "Cart recovery rate",
-        value: 0.1,
-        helper:
-          "Share of abandoned-cart value assumed to complete after timed reminders. Deliberately conservative.",
-      },
-      {
-        id: "repeatLift",
-        label: "Repeat-purchase lift",
-        value: 0.05,
-        helper:
-          "Share of currently one-time customers assumed to make one additional purchase per year with automated follow-up.",
-      },
-      {
-        id: "loyaltyLift",
-        label: "Loyalty-program lift",
-        value: 0.04,
-        helper:
-          "Share of active customers assumed to add one order per year after joining a loyalty program.",
-      },
-      {
-        id: "inventoryLossReduction",
-        label: "Inventory-loss reduction",
-        value: 0.25,
-        helper:
-          "Assumed reduction in stockout and shrink losses once low-stock alerts and reorder visibility are in place.",
-      },
-      {
-        id: "reportingHoursPerLocation",
-        label: "Reporting hours per location",
-        value: 5,
-        helper:
-          "Hours per location per month typically spent consolidating reports by hand — replaced, not billed back.",
-      },
-    ],
-    recommendedSystemId: "retail-operations-hub",
-  },
-
   compliance: {
     title: "Compliance & risk, designed in from the start",
     intro:
@@ -891,7 +763,7 @@ export const retailVertical: IndustryVertical = {
       {
         label: "Abandoned-cart recovery (modeled)",
         value:
-          "Roughly 10% of abandoned checkout value recovered by timed reminders, per the calculator's stated assumption",
+          "A share of abandoned checkout value recovered by timed reminders",
       },
       {
         label: "Repeat purchases (modeled)",
@@ -910,7 +782,7 @@ export const retailVertical: IndustryVertical = {
       },
     ],
     projectionNote:
-      "These projections are modeled from the same assumptions used in the ROI calculator above — they are not measured results from a real engagement. They illustrate how the arithmetic works for a business of this shape and are not a promise or guarantee of any particular outcome.",
+      "This is an illustrative scenario, not a measured result from a real engagement. It shows the shape of the problem and the systems that address it, and is not a promise or guarantee of any particular outcome.",
   },
 
   ctas: {
@@ -919,7 +791,7 @@ export const retailVertical: IndustryVertical = {
       href: "#assessment",
     },
     secondary: [
-      { label: "Find Revenue and Inventory Gaps", href: "#roi" },
+      { label: "Map My Retail Workflow", href: "#workflow" },
       { label: "Explore the Retail Operations Demo", href: "/demos/retail" },
       { label: "Build My Retail Growth System", href: "/book" },
     ],

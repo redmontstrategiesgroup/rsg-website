@@ -104,7 +104,13 @@ export function DirectoryCard({
 }) {
   return (
     <article className="group grid gap-8 border-t border-white/10 py-12 lg:grid-cols-12 lg:items-center lg:gap-10 lg:py-16">
-      <div className={`lg:col-span-5 ${index % 2 === 1 ? "lg:order-2 lg:col-start-8" : ""}`}>
+      {/*
+        min-w-0 on both columns is load-bearing: grid items default to
+        min-width:auto, so the dense miniature below refused to shrink under
+        its min-content and stretched the whole track past the viewport —
+        which is what pushed the page 104px wide on a 320px phone.
+      */}
+      <div className={`min-w-0 lg:col-span-5 ${index % 2 === 1 ? "lg:order-2 lg:col-start-8" : ""}`}>
         <p className="label !text-crimson-light">{config.industry}</p>
         <h3 className="display mt-3 text-xl sm:text-2xl">{config.systemName}</h3>
         <p className="mt-3 text-sm leading-relaxed text-white/55">{config.outcome}</p>
@@ -130,14 +136,17 @@ export function DirectoryCard({
             href={`/demos/${config.slug}#breakdown`}
             event="demo_launch_click"
             eventProps={{ demo: config.slug, location: "directory_breakdown" }}
-            className="link-underline"
+            className="link-underline inline-flex min-h-11 items-center lg:min-h-0"
           >
             View System Breakdown
           </TrackedLink>
         </div>
       </div>
-      <div className={`lg:col-span-6 ${index % 2 === 1 ? "lg:order-1 lg:col-start-1" : "lg:col-start-7"}`}>
-        <div className="transition-transform duration-300 group-hover:-translate-y-1">
+      <div className={`min-w-0 overflow-hidden ${index % 2 === 1 ? "lg:order-1 lg:col-span-6 lg:col-start-1" : "lg:col-span-6 lg:col-start-7"}`}>
+        {/* Illustrative miniature of the running system — a picture made of
+            DOM, so it is hidden from assistive tech rather than read out as
+            a stream of stray numbers. */}
+        <div className="transition-transform duration-300 group-hover:-translate-y-1" aria-hidden>
           <MiniPreview config={config} />
         </div>
       </div>

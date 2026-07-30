@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Reveal } from "../Reveal";
-import { PARTNERSHIP_LINE } from "@/lib/managed-services/content";
+
+const PARTNERSHIP_LINE =
+  "Your initial implementation creates cash flow. Ongoing management creates lasting business value.";
 
 const VALUE_POINTS = [
   {
@@ -20,7 +22,7 @@ const VALUE_POINTS = [
 export function Partnership() {
   return (
     <section id="partnership" className="border-y border-white/10 bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="section-grid">
           <div className="lg:col-span-5">
             <Reveal y={12}>
@@ -37,8 +39,8 @@ export function Partnership() {
               </p>
             </Reveal>
             <Reveal y={12} delay={0.22}>
-              <Link href="/managedservices" className="btn-ghost mt-10 inline-flex">
-                Explore Managed Services
+              <Link href="/book" className="btn-ghost mt-10 inline-flex">
+                Talk through ongoing support
               </Link>
             </Reveal>
           </div>

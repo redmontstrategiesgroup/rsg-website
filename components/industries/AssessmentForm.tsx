@@ -76,7 +76,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
 
   return (
     <section id="assessment" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
           <div className="lg:col-span-4">
             <Reveal y={12}>
@@ -124,7 +124,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
               <div className="rounded-xl border border-white/10 bg-base/60 p-7 sm:p-9">
                 {step <= 1 && (
                   <fieldset>
-                    <legend className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                    <legend className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                       {step === 0 ? "Part 1 — your operation" : "Part 2 — your current systems"}
                     </legend>
                     <div className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
@@ -166,7 +166,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                             />
                           )}
                           {q.helper && (
-                            <p className="mt-1.5 text-[0.68rem] leading-relaxed text-white/35">{q.helper}</p>
+                            <p className="mt-1.5 text-[0.75rem] sm:text-[0.68rem] leading-relaxed text-white/35">{q.helper}</p>
                           )}
                         </div>
                       ))}
@@ -176,7 +176,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
 
                 {step === 2 && (
                   <fieldset>
-                    <legend className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+                    <legend className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                       Part 3 — where to send the assessment
                     </legend>
                     <p className="mt-4 text-sm leading-relaxed text-white/50">
@@ -218,7 +218,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
 
                 {step === 3 && (
                   <div>
-                    <p className="flex items-center gap-2.5 font-mono text-[0.55rem] uppercase tracking-label text-crimson-light">
+                    <p className="flex items-center gap-2.5 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light">
                       <Check size={13} aria-hidden />
                       Assessment received
                     </p>
@@ -258,7 +258,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                       type="button"
                       onClick={() => setStep((s) => Math.max(0, s - 1))}
                       disabled={step === 0}
-                      className="inline-flex items-center gap-2 text-sm text-white/45 transition-colors hover:text-white disabled:invisible"
+                      className="inline-flex min-h-11 items-center gap-2 text-sm text-white/45 transition-colors hover:text-white disabled:invisible lg:min-h-0"
                     >
                       <ArrowLeft size={14} aria-hidden />
                       Back

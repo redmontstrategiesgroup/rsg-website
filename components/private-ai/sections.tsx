@@ -16,7 +16,7 @@ import Link from "next/link";
 export function SystemsGrid() {
   return (
     <section id="systems" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Systems RSG can build</p>
         </Reveal>
@@ -25,7 +25,7 @@ export function SystemsGrid() {
             Purpose-built systems—not generic chatbots.
           </h2>
         </Reveal>
-        <div className="mt-14 grid gap-4 md:grid-cols-2">
+        <div className="mt-9 sm:mt-14 grid gap-4 md:grid-cols-2">
           {SYSTEMS_WE_BUILD.map((system, i) => (
             <Reveal key={system.id} y={12} delay={(i % 4) * 0.04}>
               <article className="h-full border border-white/10 bg-white/[0.02] p-6 sm:p-7">
@@ -58,7 +58,7 @@ export function SystemsGrid() {
 export function SecuritySection() {
   return (
     <section id="security" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Privacy and security architecture</p>
         </Reveal>
@@ -85,7 +85,7 @@ export function SecuritySection() {
             layer alone.
           </p>
         </Reveal>
-        <ul className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-8 sm:mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {SECURITY_CAPABILITIES.map((item, i) => (
             <Reveal key={item} y={10} delay={(i % 6) * 0.03}>
               <li className="border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/65">
@@ -102,7 +102,7 @@ export function SecuritySection() {
 export function ModelOptionsSection() {
   return (
     <section className="border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <Reveal y={12}>
@@ -140,7 +140,7 @@ export function ModelOptionsSection() {
 export function IntegrationsSection() {
   return (
     <section className="border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Integration capabilities</p>
         </Reveal>
@@ -173,7 +173,7 @@ export function IntegrationsSection() {
 export function IndustryUseCases() {
   return (
     <section className="border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Industry use cases</p>
         </Reveal>
@@ -188,7 +188,7 @@ export function IndustryUseCases() {
             dedicated security, legal, infrastructure, and compliance review.
           </p>
         </Reveal>
-        <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 sm:mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {INDUSTRY_USE_CASES.map((industry, i) => (
             <Reveal key={industry.name} y={12} delay={(i % 3) * 0.04}>
               <article className="h-full border border-white/10 bg-white/[0.02] p-5">
@@ -213,7 +213,7 @@ export function IndustryUseCases() {
 export function ProcessSection() {
   return (
     <section id="process" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Development process</p>
         </Reveal>
@@ -229,7 +229,7 @@ export function ProcessSection() {
             human approval procedures.
           </p>
         </Reveal>
-        <ol className="mt-12 grid gap-3 md:grid-cols-2">
+        <ol className="mt-8 sm:mt-12 grid gap-3 md:grid-cols-2">
           {PROCESS_STAGES.map((stage, i) => (
             <Reveal key={stage.step} y={10} delay={(i % 4) * 0.03}>
               <li className="flex gap-4 border border-white/10 bg-white/[0.02] p-5">
@@ -254,7 +254,7 @@ export function ProcessSection() {
 export function PrivateAiFaq() {
   return (
     <section id="faq" className="scroll-mt-24 border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Frequently asked questions</p>
         </Reveal>
@@ -263,7 +263,7 @@ export function PrivateAiFaq() {
             Straight answers on privacy, infrastructure, and fit.
           </h2>
         </Reveal>
-        <div className="mt-12 max-w-3xl divide-y divide-white/10 border-y border-white/10">
+        <div className="mt-8 sm:mt-12 max-w-3xl divide-y divide-white/10 border-y border-white/10">
           {PRIVATE_AI_FAQS.map((faq) => (
             <details key={faq.q} className="group py-5">
               <summary className="cursor-pointer list-none text-[1.02rem] font-medium text-white marker:content-none [&::-webkit-details-marker]:hidden">
@@ -286,7 +286,7 @@ export function PrivateAiFaq() {
 export function PrivateAiCta() {
   return (
     <section className="border-b border-white/[0.08]">
-      <div className="container-px py-20 sm:py-28">
+      <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Next step</p>
         </Reveal>
@@ -309,8 +309,8 @@ export function PrivateAiCta() {
           </div>
         </Reveal>
         <Reveal y={12} delay={0.14}>
-          <div className="mt-14">
-            <p className="font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+          <div className="mt-9 sm:mt-14">
+            <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
               Related services
             </p>
             <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-3">
