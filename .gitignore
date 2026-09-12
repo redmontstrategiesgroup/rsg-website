@@ -32,3 +32,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Responsive audit raw output (the .txt summary is committed as evidence)
+audit-out/*.json
