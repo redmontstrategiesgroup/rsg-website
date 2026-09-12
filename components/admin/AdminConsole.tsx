@@ -881,9 +881,16 @@ function SubscribersPanel({ subscribers }: { subscribers: Subscriber[] }) {
                 {subscribers.map((s) => (
                   <tr
                     key={s.email}
-                    className="border-b border-white/[0.06] last:border-0"
+                    className={`border-b border-white/[0.06] last:border-0 ${s.unsubscribedAt ? "opacity-50" : ""}`}
                   >
-                    <td className="px-4 py-3.5 text-white/85">{s.email}</td>
+                    <td className="px-4 py-3.5 text-white/85">
+                      {s.email}
+                      {s.unsubscribedAt && (
+                        <span className="ml-2 rounded-full bg-white/[0.06] px-2 py-0.5 font-mono text-[0.52rem] uppercase tracking-label text-white/50">
+                          Unsubscribed
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3.5 text-white/60">{s.source}</td>
                     <td className="px-4 py-3.5 font-mono text-[0.6rem] uppercase tracking-label text-white/40">
                       {new Date(s.subscribedAt).toLocaleDateString("en-US", {

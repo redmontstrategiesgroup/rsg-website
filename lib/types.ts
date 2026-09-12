@@ -70,8 +70,10 @@ export type ClientPublic = {
 };
 
 export type ClientRecord = ClientPublic & {
-  /** scrypt "salt:digest" — never sent to the client. */
+  /** scrypt "salt:digest", never sent to the client. */
   passwordHash?: string;
+  /** FK to the originating lead/booking (provisionClientForOpportunity), server-only, never sent to the client. */
+  leadId?: string | null;
 };
 
 export type AdminRole =
@@ -119,7 +121,7 @@ export type AdminRecord = {
   passwordHash: string;
   role: AdminRole;
   mfaEnabled: boolean;
-  /** Present only when MFA setup/verify is needed — never send to client. */
+  /** Present only when MFA setup/verify is needed, never send to client. */
   mfaSecret?: string | null;
 };
 
@@ -205,7 +207,7 @@ export type Lead = {
   /** What they want to improve. */
   improve: string;
   submittedAt: string;
-  /** Intake preferences (optional — added Jul 2026). */
+  /** Intake preferences (optional: added Jul 2026). */
   preferredContact?: string;
   bestTime?: string;
   timeline?: string;
@@ -270,6 +272,8 @@ export type Subscriber = {
   /** Where the signup came from, e.g. "popup". */
   source: string;
   subscribedAt: string;
+  /** Set when the address used an unsubscribe link; never email it again. */
+  unsubscribedAt?: string | null;
 };
 
 /** One consented page view (first-party analytics via the rsg_vid cookie). */

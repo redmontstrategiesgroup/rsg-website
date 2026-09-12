@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "AI Implementation Firm | Redmont Strategies Group",
   description:
-    "AI implementation firm for service businesses across Plymouth County and the South Shore of Massachusetts. Redmont Strategies Group still powers the business consulting, systems, and AI implementation work behind the scenes.",
+    "AI implementation firm for service businesses across Plymouth County and the South Shore of Massachusetts: business consulting, systems, and AI implementation by Redmont Strategies Group.",
   // NOTE: no `alternates.canonical` here: Next.js inherits layout metadata,
   // which would canonicalize every page to the homepage. Each page sets its own.
   robots: { index: true, follow: true },

@@ -83,7 +83,7 @@ export function Footer() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/rsg-mark.png"
-              alt="AI Transformation Firm"
+              alt="Redmont Strategies Group"
               className="h-16 w-auto"
             />
             <p className="mt-8 max-w-sm text-sm leading-relaxed text-white/50">
@@ -175,7 +175,7 @@ export function Footer() {
 
         <div className="mt-20 border-t border-white/10 pt-8">
           <p className="text-xs text-white/35">
-            &copy; 2026 AI Transformation Firm. All rights reserved.
+            &copy; {new Date().getFullYear()} Redmont Strategies Group. All rights reserved.
           </p>
         </div>
       </div>

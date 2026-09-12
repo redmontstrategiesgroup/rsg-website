@@ -13,14 +13,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/book/consultation", priority: 0.85 },
     { path: "/book/strategy", priority: 0.85 },
     { path: "/connect", priority: 0.85 },
+    { path: "/start", priority: 0.85 },
     { path: "/faq", priority: 0.6 },
     // Interactive demo systems
     { path: "/demos", priority: 0.8 },
-    { path: "/demos/medspa", priority: 0.7 },
+    { path: "/demos/healthwellness", priority: 0.7 },
     { path: "/demos/contractors", priority: 0.7 },
     { path: "/demos/gyms", priority: 0.7 },
-    { path: "/demos/dental", priority: 0.7 },
-    { path: "/demos/retail", priority: 0.7 },
+    { path: "/demos/realestate", priority: 0.7 },
     // Local service pages
     { path: "/businessconsulting", priority: 0.8 },
     { path: "/systemsaudit", priority: 0.8 },
@@ -35,8 +35,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/crmsystems", priority: 0.8 },
     // Industry verticals
     { path: "/industries/homeservices", priority: 0.85 },
-    { path: "/industries/dentalpractices", priority: 0.85 },
-    { path: "/industries/retail", priority: 0.85 },
+    { path: "/industries/healthwellness", priority: 0.85 },
+    { path: "/industries/realestate", priority: 0.85 },
     // Service area
     { path: "/servicearea", priority: 0.6 },
     // Legal
