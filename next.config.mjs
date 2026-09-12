@@ -18,6 +18,14 @@ const nextConfig = {
         destination: "/book",
         permanent: true,
       },
+      // Observatory was retired (Sep 2026): a desktop-only vanilla app mounted
+      // in an iframe, unreachable from the portal nav. Anyone holding the
+      // old URL lands on the portal instead of a 404.
+      {
+        source: "/portal/observatory",
+        destination: "/portal",
+        permanent: true,
+      },
       // Old thin industry pages → the three specialized verticals (Jul 2026).
       {
         source: "/home-service-business-consulting-ai-automation",
@@ -31,17 +39,12 @@ const nextConfig = {
       },
       {
         source: "/dental-wellness-office-ai-strategy",
-        destination: "/industries/dentalpractices",
+        destination: "/industries/healthwellness",
         permanent: true,
       },
       {
         source: "/med-spa-business-consulting-ai-automation",
-        destination: "/industries/dentalpractices",
-        permanent: true,
-      },
-      {
-        source: "/retail-business-systems",
-        destination: "/industries/retail",
+        destination: "/industries/healthwellness",
         permanent: true,
       },
       {
@@ -54,6 +57,29 @@ const nextConfig = {
       // priced individually, so both were removed rather than rewritten.
       { source: "/industries/additional", destination: "/industries", permanent: true },
       { source: "/managedservices", destination: "/services", permanent: true },
+      // Retail was retired and the slot reused for real estate (Sep 2026).
+      // Retail URLs land on the hubs rather than on the real estate pages: the
+      // topic was removed, not renamed, so pointing them at a brokerage page
+      // would be a relevance mismatch. Same call as the retired gym page above.
+      { source: "/retail-business-systems", destination: "/industries", permanent: true },
+      { source: "/industries/retail", destination: "/industries", permanent: true },
+      { source: "/demos/retail", destination: "/demos", permanent: true },
+      // Real estate (Sep 2026): the data slug stayed hyphenated while the route
+      // is de-hyphenated, same as health & wellness below. This rule is load-
+      // bearing, not cosmetic — app/api/assessment/route.ts falls back to
+      // /industries/<slug>, which builds the hyphenated form.
+      { source: "/industries/real-estate", destination: "/industries/realestate", permanent: true },
+      // Dental was retired and the med spa demo was rebranded to health &
+      // wellness (Sep 2026). Both dental surfaces and both med spa demo slugs
+      // land on the health & wellness equivalents. Every rule below is a single
+      // hop on purpose: the old hyphenated forms point at the final route, not
+      // at each other.
+      { source: "/industries/dentalpractices", destination: "/industries/healthwellness", permanent: true },
+      { source: "/industries/dental-practices", destination: "/industries/healthwellness", permanent: true },
+      { source: "/industries/health-wellness", destination: "/industries/healthwellness", permanent: true },
+      { source: "/demos/dental", destination: "/demos/healthwellness", permanent: true },
+      { source: "/demos/medspa", destination: "/demos/healthwellness", permanent: true },
+      { source: "/demos/med-spa", destination: "/demos/healthwellness", permanent: true },
       // De-hyphenated URL migration (Jul 2026). Old hyphenated slugs → new
       // slugs; local SEO service pages also drop the "-plymouth-county-ma" tail.
       { source: "/ai-strategy-implementation-plymouth-county-ma", destination: "/aistrategy", permanent: true },
@@ -68,10 +94,8 @@ const nextConfig = {
       { source: "/thank-you", destination: "/thankyou", permanent: true },
       { source: "/services/custom-private-ai-systems", destination: "/services/customprivateaisystems", permanent: true },
       { source: "/industries/home-services", destination: "/industries/homeservices", permanent: true },
-      { source: "/industries/dental-practices", destination: "/industries/dentalpractices", permanent: true },
       { source: "/booking/not-eligible", destination: "/booking/noteligible", permanent: true },
       { source: "/demo-preview/:path*", destination: "/demopreview/:path*", permanent: true },
-      { source: "/demos/med-spa", destination: "/demos/medspa", permanent: true },
       // De-hyphenated API routes (308 preserves method + body for POST callers).
       { source: "/api/demo-request", destination: "/api/demorequest", permanent: true },
       { source: "/api/private-ai/:path*", destination: "/api/privateai/:path*", permanent: true },
@@ -118,21 +142,9 @@ const nextConfig = {
       },
       {
         // The demo pages embed /demopreview/* in a same-origin iframe for
-        // the mobile-preview toggle. Same-origin framing only — cross-site
+        // the mobile-preview toggle. Same-origin framing only, cross-site
         // clickjacking remains blocked.
         source: "/demopreview/:path*",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value: csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'"),
-          },
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-        ],
-      },
-      {
-        // The Observatory app (public/apps/observatory) is embedded in a
-        // same-origin iframe by the authenticated /portal/observatory page.
-        source: "/apps/observatory/:path*",
         headers: [
           {
             key: "Content-Security-Policy",

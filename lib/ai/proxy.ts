@@ -3,19 +3,19 @@ import { rateLimit } from "@/lib/security";
 import { callProvider, IntegrationError, recordSkipped } from "@/lib/integration-log";
 
 /**
- * Shared server-side Anthropic proxy for the mounted apps (Observatory, Forge,
+ * Shared server-side Anthropic proxy for the mounted apps (Forge,
  * NEXUS, ...). Generalizes the pattern proven in app/api/chat: the API key,
  * system prompts, and tool schemas stay SERVER-SIDE and never reach the
- * browser — replacing each app's old browser-direct key.
+ * browser: replacing each app's old browser-direct key.
  *
  * Callers pass a `tenantId` (from requirePortalContext().client.id) so usage is
  * attributed and rate-limited per tenant. Routes using this MUST set
  * `export const runtime = "nodejs"` (the SDK needs Node).
  *
  * Two shapes cover every app need:
- *   - generateStructured<T>() — non-streaming, forced-tool JSON (spec/scenario
+ *   - generateStructured<T>(): non-streaming, forced-tool JSON (spec/scenario
  *     generation, NL parsing, briefs). The workhorse.
- *   - streamText()            — streaming plain text, optional agentic tool loop.
+ *   - streamText(): streaming plain text, optional agentic tool loop.
  *
  * Errors are typed (AiError) so routes map them to HTTP status without leaking
  * internals; use aiErrorResponse() for the default mapping.
@@ -99,7 +99,7 @@ async function preflight({ tenantId, app }: AiCallMeta): Promise<void> {
     throw new AiError("paused", "AI features are temporarily paused.");
   }
   if (!(await rateLimit(`ai:${app}:${tenantId}`, PER_TENANT_BURST, BURST_WINDOW_MS))) {
-    throw new AiError("rate_limited", "AI request limit reached — try again shortly.");
+    throw new AiError("rate_limited", "AI request limit reached: try again shortly.");
   }
 }
 
@@ -189,7 +189,7 @@ export async function generateStructured<T>(opts: {
   } catch (err) {
     // Classified and recorded by callProvider; map to the route-facing shape.
     // Rate limiting is kept distinct from a generic upstream failure so the
-    // caller returns 429 rather than 502 — different retry behavior.
+    // caller returns 429 rather than 502, different retry behavior.
     if (err instanceof IntegrationError && err.errorClass === "rate_limited") {
       throw new AiError("rate_limited", err.userMessage);
     }
@@ -223,7 +223,7 @@ export async function generateStructured<T>(opts: {
  *
  * `emit` writes directly into the response stream the visitor is reading, which
  * is different from the return value (that goes to the MODEL). A handler needs
- * it when a tool has a side effect the CLIENT must know about immediately —
+ * it when a tool has a side effect the CLIENT must know about immediately,
  * the chat route emits a sentinel the moment a lead is captured so the widget
  * can react without waiting for the model's confirmation turn.
  */
@@ -246,7 +246,7 @@ export type ToolHandler = (
 export async function streamText(opts: {
   /**
    * Client id for a tenant app. Public, unauthenticated surfaces have no
-   * client — they pass a stable non-uuid key (e.g. `ip:1.2.3.4`) so the
+   * client: they pass a stable non-uuid key (e.g. `ip:1.2.3.4`) so the
    * per-caller rate limit still applies. Such a caller MUST NOT pass onUsage:
    * ai_usage.client_id is a NOT NULL foreign key to clients(id), so there is
    * nowhere to attribute non-tenant usage today.
@@ -255,7 +255,7 @@ export async function streamText(opts: {
   /**
    * Health-tracking bucket for integration_connections. Defaults to tenantId,
    * which is right for tenant apps (bounded by client count) and WRONG for a
-   * public surface keyed by IP — that would create one health row per visitor.
+   * public surface keyed by IP: that would create one health row per visitor.
    * Public callers pass a single constant like "public".
    */
   connectionId?: string;
@@ -285,7 +285,7 @@ export async function streamText(opts: {
 
   return new ReadableStream<Uint8Array>({
     async start(controller) {
-      /** Write straight to the visitor's stream — see ToolHandler's `emit`. */
+      /** Write straight to the visitor's stream, see ToolHandler's `emit`. */
       const emit = (text: string) => controller.enqueue(encoder.encode(text));
 
       try {
@@ -294,7 +294,7 @@ export async function streamText(opts: {
           // The whole round is one recorded call: duration covers the full
           // stream, and a mid-stream disconnect is classified the same way a
           // non-streaming failure would be. A stream that dies halfway is
-          // otherwise invisible — the user got bytes, so nothing looks failed.
+          // otherwise invisible: the user got bytes, so nothing looks failed.
           const final = await callProvider(
             {
               provider: "anthropic",
