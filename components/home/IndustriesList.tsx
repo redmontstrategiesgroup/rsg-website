@@ -5,8 +5,8 @@ import { ArrowRight } from "lucide-react";
 import { Reveal } from "../Reveal";
 
 /**
- * Homepage industries section. RSG specializes in three verticals — each
- * with its own deep page and working demo — and says so plainly instead of
+ * Homepage industries section. RSG specializes in three verticals, each
+ * with its own deep page and working demo, and says so plainly instead of
  * listing twenty industries it knows thinly.
  */
 const VERTICALS = [
@@ -17,16 +17,16 @@ const VERTICALS = [
     href: "/industries/homeservices",
   },
   {
-    name: "Dental & specialty healthcare practices",
-    detail: "General & cosmetic dentistry, orthodontics, oral surgery, med spas",
-    outcome: "Reduce front-desk work while increasing patient bookings.",
-    href: "/industries/dentalpractices",
+    name: "Health & wellness practices",
+    detail: "Med spas, IV & recovery, massage, chiropractic, physical therapy",
+    outcome: "Reduce front-desk work while increasing booked appointments.",
+    href: "/industries/healthwellness",
   },
   {
-    name: "Retail & multi-location businesses",
-    detail: "Specialty retail, local chains, franchises, showrooms, hybrid in-store + online",
-    outcome: "Connect your stores, inventory, customers, and marketing.",
-    href: "/industries/retail",
+    name: "Residential brokerages & agent teams",
+    detail: "Brokerages, agent teams, listing and buyer specialists, producing team leads",
+    outcome: "Answer every lead, coordinate every showing, hit every deadline.",
+    href: "/industries/realestate",
   },
 ];
 
@@ -44,7 +44,7 @@ export function IndustriesList({
           </Reveal>
           <Reveal y={12} delay={0.08}>
             <Heading className="display mt-6 text-[2.1rem] leading-[1.08] sm:text-[2.8rem]">
-              Specialized in three industries — with the workflows, demos, and
+              Specialized in three industries, with the workflows, demos, and
               systems to prove it.
             </Heading>
           </Reveal>
@@ -55,7 +55,7 @@ export function IndustriesList({
             <Reveal key={v.name} y={12} delay={i * 0.08} className="h-full">
               <Link
                 href={v.href}
-                className={`group flex h-full flex-col border-b border-white/[0.08] py-8 pr-8 sm:py-12 transition-colors lg:border-b-0 ${
+                className={`group flex h-full flex-col border-b border-white/[0.08] py-8 sm:py-12 sm:pr-8 transition-colors lg:border-b-0 ${
                   i > 0 ? "lg:border-l lg:border-white/[0.08] lg:pl-10" : ""
                 }`}
               >

@@ -29,6 +29,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  // Lets the page extend under the notch and home indicator so fixed chrome
+  // (chat launcher, cookie banner) can offset itself with
+  // env(safe-area-inset-*). Without this the env() values resolve to 0.
+  viewportFit: "cover",
 };
 
 // og:image and twitter:image come from the file conventions
@@ -36,18 +40,16 @@ export const viewport: Viewport = {
 // route and survive per-page openGraph overrides.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title:
-    "Redmont Strategies Group | Business & AI Consulting in Plymouth County, MA",
+  title: "AI Implementation Firm | Redmont Strategies Group",
   description:
-    "Redmont Strategies Group is a business consulting and AI strategy firm serving service businesses across Plymouth County and the South Shore of Massachusetts.",
-  // NOTE: no `alternates.canonical` here — Next.js inherits layout metadata,
+    "AI implementation firm for service businesses across Plymouth County and the South Shore of Massachusetts. Redmont Strategies Group still powers the business consulting, systems, and AI implementation work behind the scenes.",
+  // NOTE: no `alternates.canonical` here: Next.js inherits layout metadata,
   // which would canonicalize every page to the homepage. Each page sets its own.
   robots: { index: true, follow: true },
   openGraph: {
-    title:
-      "Redmont Strategies Group | Business & AI Consulting in Plymouth County, MA",
+    title: "AI Implementation Firm | Redmont Strategies Group",
     description:
-      "Business consulting and AI strategy for service businesses across Plymouth County and the South Shore of Massachusetts.",
+      "AI implementation firm for service businesses across Plymouth County and the South Shore of Massachusetts.",
     url: SITE_URL,
     siteName: "Redmont Strategies Group",
     locale: "en_US",
@@ -60,7 +62,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Organization schema. Publishes the phone number and service area only —
+// Organization schema. Publishes the phone number and service area only,
 // deliberately no PostalAddress and no openingHours (RSG keeps its street
 // address and business hours private).
 const ORG_SCHEMA = {
@@ -70,7 +72,7 @@ const ORG_SCHEMA = {
   url: SITE_URL,
   logo: `${SITE_URL}/brand/rsg-mark.png`,
   description:
-    "Business consulting and AI strategy for service and retail businesses across Plymouth County and the South Shore of Massachusetts.",
+    "AI implementation firm and business systems partner for service, wellness, and real estate businesses across Plymouth County and the South Shore of Massachusetts.",
   telephone: PHONE_TEL,
   areaServed: [
     { "@type": "AdministrativeArea", name: "Plymouth County, Massachusetts" },
@@ -101,7 +103,7 @@ const WEBSITE_SCHEMA = {
  * [data-reveal] content stays visible and no observer or animation JS runs.
  *
  * The timer is a failsafe. If the flag is set but RevealObserver never boots
- * — a chunk fails to load, hydration errors — it strips the flag and the page
+ * (a chunk fails to load, hydration errors), it strips the flag and the page
  * paints in full rather than leaving the body invisible.
  */
 const REVEAL_BOOTSTRAP = `(function(){try{var d=document.documentElement;

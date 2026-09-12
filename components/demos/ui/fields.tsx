@@ -40,6 +40,8 @@ export function TextInput({
   required,
   helper,
   type = "text",
+  autoComplete,
+  inputMode,
   error,
 }: {
   label: string;
@@ -49,6 +51,9 @@ export function TextInput({
   required?: boolean;
   helper?: string;
   type?: string;
+  /** Browser autofill token; the request dialog is the demo's conversion form. */
+  autoComplete?: string;
+  inputMode?: "text" | "numeric" | "tel" | "email" | "decimal" | "url";
   error?: string;
 }) {
   const id = useId();
@@ -59,6 +64,8 @@ export function TextInput({
         type={type}
         value={value}
         required={required}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-invalid={error ? true : undefined}

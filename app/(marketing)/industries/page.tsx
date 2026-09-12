@@ -4,18 +4,21 @@ import { ArrowRight, MousePointerClick } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { Reveal } from "@/components/Reveal";
 import { getVerticals } from "@/lib/industries/store";
+import { VERTICAL_ROUTES } from "@/lib/industries/types";
 
 export const revalidate = 300;
 
+const TITLE = "Industries: Home Services, Health & Wellness, Real Estate | RSG";
+
 export const metadata: Metadata = {
-  title: "Industries: Home Services, Dental & Retail Systems | RSG",
+  title: TITLE,
   description:
-    "RSG builds technology, automation, and AI systems for three verticals it actually knows: home service & trade businesses, dental & specialty healthcare practices, and retail & multi-location businesses.",
+    "RSG builds automation and AI systems for three verticals it knows deeply: home service and trade businesses, health and wellness practices, and residential real estate.",
   alternates: { canonical: "/industries" },
   openGraph: {
-    title: "Industries: Home Services, Dental & Retail Systems | RSG",
+    title: TITLE,
     description:
-      "Deep systems for home services, dental & specialty healthcare, and retail — with interactive demos, workflow maps, and industry-specific assessments.",
+      "Deep systems for home services, health and wellness, and residential real estate; with interactive demos, workflow maps, and industry-specific assessments.",
     url: "/industries",
     images: ["/og.png"],
   },
@@ -23,11 +26,11 @@ export const metadata: Metadata = {
 
 const VERTICAL_BLURBS: Record<string, string> = {
   "home-services":
-    "Missed-call recovery, scheduling and dispatch, estimate follow-up, and invoicing that collects itself — for the trades that live on inbound calls.",
-  "dental-practices":
-    "An AI front desk, no-show reduction, treatment-plan follow-up, and recall reactivation — built around your PMS and HIPAA-aware from the first design call.",
-  retail:
-    "Inventory visibility, abandoned-cart recovery, loyalty, and one report across every location — for retailers selling in-store and online.",
+    "Missed-call recovery, scheduling and dispatch, estimate follow-up, and invoicing that collects itself; for the trades that live on inbound calls.",
+  "health-wellness":
+    "An AI front desk, no-show reduction, treatment-plan follow-up, and lapsed-client reactivation, built around your booking platform and privacy-aware from the first design call.",
+  "real-estate":
+    "Speed-to-lead response, showing coordination, contingency deadline tracking, and past-client referral nurture; for residential brokerages and agent teams.",
 };
 
 /**
@@ -47,16 +50,16 @@ export default async function IndustriesPage() {
           </Reveal>
           <Reveal y={14} delay={0.08}>
             <h1 className="display mt-6 text-[2.2rem] leading-[1.08] sm:text-[3rem]">
-              Three industries. Known deeply — not twenty known thinly.
+              Three industries. Known deeply, not twenty known thinly.
             </h1>
           </Reveal>
           <Reveal y={12} delay={0.16}>
             <p className="mt-7 text-[1rem] leading-relaxed text-white/55">
               RSG is a specialized technology, automation, and AI partner for home service
-              businesses, dental and specialty healthcare practices, and retail operations. Each
+              businesses, health and wellness practices, and residential brokerages. Each
               vertical below carries its own workflows, working demo, assessment, and compliance
-              practices — because a dispatch board and an operatory schedule are not the same
-              problem with different logos.
+              practices, because a dispatch board, a treatment-room schedule, and a closing-deadline
+              calendar are not the same problem with different logos.
             </p>
           </Reveal>
         </div>
@@ -68,20 +71,10 @@ export default async function IndustriesPage() {
             <Reveal key={v.slug} y={16} delay={i * 0.06}>
               <article className="group grid gap-8 overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-8 transition-colors hover:border-white/25 sm:p-10 lg:grid-cols-12">
                 <div className="lg:col-span-8">
-                  <div className="flex flex-wrap gap-2">
-                    {v.audience.map((a) => (
-                      <span
-                        key={a}
-                        className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.74rem] sm:text-[0.65rem] text-white/50"
-                      >
-                        {a}
-                      </span>
-                    ))}
-                  </div>
-                  <h2 className="display mt-6 text-[1.7rem] leading-[1.1] text-white sm:text-[2.1rem]">
+                  <h2 className="display text-[1.7rem] leading-[1.1] text-white sm:text-[2.1rem]">
                     <Link
-                      href={`/industries/${v.slug}`}
-                      className="transition-colors group-hover:text-white"
+                      href={VERTICAL_ROUTES[v.slug]}
+                      className="inline-block min-h-11 transition-colors group-hover:text-white"
                     >
                       {v.name}
                     </Link>
@@ -92,7 +85,7 @@ export default async function IndustriesPage() {
                 </div>
                 <div className="flex flex-col justify-center gap-3 lg:col-span-4 lg:border-l lg:border-white/[0.08] lg:pl-8">
                   <Link
-                    href={`/industries/${v.slug}`}
+                    href={VERTICAL_ROUTES[v.slug]}
                     className="link-arrow group/link text-white"
                   >
                     Explore the {v.shortName.toLowerCase()} systems
@@ -105,12 +98,6 @@ export default async function IndustriesPage() {
                     <MousePointerClick size={14} aria-hidden />
                     Open the interactive demo
                   </Link>
-                  <Link
-                    href={`/industries/${v.slug}#assessment`}
-                    className="inline-flex min-h-11 items-center gap-2.5 text-sm text-white/55 transition-colors hover:text-white lg:min-h-0"
-                  >
-                    Take the {v.shortName.toLowerCase()} assessment
-                  </Link>
                 </div>
               </article>
             </Reveal>
@@ -122,7 +109,7 @@ export default async function IndustriesPage() {
             <div>
               <h2 className="font-display text-lg text-white">Not in one of these industries?</h2>
               <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-white/50">
-                We take a limited number of projects outside our primary verticals — only when the
+                We take a limited number of projects outside our primary verticals, only when the
                 problem matches a system we&apos;ve already built. An assessment tells both of us
                 quickly whether the overlap is real.
               </p>

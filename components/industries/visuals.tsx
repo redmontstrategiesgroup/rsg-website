@@ -1,8 +1,8 @@
 /**
  * Industry-specific hero interface previews. Purely decorative, aria-hidden
- * mock product surfaces — each vertical gets its own: a dispatch board for
- * home services, an operatory schedule for dental, and a multi-location
- * sales grid for retail. CSS-only animation (pulse) so these stay server-
+ * mock product surfaces: each vertical gets its own: a dispatch board for
+ * home services, a treatment-room schedule for health & wellness, and a
+ * listing status board for real estate. CSS-only animation (pulse) so these stay server-
  * rendered and cheap.
  */
 
@@ -41,7 +41,7 @@ function Window({
 function MiniStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2">
-      <p className="font-mono text-[0.7rem] uppercase tracking-label text-white/35 sm:text-[0.5rem]">
+      <p className="font-mono text-[0.6rem] uppercase leading-tight tracking-[0.12em] text-white/35 sm:text-[0.5rem] sm:tracking-label">
         {label}
       </p>
       <p className={`mt-1 font-display text-sm ${accent ? "text-crimson-light" : "text-white/85"}`}>
@@ -65,7 +65,7 @@ export function DispatchBoardVisual() {
   return (
     <Window title="Service Command Center" chip="Live board">
       <div className="grid gap-3">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
           <MiniStat label="Calls answered" value="100%" accent />
           <MiniStat label="Booked today" value="9 jobs" />
           <MiniStat label="Unsent estimates" value="0" />
@@ -73,7 +73,7 @@ export function DispatchBoardVisual() {
 
         <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-3">
           <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
-            Dispatch — today
+            Dispatch: today
           </p>
           <div className="mt-2.5 space-y-2">
             {TECH_ROWS.map((t) => (
@@ -98,7 +98,7 @@ export function DispatchBoardVisual() {
         <div className="flex items-center gap-2.5 rounded-lg border border-crimson/25 bg-crimson/[0.07] px-3 py-2.5">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-crimson-light" />
           <p className="text-[0.72rem] sm:text-[0.62rem] leading-snug text-white/70">
-            Missed call recovered — texted back in 12s, qualified, booked for Thu 9:00 AM
+            Missed call recovered: texted back in 12s, qualified, booked for Thu 9:00 AM
           </p>
         </div>
       </div>
@@ -107,28 +107,28 @@ export function DispatchBoardVisual() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Dental: operatory schedule                                          */
+/* Health & wellness: treatment room schedule                          */
 /* ------------------------------------------------------------------ */
 
-const OPERATORIES = [
-  { name: "Op 1", slots: [{ label: "Crown prep", tone: "confirmed" }, { label: "New patient", tone: "confirmed" }] },
-  { name: "Op 2", slots: [{ label: "Composite", tone: "confirmed" }, { label: "Consult", tone: "risk" }] },
-  { name: "Hygiene", slots: [{ label: "Recall", tone: "confirmed" }, { label: "Recall", tone: "open" }] },
+const TREATMENT_ROOMS = [
+  { name: "Room 1", slots: [{ label: "Injectables", tone: "confirmed" }, { label: "New client", tone: "confirmed" }] },
+  { name: "Room 2", slots: [{ label: "Hydrafacial", tone: "confirmed" }, { label: "Consult", tone: "risk" }] },
+  { name: "Drip / Rec", slots: [{ label: "IV therapy", tone: "confirmed" }, { label: "Massage", tone: "open" }] },
 ];
 
-export function OperatoryScheduleVisual() {
+export function TreatmentRoomScheduleVisual() {
   return (
     <Window title="Practice Front Desk" chip="Simulated">
       <div className="grid gap-3">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
           <MiniStat label="Confirmed today" value="14 / 15" accent />
-          <MiniStat label="Recalls due" value="23" />
+          <MiniStat label="Follow-ups due" value="23" />
           <MiniStat label="Intake pending" value="2" />
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {OPERATORIES.map((op) => (
-            <div key={op.name} className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5">
+        <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
+          {TREATMENT_ROOMS.map((op) => (
+            <div key={op.name} className="w-[62%] shrink-0 snap-start rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5 sm:w-auto">
               <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">{op.name}</p>
               <div className="mt-2 space-y-1.5">
                 {op.slots.map((s, i) => (
@@ -155,7 +155,7 @@ export function OperatoryScheduleVisual() {
         <div className="flex items-center gap-2.5 rounded-lg border border-crimson/25 bg-crimson/[0.07] px-3 py-2.5">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-crimson-light" />
           <p className="text-[0.72rem] sm:text-[0.62rem] leading-snug text-white/70">
-            2:30 consult confirmed by text — no-show risk cleared, intake forms already returned
+            2:30 consult confirmed by text, no-show risk cleared, intake forms already returned
           </p>
         </div>
       </div>
@@ -164,47 +164,77 @@ export function OperatoryScheduleVisual() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Retail: multi-location grid                                         */
+/* Real estate: listing status board                                   */
 /* ------------------------------------------------------------------ */
 
-const LOCATIONS = [
-  { name: "Main St", sales: "$4,210", spark: "0,18 10,14 20,15 30,10 40,12 50,7 60,9 70,4" },
-  { name: "Harbor Row", sales: "$3,485", spark: "0,16 10,17 20,12 30,13 40,9 50,11 60,6 70,7" },
-  { name: "Online", sales: "$5,940", spark: "0,19 10,15 20,16 30,11 40,13 50,8 60,10 70,3" },
+/**
+ * A status board rather than a chart: it keeps the three hero visuals
+ * visually distinct (gantt bars, room grid, status columns) instead of
+ * reading as a near-duplicate of another vertical.
+ */
+const LISTING_COLUMNS = [
+  {
+    name: "Active",
+    files: [
+      { address: "22 Cordwainer Dr", detail: "$749k · 6 showings", tone: "normal" as const },
+      { address: "9 Standish Ave", detail: "$412k · listed Fri", tone: "normal" as const },
+    ],
+  },
+  {
+    name: "Under contract",
+    files: [
+      { address: "14 Sea Breeze Ln", detail: "Inspection Thu 5:00", tone: "risk" as const },
+      { address: "41 Bayberry Rd", detail: "Appraisal ordered", tone: "normal" as const },
+    ],
+  },
+  {
+    name: "Closing this week",
+    files: [
+      { address: "8 Rockland Way", detail: "Mon 9:00 · clear", tone: "normal" as const },
+      { address: "Next available", detail: "", tone: "open" as const },
+    ],
+  },
 ];
 
-export function LocationGridVisual() {
+export function ListingPipelineVisual() {
   return (
-    <Window title="Retail Operations Hub" chip="All locations">
+    <Window title="Brokerage Operations Hub" chip="Live board">
       <div className="grid gap-3">
-        <div className="grid grid-cols-3 gap-2">
-          {LOCATIONS.map((l) => (
-            <div key={l.name} className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5">
-              <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">{l.name}</p>
-              <p className="mt-1 font-display text-sm text-white/85">{l.sales}</p>
-              <svg viewBox="0 0 70 22" className="mt-1.5 h-5 w-full" preserveAspectRatio="none">
-                <polyline
-                  points={l.spark}
-                  fill="none"
-                  stroke="rgba(217,75,94,0.75)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-          ))}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <MiniStat label="Speed to lead" value="38 sec" accent />
+          <MiniStat label="Showings booked" value="27 this wk" />
+          <MiniStat label="Under contract" value="9" />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <MiniStat label="Carts recovered" value="6 today" accent />
-          <MiniStat label="Loyalty joins" value="+11 this wk" />
+        <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
+          {LISTING_COLUMNS.map((col) => (
+            <div key={col.name} className="w-[62%] shrink-0 snap-start rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5 sm:w-auto">
+              <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">{col.name}</p>
+              <div className="mt-2 space-y-1.5">
+                {col.files.map((f) => (
+                  <div
+                    key={f.address}
+                    className={`rounded border px-1.5 py-1 text-[0.7rem] sm:text-[0.55rem] ${
+                      f.tone === "normal"
+                        ? "border-white/10 bg-white/[0.05] text-white/70"
+                        : f.tone === "risk"
+                          ? "border-crimson/40 bg-crimson/15 text-crimson-light"
+                          : "border-dashed border-white/15 bg-transparent text-white/35"
+                    }`}
+                  >
+                    {f.address}
+                    {f.detail && <span className="ml-1 opacity-80">· {f.detail}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         <div className="flex items-center gap-2.5 rounded-lg border border-crimson/25 bg-crimson/[0.07] px-3 py-2.5">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-crimson-light" />
           <p className="text-[0.72rem] sm:text-[0.62rem] leading-snug text-white/70">
-            Low stock: Waxed Canvas Jacket (M) at Harbor Row — reorder drafted, Main St has 4 units
+            Inspection contingency on 14 Sea Breeze Ln expires Thu 5:00 PM, both agents and the coordinator alerted
           </p>
         </div>
       </div>

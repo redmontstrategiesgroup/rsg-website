@@ -22,11 +22,11 @@ export function SystemsGrid() {
         </Reveal>
         <Reveal y={12} delay={0.06}>
           <h2 className="display mt-5 max-w-3xl text-[1.85rem] leading-tight sm:text-[2.4rem]">
-            Purpose-built systems—not generic chatbots.
+            Purpose-built systems, not generic chatbots.
           </h2>
         </Reveal>
         <div className="mt-9 sm:mt-14 grid gap-4 md:grid-cols-2">
-          {SYSTEMS_WE_BUILD.map((system, i) => (
+          {SYSTEMS_WE_BUILD.slice(0, Math.max(0, SYSTEMS_WE_BUILD.length - 4)).map((system, i) => (
             <Reveal key={system.id} y={12} delay={(i % 4) * 0.04}>
               <article className="h-full border border-white/10 bg-white/[0.02] p-6 sm:p-7">
                 <h3 className="display text-xl text-white">{system.name}</h3>
@@ -36,7 +36,7 @@ export function SystemsGrid() {
                 <ul className="mt-5 space-y-1.5">
                   {system.capabilities.map((c) => (
                     <li key={c} className="text-sm text-white/60">
-                      <span className="mr-2 text-crimson-light">—</span>
+                      <span className="mr-2 text-crimson-light">-</span>
                       {c}
                     </li>
                   ))}
@@ -81,7 +81,7 @@ export function SecuritySection() {
             RSG will not use a client&apos;s confidential information to train
             unrelated customer systems. Systems can be designed around applicable
             security and compliance requirements; final compliance depends on your
-            complete environment, policies, and implementation—not on the AI
+            complete environment, policies, and implementation; not on the AI
             layer alone.
           </p>
         </Reveal>
@@ -110,7 +110,7 @@ export function ModelOptionsSection() {
             </Reveal>
             <Reveal y={12} delay={0.06}>
               <h2 className="display mt-5 text-[1.85rem] leading-tight sm:text-[2.2rem]">
-                Technology chosen for your constraints—not a one-size platform.
+                Technology chosen for your constraints, not a one-size platform.
               </h2>
             </Reveal>
             <Reveal y={12} delay={0.1}>
@@ -196,7 +196,7 @@ export function IndustryUseCases() {
                 <ul className="mt-4 space-y-1.5">
                   {industry.examples.map((ex) => (
                     <li key={ex} className="text-sm text-white/55">
-                      <span className="mr-2 text-crimson-light">—</span>
+                      <span className="mr-2 text-crimson-light">-</span>
                       {ex}
                     </li>
                   ))}
@@ -313,7 +313,7 @@ export function PrivateAiCta() {
             <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
               Related services
             </p>
-            <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-3">
+            <ul className="link-list mt-4 flex flex-wrap gap-x-6 gap-y-0 lg:gap-y-3">
               {RELATED_SERVICES.map((link) => (
                 <li key={link.href}>
                   <Link

@@ -26,7 +26,7 @@ function validateQuestion(q: FormQuestion, value: unknown): string | null {
     return "Please enter a full phone number.";
   }
   if ((q.type === "text" || q.type === "textarea") && text.length > 4000) {
-    return "That's a bit long — please shorten it.";
+    return "That's a bit long: please shorten it.";
   }
   return null;
 }
@@ -359,7 +359,7 @@ export function FormFlow({
                 <p className="text-sm font-medium text-white">{s.label}</p>
                 <button
                   type="button"
-                  className="link-underline text-xs text-white/50 hover:text-white"
+                  className="link-underline inline-flex min-h-11 items-center text-xs text-white/50 hover:text-white lg:min-h-0"
                   onClick={() => {
                     setReviewing(false);
                     setStepIndex(i);

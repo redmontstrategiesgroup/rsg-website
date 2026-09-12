@@ -10,7 +10,7 @@ import type { IndustryConfig } from "./types";
 import { Modal } from "./ui/Modal";
 import { CheckboxInput, Field, SelectInput, SmallButton, TextArea, TextInput } from "./ui/fields";
 
-/** Default service list — industries can override via config.requestServices. */
+/** Default service list: industries can override via config.requestServices. */
 export const SERVICE_OPTIONS = [
   "Custom private AI systems",
   "AI receptionist & missed-call recovery",
@@ -65,11 +65,11 @@ function humanize(key: string): string {
 }
 
 /**
- * "Request this system" consultation form — a short two-step flow. Step 1
+ * "Request this system" consultation form: a short two-step flow. Step 1
  * covers what the visitor needs (services + industry-specific questions),
  * step 2 covers how to reach them. Pre-fills demo context (system viewed,
  * features explored) visibly and editably; submits a real inquiry to the RSG
- * team — the only demo surface that ever leaves the browser.
+ * team: the only demo surface that ever leaves the browser.
  */
 export function RequestSystemDialog({
   config,
@@ -110,7 +110,7 @@ export function RequestSystemDialog({
   );
   const [extras, setExtras] = useState<Record<string, string>>({});
   const [consent, setConsent] = useState(false);
-  const [hp, setHp] = useState(""); // honeypot — humans never see or fill this
+  const [hp, setHp] = useState(""); // honeypot: humans never see or fill this
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [serverError, setServerError] = useState("");
@@ -124,7 +124,7 @@ export function RequestSystemDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Moving between steps unmounts the focused button — put keyboard and
+  // Moving between steps unmounts the focused button; put keyboard and
   // screen-reader users back at the step heading so the change is announced.
   useEffect(() => {
     if (!mounted.current) {
@@ -185,14 +185,14 @@ export function RequestSystemDialog({
       });
       const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
       if (!res.ok || !data?.ok) {
-        setServerError(data?.error ?? "Something went wrong — please try again in a minute.");
+        setServerError(data?.error ?? "Something went wrong: please try again in a minute.");
         setStatus("error");
         return;
       }
       trackEvent("demo_request_submit", { demo: config.slug, source });
       setStatus("success");
     } catch {
-      setServerError("Network error — please check your connection and try again.");
+      setServerError("Network error: please check your connection and try again.");
       setStatus("error");
     }
   };
@@ -206,7 +206,7 @@ export function RequestSystemDialog({
           </span>
           <div>
             <p className="text-sm font-medium text-white/90">
-              Thanks {name.split(" ")[0]} — your request is on its way to the RSG team.
+              Thanks {name.split(" ")[0]}: your request is on its way to the RSG team.
             </p>
             <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-white/55">
               We&apos;ll reach out by {preferredContact} within one business day with next steps and
@@ -230,7 +230,7 @@ export function RequestSystemDialog({
   return (
     <Modal
       title="Request this system for my business"
-      subtitle={`${config.systemName} — configured for your ${config.industry.toLowerCase()} operation`}
+      subtitle={`${config.systemName}: configured for your ${config.industry.toLowerCase()} operation`}
       onClose={onClose}
       wide
     >
@@ -241,7 +241,7 @@ export function RequestSystemDialog({
           tabIndex={-1}
           className="text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40 outline-none"
         >
-          Step {step} of 2 — {step === 1 ? "what you need" : "how to reach you"}
+          Step {step} of 2: {step === 1 ? "what you need" : "how to reach you"}
         </p>
         <div className="mt-2 flex gap-1.5" aria-hidden>
           {[1, 2].map((s) => (
@@ -253,7 +253,7 @@ export function RequestSystemDialog({
       <form onSubmit={submit} noValidate>
         {step === 1 && (
           <div className="space-y-4">
-            {/* Demo context — visible and editable, never silently attached */}
+            {/* Demo context: visible and editable, never silently attached */}
             <div className="rounded-lg border border-crimson/20 bg-crimson/[0.05] px-3.5 py-3">
               <p className="text-[0.62rem] font-medium uppercase tracking-[0.16em] text-crimson-light/90">
                 Your demo session
@@ -268,7 +268,7 @@ export function RequestSystemDialog({
                       .join(", ")}
                     {explored.length > 6 ? ` and ${explored.length - 6} more features` : ""}
                     {scenariosRun > 0 ? `, and ran ${scenariosRun} scenario${scenariosRun > 1 ? "s" : ""}` : ""}
-                    . We&apos;ve preselected the matching services below — adjust them however you like.
+                    . We&apos;ve preselected the matching services below, adjust them however you like.
                   </>
                 ) : (
                   <>We&apos;ll include which demo you viewed ({config.systemName}) so the conversation starts in the right place.</>
@@ -325,7 +325,7 @@ export function RequestSystemDialog({
               value={notes}
               onChange={setNotes}
               rows={3}
-              helper="Optional — current tools, bottlenecks, goals…"
+              helper="Optional: current tools, bottlenecks, goals…"
             />
 
             <div className="flex items-center justify-between gap-2 border-t border-white/[0.06] pt-3">
@@ -352,10 +352,10 @@ export function RequestSystemDialog({
             )}
             {/* Contact details */}
             <div className="grid gap-3 sm:grid-cols-2">
-              <TextInput label="Your name" value={name} onChange={setName} required error={errors.name} placeholder="Jordan Ellis" />
-              <TextInput label="Company name" value={company} onChange={setCompany} required error={errors.company} placeholder="Your business" />
-              <TextInput label="Email" value={email} onChange={setEmail} type="email" required error={errors.email} placeholder="you@company.com" />
-              <TextInput label="Phone" value={phone} onChange={setPhone} type="tel" required error={errors.phone} placeholder="(508) 555-0100" />
+              <TextInput label="Your name" value={name} onChange={setName} required autoComplete="name" error={errors.name} placeholder="Jordan Ellis" />
+              <TextInput label="Company name" value={company} onChange={setCompany} required autoComplete="organization" error={errors.company} placeholder="Your business" />
+              <TextInput label="Email" value={email} onChange={setEmail} type="email" autoComplete="email" inputMode="email" required error={errors.email} placeholder="you@company.com" />
+              <TextInput label="Phone" value={phone} onChange={setPhone} type="tel" autoComplete="tel" inputMode="tel" required error={errors.phone} placeholder="(508) 555-0100" />
               <SelectInput
                 label="Preferred contact method"
                 value={preferredContact}
@@ -373,7 +373,7 @@ export function RequestSystemDialog({
                 options={BUSINESS_SIZES.map((b) => ({ value: b, label: b }))}
                 placeholder="Optional"
               />
-              <Field label="Preferred meeting date" helper="Optional — we'll confirm by email" htmlFor={dateId}>
+              <Field label="Preferred meeting date" helper="Optional: we'll confirm by email" htmlFor={dateId}>
                 <input
                   id={dateId}
                   type="date"
@@ -391,7 +391,7 @@ export function RequestSystemDialog({
               />
             </div>
 
-            {/* Honeypot — hidden from real users, catches naive bots */}
+            {/* Honeypot: hidden from real users, catches naive bots */}
             <div className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
               <label>
                 Leave this field empty
@@ -404,7 +404,7 @@ export function RequestSystemDialog({
                 label="It's OK to contact me about this request."
                 checked={consent}
                 onChange={setConsent}
-                helper="We only use your details to respond — no lists, no spam."
+                helper="We only use your details to respond, no lists, no spam."
               />
               {errors.consent && <p className="mt-1 text-[0.64rem] text-red-300/90">{errors.consent}</p>}
             </div>

@@ -23,7 +23,7 @@ import {
 function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-white/[0.08]">
-      {/* Decorative only — hidden on phones, where the blur and grid cost
+      {/* Decorative only: hidden on phones, where the blur and grid cost
           compositing work and add nothing to the message. */}
       <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute inset-0 bg-grid opacity-[0.16]" />
@@ -56,7 +56,7 @@ function Hero() {
           <p className="mt-7 max-w-2xl text-[1.05rem] leading-relaxed text-white/60">
             RSG does not simply connect tools and hope they work. Permissions,
             approvals, backups, logs, testing, and recovery procedures are
-            designed into every system from the beginning — because these systems
+            designed into every system from the beginning, because these systems
             run real business operations and hold sensitive data.
           </p>
         </Reveal>
@@ -121,7 +121,7 @@ function Philosophy() {
           <Reveal y={12} delay={0.14}>
             <p className="mt-6 text-[1.02rem] leading-relaxed text-white/55">
               RSG evaluates every project across the areas below. Which controls
-              a system receives depends on what it does and the data it holds —
+              a system receives depends on what it does and the data it holds,
               security is selected to fit the project, not sold as a fixed bundle.
             </p>
           </Reveal>
@@ -246,7 +246,7 @@ function ApprovalFlow() {
             <p className="mt-6 text-[1.02rem] leading-relaxed text-white/55">
               When an AI feature drafts a high-risk action, it does not execute
               automatically. It enters an approval queue where a person can
-              approve, reject, edit, or escalate — and every AI action can be
+              approve, reject, edit, or escalate; and every AI action can be
               logged.
             </p>
           </Reveal>
@@ -384,7 +384,7 @@ function Packages() {
           <Reveal y={12} delay={0.14}>
             <p className="mt-6 text-[1.02rem] leading-relaxed text-white/55">
               Controls are grouped so the right depth of security fits each kind
-              of project — from a standard website to a confidential private-AI
+              of project, from a standard website to a confidential private-AI
               deployment.
             </p>
           </Reveal>
@@ -487,7 +487,7 @@ function Cta() {
                 Prefer to call?{" "}
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+                  className="inline-flex min-h-11 items-center align-middle text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white lg:min-h-0"
                 >
                   {PHONE_DISPLAY}
                 </a>

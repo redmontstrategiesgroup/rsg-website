@@ -46,7 +46,7 @@ export function FinalCTA({
                 Prefer to call?{" "}
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+                  className="inline-flex min-h-11 items-center align-middle text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white lg:min-h-0"
                 >
                   {PHONE_DISPLAY}
                 </a>

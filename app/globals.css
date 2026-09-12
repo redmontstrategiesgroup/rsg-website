@@ -15,9 +15,14 @@
   body {
     @apply bg-base text-white/90 antialiased;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
-    /* Force a new production CSS asset hash (Cloudflare was serving a
-       poisoned 403 for the previous hashed stylesheet URL). */
+    /*
+      `clip` rather than `hidden`: both stop the viewport scrolling sideways,
+      but `hidden` makes body a scroll container, which silently breaks
+      position: sticky on every descendant. Either value HIDES overflow bugs
+      rather than fixing them, so scripts/audit-responsive.mjs measures each
+      element against the viewport instead of trusting document.scrollWidth.
+    */
+    overflow-x: clip;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -25,12 +30,19 @@
     @apply bg-crimson/30 text-white;
   }
 
-  /* No visible scrollbars anywhere — the page scrolls, the chrome doesn't. */
+  /*
+    The document's own scrollbar is hidden: the page scrolls, the chrome
+    doesn't. Only the document. An unscoped ::-webkit-scrollbar rule used to
+    strip the bar from every inner scroller too, which left ~50 horizontal
+    rails and wide tables with no visible sign that they continue off-screen.
+    Inner scrollers now keep a native (dark, via color-scheme) bar; add
+    .no-scrollbar to opt one out on purpose.
+  */
   html {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-  ::-webkit-scrollbar {
+  html::-webkit-scrollbar {
     width: 0;
     height: 0;
     display: none;
@@ -49,7 +61,7 @@ select optgroup {
 
 /*
   iOS Safari zooms the whole page when a focused field is under 16px, and
-  every form here was styled `text-sm` (14px) — so tapping any input on an
+  every form here was styled `text-sm` (14px), so tapping any input on an
   iPhone kicked the layout sideways and left the user pinching back out.
   Setting the floor centrally fixes every form at once; from `sm` up the
   original 14px returns, where no such zoom behaviour exists.
@@ -57,8 +69,12 @@ select optgroup {
   `!important` is deliberate: the fields carry Tailwind's `.text-sm`, whose
   class specificity beats a bare element selector, and this floor has to hold
   everywhere rather than be re-applied by hand at 30-odd call sites.
+
+  Keyed on the pointer, not the viewport width: a 932px-wide phone in
+  landscape and a 768px iPad both zoom exactly like a 375px phone, and a
+  max-width query left them out. A mouse-driven desktop never matches.
 */
-@media (max-width: 639px) {
+@media (hover: none) and (pointer: coarse) {
   input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea {
@@ -70,6 +86,19 @@ select optgroup {
   select {
     min-height: 2.75rem;
   }
+
+  /*
+    The button half of the same floor. 44px is the Apple/Google target size;
+    without this, icon-only closers (h-7 w-7), tab strips (py-2 text-xs) and
+    inline "Edit" buttons across the demos, portal and admin sat at 16–32px.
+    Desktop is untouched: a mouse is precise and the compact sizes read fine.
+  */
+  button:not([hidden]),
+  [role="button"],
+  [role="tab"] {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
 }
 
 @layer components {
@@ -80,7 +109,7 @@ select optgroup {
   /*
     Section vertical rhythm. One class so every section on the site breathes
     identically. Mobile is deliberately tighter than desktop: at 80px top and
-    bottom the homepage carried ~1,550px of pure padding — over two phone
+    bottom the homepage carried ~1,550px of pure padding; over two phone
     screens of scrolling past nothing. From `sm` up these are the values the
     site has always used, so desktop is untouched.
   */
@@ -88,7 +117,7 @@ select optgroup {
     @apply py-14 sm:py-28;
   }
 
-  /* Same rhythm, one step quieter — for stacked or sub-sections. */
+  /* Same rhythm, one step quieter; for stacked or sub-sections. */
   .section-y-sm {
     @apply py-12 sm:py-20;
   }
@@ -126,12 +155,12 @@ select optgroup {
     two-line labels tidy when a long CTA wraps on a 320px screen.
   */
 
-  /* Primary — solid deep ruby, sharp corners, no glow */
+  /* Primary: solid deep ruby, sharp corners, no glow */
   .btn-primary {
     @apply inline-flex min-h-12 items-center justify-center bg-crimson px-8 py-4 text-center text-sm font-medium tracking-wide text-white transition-colors duration-200 hover:bg-crimson-light focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2 focus-visible:ring-offset-base;
   }
 
-  /* Ghost — plain hairline border, sharp corners */
+  /* Ghost: plain hairline border, sharp corners */
   .btn-ghost {
     @apply inline-flex min-h-12 items-center justify-center border border-white/20 px-8 py-4 text-center text-sm font-medium tracking-wide text-white/85 transition-colors duration-200 hover:border-white/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20;
   }
@@ -152,6 +181,17 @@ select optgroup {
     @apply inline-flex min-h-11 items-center gap-2.5 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:min-h-0;
   }
 
+  /*
+    Stacked text-link lists: footer columns, "related" lists. Put the class on
+    the <ul>. Each link becomes a 44px row on touch devices so neighbours are
+    not mis-tapped (the footer's 11-link Company column was 20px rows with
+    12px gaps), and returns to natural text height from lg up. Pair with
+    `space-y-0 lg:space-y-3` on the list so the rows don't double up.
+  */
+  .link-list a {
+    @apply inline-flex min-h-11 items-center lg:min-h-0;
+  }
+
   /* Flat dark surface card */
   .card {
     @apply rounded-xl border border-white/10 bg-white/[0.02] transition-colors duration-200;
@@ -165,7 +205,7 @@ select optgroup {
 /*
   Scroll reveals (components/Reveal.tsx + components/RevealObserver.tsx).
 
-  `[data-reveal]` nodes are visible by default — that is the whole point, and
+  `[data-reveal]` nodes are visible by default: that is the whole point, and
   why the server HTML no longer ships ~58 opacity:0 elements per page. The
   animation only exists once the inline script in app/layout.tsx has set
   data-reveal="on" on <html>, which it does before first paint and only for
@@ -222,6 +262,28 @@ html[data-reveal="on"] [data-reveal][data-reveal-in] {
   }
 }
 
+/* Dialog entrance (components/ui/Dialog.tsx). Sheets rise, centred panels fade. */
+@keyframes dialog-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dialog-panel-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.dialog-backdrop {
+  animation: dialog-backdrop-in 0.2s ease-out both;
+}
+.dialog-panel {
+  animation: dialog-panel-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog-backdrop,
+  .dialog-panel {
+    animation: none;
+  }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -229,6 +291,27 @@ html[data-reveal="on"] [data-reveal][data-reveal-in] {
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /*
+    Safe-area offsets for fixed chrome on notched phones. The floor is the
+    spacing the element used before; the inset wins when it is larger (34px
+    for the iOS home indicator). Needs viewportFit: "cover" in app/layout.tsx.
+  */
+  .bottom-safe {
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+  .bottom-safe-5 {
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  .bottom-safe-20 {
+    bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+  .right-safe {
+    right: max(0.75rem, env(safe-area-inset-right));
+  }
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
   /* Technical grid background */

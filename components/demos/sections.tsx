@@ -16,7 +16,7 @@ export function DemoPageHeader({ config }: { config: IndustryConfig }) {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/demos"
-            className="text-[0.75rem] sm:text-[0.68rem] font-medium uppercase tracking-[0.2em] text-white/40 transition-colors hover:text-white"
+            className="inline-flex min-h-11 items-center text-[0.75rem] font-medium uppercase tracking-[0.2em] text-white/40 transition-colors hover:text-white sm:text-[0.68rem] lg:min-h-0"
           >
             Demo Systems
           </Link>
@@ -94,7 +94,7 @@ export function BuilderSection({ config }: { config: IndustryConfig }) {
           Under the hood: {config.builderFlow.title}
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55">
-          Every workflow in this demo is a sequence your team can see, edit, pause, and approve —
+          Every workflow in this demo is a sequence your team can see, edit, pause, and approve;
           not a black box.
         </p>
       </Reveal>
@@ -168,7 +168,7 @@ export function SystemBreakdown({ config }: { config: IndustryConfig }) {
             <h3 className="text-sm font-medium text-white">Potential integrations</h3>
           </div>
           <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/45">
-            Configured per engagement around the tools you already run — shown here as options, not
+            Configured per engagement around the tools you already run, shown here as options, not
             live connections.
           </p>
           <ul className="mt-5 flex flex-wrap gap-2">
@@ -198,7 +198,7 @@ const IMPLEMENTATION_STEPS = [
   {
     n: "01",
     title: "Diagnose the current operation",
-    body: "We map how leads, customers, and admin work actually move through your business today — and where revenue leaks out.",
+    body: "We map how leads, customers, and admin work actually move through your business today; and where revenue leaks out.",
   },
   {
     n: "02",
@@ -214,7 +214,7 @@ const IMPLEMENTATION_STEPS = [
 
 /**
  * The single conversion block on a demo page. When an industry `cta` is
- * provided, its headline/button become the one ask — no stacked banners.
+ * provided, its headline/button become the one ask; no stacked banners.
  */
 export function ConversionSection({
   demoSlug,

@@ -1,7 +1,7 @@
 /**
  * Responsive / touch-usability detector.
  *
- * Why this exists: `app/globals.css` sets `body { overflow-x: hidden }`, which
+ * Why this exists: `app/globals.css` sets `body { overflow-x: clip }`, which
  * means anything wider than the viewport is silently CLIPPED rather than made
  * scrollable. The usual `document.scrollWidth > innerWidth` check therefore
  * reports a clean page while content sits unreachable off the right edge. This
@@ -106,7 +106,7 @@ const ADMIN_ROUTES = ["/admin", "/dashboard"];
  * Node scope.
  */
 function collectFindings(tapMin) {
-  const out = { overflow: [], tap: [], rails: [], offscreen: [] };
+  const out = { overflow: [], clipped: [], tap: [], rails: [], offscreen: [] };
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 
@@ -156,23 +156,54 @@ function collectFindings(tapMin) {
     const cs = getComputedStyle(el);
 
     /* --- 1. Horizontal overflow past the viewport ------------------------ */
-    // Ignore elements inside a deliberately scrollable ancestor: those are
-    // meant to extend, and are reported separately as rails.
+    // getBoundingClientRect() is the layout box and ignores clipping, so walk
+    // up: a scrollable ancestor means the element is meant to extend (rails
+    // are reported separately); a clipping ancestor bounds what is visible.
+    // A decorative blur inside an overflow-hidden hero is therefore not an
+    // overflow. Real content cut off by a clipping ancestor narrower than it
+    // is a different defect and lands in `clipped`.
     let scrollableAncestor = false;
+    let visibleRight = rect.right;
+    let clipper = null;
     for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
-      const ov = getComputedStyle(p).overflowX;
+      const pcs = getComputedStyle(p);
+      const ov = pcs.overflowX;
       if (ov === "auto" || ov === "scroll") {
         scrollableAncestor = true;
         break;
       }
+      if (ov === "hidden" || ov === "clip") {
+        const pr = p.getBoundingClientRect();
+        if (pr.right < visibleRight) {
+          visibleRight = pr.right;
+          clipper = clipper ?? p;
+        }
+      }
     }
-    if (!scrollableAncestor && rect.right > vw + 1 && rect.width <= vw * 3) {
-      out.overflow.push({
-        el: label(el),
-        right: Math.round(rect.right),
-        overhang: Math.round(rect.right - vw),
-        width: Math.round(rect.width),
-      });
+    if (!scrollableAncestor && rect.width <= vw * 3) {
+      if (visibleRight > vw + 1) {
+        out.overflow.push({
+          el: label(el),
+          right: Math.round(rect.right),
+          overhang: Math.round(visibleRight - vw),
+          width: Math.round(rect.width),
+        });
+      } else if (clipper && rect.right > visibleRight + 1) {
+        // Only content matters here; a blur or gradient with no text is meant
+        // to be clipped.
+        const hasText = (el.textContent || "").trim().length > 0;
+        const ownText = Array.from(el.childNodes).some(
+          (n) => n.nodeType === 3 && n.textContent.trim().length > 0
+        );
+        if (hasText && (ownText || el.children.length === 0)) {
+          out.clipped.push({
+            el: label(el),
+            cutBy: Math.round(rect.right - visibleRight),
+            by: label(clipper),
+            text: (el.textContent || "").trim().slice(0, 40),
+          });
+        }
+      }
     }
 
     /* --- 2. Sub-44px interactive targets --------------------------------- */
@@ -201,7 +232,8 @@ function collectFindings(tapMin) {
       // like "Email" is legitimately narrow, and flagging its width would bury
       // the real defects. Width only counts against icon-only controls, where
       // a narrow box genuinely means a small target.
-      const iconOnly = text.length === 0;
+      const isField = tag === "input" || tag === "select" || tag === "textarea";
+      const iconOnly = text.length === 0 && !isField;
       const tooShort = h > 0 && h < tapMin;
       const tooNarrow = iconOnly && w > 0 && w < tapMin;
       if (tooShort || tooNarrow) {
@@ -269,6 +301,7 @@ async function main() {
   const browser = await chromium.launch();
   const results = [];
   let totalOverflow = 0;
+  let totalClipped = 0;
   let totalTap = 0;
   let totalRails = 0;
   let totalOffscreen = 0;
@@ -276,15 +309,18 @@ async function main() {
   const origin = new URL(BASE).hostname;
 
   for (const vp of VIEWPORTS) {
+    // Every viewport here is a touch device — a phone in landscape is still
+    // a phone — so `hasTouch` is always on. That is what makes Chromium
+    // report (hover: none) and (pointer: coarse), which the touch-target
+    // floor in globals.css keys on. isMobile only changes viewport-meta
+    // handling and is kept for the phone widths.
     const context = await browser.newContext({
       viewport: { width: vp.width, height: vp.height },
       deviceScaleFactor: 2,
-      isMobile: vp.width < 900,
-      hasTouch: vp.width < 900,
+      isMobile: vp.width < 768,
+      hasTouch: true,
       userAgent:
-        vp.width < 900
-          ? "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
-          : undefined,
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
     });
 
     const cookies = [];
@@ -345,12 +381,14 @@ async function main() {
       const found = await page.evaluate(collectFindings, TAP_MIN);
 
       totalOverflow += found.overflow.length;
+      totalClipped += found.clipped.length;
       totalTap += found.tap.length;
       totalRails += found.rails.length;
       totalOffscreen += found.offscreen.length;
 
       if (
         found.overflow.length ||
+        found.clipped.length ||
         found.tap.length ||
         found.rails.length ||
         found.offscreen.length
@@ -384,6 +422,14 @@ async function main() {
       }
       if (r.overflow.length > 8) console.log(`    … ${r.overflow.length - 8} more`);
     }
+    if (r.clipped?.length) {
+      console.log(`  CLIPPED CONTENT (${r.clipped.length}) — cut off by a container:`);
+      for (const c of r.clipped.slice(0, 6)) {
+        console.log(`    -${c.cutBy}px  "${c.text}"  ${c.el}
+           by ${c.by}`);
+      }
+      if (r.clipped.length > 6) console.log(`    … ${r.clipped.length - 6} more`);
+    }
     if (r.tap?.length) {
       console.log(`  TAP TARGETS < ${TAP_MIN}px (${r.tap.length}):`);
       for (const t of r.tap.slice(0, 8)) {
@@ -408,7 +454,7 @@ async function main() {
 
   console.log(`\n${line}`);
   console.log(
-    `TOTALS   overflow=${totalOverflow}  tap<${TAP_MIN}px=${totalTap}  ` +
+    `TOTALS   overflow=${totalOverflow}  clipped=${totalClipped}  tap<${TAP_MIN}px=${totalTap}  ` +
       `rails-no-snap=${totalRails}  fixed-below-fold=${totalOffscreen}`
   );
   console.log(`Routes: ${routes.length}   Viewports: ${VIEWPORTS.length}`);
@@ -419,7 +465,7 @@ async function main() {
     writeFileSync(
       JSON_OUT,
       JSON.stringify(
-        { base: BASE, tapMin: TAP_MIN, totals: { totalOverflow, totalTap, totalRails, totalOffscreen }, results },
+        { base: BASE, tapMin: TAP_MIN, totals: { totalOverflow, totalClipped, totalTap, totalRails, totalOffscreen }, results },
         null,
         2
       )
@@ -427,8 +473,9 @@ async function main() {
     console.log(`JSON written to ${JSON_OUT}`);
   }
 
-  // Overflow and undersized targets are hard failures; rails are advisory.
-  process.exit(totalOverflow + totalTap > 0 ? 1 : 0);
+  // Overflow, clipped content and undersized targets are hard failures;
+  // snap-less rails are advisory.
+  process.exit(totalOverflow + totalClipped + totalTap > 0 ? 1 : 0);
 }
 
 main().catch((err) => {

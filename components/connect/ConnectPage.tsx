@@ -161,7 +161,7 @@ export function ConnectPageView({
 
   return (
     <div className="relative min-h-dvh bg-base text-white">
-      <div className="pointer-events-none fixed inset-0 -z-10">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-[0.22]" />
         <div className="absolute left-1/2 top-[-8%] h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-crimson/[0.07] blur-[140px]" />
       </div>
@@ -317,7 +317,7 @@ export function ConnectPageView({
         </ul>
 
         <footer className="mt-10 border-t border-white/10 pt-6 text-center">
-          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-white/40">
+          <nav className="link-list flex flex-wrap items-center justify-center gap-x-5 gap-y-0 text-sm text-white/40 lg:gap-y-2">
             <Link href="/" className="hover:text-white">
               Main Website
             </Link>
@@ -361,7 +361,7 @@ function SocialRow({ settings }: { settings: ConnectSettings }) {
           href={item.href}
           target={item.href.startsWith("http") ? "_blank" : undefined}
           rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-          className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/55 transition-colors hover:border-white/25 hover:text-white"
+          className="inline-flex min-h-11 items-center rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-xs text-white/55 transition-colors hover:border-white/25 hover:text-white lg:min-h-0"
         >
           {item.label}
         </a>
