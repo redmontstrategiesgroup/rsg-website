@@ -143,7 +143,7 @@ export function AdminConsole({
   }
 
   return (
-    <div className="min-h-screen bg-base">
+    <div className="min-h-dvh bg-base">
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-grid opacity-[0.3]" />
         <div className="absolute left-1/2 top-[-10%] h-[440px] w-[760px] -translate-x-1/2 rounded-full bg-crimson/[0.06] blur-[130px]" />
@@ -463,7 +463,7 @@ function CreateClientForm({
   function generatePassword() {
     // This value becomes the client's actual portal password, so it must come
     // from a CSPRNG. Math.random() is seeded predictably and its internal state
-    // is recoverable from a handful of outputs — fine for a jitter, not for a
+    // is recoverable from a handful of outputs, fine for a jitter, not for a
     // credential. Alphabet excludes look-alike characters (0/O, 1/l/I) because
     // these get read aloud and retyped.
     const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
@@ -632,7 +632,7 @@ function AnalyticsPanel({ analytics }: { analytics?: AnalyticsSummary }) {
           { label: `Unique visitors · ${analytics.windowDays}d`, value: analytics.uniqueVisitors },
           {
             label: "Top page",
-            value: analytics.topPages[0]?.path ?? "—",
+            value: analytics.topPages[0]?.path ?? "-",
             isText: true,
           },
         ].map((s) => (
@@ -738,7 +738,7 @@ function BriefPanel() {
         if (chunk) setOutput((o) => o + chunk);
       }
     } catch {
-      setError("Network error — try again.");
+      setError("Network error: try again.");
     } finally {
       setRunning(false);
     }
@@ -1126,7 +1126,7 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   intake_started: "Intake started",
   intake_abandoned: "Intake abandoned",
   submitted: "Submitted",
-  qualified_not_booked: "Qualified — not booked",
+  qualified_not_booked: "Qualified, not booked",
   appointment_booked: "Appointment booked",
   manual_review: "Manual review",
   not_eligible: "Not currently eligible",
@@ -1220,22 +1220,25 @@ function LeadsTable({
   }
 
   const extrasText = (l: Lead) => Object.values(l.demo?.extras ?? {}).join(" ").toLowerCase();
+  // Leads captured before the Sep 2026 retail → real estate switch carry
+  // industry strings like "Retail & Ecommerce". They no longer match any
+  // segment and show only under "All leads" — intended, and lossless.
+  const isRealEstate = (l: Lead) =>
+    /real ?estate|realty|brokerage|realtor/i.test(l.industry ?? "") ||
+    l.demo?.slug === "realestate";
   const visible = leads.filter((l) => {
     if (sourceFilter && (l.source ?? "website_contact_form") !== sourceFilter) return false;
     switch (segmentFilter) {
-      case "retail":
-        return /retail|ecommerce/i.test(l.industry ?? "") || l.demo?.slug === "retail";
+      case "real-estate":
+        return isRealEstate(l);
       case "demo":
         return Boolean(l.demo);
-      case "high-retail":
-        return (
-          (/retail|ecommerce/i.test(l.industry ?? "") || l.demo?.slug === "retail") &&
-          (l.score ?? 0) >= 60
-        );
-      case "multi-location":
-        return /locations/.test(extrasText(l)) && !/1 location/.test(extrasText(l));
-      case "ecommerce":
-        return /online|both|ecommerce/.test(extrasText(l)) || /ecommerce/i.test(l.industry ?? "");
+      case "high-real-estate":
+        return isRealEstate(l) && (l.score ?? 0) >= 60;
+      case "multi-agent":
+        return /agents/.test(extrasText(l)) && !/just me/.test(extrasText(l));
+      case "high-volume":
+        return /150|400\+/.test(extrasText(l));
       case "full-system":
         return (l.demo?.featuresRequested ?? []).some((s) => /complete|full/i.test(s));
       default:
@@ -1273,11 +1276,11 @@ function LeadsTable({
             className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm text-white/70 focus:border-crimson/60 focus:outline-none [&>option]:bg-base-900"
           >
             <option value="">All leads</option>
-            <option value="retail">Retail leads</option>
+            <option value="real-estate">Real estate leads</option>
             <option value="demo">Demo leads</option>
-            <option value="high-retail">High-value retail</option>
-            <option value="multi-location">Multi-location retailers</option>
-            <option value="ecommerce">Ecommerce retailers</option>
+            <option value="high-real-estate">High-value real estate</option>
+            <option value="multi-agent">Multi-agent teams</option>
+            <option value="high-volume">High-volume brokerages</option>
             <option value="full-system">Wants a full system</option>
           </select>
           <button
@@ -1331,7 +1334,7 @@ function LeadsTable({
                         : "text-white/40"
                   }`}
                 >
-                  {l.score ?? "—"}
+                  {l.score ?? "-"}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium text-white">
@@ -1365,7 +1368,7 @@ function LeadsTable({
                         Biggest problem
                       </p>
                       <p className="mt-1.5 text-sm leading-relaxed text-white/75">
-                        {l.problem || "—"}
+                        {l.problem || "-"}
                       </p>
                     </div>
                     <div>
@@ -1373,7 +1376,7 @@ function LeadsTable({
                         Wants to improve
                       </p>
                       <p className="mt-1.5 text-sm leading-relaxed text-white/75">
-                        {l.improve || "—"}
+                        {l.improve || "-"}
                       </p>
                     </div>
                   </div>
@@ -1381,7 +1384,7 @@ function LeadsTable({
                   {l.demo && (
                     <div className="rounded-lg border border-crimson/25 bg-crimson/[0.05] p-3.5">
                       <p className="font-mono text-[0.54rem] uppercase tracking-label text-crimson-light">
-                        Interactive demo request — {l.demo.system}
+                        Interactive demo request: {l.demo.system}
                       </p>
                       <div className="mt-2.5 grid gap-3 sm:grid-cols-2">
                         <div>
@@ -1397,7 +1400,7 @@ function LeadsTable({
                               ))}
                             </div>
                           ) : (
-                            <p className="mt-1.5 text-sm text-white/45">—</p>
+                            <p className="mt-1.5 text-sm text-white/45">-</p>
                           )}
                         </div>
                         <div>
@@ -1413,16 +1416,16 @@ function LeadsTable({
                               ))}
                             </div>
                           ) : (
-                            <p className="mt-1.5 text-sm text-white/45">—</p>
+                            <p className="mt-1.5 text-sm text-white/45">-</p>
                           )}
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-4 text-xs text-white/55">
                         <span>Demo page: /demos/{l.demo.slug}</span>
-                        <span>Business size: {l.demo.businessSize || "—"}</span>
+                        <span>Business size: {l.demo.businessSize || "-"}</span>
                         <span>
                           Preferred meeting:{" "}
-                          {[l.demo.preferredDate, l.demo.preferredTime].filter(Boolean).join(" · ") || "—"}
+                          {[l.demo.preferredDate, l.demo.preferredTime].filter(Boolean).join(" · ") || "-"}
                         </span>
                         {typeof l.demo.scenariosRun === "number" && l.demo.scenariosRun > 0 && (
                           <span>Scenarios run: {l.demo.scenariosRun}</span>
@@ -1438,9 +1441,9 @@ function LeadsTable({
                   )}
 
                   <div className="flex flex-wrap gap-4 text-sm text-white/55">
-                    <span>Industry: {l.industry || "—"}</span>
-                    <span>Timeline: {l.timeline || "—"}</span>
-                    <span>Preferred: {l.preferredContact || "—"}</span>
+                    <span>Industry: {l.industry || "-"}</span>
+                    <span>Timeline: {l.timeline || "-"}</span>
+                    <span>Preferred: {l.preferredContact || "-"}</span>
                     <span>Source: {l.source === "website_chat" ? "Chat" : l.source === "website_connect_page" ? "Connect page" : l.source === "interactive_demo" ? "Interactive Demo" : "Contact form"}</span>
                     {l.website ? (
                       <a

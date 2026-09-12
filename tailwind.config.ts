@@ -16,7 +16,7 @@ const config: Config = {
           700: "#16161d",
           600: "#1d1d26",
         },
-        // RSG ruby — deep, restrained crimson for a dark executive palette
+        // RSG ruby: deep, restrained crimson for a dark executive palette
         crimson: {
           DEFAULT: "#b3243a",
           light: "#d94b5e",
@@ -42,6 +42,10 @@ const config: Config = {
       },
       maxWidth: {
         content: "1240px",
+        // App shells (portal, admin, dashboard): wider than the editorial
+        // column so dashboards use a 1440/1920 display instead of sitting
+        // in a narrow brochure column.
+        app: "1600px",
       },
       keyframes: {
         "fade-up": {

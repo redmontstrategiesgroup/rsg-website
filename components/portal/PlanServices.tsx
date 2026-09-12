@@ -153,9 +153,9 @@ const OPEN_REQUEST_STATUSES: ServiceRequestStatus[] = [
 ];
 
 function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -166,11 +166,11 @@ function formatDate(iso: string | null | undefined): string {
 function inclusionNote(inclusion: string | undefined, slaHours: number): string {
   switch (inclusion) {
     case "included":
-      return `Included in your plan — response expected within ${slaHours} business hours.`;
+      return `Included in your plan: response expected within ${slaHours} business hours.`;
     case "needs_approval":
       return "Requires approval before work begins.";
     case "extra_charge":
-      return "May carry an additional charge — we'll confirm before any work starts.";
+      return "May carry an additional charge: we'll confirm before any work starts.";
     default:
       return "We'll assess this request and confirm scope before any work starts.";
   }
@@ -267,13 +267,13 @@ export function PlanServices({
       {billingBanner === "success" && (
         <div className="flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4 text-sm text-emerald-200">
           <CheckCircle2 size={16} className="shrink-0 text-emerald-300" />
-          Payment received — your plan is being activated.
+          Payment received: your plan is being activated.
         </div>
       )}
       {billingBanner === "cancelled" && (
         <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/70">
           <AlertTriangle size={16} className="shrink-0 text-amber-300" />
-          Checkout was cancelled — no changes made.
+          Checkout was cancelled, no changes made.
         </div>
       )}
 
@@ -324,7 +324,7 @@ export function PlanServices({
         />
         <Link
           href="/book"
-          className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
         >
           <CalendarCheck size={15} className="text-crimson-light" />
           Schedule a review
@@ -346,7 +346,7 @@ export function PlanServices({
         {latestReportId && (
           <Link
             href={`/portal/reports/${latestReportId}`}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
           >
             <FileText size={15} className="text-crimson-light" />
             View monthly report
@@ -476,7 +476,7 @@ export function PlanServices({
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-white/45">
                 Your systems aren&apos;t under active management. A managed plan
                 keeps them secure, updated, monitored, and improving every
-                month — with everything logged right here in your portal.
+                month, with everything logged right here in your portal.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link href="/book" className="btn-primary text-sm">
@@ -527,7 +527,7 @@ export function PlanServices({
               </div>
               <p className="mt-3 text-[0.72rem] leading-relaxed text-white/40">
                 {usage.overLimit
-                  ? "You've used all included hours this period — we'll confirm before any additional-rate work."
+                  ? "You've used all included hours this period, we'll confirm before any additional-rate work."
                   : usage.approachingLimit
                     ? "You're approaching your included hours for this period."
                     : "Routine monitoring, backups, and updates never consume your hours."}
@@ -911,7 +911,7 @@ function ActionButton({
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
+      className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
     >
       <Icon size={15} className="text-crimson-light" />
       {label}
@@ -1076,7 +1076,7 @@ function RoadmapCard({
       {approvedNow && (
         <p className="mt-4 flex items-center gap-2 text-sm text-emerald-300">
           <CheckCircle2 size={15} />
-          Roadmap approved — we&apos;ll schedule the work and keep you posted
+          Roadmap approved: we&apos;ll schedule the work and keep you posted
           here.
         </p>
       )}
@@ -1261,7 +1261,7 @@ function RequestModal({
             onChange={(e) => setDetails(e.target.value)}
             maxLength={4000}
             rows={4}
-            placeholder="Anything that helps us scope it — links, examples, urgency."
+            placeholder="Anything that helps us scope it, links, examples, urgency."
             className={`${inputClasses} mt-2 resize-y`}
           />
         </div>
@@ -1355,7 +1355,7 @@ function PlanChangeModal({
       }
       if (res.ok && json.requiresReview) {
         setSuccessCopy(
-          "Request received — your account manager will follow up."
+          "Request received: your account manager will follow up."
         );
       } else if (res.ok && json.ok) {
         setSuccessCopy("Plan updated.");
@@ -1389,11 +1389,11 @@ function PlanChangeModal({
       };
       if (res.ok && json.requiresReview) {
         setSuccessCopy(
-          "Request received — your account manager will follow up about a managed transition."
+          "Request received: your account manager will follow up about a managed transition."
         );
       } else if (res.ok && json.ok) {
         setSuccessCopy(
-          "Cancellation scheduled — your plan stays fully active until the end of the current billing period."
+          "Cancellation scheduled: your plan stays fully active until the end of the current billing period."
         );
         setTimeout(() => window.location.reload(), 1600);
       } else {
@@ -1493,7 +1493,7 @@ function PlanChangeModal({
               <option value="annual" className="bg-base text-white">
                 Annual
                 {target && annualPriceCents(target) != null
-                  ? ` — ${formatCents(annualPriceCents(target)!)}/yr`
+                  ? ` (${formatCents(annualPriceCents(target)!)}/yr)`
                   : ""}
               </option>
             </select>

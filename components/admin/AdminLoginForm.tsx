@@ -54,7 +54,7 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-6">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden p-6">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="absolute left-1/2 top-0 h-[420px] w-[620px] -translate-x-1/2 rounded-full bg-crimson/[0.10] blur-[130px]" />

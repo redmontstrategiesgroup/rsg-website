@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Dialog } from "@/components/ui/Dialog";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 /**
  * Shared presentational primitives for the client portal and the public
@@ -425,16 +427,22 @@ export function TabBar<T extends string>({
   onSelect: (id: T) => void;
 }) {
   return (
-    <div className="no-scrollbar flex gap-1 overflow-x-auto border-b border-white/10" role="tablist">
+    <ScrollRail
+      role="tablist"
+      activeKey={active}
+      keyboardTabs
+      className="flex gap-1 border-b border-white/10"
+    >
       {tabs.map((t) => {
         const isActive = t.id === active;
         return (
           <button
             key={t.id}
+            type="button"
             role="tab"
             aria-selected={isActive}
             onClick={() => onSelect(t.id)}
-            className={`relative whitespace-nowrap px-4 py-3 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+            className={`relative shrink-0 whitespace-nowrap px-4 py-3 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
               isActive ? "text-white" : "text-white/45 hover:text-white/75"
             }`}
           >
@@ -450,11 +458,10 @@ export function TabBar<T extends string>({
           </button>
         );
       })}
-    </div>
+    </ScrollRail>
   );
 }
 
-/** Accessible confirm/detail dialog (no portal dep; fixed overlay). */
 export function Modal({
   open,
   onClose,
@@ -471,40 +478,24 @@ export function Modal({
   wide?: boolean;
 }) {
   if (!open) return null;
+  // Shared <Dialog>: scroll lock, focus trap, Escape, backdrop tap, dvh
+  // clamp and a 44px close. The old panel had a bare 14px "✕", no Escape
+  // handler and max-h-[85vh], which overshot a landscape phone.
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-base/80 backdrop-blur-sm sm:items-center"
-      onClick={onClose}
-      role="presentation"
+    <Dialog
+      title={title}
+      onClose={onClose}
+      size={wide ? "lg" : "md"}
+      zIndexClassName="z-50"
+      panelClassName="bg-base-900"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(e) => e.stopPropagation()}
-        className={`max-h-[85vh] w-full overflow-y-auto border border-white/10 bg-base-900 shadow-lift sm:rounded-xl ${
-          wide ? "sm:max-w-2xl" : "sm:max-w-lg"
-        }`}
-      >
-        <header className="flex items-center justify-between gap-4 border-b border-white/10 px-6 py-4">
-          <h3 className="font-display text-base font-medium text-white">{title}</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="text-white/40 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60"
-          >
-            ✕
-          </button>
-        </header>
-        <div className="px-6 py-5">{children}</div>
-        {footer && (
-          <footer className="flex justify-end gap-3 border-t border-white/10 px-6 py-4">
-            {footer}
-          </footer>
-        )}
-      </div>
-    </div>
+      {children}
+      {footer && (
+        <div className="-mx-5 -mb-4 mt-5 flex flex-wrap justify-end gap-3 border-t border-white/10 px-5 py-4">
+          {footer}
+        </div>
+      )}
+    </Dialog>
   );
 }
 

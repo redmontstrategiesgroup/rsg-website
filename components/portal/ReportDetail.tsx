@@ -72,8 +72,9 @@ export function ReportDetail({
 
       {report.scorecard.length > 0 && (
         <SectionCard title="Performance scorecard" padded={false}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto overscroll-x-contain">
+            {/* 5 columns crush to unreadable at 375px without a floor. */}
+            <table className="w-full min-w-[36rem] text-left text-sm">
               <thead>
                 <tr className="border-b border-white/10 font-mono text-[0.55rem] uppercase tracking-label text-white/35">
                   <th className="px-5 py-3 font-medium">Metric</th>
@@ -97,7 +98,7 @@ export function ReportDetail({
                     <td className="px-4 py-3 text-white/55">
                       {entry.goal != null
                         ? entry.goal.toLocaleString("en-US", { maximumFractionDigits: 1 })
-                        : "—"}
+                        : "-"}
                     </td>
                     <td className="px-5 py-3">
                       <span
@@ -116,7 +117,7 @@ export function ReportDetail({
           <p className="border-t border-white/10 px-5 py-3 text-[0.65rem] leading-relaxed text-white/35">
             Measured numbers come directly from your systems. Estimated and
             manually entered figures are labeled so you always know what
-            you&rsquo;re looking at — we never present modeled numbers as
+            you&rsquo;re looking at: we never present modeled numbers as
             measurements.
           </p>
         </SectionCard>

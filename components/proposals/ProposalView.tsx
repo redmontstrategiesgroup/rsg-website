@@ -2,7 +2,7 @@
 
 /**
  * Proposal acceptance form (client side of the public proposal page).
- * Display-only pricing — the accept endpoint re-resolves every amount
+ * Display-only pricing: the accept endpoint re-resolves every amount
  * server-side from the proposal/plan rows.
  */
 
@@ -112,7 +112,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
     : "monthly";
 
   // -------------------------------------------------------------------------
-  // Closed states — banner only, no form.
+  // Closed states: banner only, no form.
   // -------------------------------------------------------------------------
   if (declined || vm.status === "declined") {
     return (
@@ -156,7 +156,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
     return (
       <div className="border border-emerald-500/25 bg-emerald-500/[0.06] p-6">
         <p className="text-sm text-emerald-200/90">
-          Agreement accepted — we&apos;ll be in touch within one business day.
+          Agreement accepted: we&apos;ll be in touch within one business day.
         </p>
         {accepted.depositUrl ? (
           <a
@@ -351,13 +351,14 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
           {annualAvailable && selectedPlan ? (
             <div className="mt-6">
               <span className="label">Billing</span>
-              <div className="mt-3 inline-flex border border-white/10">
+              <div className="mt-3 grid grid-cols-2 border border-white/10 sm:inline-flex" role="group" aria-label="Billing frequency">
                 {(["monthly", "annual"] as const).map((f) => (
                   <button
                     key={f}
                     type="button"
                     onClick={() => setFrequency(f)}
-                    className={`px-5 py-2.5 text-xs uppercase tracking-[0.14em] transition-colors ${
+                    aria-pressed={effectiveFrequency === f}
+                    className={`min-h-11 px-3 py-2.5 text-center text-xs uppercase tracking-[0.14em] transition-colors sm:px-5 ${
                       effectiveFrequency === f
                         ? "bg-white/10 text-white"
                         : "text-white/50 hover:text-white/80"
@@ -366,10 +367,10 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
                     {f === "monthly"
                       ? `Monthly${
                           monthlyFor(selectedPlan) != null
-                            ? ` — ${formatCents(monthlyFor(selectedPlan)!)}/mo`
+                            ? `: ${formatCents(monthlyFor(selectedPlan)!)}/mo`
                             : ""
                         }`
-                      : `Annual — ${formatCents(annualFor(selectedPlan)!)}/yr`}
+                      : `Annual: ${formatCents(annualFor(selectedPlan)!)}/yr`}
                   </button>
                 ))}
               </div>
