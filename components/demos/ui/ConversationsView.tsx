@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, ChevronLeft, Lock, Send, Sparkles, Zap } from "lucide-react";
+import { IconButton } from "@/components/ui/IconButton";
 import { renderTemplate, templateVars, uid } from "../engine";
 import type { Conversation } from "../types";
 import { ChannelBadge, EmptyState, PanelHeading, StatusPill } from "./primitives";
@@ -9,7 +10,7 @@ import { SmallButton } from "./fields";
 import { applyNow, type ViewProps } from "./shared";
 
 /**
- * Deterministic draft helpers — clearly labeled simulations built from the
+ * Deterministic draft helpers: clearly labeled simulations built from the
  * actual thread contents. No live model is called from the demo.
  */
 function simulatedSummary(convo: Conversation): string {
@@ -32,19 +33,19 @@ function simulatedReply(convo: Conversation, businessName: string): string {
   const first = convo.contact.split(" ")[0];
   const lastContact = [...convo.messages].reverse().find((m) => m.from === "contact");
   if (!lastContact) {
-    return `Hi ${first}, just checking in from ${businessName} — happy to answer any questions whenever you're ready.`;
+    return `Hi ${first}, just checking in from ${businessName}, happy to answer any questions whenever you're ready.`;
   }
   const t = lastContact.text.toLowerCase();
   if (t.includes("price") || t.includes("cost") || t.includes("how much") || t.includes("$")) {
-    return `Great question, ${first} — pricing depends on a couple of details, and we'd rather give you a real number than a range. Want me to grab you a quick call time, or text over the two things we'd need to quote it exactly?`;
+    return `Great question, ${first}, pricing depends on a couple of details, and we'd rather give you a real number than a range. Want me to grab you a quick call time, or text over the two things we'd need to quote it exactly?`;
   }
   if (t.includes("resched") || t.includes("cancel") || t.includes("move")) {
-    return `No problem at all, ${first} — we can move that for you. What days work best this week or next? I'll send a couple of open times.`;
+    return `No problem at all, ${first}; we can move that for you. What days work best this week or next? I'll send a couple of open times.`;
   }
   if (t.includes("book") || t.includes("time") || t.includes("schedule") || t.includes("when")) {
-    return `Perfect, ${first}! I have a few openings this week — want me to send the booking link so you can grab whichever works best?`;
+    return `Perfect, ${first}! I have a few openings this week, want me to send the booking link so you can grab whichever works best?`;
   }
-  return `Thanks for the note, ${first}! Happy to help with that — want me to send over the details, or would a quick call be easier?`;
+  return `Thanks for the note, ${first}! Happy to help with that, want me to send over the details, or would a quick call be easier?`;
 }
 
 export function ConversationsView({ state, config, dispatch, track }: ViewProps) {
@@ -114,7 +115,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
       {/* Contact list */}
       <div className={`border-white/[0.07] lg:col-span-2 lg:block lg:border-r ${showThreadMobile ? "hidden" : "block"}`}>
         <PanelHeading title={`Unified inbox · ${state.conversations.length}`} />
-        <ul className="max-h-[28rem] divide-y divide-white/[0.05] overflow-y-auto no-scrollbar">
+        <ul className="max-h-[28rem] divide-y divide-white/[0.05] overflow-y-auto overscroll-contain">
           {state.conversations.map((c) => {
             const last = c.messages[c.messages.length - 1];
             const active = selected?.id === c.id;
@@ -156,14 +157,13 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
         {selected ? (
           <>
             <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.07] px-4 py-3">
-              <button
-                type="button"
+              <IconButton
                 onClick={() => setSelectedId(null)}
-                className="inline-flex h-6 w-6 items-center justify-center rounded border border-white/10 text-white/50 hover:text-white lg:hidden"
+                className="-ml-2 rounded text-white/50 hover:text-white lg:hidden"
                 aria-label="Back to inbox"
               >
-                <ChevronLeft size={13} />
-              </button>
+                <ChevronLeft size={16} />
+              </IconButton>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium text-white/85">{selected.contact}</p>
                 {selected.topic && <p className="text-[0.62rem] text-white/40">{selected.topic}</p>}
@@ -239,7 +239,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
               <div className="mx-4 mb-2 rounded-lg border border-white/12 bg-base-700/70 p-3">
                 <p className="flex items-center gap-1.5 text-[0.6rem] font-medium uppercase tracking-[0.14em] text-white/45">
                   <Sparkles size={10} className="text-crimson-light" aria-hidden />
-                  Suggested draft — review and edit before use
+                  Suggested draft: review and edit before use
                 </p>
                 <p className="mt-1.5 text-xs leading-relaxed text-white/75">{aiOutput.text}</p>
                 {aiOutput.kind === "reply" && (
@@ -315,7 +315,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   rows={2}
-                  placeholder={internal ? "Add a note only your team can see…" : `Reply to ${selected.contact.split(" ")[0]}… (simulated — nothing is really sent)`}
+                  placeholder={internal ? "Add a note only your team can see…" : `Reply to ${selected.contact.split(" ")[0]}… (simulated: nothing is really sent)`}
                   className="min-h-[2.5rem] flex-1 resize-y rounded border border-white/12 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none"
                 />
                 <button

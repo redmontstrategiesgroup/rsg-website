@@ -137,7 +137,7 @@ function AutomationCard({
             </p>
             {runs.length === 0 ? (
               <p className="text-[0.66rem] text-white/30">
-                No runs yet — press Test, or trigger it live (submit the intake form, mark a no-show…).
+                No runs yet: press Test, or trigger it live (submit the intake form, mark a no-show…).
               </p>
             ) : (
               <ul className="space-y-1.5">
@@ -163,7 +163,7 @@ export function AutomationsView(props: ViewProps) {
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-white/40">
-          Toggles and edits change how this demo actually behaves — pause the intake workflow, then
+          Toggles and edits change how this demo actually behaves, pause the intake workflow, then
           submit the form and watch the difference.
         </p>
         <div className="flex items-center gap-3">
@@ -194,7 +194,7 @@ export function AutomationsView(props: ViewProps) {
               </span>
             }
           />
-          <ul className="max-h-56 divide-y divide-white/[0.05] overflow-y-auto no-scrollbar">
+          <ul className="max-h-56 divide-y divide-white/[0.05] overflow-y-auto overscroll-contain">
             {state.workflowRuns.map((r) => (
               <li key={r.id} className="px-4 py-2.5">
                 <p className="text-xs text-white/70">{r.name}</p>

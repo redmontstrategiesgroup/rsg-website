@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -166,24 +167,24 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                     title={`Pipeline · $${derived.pipelineValue.toLocaleString()} open`}
                     right={<SampleDataTag />}
                   />
-                  <div className="flex gap-2 overflow-x-auto p-4 no-scrollbar">
+                  <ScrollRail inset={4} className="flex gap-2 py-4">
                     {state.stages.map((s) => {
                       const count = state.leads.filter((l) => l.stageId === s.id).length;
                       return (
-                        <div key={s.id} className="min-w-[7rem] flex-1 rounded border border-white/[0.07] bg-white/[0.015] px-3 py-2">
+                        <div key={s.id} className="min-w-[7rem] flex-1 shrink-0 rounded border border-white/[0.07] bg-white/[0.015] px-3 py-2">
                           <p className="truncate text-[0.58rem] uppercase tracking-wider text-white/35">{s.label}</p>
                           <p className="mt-1 text-lg font-medium tabular-nums text-white/85">{count}</p>
                         </div>
                       );
                     })}
-                  </div>
+                  </ScrollRail>
                 </div>
               );
             case "activity":
               return (
                 <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
                   <PanelHeading title="Live activity" />
-                  <div className="max-h-[19rem] overflow-y-auto no-scrollbar">
+                  <div className="max-h-[19rem] overflow-y-auto overscroll-contain">
                     <ActivityFeed state={state} limit={8} />
                   </div>
                 </div>
@@ -413,7 +414,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
               label="Assignee"
               value={assignee}
               onChange={setAssignee}
-              options={state.settings.staff.map((s) => ({ value: s.name, label: `${s.name} — ${s.role}` }))}
+              options={state.settings.staff.map((s) => ({ value: s.name, label: `${s.name}: ${s.role}` }))}
             />
             <div className="flex justify-end gap-2 pt-1">
               <SmallButton onClick={() => setAdding(false)}>Cancel</SmallButton>
@@ -459,7 +460,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
   const reschedule = () => {
     if (!rescheduling) return;
     const d = config.scheduleDays[reschedDay];
-    const contactName = rescheduling.title.split("—").pop()?.trim() ?? rescheduling.title;
+    const contactName = rescheduling.title.split("-").pop()?.trim() ?? rescheduling.title;
     applyNow(dispatch, [
       {
         kind: "calendarUpdate",
@@ -471,7 +472,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
         item: {
           id: uid("act"),
           icon: "calendar",
-          text: `${rescheduling.title} rescheduled to ${d.day} ${reschedTime}. Updated confirmation sent — simulated.`,
+          text: `${rescheduling.title} rescheduled to ${d.day} ${reschedTime}. Updated confirmation sent, simulated.`,
           time: "Just now",
         },
       },
@@ -520,7 +521,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
           day: d.day,
           date: d.date,
           time,
-          title: `${t?.label ?? config.terminology.appointment} — ${contact.trim()}`,
+          title: `${t?.label ?? config.terminology.appointment}: ${contact.trim()}`,
           withWhom: staff,
           status: "confirmed",
         },
@@ -530,7 +531,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
         item: {
           id: uid("act"),
           icon: "calendar",
-          text: `${config.terminology.appointment} booked: ${contact.trim()} (${d.day} ${time}, ${t?.duration ?? 30} min). Reminder sequence scheduled — simulated.`,
+          text: `${config.terminology.appointment} booked: ${contact.trim()} (${d.day} ${time}, ${t?.duration ?? 30} min). Reminder sequence scheduled, simulated.`,
           time: "Just now",
         },
       },
@@ -539,7 +540,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
         notification: {
           id: uid("n"),
           title: `${config.terminology.appointment} booked`,
-          body: `${contact.trim()} — ${d.day} ${time} with ${staff}. Simulated confirmation sent.`,
+          body: `${contact.trim()}: ${d.day} ${time} with ${staff}. Simulated confirmation sent.`,
           tone: "success",
         },
       },
@@ -633,7 +634,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
       {booking && (
         <Modal
           title={`New ${config.terminology.appointment.toLowerCase()}`}
-          subtitle="Demo calendar only — no real appointment is created."
+          subtitle="Demo calendar only, no real appointment is created."
           onClose={() => setBooking(false)}
         >
           <div className="space-y-3">
@@ -662,7 +663,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
               label="Staff"
               value={staff}
               onChange={setStaff}
-              options={state.settings.staff.map((s) => ({ value: s.name, label: `${s.name} — ${s.role}` }))}
+              options={state.settings.staff.map((s) => ({ value: s.name, label: `${s.name}: ${s.role}` }))}
             />
             <div className="flex justify-end gap-2 pt-1">
               <SmallButton onClick={() => setBooking(false)}>Cancel</SmallButton>
@@ -677,7 +678,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
       {rescheduling && (
         <Modal
           title="Reschedule"
-          subtitle={`${rescheduling.title} — currently ${rescheduling.day} ${rescheduling.date} at ${rescheduling.time}. Demo calendar only.`}
+          subtitle={`${rescheduling.title}: currently ${rescheduling.day} ${rescheduling.date} at ${rescheduling.time}. Demo calendar only.`}
           onClose={() => setRescheduling(null)}
         >
           <div className="space-y-3">
@@ -697,7 +698,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
             </div>
             <p className="text-[0.64rem] leading-relaxed text-white/35">
               The customer gets an updated confirmation and the reminder sequence re-arms around the
-              new time — simulated here, automatic in production.
+              new time: simulated here, automatic in production.
             </p>
             <div className="flex justify-end gap-2 pt-1">
               <SmallButton onClick={() => setRescheduling(null)}>Cancel</SmallButton>
@@ -839,7 +840,7 @@ function CampaignCard({
         <div className="rounded-md border border-crimson/20 bg-crimson/[0.07] px-3 py-2.5">
           <p className="text-[0.68rem] leading-relaxed text-white/75">{campaign.message}</p>
         </div>
-        <div className="grid grid-cols-4 gap-2 border-t border-white/[0.06] pt-3 text-center">
+        <div className="grid grid-cols-2 gap-2 border-t border-white/[0.06] pt-3 text-center sm:grid-cols-4">
           {(
             [
               ["Sent", campaign.stats.sent],
@@ -882,7 +883,7 @@ export function CampaignsView({ state: _state, config, dispatch, track }: ViewPr
           id: uid("run"),
           automationId: c.id,
           name: c.name,
-          detail: "Simulated campaign batch — 12 contacts matched the filters; replies route to the inbox.",
+          detail: "Simulated campaign batch: 12 contacts matched the filters; replies route to the inbox.",
           time: "Just now",
           simulated: true,
         },
@@ -971,7 +972,7 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
         </div>
         <span className="inline-flex items-center gap-1.5 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/30">
           <span className="h-1 w-1 rounded-full bg-white/30" aria-hidden />
-          Interactive demo data — computed from your session
+          Interactive demo data: computed from your session
         </span>
       </div>
 
@@ -995,14 +996,14 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
           ) : (
             <div className="divide-y divide-white/[0.05]">
               {derived.sources.map((s) => (
-                <div key={s.name} className="flex items-center gap-4 px-4 py-3">
+                <div key={s.name} className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-3">
                   <span className="w-28 shrink-0 truncate text-xs text-white/65 sm:w-36">{s.name}</span>
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div className="h-1.5 min-w-[6rem] flex-1 overflow-hidden rounded-full bg-white/[0.06]">
                     <div className="h-full rounded-full bg-white/30" style={{ width: `${(s.leads / maxSource) * 100}%` }} />
                   </div>
-                  <span className="w-12 shrink-0 text-right text-xs tabular-nums text-white/55">{s.leads} in</span>
-                  <span className="w-20 shrink-0 text-right text-xs tabular-nums text-crimson-light/90">
-                    {s.booked} advanced
+                  <span className="flex shrink-0 gap-3 text-xs tabular-nums">
+                    <span className="text-white/55">{s.leads} in</span>
+                    <span className="text-crimson-light/90">{s.booked} advanced</span>
                   </span>
                 </div>
               ))}
@@ -1030,7 +1031,7 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-crimson/20 bg-crimson/[0.05] px-4 py-3">
         <p className="text-xs text-white/65">
-          Want reporting like this on your own numbers — leads, response time, close rate?
+          Want reporting like this on your own numbers, leads, response time, close rate?
         </p>
         <button
           type="button"

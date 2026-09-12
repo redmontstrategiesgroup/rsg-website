@@ -3,6 +3,7 @@ import { Check, ShieldCheck, Workflow, Inbox, Users } from "lucide-react";
 import { Reveal, RevealGroup } from "@/components/Reveal";
 import { TrackedLink } from "@/components/TrackedLink";
 import { BuildSystemCta } from "./BuildSystemCta";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import type { IndustryConfig } from "./types";
 
 /* ------------------------------------------------------------------ */
@@ -54,10 +55,9 @@ export function AutomationFlow({
   flow: IndustryConfig["builderFlow"];
 }) {
   return (
-    <div className="min-w-0 max-w-full overflow-x-auto pb-3 no-scrollbar">
-      <ol className="flex min-w-max items-stretch gap-0 px-1 py-2">
+    <ScrollRail as="ol" arrows className="flex items-stretch gap-0 px-1 py-2 pb-3">
         {flow.steps.map((step, i) => (
-          <li key={step.label} className="flex items-center">
+          <li key={step.label} className="flex shrink-0 items-center">
             <div
               className={`relative w-40 shrink-0 rounded-lg border px-3.5 py-3 ${
                 i === 0
@@ -80,8 +80,7 @@ export function AutomationFlow({
             )}
           </li>
         ))}
-      </ol>
-    </div>
+    </ScrollRail>
   );
 }
 

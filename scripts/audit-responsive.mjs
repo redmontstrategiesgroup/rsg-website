@@ -102,6 +102,18 @@ const PORTAL_ROUTES = [
 const ADMIN_ROUTES = ["/admin", "/dashboard"];
 
 /**
+ * Interactive surfaces render most of their UI behind tabs. For routes
+ * matching a prefix, click each element the selector finds (re-queried each
+ * time, since a click re-renders) and measure again, so Pipeline,
+ * Conversations and Settings get audited and not just the Overview tab.
+ */
+const TAB_WALKS = [
+  { prefix: "/demos/", selector: 'nav[aria-label$="sections"] button' },
+  { prefix: "/portal", selector: '[role="tablist"] [role="tab"]' },
+  { prefix: "/admin", selector: '[role="tablist"] [role="tab"], nav[aria-label="Admin sections"] button' },
+];
+
+/**
  * Runs inside the page. Returns plain data only — nothing here may reference
  * Node scope.
  */
@@ -253,7 +265,10 @@ function collectFindings(tapMin) {
       el.scrollWidth > el.clientWidth + 4
     ) {
       const snap = cs.scrollSnapType && cs.scrollSnapType !== "none";
-      if (!snap) {
+      // A wide table scrolls freely by design; snap points make no sense
+      // for columns. Only card/tab rails are expected to snap.
+      const isTable = !!el.querySelector(":scope > table");
+      if (!snap && !isTable) {
         out.rails.push({
           el: label(el),
           scrollWidth: el.scrollWidth,
@@ -380,6 +395,38 @@ async function main() {
 
       const found = await page.evaluate(collectFindings, TAP_MIN);
 
+      // Tab walk: merge findings from each tab state, tagged with the tab.
+      const walk = TAB_WALKS.find((w) => route.startsWith(w.prefix));
+      if (walk) {
+        // An intro dialog (demo OS) sits over the tabs on first load; Escape it.
+        if (await page.locator('[role="dialog"]').count()) {
+          await page.keyboard.press("Escape");
+          await page.waitForTimeout(250);
+        }
+        const count = await page.locator(walk.selector).count();
+        found.tabsWalked = count;
+        for (let i = 0; i < count; i += 1) {
+          const tabEl = page.locator(walk.selector).nth(i);
+          let name = "";
+          try {
+            name = ((await tabEl.textContent()) || "").trim().slice(0, 24);
+            await tabEl.click({ timeout: 3000 });
+            await page.waitForTimeout(350);
+          } catch {
+            continue;
+          }
+          const more = await page.evaluate(collectFindings, TAP_MIN);
+          for (const key of ["overflow", "clipped", "tap", "rails", "offscreen"]) {
+            for (const f of more[key]) {
+              // De-duplicate against what the base state already reported.
+              const sig = JSON.stringify({ ...f, tab: undefined });
+              if (found[key].some((g) => JSON.stringify({ ...g, tab: undefined }) === sig)) continue;
+              found[key].push({ ...f, tab: name });
+            }
+          }
+        }
+      }
+
       totalOverflow += found.overflow.length;
       totalClipped += found.clipped.length;
       totalTap += found.tap.length;
@@ -387,6 +434,7 @@ async function main() {
       totalOffscreen += found.offscreen.length;
 
       if (
+        found.tabsWalked ||
         found.overflow.length ||
         found.clipped.length ||
         found.tap.length ||
@@ -414,18 +462,19 @@ async function main() {
     if (r.skipped) {
       continue;
     }
-    console.log(`\n[${r.viewport}] ${r.route}`);
+    console.log(`
+[${r.viewport}] ${r.route}${r.tabsWalked ? `  (walked ${r.tabsWalked} tabs)` : ""}`);
     if (r.overflow?.length) {
       console.log(`  OVERFLOW (${r.overflow.length}) — clipped off the right edge:`);
       for (const o of r.overflow.slice(0, 8)) {
-        console.log(`    +${o.overhang}px  w=${o.width}  ${o.el}`);
+        console.log(`    +${o.overhang}px  w=${o.width}  ${o.el}${o.tab ? `  [tab: ${o.tab}]` : ""}`);
       }
       if (r.overflow.length > 8) console.log(`    … ${r.overflow.length - 8} more`);
     }
     if (r.clipped?.length) {
       console.log(`  CLIPPED CONTENT (${r.clipped.length}) — cut off by a container:`);
       for (const c of r.clipped.slice(0, 6)) {
-        console.log(`    -${c.cutBy}px  "${c.text}"  ${c.el}
+        console.log(`    -${c.cutBy}px  "${c.text}"  ${c.el}${c.tab ? `  [tab: ${c.tab}]` : ""}
            by ${c.by}`);
       }
       if (r.clipped.length > 6) console.log(`    … ${r.clipped.length - 6} more`);
@@ -433,14 +482,14 @@ async function main() {
     if (r.tap?.length) {
       console.log(`  TAP TARGETS < ${TAP_MIN}px (${r.tap.length}):`);
       for (const t of r.tap.slice(0, 8)) {
-        console.log(`    ${t.w}x${t.h}  "${t.text}"  ${t.el}`);
+        console.log(`    ${t.w}x${t.h}  "${t.text}"  ${t.el}${t.tab ? `  [tab: ${t.tab}]` : ""}`);
       }
       if (r.tap.length > 8) console.log(`    … ${r.tap.length - 8} more`);
     }
     if (r.rails?.length) {
       console.log(`  SCROLL RAILS WITHOUT SNAP (${r.rails.length}):`);
       for (const s of r.rails.slice(0, 6)) {
-        console.log(`    scrolls ${s.overflowBy}px  ${s.el}`);
+        console.log(`    scrolls ${s.overflowBy}px  ${s.el}${s.tab ? `  [tab: ${s.tab}]` : ""}`);
       }
       if (r.rails.length > 6) console.log(`    … ${r.rails.length - 6} more`);
     }

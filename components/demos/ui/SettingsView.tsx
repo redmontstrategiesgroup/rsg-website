@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import {
   ArrowDown,
   ArrowUp,
@@ -55,8 +56,8 @@ export function SettingsView(props: ViewProps) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-4">
-      <nav aria-label="Settings sections" className="lg:col-span-1">
-        <ul className="flex gap-1 overflow-x-auto no-scrollbar lg:flex-col">
+      <nav aria-label="Settings sections" className="min-w-0 lg:col-span-1">
+        <ScrollRail as="ul" activeKey={section} hideScrollbar className="flex gap-1 lg:flex-col lg:overflow-visible">
           {SECTIONS.map((sec) => (
             <li key={sec.id} className="shrink-0">
               <button
@@ -71,10 +72,10 @@ export function SettingsView(props: ViewProps) {
               </button>
             </li>
           ))}
-        </ul>
+        </ScrollRail>
       </nav>
 
-      <div className="lg:col-span-3">
+      <div className="min-w-0 lg:col-span-3">
         {/* ------------------------------------------------ Business */}
         {section === "business" && (
           <div className="space-y-4 rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
@@ -154,7 +155,7 @@ export function SettingsView(props: ViewProps) {
                 ))}
               </div>
               <p className="px-4 pb-3 text-[0.64rem] text-white/35">
-                Role views are a demonstration of role-based access — navigation adapts to the selected role.
+                Role views are a demonstration of role-based access, navigation adapts to the selected role.
               </p>
             </div>
 
@@ -244,7 +245,7 @@ export function SettingsView(props: ViewProps) {
               }
             />
             <p className="border-b border-white/[0.06] px-4 py-2.5 text-[0.66rem] text-white/40">
-              This form powers &ldquo;New {config.terminology.record}&rdquo; — test submissions create real demo
+              This form powers &ldquo;New {config.terminology.record}&rdquo;, test submissions create real demo
               records and trigger the intake workflow.
             </p>
             <ul className="divide-y divide-white/[0.05]">
@@ -343,7 +344,7 @@ export function SettingsView(props: ViewProps) {
           <div className="space-y-3 rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
             <p className="text-xs leading-relaxed text-white/50">
               Answer a few optional questions and the demo reshapes itself around your business. No
-              account needed; nothing is submitted anywhere — answers stay in your browser and you
+              account needed; nothing is submitted anywhere, answers stay in your browser and you
               can clear them anytime.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -480,17 +481,17 @@ function recommendationFor(problem: string, automationNames: string[]): string {
     automationNames.find((n) => n.toLowerCase().includes(needle)) ?? automationNames[0];
   switch (problem) {
     case "Slow response to new leads":
-      return `Start with "${pick("intake")}" — every inquiry gets an answer in under a minute, then a staff task with full context. Test it now: submit the intake form from the ${""}records tab.`;
+      return `Start with "${pick("intake")}": every inquiry gets an answer in under a minute, then a staff task with full context. Test it now: submit the intake form from the ${""}records tab.`;
     case "No follow-up after quotes/consults":
-      return `Start with "${pick("follow")}" — a paced sequence that keeps nudging until someone replies, and pauses the moment your team responds manually.`;
+      return `Start with "${pick("follow")}": a paced sequence that keeps nudging until someone replies, and pauses the moment your team responds manually.`;
     case "Missed calls going to voicemail":
-      return `Start with "${pick("missed")}" — run the missed-call scenario from the scenario menu to watch a voicemail turn into a captured, qualified record.`;
+      return `Start with "${pick("missed")}": run the missed-call scenario from the scenario menu to watch a voicemail turn into a captured, qualified record.`;
     case "No-shows and cancellations":
-      return `Start with "${pick("no-show")}" — open the calendar and mark any appointment as a no-show to watch the recovery sequence fire in real time.`;
+      return `Start with "${pick("no-show")}": open the calendar and mark any appointment as a no-show to watch the recovery sequence fire in real time.`;
     case "Old leads never re-contacted":
-      return `Start with "${pick("reactivation")}" — check the campaigns tab and send a simulated batch to see how dormant records come back.`;
+      return `Start with "${pick("reactivation")}": check the campaigns tab and send a simulated batch to see how dormant records come back.`;
     default:
-      return `Start with "${pick("intake")}" and the task automations — most of the repetitive work in this demo's Tasks tab was created (and can be resolved) automatically.`;
+      return `Start with "${pick("intake")}" and the task automations: most of the repetitive work in this demo's Tasks tab was created (and can be resolved) automatically.`;
   }
 }
 

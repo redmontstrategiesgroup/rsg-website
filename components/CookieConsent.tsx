@@ -76,7 +76,7 @@ export function CookieConsent() {
         site and to improve it. See the{" "}
         <Link
           href="/privacy"
-          className="text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white/60"
+          className="-my-3 inline-block py-3 text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white/60 lg:my-0 lg:py-0"
         >
           privacy policy
         </Link>

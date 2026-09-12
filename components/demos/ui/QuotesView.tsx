@@ -58,7 +58,7 @@ export function QuotesView(props: ViewProps) {
           item: {
             id: uid("act"),
             icon: "automation",
-            text: `${q.documentLabel} drafted for ${contactName} — $${total.toLocaleString()}.`,
+            text: `${q.documentLabel} drafted for ${contactName}: $${total.toLocaleString()}.`,
             time: "Just now",
           },
         },
@@ -126,14 +126,14 @@ export function QuotesView(props: ViewProps) {
                   setLeadId(v);
                   if (v) setContact("");
                 }}
-                options={state.leads.map((l) => ({ value: l.id, label: `${l.name} — ${l.service}` }))}
-                placeholder="No — type a name instead"
+                options={state.leads.map((l) => ({ value: l.id, label: `${l.name}: ${l.service}` }))}
+                placeholder="No: type a name instead"
               />
               {!linkedLead && (
                 <TextInput label="Customer name" value={contact} onChange={setContact} placeholder="Jordan Ellis" required />
               )}
             </div>
-            <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-[18rem] text-[0.62rem] leading-relaxed text-white/35">{q.disclaimer}</p>
               <button
                 type="button"
@@ -152,7 +152,7 @@ export function QuotesView(props: ViewProps) {
         <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-2">
           <PanelHeading title={`${q.documentLabel}s · ${state.quotes.length}`} />
           {state.quotes.length === 0 ? (
-            <EmptyState text={`No ${q.documentLabel.toLowerCase()}s yet — build one with the calculator.`} />
+            <EmptyState text={`No ${q.documentLabel.toLowerCase()}s yet: build one with the calculator.`} />
           ) : (
             <ul className="divide-y divide-white/[0.05]">
               {state.quotes.map((quote) => (

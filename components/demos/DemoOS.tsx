@@ -11,14 +11,12 @@ import {
 import {
   AlertTriangle,
   ArrowRight,
-  Award,
   Bell,
   Bot,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   FileText,
-  Package,
   ListVideo,
   Loader2,
   Monitor,
@@ -45,6 +43,9 @@ import { demoReducer, initialDemoState, type DemoState } from "./engine";
 import { clearSession, loadSession, saveSession } from "./storage";
 import type { Effect, IndustryConfig, NavId, Scenario } from "./types";
 import { SampleDataTag } from "./ui/primitives";
+import { ScrollRail } from "@/components/ui/ScrollRail";
+import { IconButton } from "@/components/ui/IconButton";
+import { Popover } from "@/components/ui/Popover";
 import { ConfirmDialog, Modal } from "./ui/Modal";
 import { trackEvent } from "@/lib/events";
 import {
@@ -61,8 +62,6 @@ import { AutomationsView } from "./ui/AutomationsView";
 import { SettingsView } from "./ui/SettingsView";
 import { QuotesView } from "./ui/QuotesView";
 import { ReceptionistView } from "./ui/ReceptionistView";
-import { LoyaltyView } from "./ui/LoyaltyView";
-import { InventoryView } from "./ui/InventoryView";
 import { RequestSystemDialog } from "./RequestSystemDialog";
 import { SmallButton } from "./ui/fields";
 
@@ -73,8 +72,6 @@ const NAV_ICONS: Record<NavId, LucideIcon> = {
   conversations: MessageSquare,
   receptionist: Bot,
   quotes: FileText,
-  loyalty: Award,
-  inventory: Package,
   automations: Zap,
   tasks: CheckSquare,
   calendar: CalendarDays,
@@ -339,10 +336,6 @@ export function DemoOS({
         return <ReceptionistView {...viewProps} />;
       case "quotes":
         return <QuotesView {...viewProps} />;
-      case "loyalty":
-        return <LoyaltyView {...viewProps} />;
-      case "inventory":
-        return <InventoryView {...viewProps} />;
       case "automations":
         return <AutomationsView {...viewProps} />;
       case "tasks":
@@ -383,7 +376,7 @@ export function DemoOS({
             </p>
             <p className="mt-1 text-xs leading-relaxed text-white/50">
               {mobilePreview
-                ? "Mobile preview — the same live session, rendered the way your team would see it on a phone. Switch back to desktop for the guided tour."
+                ? "Mobile preview: the same live session, rendered the way your team would see it on a phone. Switch back to desktop for the guided tour."
                 : runningScenario
                   ? config.scenarios.find((s) => s.id === runningScenario.id)?.description
                   : currentStep
@@ -454,8 +447,7 @@ export function DemoOS({
                   <Wand2 size={13} className="mr-1.5" aria-hidden />
                   Simulate
                 </button>
-                {simMenu && (
-                  <div className="absolute right-0 top-11 z-40 w-72 rounded-lg border border-white/10 bg-base-800 shadow-lift">
+                <Popover open={simMenu} onClose={() => setSimMenu(false)} className="w-72" label="One-click simulations">
                     <p className="border-b border-white/[0.08] px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
                       One-click simulations
                     </p>
@@ -474,8 +466,7 @@ export function DemoOS({
                         </li>
                       ))}
                     </ul>
-                  </div>
-                )}
+                </Popover>
               </div>
             )}
             {config.scenarios.length > 0 && (
@@ -493,12 +484,11 @@ export function DemoOS({
                 <ListVideo size={13} className="mr-1.5" aria-hidden />
                 Scenarios
               </button>
-              {scenarioMenu && (
-                <div className="absolute right-0 top-11 z-40 w-80 rounded-lg border border-white/10 bg-base-800 shadow-lift">
+              <Popover open={scenarioMenu} onClose={() => setScenarioMenu(false)} className="w-80" label="Launch a scenario">
                   <p className="border-b border-white/[0.08] px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
                     Launch a scenario
                   </p>
-                  <ul className="max-h-72 overflow-y-auto no-scrollbar">
+                  <ul className="max-h-72 overflow-y-auto overscroll-contain">
                     {config.scenarios.map((sc) => {
                       const runs = state.scenarioRuns[sc.id] ?? 0;
                       return (
@@ -527,11 +517,10 @@ export function DemoOS({
                       );
                     })}
                   </ul>
-                </div>
-              )}
+              </Popover>
             </div>
             )}
-            {/* Desktop/mobile preview toggle — only meaningful on large screens */}
+            {/* Desktop/mobile preview toggle, only meaningful on large screens */}
             <div
               className="hidden items-center rounded border border-white/15 lg:inline-flex"
               role="group"
@@ -620,10 +609,9 @@ export function DemoOS({
             {role.label} view
           </span>
           <div className="relative">
-            <button
-              type="button"
+            <IconButton
               onClick={() => setBellOpen((v) => !v)}
-              className="relative inline-flex h-7 w-7 items-center justify-center rounded border border-white/10 text-white/55 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+              className="relative rounded border border-white/10 text-white/55 hover:text-white focus-visible:ring-crimson lg:min-h-7 lg:min-w-7"
               aria-label={`Staff notifications (${unread})`}
               aria-expanded={bellOpen}
             >
@@ -633,9 +621,8 @@ export function DemoOS({
                   {unread}
                 </span>
               )}
-            </button>
-            {bellOpen && (
-              <div className="absolute right-0 top-9 z-30 w-72 rounded-lg border border-white/10 bg-base-800 shadow-lift">
+            </IconButton>
+            <Popover open={bellOpen} onClose={() => setBellOpen(false)} className="w-72" offsetClassName="top-full mt-1" label="Staff notifications">
                 <div className="flex items-center justify-between border-b border-white/[0.08] px-3 py-2.5">
                   <span className="text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/45">
                     Staff notifications
@@ -649,7 +636,7 @@ export function DemoOS({
                 {state.notifications.length === 0 ? (
                   <p className="px-3 py-6 text-center text-xs text-white/35">No notifications yet. Run a scenario.</p>
                 ) : (
-                  <ul className="max-h-64 divide-y divide-white/[0.06] overflow-y-auto no-scrollbar">
+                  <ul className="max-h-64 divide-y divide-white/[0.06] overflow-y-auto overscroll-contain">
                     {state.notifications.map((n) => (
                       <li key={n.id} className="flex items-start gap-2.5 px-3 py-2.5">
                         {n.tone === "alert" ? (
@@ -665,15 +652,19 @@ export function DemoOS({
                     ))}
                   </ul>
                 )}
-              </div>
-            )}
+            </Popover>
           </div>
         </div>
 
         <div className="flex min-h-[32rem] flex-col lg:flex-row">
           {/* Nav */}
           <nav aria-label={`${config.osName} sections`} className="border-b border-white/[0.08] lg:w-48 lg:shrink-0 lg:border-b-0 lg:border-r">
-            <ul className="flex overflow-x-auto no-scrollbar lg:block lg:py-3">
+            <ScrollRail
+              as="ul"
+              activeKey={tab}
+              hideScrollbar
+              className="flex lg:block lg:overflow-visible lg:py-3"
+            >
               {nav.map((item) => {
                 const Icon = NAV_ICONS[item.id];
                 const active = tab === item.id;
@@ -694,7 +685,7 @@ export function DemoOS({
                   </li>
                 );
               })}
-            </ul>
+            </ScrollRail>
           </nav>
 
           {/* Main content */}
@@ -705,7 +696,7 @@ export function DemoOS({
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] bg-base-800/40 px-4 py-2">
           <p className="flex items-center gap-1.5 text-[0.62rem] text-white/40">
             <ShieldCheck size={11} className="shrink-0 text-emerald-400/60" aria-hidden />
-            Demo environment — no real messages, appointments, or payments will be sent.
+            Demo environment, no real messages, appointments, or payments will be sent.
           </p>
           <button
             type="button"
@@ -734,9 +725,9 @@ export function DemoOS({
                 <p className="text-xs font-medium text-white/90">{toast.title}</p>
                 {toast.body && <p className="mt-0.5 text-[0.66rem] leading-snug text-white/55">{toast.body}</p>}
               </div>
-              <button type="button" onClick={() => dispatch({ type: "dismiss-toast", id: toast.id })} className="shrink-0 text-white/35 transition-colors hover:text-white" aria-label="Dismiss notification">
-                <X size={12} />
-              </button>
+              <IconButton onClick={() => dispatch({ type: "dismiss-toast", id: toast.id })} className="-my-2 -mr-2 text-white/35 hover:text-white" aria-label="Dismiss notification">
+                <X size={14} />
+              </IconButton>
             </div>
           ))}
         </div>
@@ -757,7 +748,7 @@ export function DemoOS({
           <p className="text-sm leading-relaxed text-white/65">
             You can edit records, move {config.terminology.records.toLowerCase()} through the
             pipeline, reply in conversations, trigger workflows, change business settings, and reset
-            the demo at any time. Everything is sample data in an isolated session — no real
+            the demo at any time. Everything is sample data in an isolated session, no real
             messages, appointments, or payments are ever sent.
           </p>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
