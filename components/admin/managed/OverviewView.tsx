@@ -38,7 +38,8 @@ export function OverviewView({
             MRR by plan
           </p>
           {revenue.byPlan.length ? (
-            <table className="mt-4 w-full text-left text-sm">
+            <div className="mt-4 overflow-x-auto overscroll-x-contain">
+            <table className="w-full min-w-[24rem] text-left text-sm">
               <thead className="font-mono text-[0.54rem] uppercase tracking-label text-white/40">
                 <tr className="border-b border-white/10">
                   <th className="py-2 pr-3 font-normal">Plan</th>
@@ -63,6 +64,7 @@ export function OverviewView({
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <p className="mt-4 text-sm text-white/40">
               No revenue-generating subscriptions yet.

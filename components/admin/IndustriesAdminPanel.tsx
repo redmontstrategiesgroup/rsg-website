@@ -26,7 +26,6 @@ type VerticalRow = { vertical: IndustryVertical; completeness: CompletenessRepor
 const SECTION_DEFS: { key: keyof IndustryVertical; label: string; hint: string }[] = [
   { key: "hero", label: "Hero", hint: "Headline, subheadline, CTAs, designed-for statement" },
   { key: "terminology", label: "Terminology", hint: "Industry words used in page copy" },
-  { key: "audience", label: "Audience", hint: "Sub-segments listed in the hero" },
   { key: "problems", label: "Operational problems", hint: "Problem cards (unique per vertical)" },
   { key: "problemsIntro", label: "Problems intro", hint: "Paragraph above the problem cards" },
   { key: "workflow", label: "Workflow map", hint: "Stages with failures, systems, KPIs, integrations" },
@@ -137,7 +136,7 @@ function StatusChip({
           : "border-amber-400/30 bg-amber-400/10 text-amber-300"
       }`}
     >
-      {published ? "Published" : completeness.complete ? "Draft — ready" : "Draft"}
+      {published ? "Published" : completeness.complete ? "Draft: ready" : "Draft"}
     </span>
   );
 }
@@ -182,7 +181,7 @@ function VerticalEditor({
       setMessage({ tone: "ok", text: "Saved. Pages refresh within ~5 minutes." });
       onSaved(data.vertical, data.completeness);
     } catch {
-      setMessage({ tone: "error", text: "Save failed — check your connection." });
+      setMessage({ tone: "error", text: "Save failed: check your connection." });
     } finally {
       setSaving(false);
     }
@@ -210,7 +209,7 @@ function VerticalEditor({
       setMessage({ tone: "ok", text: "Reset to authored defaults." });
       onSaved(data.vertical, data.completeness);
     } catch {
-      setMessage({ tone: "error", text: "Reset failed — check your connection." });
+      setMessage({ tone: "error", text: "Reset failed: check your connection." });
     } finally {
       setResetting(false);
     }
@@ -237,7 +236,7 @@ function VerticalEditor({
               >
                 <option value="draft">Draft (hidden, noindex)</option>
                 <option value="published" disabled={!completeness.complete}>
-                  Published{completeness.complete ? "" : " — blocked (incomplete)"}
+                  Published{completeness.complete ? "" : ": blocked (incomplete)"}
                 </option>
               </select>
             </label>
@@ -290,7 +289,7 @@ function VerticalEditor({
 
       {/* Completeness column */}
       <div className="lg:col-span-4">
-        <div className="sticky top-28 rounded-xl border border-white/10 bg-white/[0.02] p-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6 lg:sticky lg:top-28">
           <div className="flex items-center justify-between">
             <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/35">
               Content completeness
@@ -327,7 +326,7 @@ function VerticalEditor({
           {!completeness.complete && (
             <p className="mt-5 flex items-start gap-2 border-t border-white/[0.08] pt-4 text-[0.72rem] leading-relaxed text-amber-300/80">
               <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-              Publishing is blocked until every check passes — the page stays in draft (404 +
+              Publishing is blocked until every check passes; the page stays in draft (404 +
               noindex) meanwhile.
             </p>
           )}
@@ -370,7 +369,7 @@ function SectionEditor({
       setParseError("");
       setOpen(false);
     } catch {
-      setParseError("Invalid JSON — fix the syntax and apply again.");
+      setParseError("Invalid JSON: fix the syntax and apply again.");
     }
   };
 

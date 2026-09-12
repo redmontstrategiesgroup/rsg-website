@@ -3,6 +3,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
   type ComponentType,
@@ -44,6 +45,8 @@ import {
 import type { DashboardData, DashboardRecord } from "@/lib/dashboard";
 import { patchJson, postJson } from "@/lib/api";
 import { MarkdownRenderer } from "@/components/dashboard/MarkdownRenderer";
+import { IconButton } from "@/components/ui/IconButton";
+import { useDialogBehaviour } from "@/components/ui/Dialog";
 
 type View =
   | "overview"
@@ -168,6 +171,30 @@ export function ExecutiveDashboard({
   const [data, setData] = useState(initialData);
   const [view, setView] = useState<View>("overview");
   const [sidebar, setSidebar] = useState(false);
+  // Tracks the lg breakpoint so the drawer can be made inert only when it is
+  // actually off-screen (below lg); at lg+ it is always visible.
+  const [isDesktop, setIsDesktop] = useState(true);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setIsDesktop(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  // Escape closes the drawer; body scroll locks while it is open on phones.
+  useEffect(() => {
+    if (!sidebar || isDesktop) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebar(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [sidebar, isDesktop]);
   const [command, setCommand] = useState(false);
   const [notifications, setNotifications] = useState(false);
   const [composer, setComposer] = useState<
@@ -256,12 +283,16 @@ export function ExecutiveDashboard({
   const title = nav.find((item) => item.id === view)?.label ?? "Overview";
   return (
     <div className="min-h-dvh bg-base text-white">
-      <div className="pointer-events-none fixed inset-0">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="absolute left-[30%] top-[-20%] h-[520px] w-[760px] rounded-full bg-crimson/[0.05] blur-[150px]" />
       </div>
+      {/* Below lg the drawer is only translated off-screen, so it must also
+          be inert or its ten buttons stay in the tab order and the a11y tree. */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[270px] flex-col border-r border-white/10 bg-base-900/95 backdrop-blur-xl transition-transform lg:translate-x-0 ${sidebar ? "translate-x-0" : "-translate-x-full"}`}
+        inert={!sidebar && !isDesktop ? true : undefined}
+        aria-hidden={!sidebar && !isDesktop ? true : undefined}
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(270px,85vw)] flex-col border-r border-white/10 bg-base-900/95 backdrop-blur-xl transition-transform lg:translate-x-0 ${sidebar ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex h-20 items-center justify-between border-b border-white/10 px-5">
           <button onClick={() => openView("overview")} className="text-left">
@@ -270,16 +301,16 @@ export function ExecutiveDashboard({
               Executive intelligence
             </span>
           </button>
-          <button
+          <IconButton
             onClick={() => setSidebar(false)}
-            className="p-2 text-white/50 lg:hidden"
+            className="-mr-2 rounded-lg text-white/50 hover:text-white lg:hidden"
             aria-label="Close navigation"
           >
             <X size={18} />
-          </button>
+          </IconButton>
         </div>
         <nav
-          className="flex-1 space-y-1 overflow-y-auto p-3"
+          className="flex-1 space-y-1 overflow-y-auto overscroll-contain p-3"
           aria-label="Dashboard navigation"
         >
           {nav.map((item) => {
@@ -290,7 +321,7 @@ export function ExecutiveDashboard({
                 key={item.id}
                 onClick={() => openView(item.id)}
                 aria-current={active ? "page" : undefined}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? "bg-crimson/15 text-white" : "text-white/48 hover:bg-white/[0.04] hover:text-white"}`}
+                className={`flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? "bg-crimson/15 text-white" : "text-white/48 hover:bg-white/[0.04] hover:text-white"}`}
               >
                 <Icon
                   size={16}
@@ -309,7 +340,7 @@ export function ExecutiveDashboard({
         <div className="border-t border-white/10 p-4">
           <a
             href="/admin"
-            className="mb-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/[0.04] hover:text-white"
+            className="mb-3 flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/[0.04] hover:text-white"
           >
             <Users size={15} /> Client console
           </a>
@@ -319,7 +350,7 @@ export function ExecutiveDashboard({
           </div>
           <button
             onClick={logout}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/[0.04] hover:text-white"
+            className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/[0.04] hover:text-white"
           >
             <LogOut size={15} /> Secure logout
           </button>
@@ -328,30 +359,41 @@ export function ExecutiveDashboard({
 
       {sidebar && (
         <button
+          type="button"
           className="fixed inset-0 z-40 bg-black/70 lg:hidden"
           aria-label="Close navigation"
           onClick={() => setSidebar(false)}
         />
       )}
       <div className="relative lg:pl-[270px]">
-        <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-white/10 bg-base/85 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
-          <button
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/10 bg-base/85 px-3 backdrop-blur-xl sm:h-20 sm:gap-4 sm:px-6 lg:px-8">
+          <IconButton
             onClick={() => setSidebar(true)}
-            className="p-2 text-white/60 lg:hidden"
+            className="rounded-lg text-white/60 hover:text-white lg:hidden"
             aria-label="Open navigation"
+            aria-expanded={sidebar}
           >
             <Menu size={20} />
-          </button>
-          <div>
+          </IconButton>
+          <div className="min-w-0">
             <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
               RSG command center
             </p>
-            <h1 className="display text-lg">{title}</h1>
+            <h1 className="display truncate text-lg">{title}</h1>
           </div>
-          <div className="ml-auto flex items-center gap-2">
-            <button
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            {/* Search was Cmd-K or an sm:-only button: no way in on a phone. */}
+            <IconButton
               onClick={() => setCommand(true)}
-              className="hidden min-w-56 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2 text-left text-sm text-white/35 hover:border-white/20 sm:flex"
+              className="rounded-lg border border-white/10 text-white/55 hover:text-white sm:hidden"
+              aria-label="Search intelligence"
+            >
+              <Search size={17} />
+            </IconButton>
+            <button
+              type="button"
+              onClick={() => setCommand(true)}
+              className="hidden min-h-11 min-w-56 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2 text-left text-sm text-white/35 hover:border-white/20 sm:flex"
             >
               <Search size={15} />
               <span>Search intelligence</span>
@@ -359,23 +401,23 @@ export function ExecutiveDashboard({
                 ⌘K
               </kbd>
             </button>
-            <button
+            <IconButton
               onClick={() => setNotifications(true)}
-              className="relative rounded-lg border border-white/10 p-2.5 text-white/55 hover:text-white"
+              className="relative rounded-lg border border-white/10 text-white/55 hover:text-white"
               aria-label="Open notifications"
             >
               <Bell size={17} />
               {data.notifications.some((n) => !bool(n.is_read)) && (
-                <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-crimson" />
+                <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-crimson" />
               )}
-            </button>
-            <button
+            </IconButton>
+            <IconButton
               onClick={reload}
-              className="rounded-lg border border-white/10 p-2.5 text-white/55 hover:text-white"
+              className="rounded-lg border border-white/10 text-white/55 hover:text-white"
               aria-label="Refresh dashboard"
             >
               <RefreshCw size={17} />
-            </button>
+            </IconButton>
           </div>
         </header>
 
@@ -386,9 +428,9 @@ export function ExecutiveDashboard({
               className="mb-5 flex items-center justify-between rounded-lg border border-crimson/30 bg-crimson/10 px-4 py-3 text-sm text-crimson-light"
             >
               <span>{message}</span>
-              <button onClick={() => setMessage(null)} aria-label="Dismiss">
+              <IconButton onClick={() => setMessage(null)} aria-label="Dismiss" className="-my-2 -mr-2 rounded-lg hover:text-white">
                 <X size={16} />
-              </button>
+              </IconButton>
             </div>
           )}
           {!data.configured || data.error ? (
@@ -863,7 +905,7 @@ function Briefs({
         </div>
       )}
       {records.length ? (
-        <div className="grid min-h-[650px] gap-5 lg:grid-cols-[320px_1fr]">
+        <div className="grid gap-5 lg:min-h-[650px] lg:grid-cols-[320px_1fr]">
           <aside className="card h-fit divide-y divide-white/[0.06] overflow-hidden">
             {records.map((brief) => (
               <button
@@ -1587,7 +1629,7 @@ function Sources({ records }: { records: DashboardRecord[] }) {
       />
       {records.length ? (
         <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overscroll-x-contain">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
                 <tr className="border-b border-white/10 font-mono text-[0.55rem] uppercase tracking-label text-white/35">
@@ -1722,7 +1764,7 @@ function SettingsPanel({ data }: { data: DashboardData }) {
                 <span className="font-mono text-white/35">
                   {date(r.received_at)}
                 </span>
-                <span className="truncate text-white/35">
+                <span className="min-w-0 max-w-full break-all text-white/35">
                   {str(r.idempotency_key)}
                 </span>
                 {Boolean(r.error_message) && (
@@ -1813,7 +1855,7 @@ function CommandPalette({
           />
         </label>
       </div>
-      <div className="max-h-[60vh] overflow-y-auto p-2">
+      <div className="max-h-[60dvh] overflow-y-auto p-2">
         {!q && (
           <>
             <PaletteButton
@@ -1895,23 +1937,32 @@ function NotificationPanel({
   onClose: () => void;
   update: UpdateRecord;
 }) {
+  const panelRef = useRef<HTMLElement>(null);
+  useDialogBehaviour(panelRef, onClose);
   return (
     <div
-      className="fixed inset-0 z-[80] flex justify-end bg-black/65"
-      onMouseDown={(e) => {
+      className="dialog-backdrop fixed inset-0 z-[80] flex justify-end bg-black/65"
+      onPointerDown={(e) => {
         if (e.currentTarget === e.target) onClose();
       }}
     >
-      <aside className="h-full w-full max-w-md overflow-y-auto border-l border-white/10 bg-base-900 p-5">
+      <aside
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Notifications"
+        tabIndex={-1}
+        className="h-dvh w-full max-w-md overflow-y-auto overscroll-contain border-l border-white/10 bg-base-900 p-5 pb-safe outline-none"
+      >
         <div className="flex items-center justify-between">
           <h2 className="display text-xl">Notifications</h2>
-          <button
+          <IconButton
             onClick={onClose}
-            className="p-2 text-white/50"
+            className="-mr-2 rounded-lg text-white/50 hover:text-white"
             aria-label="Close"
           >
             <X size={18} />
-          </button>
+          </IconButton>
         </div>
         <div className="mt-5 space-y-3">
           {records.length ? (
@@ -1958,16 +2009,22 @@ function Modal({
   children: React.ReactNode;
   onClose: () => void;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogBehaviour(panelRef, onClose);
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-start justify-center bg-black/75 p-4 pt-[12vh]"
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={(e) => {
+      className="dialog-backdrop fixed inset-0 z-[90] flex items-start justify-center bg-black/75 p-3 pt-[4dvh] sm:p-4 sm:pt-[12dvh]"
+      onPointerDown={(e) => {
         if (e.currentTarget === e.target) onClose();
       }}
     >
-      <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-white/12 bg-base-900 shadow-lift">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
+        className="dialog-panel flex max-h-[calc(100dvh-8dvh)] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/12 bg-base-900 shadow-lift outline-none"
+      >
         {children}
       </div>
     </div>
@@ -2072,11 +2129,11 @@ function Composer({
             </p>
             <h2 className="display mt-1 text-xl">Create {label}</h2>
           </div>
-          <button type="button" onClick={onClose} className="p-2 text-white/50">
+          <IconButton onClick={onClose} aria-label="Close" className="-mr-2 rounded-lg text-white/50 hover:text-white">
             <X size={18} />
-          </button>
+          </IconButton>
         </div>
-        <div className="max-h-[65vh] space-y-4 overflow-y-auto p-5">
+        <div className="max-h-[65dvh] space-y-4 overflow-y-auto p-5">
           <Field
             label="Title"
             value={form.title}

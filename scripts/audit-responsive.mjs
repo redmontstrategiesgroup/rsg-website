@@ -111,6 +111,13 @@ const TAB_WALKS = [
   { prefix: "/demos/", selector: 'nav[aria-label$="sections"] button' },
   { prefix: "/portal", selector: '[role="tablist"] [role="tab"]' },
   { prefix: "/admin", selector: '[role="tablist"] [role="tab"], nav[aria-label="Admin sections"] button' },
+  // The dashboard's views sit behind a sidebar that is a drawer on phones;
+  // `open` is clicked first when it is visible so the nav buttons are reachable.
+  {
+    prefix: "/dashboard",
+    selector: 'nav[aria-label="Dashboard navigation"] button',
+    open: 'button[aria-label="Open navigation"]',
+  },
 ];
 
 /**
@@ -410,6 +417,13 @@ async function main() {
           let name = "";
           try {
             name = ((await tabEl.textContent()) || "").trim().slice(0, 24);
+            if (walk.open) {
+              const opener = page.locator(walk.open).first();
+              if (await opener.isVisible().catch(() => false)) {
+                await opener.click({ timeout: 2000 });
+                await page.waitForTimeout(250);
+              }
+            }
             await tabEl.click({ timeout: 3000 });
             await page.waitForTimeout(350);
           } catch {

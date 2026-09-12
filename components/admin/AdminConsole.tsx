@@ -42,6 +42,7 @@ import { SecurityCenterPanel } from "@/components/admin/SecurityCenterPanel";
 import { IndustriesAdminPanel } from "@/components/admin/IndustriesAdminPanel";
 import { ManagedServicesAdminPanel } from "@/components/admin/ManagedServicesAdminPanel";
 import { LifecycleAdminPanel } from "@/components/admin/LifecycleAdminPanel";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Tab =
   | "clients"
@@ -144,7 +145,7 @@ export function AdminConsole({
 
   return (
     <div className="min-h-dvh bg-base">
-      <div className="pointer-events-none fixed inset-0 -z-10">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-[0.3]" />
         <div className="absolute left-1/2 top-[-10%] h-[440px] w-[760px] -translate-x-1/2 rounded-full bg-crimson/[0.06] blur-[130px]" />
       </div>
@@ -153,7 +154,7 @@ export function AdminConsole({
       <header className="sticky top-0 z-30 border-b border-white/10 bg-base/70 backdrop-blur-xl">
         <div className="container-px flex h-20 items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Link href="/" aria-label="Redmont Strategies Group home">
+            <Link href="/" aria-label="Redmont Strategies Group home" className="inline-flex min-h-11 min-w-11 items-center">
               <Logo showWordmark={false} />
             </Link>
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[0.56rem] uppercase tracking-label text-crimson-light">
@@ -164,7 +165,7 @@ export function AdminConsole({
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className="hidden items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white sm:inline-flex"
+              className="hidden min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white sm:inline-flex"
             >
               <LayoutDashboard size={15} />
               Intelligence
@@ -197,7 +198,7 @@ export function AdminConsole({
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-lg border border-crimson/30 bg-crimson/[0.08] px-4 py-2.5 text-sm text-crimson-light transition-colors hover:border-crimson/50 sm:hidden"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-crimson/30 bg-crimson/[0.08] px-4 py-2.5 text-sm text-crimson-light transition-colors hover:border-crimson/50 sm:hidden"
           >
             <LayoutDashboard size={15} />
             Intelligence dashboard
@@ -221,7 +222,13 @@ export function AdminConsole({
         )}
 
         {/* Tabs */}
-        <div className="mt-8 flex gap-2 overflow-x-auto border-b border-white/10">
+        <ScrollRail
+          role="tablist"
+          aria-label="Admin sections"
+          activeKey={tab}
+          keyboardTabs
+          className="mt-8 flex gap-2 border-b border-white/10"
+        >
           {(
             [
               { id: "clients" as Tab, label: "Clients", icon: Users, count: clients.length, badge: 0 },
@@ -304,6 +311,9 @@ export function AdminConsole({
             return (
               <button
                 key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
                 onClick={() => setTab(t.id)}
                 className={`relative inline-flex shrink-0 items-center gap-2 px-4 py-3 text-sm transition-colors ${
                   active ? "text-white" : "text-white/50 hover:text-white/80"
@@ -330,7 +340,7 @@ export function AdminConsole({
               </button>
             );
           })}
-        </div>
+        </ScrollRail>
 
         <div className="mt-8">
           {tab === "clients" && caps.clients ? (
@@ -653,8 +663,8 @@ function AnalyticsPanel({ analytics }: { analytics?: AnalyticsSummary }) {
 
       <div>
         <h2 className="text-sm font-medium text-white/80">Top pages</h2>
-        <div className="card mt-4 overflow-hidden">
-          <table className="w-full text-left text-sm">
+        <div className="card mt-4 overflow-x-auto overscroll-x-contain">
+          <table className="w-full min-w-[28rem] text-left text-sm">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
                 <th className="px-4 py-3 font-normal">Path</th>
@@ -677,8 +687,8 @@ function AnalyticsPanel({ analytics }: { analytics?: AnalyticsSummary }) {
 
       <div>
         <h2 className="text-sm font-medium text-white/80">Recent days</h2>
-        <div className="card mt-4 overflow-hidden">
-          <table className="w-full text-left text-sm">
+        <div className="card mt-4 overflow-x-auto overscroll-x-contain">
+          <table className="w-full min-w-[28rem] text-left text-sm">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
                 <th className="px-4 py-3 font-normal">Date</th>
