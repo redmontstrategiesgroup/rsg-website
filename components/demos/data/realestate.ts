@@ -671,8 +671,8 @@ export const realestateConfig: IndustryConfig = {
         detail: "Alicia asked, in the same thread, what the system thought the house was worth. It didn't guess: the question went to Marisol with the file, and the refusal was logged. That's not a gap in the product; it's the product.",
         tab: "boundaries",
         effects: [
-          { kind: "message", conversationId: "c-harmon", message: { id: "sa-6b", from: "contact", text: "Rough idea what it'd list for? Just so we can plan.", time: "Just now" } },
-          { kind: "message", conversationId: "c-harmon", message: { id: "sa-6c", from: "system", meta: "Automated · Valuation routed", text: "That has to come from Marisol after she's seen the house; anything I guessed would be worth nothing to you. She'll bring the comparable sales Thursday.", time: "Just now" } },
+          { kind: "message", conversationId: "c-alicia", message: { id: "sa-6b", from: "contact", text: "Rough idea what it'd list for? Just so we can plan.", time: "Just now" } },
+          { kind: "message", conversationId: "c-alicia", message: { id: "sa-6c", from: "system", meta: "Automated · Valuation routed", text: "That has to come from Marisol after she's seen the house; anything I guessed would be worth nothing to you. She'll bring the comparable sales Thursday.", time: "Just now" } },
           { kind: "boundary", ruleId: "valuation", summary: "Alicia asked for a rough list price by text. Routed to Marisol; no number given.", outcome: "routed", source: "scenario" },
         ],
       },
