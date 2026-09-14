@@ -10,8 +10,9 @@ import { unknownVariables } from "../components/demos/engine.ts";
 import { TEMPLATE_VARIABLES } from "../components/demos/types.ts";
 import type { Effect, IndustryConfig } from "../components/demos/types.ts";
 import { healthwellnessConfig } from "../components/demos/data/healthwellness.ts";
+import { contractorConfig } from "../components/demos/data/contractor.ts";
 
-const CONFIGS: IndustryConfig[] = [healthwellnessConfig];
+const CONFIGS: IndustryConfig[] = [healthwellnessConfig, contractorConfig];
 
 /** Strings that must never appear anywhere in a config (regulatory or stub leftovers). */
 const FORBIDDEN = [
