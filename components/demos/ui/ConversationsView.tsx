@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, ChevronLeft, Lock, Send, Sparkles, Zap } from "lucide-react";
 import { IconButton } from "@/components/ui/IconButton";
 import { renderTemplate, templateVars, uid } from "../engine";
@@ -8,7 +8,7 @@ import type { Conversation } from "../types";
 import { ChannelBadge, EmptyState, PanelHeading, StatusPill } from "./primitives";
 import { SmallButton } from "./fields";
 import { applyNow, type ViewProps } from "./shared";
-import { Spotlight } from "./Spotlight";
+import { isFresh, Spotlight } from "./Spotlight";
 
 /**
  * Deterministic draft helpers: clearly labeled simulations built from the
@@ -55,6 +55,25 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
   const [internal, setInternal] = useState(false);
   const [aiOutput, setAiOutput] = useState<{ kind: "summary" | "reply"; text: string } | null>(null);
   const [templateOpen, setTemplateOpen] = useState(false);
+
+  /* A tour step, scenario, or sim that adds a message opens that thread so the
+     visitor sees it land, on desktop and on phones (where the list hides). */
+  const latestFreshConversation = useMemo(() => {
+    let best: { id: string; at: number } | null = null;
+    for (const [id, entry] of Object.entries(state.fresh)) {
+      if (entry.kind !== "message") continue;
+      const convId = entry.parent ?? id;
+      if (!state.conversations.some((c) => c.id === convId)) continue;
+      if (!best || entry.at > best.at) best = { id: convId, at: entry.at };
+    }
+    return best;
+  }, [state.fresh, state.conversations]);
+
+  useEffect(() => {
+    if (!latestFreshConversation || !isFresh({ kind: "message", at: latestFreshConversation.at })) return;
+    setSelectedId((cur) => (cur === latestFreshConversation.id ? cur : latestFreshConversation.id));
+    setAiOutput(null);
+  }, [latestFreshConversation]);
 
   const selected =
     state.conversations.find((c) => c.id === selectedId) ?? state.conversations[0];

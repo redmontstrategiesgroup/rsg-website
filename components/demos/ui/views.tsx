@@ -288,9 +288,10 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                           key={r.id}
                           className="flex items-center gap-3 px-4 py-2.5"
                         >
-                          <p className="min-w-0 flex-1 truncate text-xs text-white/70">
-                            {r.contact} <span className="text-white/35">· {r.silentFor}</span>
-                          </p>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs text-white/70">{r.contact}</p>
+                            <p className="truncate text-[0.62rem] text-white/35">{r.silentFor}</p>
+                          </div>
                           <span className="text-xs tabular-nums text-emerald-300/90">${r.amount.toLocaleString()}</span>
                         </Spotlight>
                       ))}
