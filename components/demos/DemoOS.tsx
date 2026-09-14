@@ -42,8 +42,9 @@ import {
 } from "lucide-react";
 import { demoReducer, initialDemoState, type DemoState } from "./engine";
 import { clearSession, loadSession, saveSession } from "./storage";
-import type { Effect, IndustryConfig, NavId, Scenario } from "./types";
+import type { Effect, FreshKind, IndustryConfig, NavId, Scenario } from "./types";
 import { SampleDataTag } from "./ui/primitives";
+import { chipsForEffects, KIND_COLOR, TourCaption } from "./ui/TourCaption";
 import { ScrollRail } from "@/components/ui/ScrollRail";
 import { IconButton } from "@/components/ui/IconButton";
 import { Popover } from "@/components/ui/Popover";
@@ -113,8 +114,9 @@ export function DemoOS({
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [frameKey, setFrameKey] = useState(0);
   const [request, setRequest] = useState<{ feature?: string; source: string } | null>(null);
-  const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const pending = useRef<{ t: ReturnType<typeof setTimeout>; fn: () => void }[]>([]);
   const tourSnapshot = useRef<DemoState | null>(null);
+  const windowRef = useRef<HTMLDivElement>(null);
 
   /* ---------------------------------------------- session lifecycle */
   useEffect(() => {
@@ -132,14 +134,21 @@ export function DemoOS({
   const track = useCallback((key: string) => dispatch({ type: "explored", key }), []);
 
   const schedule = useCallback((fn: () => void, ms: number) => {
-    const t = setTimeout(fn, ms);
-    timeouts.current.push(t);
-    return t;
+    const entry = { t: setTimeout(() => { pending.current = pending.current.filter((p) => p !== entry); fn(); }, ms), fn };
+    pending.current.push(entry);
+    return entry.t;
+  }, []);
+
+  /** Run everything still queued, in order, right now. Keeps manual Next deterministic. */
+  const flushPending = useCallback(() => {
+    const queued = pending.current;
+    pending.current = [];
+    for (const p of queued) { clearTimeout(p.t); p.fn(); }
   }, []);
 
   const clearTimers = useCallback(() => {
-    timeouts.current.forEach(clearTimeout);
-    timeouts.current = [];
+    pending.current.forEach((p) => clearTimeout(p.t));
+    pending.current = [];
   }, []);
 
   useEffect(() => clearTimers, [clearTimers]);
@@ -169,16 +178,23 @@ export function DemoOS({
   const stepIndex = state.stepIndex;
   const tourDone = stepIndex >= steps.length - 1;
 
+  const [pulse, setPulse] = useState<{ tab: NavId; kind: FreshKind; key: number } | null>(null);
+  const goToTab = useCallback((id: NavId, kind: FreshKind = "record") => {
+    setTab(id);
+    setPulse({ tab: id, kind, key: Date.now() });
+  }, []);
+
   const runStep = useCallback(
     (index: number) => {
+      flushPending();
       const step = steps[index];
       if (!step) return;
       if (index === 0 && stepIndex === -1) tourSnapshot.current = state;
       dispatch({ type: "set-step", index });
-      if (step.tab) setTab(step.tab);
+      if (step.tab) goToTab(step.tab, chipsForEffects(step.effects, config, state.stages)[0]?.kind);
       applyEffectsStaggered(step.effects);
     },
-    [steps, applyEffectsStaggered, state, stepIndex],
+    [steps, applyEffectsStaggered, state, stepIndex, flushPending, goToTab, config],
   );
 
   const nextStep = useCallback(() => {
@@ -198,8 +214,8 @@ export function DemoOS({
     rebuilt = { ...rebuilt, stepIndex: target, toasts: [] };
     dispatch({ type: "reset", state: rebuilt });
     const stepTab = target >= 0 ? steps[target].tab : undefined;
-    if (stepTab) setTab(stepTab);
-  }, [stepIndex, steps, clearTimers]);
+    if (stepTab) goToTab(stepTab, chipsForEffects(steps[target].effects, config, rebuilt.stages)[0]?.kind);
+  }, [stepIndex, steps, clearTimers, goToTab, config]);
 
   useEffect(() => {
     if (!playing) return;
@@ -214,7 +230,7 @@ export function DemoOS({
   /* ---------------------------------------------- quick scenarios */
   const runScenario = useCallback(
     (scenario: Scenario) => {
-      clearTimers();
+      flushPending();
       setScenarioMenu(false);
       setPlaying(false);
       dispatch({ type: "scenario-ran", id: scenario.id });
@@ -223,7 +239,7 @@ export function DemoOS({
       scenario.steps.forEach((step, i) => {
         schedule(() => {
           setRunningScenario({ id: scenario.id, step: i + 1, total: scenario.steps.length });
-          if (step.tab) setTab(step.tab);
+          if (step.tab) goToTab(step.tab, chipsForEffects(step.effects, config, state.stages)[0]?.kind);
           applyEffectsStaggered(step.effects);
           if (i === scenario.steps.length - 1) {
             schedule(() => setRunningScenario(null), 2500);
@@ -231,7 +247,7 @@ export function DemoOS({
         }, i * QUICK_SCENARIO_STEP_MS);
       });
     },
-    [applyEffectsStaggered, clearTimers, schedule, track],
+    [applyEffectsStaggered, flushPending, schedule, track, goToTab, config, state.stages],
   );
 
   /** Replay = deterministic: restore fresh data first, then run the scenario. */
@@ -288,11 +304,11 @@ export function DemoOS({
   const runSimAction = useCallback(
     (action: NonNullable<IndustryConfig["simActions"]>[number]) => {
       setSimMenu(false);
-      if (action.tab) setTab(action.tab);
+      if (action.tab) goToTab(action.tab, chipsForEffects(action.effects, config, state.stages)[0]?.kind);
       applyEffectsStaggered(action.effects);
       track(`simulated: ${action.label.toLowerCase()}`);
     },
-    [applyEffectsStaggered, track],
+    [applyEffectsStaggered, track, goToTab, config, state.stages],
   );
 
   /* ---------------------------------------------- request-system dialog */
@@ -363,6 +379,21 @@ export function DemoOS({
   }, [tab, viewProps]);
 
   const mobilePreview = !embedded && device === "mobile";
+
+  const scenarioDef = runningScenario ? config.scenarios.find((s) => s.id === runningScenario.id) : undefined;
+  const scenarioStep = scenarioDef && runningScenario && runningScenario.step > 0 ? scenarioDef.steps[runningScenario.step - 1] : undefined;
+  const caption = scenarioStep
+    ? { eyebrow: `Scenario · step ${runningScenario!.step} of ${runningScenario!.total}`, title: scenarioStep.title, detail: scenarioStep.detail, chips: chipsForEffects(scenarioStep.effects, config, state.stages), controls: undefined }
+    : currentStep && !tourDone
+      ? { eyebrow: `Guided tour · step ${stepIndex + 1} of ${steps.length}`, title: currentStep.title, detail: currentStep.detail, chips: chipsForEffects(currentStep.effects, config, state.stages), controls: { playing, canPrev: stepIndex > 0, canNext: !tourDone, onPrev: prevStep, onNext: nextStep, onToggle: () => setPlaying((p) => !p) } }
+      : null;
+
+  useEffect(() => {
+    const el = windowRef.current;
+    if (!el || (stepIndex < 0 && !runningScenario)) return;
+    const top = el.getBoundingClientRect().top;
+    if (top < 0 || top > window.innerHeight * 0.5) el.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [stepIndex, runningScenario?.step]);
 
   return (
     <div id={embedded ? undefined : "demo-os"} className="scroll-mt-24" style={{ ["--demo-accent" as string]: accent }}>
@@ -601,7 +632,7 @@ export function DemoOS({
 
       {/* ------------------------------------------------ OS window */}
       {!mobilePreview && (
-      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-base-900 shadow-lift">
+      <div ref={windowRef} className="relative overflow-clip rounded-xl border border-white/10 bg-base-900 shadow-lift scroll-mt-24">
         {/* Window chrome */}
         <div className="flex items-center gap-3 border-b border-white/[0.08] bg-base-800/60 px-4 py-3">
           <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: accent }} aria-hidden />
@@ -680,13 +711,14 @@ export function DemoOS({
                 return (
                   <li key={item.id} className="shrink-0">
                     <button
+                      key={pulse?.tab === item.id ? pulse.key : item.id}
                       type="button"
                       onClick={() => setTabTracked(item.id)}
                       aria-current={active ? "page" : undefined}
                       className={`flex w-full items-center gap-2.5 whitespace-nowrap border-b-2 px-4 py-3 text-xs transition-colors focus:outline-none focus-visible:bg-white/[0.06] lg:border-b-0 lg:border-l-2 lg:py-2.5 ${
                         active ? "bg-white/[0.04] text-white" : "border-transparent text-white/50 hover:text-white/85"
-                      }`}
-                      style={active ? { borderColor: accent } : undefined}
+                      } ${pulse?.tab === item.id ? "demo-nav-pulse" : ""}`}
+                      style={{ ...(active ? { borderColor: accent } : {}), ["--spot" as string]: pulse?.tab === item.id ? KIND_COLOR[pulse.kind] : undefined }}
                     >
                       <Icon size={14} style={active ? { color: accent === "#b3243a" ? "#d94b5e" : accent } : undefined} className={active ? "" : "text-white/35"} aria-hidden />
                       {item.label}
@@ -698,7 +730,12 @@ export function DemoOS({
           </nav>
 
           {/* Main content */}
-          <div className="min-w-0 flex-1 p-4 sm:p-5">{view}</div>
+          <div className="min-w-0 flex-1 p-4 sm:p-5">
+            {caption && !mobilePreview && (
+              <TourCaption {...caption} accent={accent} onChip={(t) => goToTab(t)} />
+            )}
+            {view}
+          </div>
         </div>
 
         {/* Persistent demo-environment indicator */}
