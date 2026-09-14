@@ -63,6 +63,7 @@ import { AutomationsView } from "./ui/AutomationsView";
 import { SettingsView } from "./ui/SettingsView";
 import { QuotesView } from "./ui/QuotesView";
 import { ReceptionistView } from "./ui/ReceptionistView";
+import { BoundariesView } from "./ui/BoundariesView";
 import { RequestSystemDialog } from "./RequestSystemDialog";
 import { SmallButton } from "./ui/fields";
 
@@ -351,6 +352,8 @@ export function DemoOS({
         return <CampaignsView {...viewProps} />;
       case "analytics":
         return <AnalyticsView {...viewProps} />;
+      case "boundaries":
+        return <BoundariesView {...viewProps} />;
       case "settings":
         return <SettingsView {...viewProps} />;
     }

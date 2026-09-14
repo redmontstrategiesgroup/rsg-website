@@ -14,6 +14,7 @@ import { CheckboxInput, Field, SelectInput, SmallButton, TextArea, TextInput } f
 export const SERVICE_OPTIONS = [
   "Custom private AI systems",
   "AI receptionist & missed-call recovery",
+  "Guardrails & compliance boundaries",
   "Automated follow-up sequences",
   "Lead pipeline & CRM",
   "Online scheduling & reminders",
@@ -29,6 +30,7 @@ export const SERVICE_OPTIONS = [
  */
 const FEATURE_HINTS: [RegExp, RegExp][] = [
   [/receptionist|missed.?call|store assistant/i, /receptionist|store assistant|missed.?call/i],
+  [/boundar|guardrail/i, /guardrail|compliance/i],
   [/follow.?up|workflow|automation|no.?show|win.?back|welcome|cart/i, /follow.?up|automation|retention/i],
   [/pipeline|record|intake/i, /pipeline|crm|customer/i],
   [/appointment|calendar|booked|reschedul/i, /scheduling|reminder/i],
