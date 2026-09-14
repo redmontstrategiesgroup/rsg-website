@@ -393,7 +393,7 @@ export function DemoOS({
     if (!el || (stepIndex < 0 && !runningScenario)) return;
     const top = el.getBoundingClientRect().top;
     if (top < 0 || top > window.innerHeight * 0.5) el.scrollIntoView({ block: "start", behavior: "smooth" });
-  }, [stepIndex, runningScenario?.step]);
+  }, [stepIndex, runningScenario]);
 
   return (
     <div id={embedded ? undefined : "demo-os"} className="scroll-mt-24" style={{ ["--demo-accent" as string]: accent }}>
