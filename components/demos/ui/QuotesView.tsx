@@ -7,6 +7,7 @@ import type { QuoteRecord } from "../types";
 import { EmptyState, PanelHeading, SampleDataTag, StatusPill } from "./primitives";
 import { SelectInput, SmallButton, TextInput } from "./fields";
 import { applyNow, type ViewProps } from "./shared";
+import { Spotlight } from "./Spotlight";
 
 /**
  * Instant-quote / estimate builder. The left panel is the same calculator a
@@ -156,7 +157,7 @@ export function QuotesView(props: ViewProps) {
           ) : (
             <ul className="divide-y divide-white/[0.05]">
               {state.quotes.map((quote) => (
-                <li key={quote.id} className="px-4 py-3">
+                <Spotlight as="li" id={quote.id} fresh={state.fresh} kind="record" key={quote.id} className="px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-xs font-medium text-white/85">{quote.contact}</p>
@@ -191,7 +192,7 @@ export function QuotesView(props: ViewProps) {
                       </SmallButton>
                     )}
                   </div>
-                </li>
+                </Spotlight>
               ))}
             </ul>
           )}

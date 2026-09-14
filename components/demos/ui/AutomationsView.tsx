@@ -7,6 +7,7 @@ import type { Automation } from "../types";
 import { PanelHeading, SampleDataTag, StatusPill } from "./primitives";
 import { SmallButton, TextArea, TextInput } from "./fields";
 import { applyNow, type ViewProps } from "./shared";
+import { Spotlight } from "./Spotlight";
 
 function Toggle({
   on,
@@ -142,11 +143,18 @@ function AutomationCard({
             ) : (
               <ul className="space-y-1.5">
                 {runs.slice(0, 5).map((r) => (
-                  <li key={r.id} className="rounded border border-white/[0.07] bg-base-900/60 px-2.5 py-1.5 text-[0.64rem] text-white/55">
+                  <Spotlight
+                    as="li"
+                    id={r.id}
+                    fresh={state.fresh}
+                    kind="record"
+                    key={r.id}
+                    className="rounded border border-white/[0.07] bg-base-900/60 px-2.5 py-1.5 text-[0.64rem] text-white/55"
+                  >
                     <span className="mr-1.5 text-emerald-400/70">✓ simulated</span>
                     {r.detail}
                     <span className="ml-1.5 text-white/25">{r.time}</span>
-                  </li>
+                  </Spotlight>
                 ))}
               </ul>
             )}
@@ -196,12 +204,12 @@ export function AutomationsView(props: ViewProps) {
           />
           <ul className="max-h-56 divide-y divide-white/[0.05] overflow-y-auto overscroll-contain">
             {state.workflowRuns.map((r) => (
-              <li key={r.id} className="px-4 py-2.5">
+              <Spotlight as="li" id={r.id} fresh={state.fresh} kind="record" key={r.id} className="px-4 py-2.5">
                 <p className="text-xs text-white/70">{r.name}</p>
                 <p className="mt-0.5 text-[0.64rem] text-white/40">
                   {r.detail} · {r.time}
                 </p>
-              </li>
+              </Spotlight>
             ))}
           </ul>
         </div>

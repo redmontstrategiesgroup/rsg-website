@@ -20,6 +20,7 @@ import { CheckboxInput, SelectInput, SmallButton, TextArea, TextInput } from "./
 import { applyNow, type ViewProps } from "./shared";
 import { ScrollRail } from "@/components/ui/ScrollRail";
 import { IconButton } from "@/components/ui/IconButton";
+import { FreshPill, Spotlight, isFresh } from "./Spotlight";
 
 /* ------------------------------------------------------------------ */
 /* Intake form (creates real demo records + triggers the workflow)     */
@@ -407,11 +408,20 @@ export function LeadsView(props: ViewProps) {
             </thead>
             <tbody className="divide-y divide-white/[0.05]">
               {filtered.map((lead) => (
-                <tr key={lead.id} className="transition-colors hover:bg-white/[0.02]">
+                <Spotlight
+                  as="tr"
+                  pill={false}
+                  id={lead.id}
+                  fresh={state.fresh}
+                  kind="record"
+                  key={lead.id}
+                  className="transition-colors hover:bg-white/[0.02]"
+                >
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                    <div className="relative flex items-center gap-2 pr-14">
                       <span className="text-xs font-medium text-white/85">{lead.name}</span>
                       {lead.temp && <TempBadge temp={lead.temp} />}
+                      {isFresh(state.fresh[lead.id]) && <FreshPill />}
                     </div>
                     {lead.note && <p className="mt-0.5 max-w-[16rem] truncate text-[0.62rem] text-white/35">{lead.note}</p>}
                   </td>
@@ -427,7 +437,7 @@ export function LeadsView(props: ViewProps) {
                       Open
                     </SmallButton>
                   </td>
-                </tr>
+                </Spotlight>
               ))}
             </tbody>
           </table>
@@ -610,7 +620,11 @@ export function PipelineView(props: ViewProps) {
                     </p>
                   ) : (
                     leads.map((lead) => (
-                      <div
+                      <Spotlight
+                        as="div"
+                        id={lead.id}
+                        fresh={state.fresh}
+                        kind="record"
                         key={lead.id}
                         draggable
                         onDragStart={(e) => {
@@ -663,7 +677,7 @@ export function PipelineView(props: ViewProps) {
                             )}
                           </div>
                         </div>
-                      </div>
+                      </Spotlight>
                     ))
                   )}
                 </div>

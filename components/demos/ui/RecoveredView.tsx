@@ -7,6 +7,7 @@ import { BarChart } from "./charts";
 import { EmptyState, PanelHeading, SampleDataTag } from "./primitives";
 import type { ViewProps } from "./shared";
 import { trackEvent } from "@/lib/events";
+import { Spotlight } from "./Spotlight";
 
 export const TRIGGER_LABEL: Record<RecoveryTrigger, string> = {
   "quote-followup": "Quote follow-up",
@@ -62,7 +63,14 @@ export function RecoveredView({ state, config, track, openRequest }: ViewProps) 
         ) : (
           <ul className="divide-y divide-white/[0.05]">
             {ledger.map((r) => (
-              <li key={r.id} data-spot-id={r.id} className="flex flex-wrap items-start gap-x-4 gap-y-1 px-4 py-3">
+              <Spotlight
+                as="li"
+                id={r.id}
+                fresh={state.fresh}
+                kind="recovery"
+                key={r.id}
+                className="flex flex-wrap items-start gap-x-4 gap-y-1 px-4 py-3"
+              >
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-white/85">
                     {r.contact}
@@ -78,7 +86,7 @@ export function RecoveredView({ state, config, track, openRequest }: ViewProps) 
                 <span className="text-sm font-medium tabular-nums text-emerald-300/90">
                   {formatMetric(r.amount, "currency")}
                 </span>
-              </li>
+              </Spotlight>
             ))}
           </ul>
         )}

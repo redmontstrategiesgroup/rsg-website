@@ -35,16 +35,21 @@ import { BarChart, FunnelChart, LineChart } from "./charts";
 import { Modal } from "./Modal";
 import { CheckboxInput, SelectInput, SmallButton, TextInput } from "./fields";
 import { TIME_OPTIONS, applyNow, type ViewProps } from "./shared";
+import { FreshPill, Spotlight, isFresh } from "./Spotlight";
 
 /* ------------------------------------------------------------------ */
 /* Shared bits                                                         */
 /* ------------------------------------------------------------------ */
 
-export function MetricCard({ metric }: { metric: Metric }) {
+export function MetricCard({ metric, spot }: { metric: Metric; spot?: boolean }) {
   const DeltaIcon = metric.deltaDir === "down" ? ArrowDownRight : ArrowUpRight;
   const good = metric.deltaGood ?? metric.deltaDir !== "down";
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+    <div
+      className={`relative rounded-lg border border-white/[0.07] bg-white/[0.02] p-4 ${
+        spot ? "demo-spotlight demo-spotlight--metric" : ""
+      }`}
+    >
       <p className="text-[0.62rem] font-medium uppercase tracking-[0.14em] text-white/40">
         {metric.label}
       </p>
@@ -64,6 +69,7 @@ export function MetricCard({ metric }: { metric: Metric }) {
         )}
       </div>
       {metric.hint && <p className="mt-1.5 text-[0.66rem] text-white/35">{metric.hint}</p>}
+      {spot && <FreshPill />}
     </div>
   );
 }
@@ -83,7 +89,14 @@ export function ActivityFeed({
       {items.map((item) => {
         const Icon = ACTIVITY_ICONS[item.icon];
         return (
-          <li key={item.id} className="flex items-start gap-3 px-4 py-3">
+          <Spotlight
+            as="li"
+            id={item.id}
+            fresh={state.fresh}
+            kind="record"
+            key={item.id}
+            className="flex items-start gap-3 px-4 py-3"
+          >
             <span
               className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border ${
                 item.icon === "alert"
@@ -97,7 +110,7 @@ export function ActivityFeed({
               <p className="text-xs leading-relaxed text-white/70">{item.text}</p>
               <p className="mt-0.5 text-[0.62rem] text-white/30">{item.time}</p>
             </div>
-          </li>
+          </Spotlight>
         );
       })}
     </ul>
@@ -157,7 +170,7 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
               return (
                 <div key={w.id} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                   {state.metrics.slice(0, 8).map((m) => (
-                    <MetricCard key={m.id} metric={m} />
+                    <MetricCard key={m.id} metric={m} spot={isFresh(state.fresh[m.id])} />
                   ))}
                 </div>
               );
@@ -199,7 +212,14 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                   ) : (
                     <ul className="divide-y divide-white/[0.05]">
                       {upcoming.map((e) => (
-                        <li key={e.id} className="flex items-center gap-4 px-4 py-3">
+                        <Spotlight
+                          as="li"
+                          id={e.id}
+                          fresh={state.fresh}
+                          kind="calendar"
+                          key={e.id}
+                          className="flex items-center gap-4 px-4 py-3"
+                        >
                           <div className="w-14 shrink-0 text-center">
                             <p className="text-[0.6rem] uppercase tracking-wider text-white/35">{e.day}</p>
                             <p className="text-sm font-medium text-white/80">{e.date}</p>
@@ -212,7 +232,7 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                             </p>
                           </div>
                           {e.status && <AppointmentStatusPill status={e.status} />}
-                        </li>
+                        </Spotlight>
                       ))}
                     </ul>
                   )}
@@ -227,14 +247,21 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                   ) : (
                     <ul className="divide-y divide-white/[0.05]">
                       {openTasks.map((t) => (
-                        <li key={t.id} className="flex items-center gap-3 px-4 py-2.5">
+                        <Spotlight
+                          as="li"
+                          id={t.id}
+                          fresh={state.fresh}
+                          kind="task"
+                          key={t.id}
+                          className="flex items-center gap-3 px-4 py-2.5"
+                        >
                           <Circle size={12} className="shrink-0 text-white/25" aria-hidden />
                           <p className="min-w-0 flex-1 truncate text-xs text-white/70">{t.title}</p>
                           <span className="hidden text-[0.62rem] text-white/35 sm:block">{t.assignee}</span>
                           <span className={`text-[0.62rem] ${t.priority === "high" ? "text-crimson-light" : "text-white/35"}`}>
                             {t.due}
                           </span>
-                        </li>
+                        </Spotlight>
                       ))}
                     </ul>
                   )}
@@ -253,12 +280,19 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                   ) : (
                     <ul className="divide-y divide-white/[0.05]">
                       {recent.map((r) => (
-                        <li key={r.id} data-spot-id={r.id} className="flex items-center gap-3 px-4 py-2.5">
+                        <Spotlight
+                          as="li"
+                          id={r.id}
+                          fresh={state.fresh}
+                          kind="recovery"
+                          key={r.id}
+                          className="flex items-center gap-3 px-4 py-2.5"
+                        >
                           <p className="min-w-0 flex-1 truncate text-xs text-white/70">
                             {r.contact} <span className="text-white/35">· {r.silentFor}</span>
                           </p>
                           <span className="text-xs tabular-nums text-emerald-300/90">${r.amount.toLocaleString()}</span>
-                        </li>
+                        </Spotlight>
                       ))}
                     </ul>
                   )}
@@ -367,7 +401,14 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
         ) : (
           <ul className="divide-y divide-white/[0.05]">
             {open.map((t) => (
-              <li key={t.id} className="flex items-start gap-3 px-4 py-3">
+              <Spotlight
+                as="li"
+                id={t.id}
+                fresh={state.fresh}
+                kind="task"
+                key={t.id}
+                className="flex items-start gap-3 px-4 py-3"
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -400,7 +441,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
                   </p>
                 </div>
                 {t.priority === "high" && <StatusPill tone="crimson">High</StatusPill>}
-              </li>
+              </Spotlight>
             ))}
           </ul>
         )}
@@ -412,7 +453,14 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
         ) : (
           <ul className="divide-y divide-white/[0.05]">
             {done.map((t) => (
-              <li key={t.id} className="flex items-start gap-3 px-4 py-3">
+              <Spotlight
+                as="li"
+                id={t.id}
+                fresh={state.fresh}
+                kind="task"
+                key={t.id}
+                className="flex items-start gap-3 px-4 py-3"
+              >
                 <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-400">
                   <Check size={11} aria-hidden />
                 </span>
@@ -426,7 +474,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
                 >
                   <RotateCcw size={10} aria-hidden /> Reopen
                 </SmallButton>
-              </li>
+              </Spotlight>
             ))}
           </ul>
         )}
@@ -607,7 +655,11 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
               </div>
               <ul className="min-w-0 flex-1 space-y-2">
                 {events.map((e) => (
-                  <li
+                  <Spotlight
+                    as="li"
+                    id={e.id}
+                    fresh={state.fresh}
+                    kind="calendar"
                     key={e.id}
                     className={`rounded-md border-l-2 bg-white/[0.03] px-3 py-2 ${
                       e.status === "risk" || e.status === "no-show"
@@ -649,7 +701,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
                         </SmallButton>
                       </div>
                     )}
-                  </li>
+                  </Spotlight>
                 ))}
               </ul>
             </div>
@@ -794,7 +846,14 @@ export function ReviewsView({ state }: ViewProps) {
         ) : (
           <ul className="divide-y divide-white/[0.05]">
             {state.reviews.map((r) => (
-              <li key={r.id} className="flex items-center gap-3 px-4 py-3">
+              <Spotlight
+                as="li"
+                id={r.id}
+                fresh={state.fresh}
+                kind="record"
+                key={r.id}
+                className="flex items-center gap-3 px-4 py-3"
+              >
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-white/80">{r.name}</p>
                   <p className="text-[0.64rem] text-white/40">
@@ -821,7 +880,7 @@ export function ReviewsView({ state }: ViewProps) {
                 >
                   {r.status}
                 </StatusPill>
-              </li>
+              </Spotlight>
             ))}
           </ul>
         )}

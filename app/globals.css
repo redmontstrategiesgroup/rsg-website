@@ -284,6 +284,64 @@ html[data-reveal="on"] [data-reveal][data-reveal-in] {
   }
 }
 
+/* Tour spotlight (components/demos/ui/Spotlight.tsx). One palette shared by
+   rings, caption chips, and nav pulses: record = accent, message = sky,
+   task = amber, calendar/metric/recovery = emerald, boundary = rose. */
+.demo-spotlight {
+  --spot: var(--demo-accent, #b3243a);
+  position: relative;
+  animation: demo-spotlight 6s ease-out forwards;
+}
+.demo-spotlight--message { --spot: #38bdf8; }
+.demo-spotlight--task { --spot: #fbbf24; }
+.demo-spotlight--calendar,
+.demo-spotlight--metric,
+.demo-spotlight--recovery { --spot: #34d399; }
+.demo-spotlight--boundary { --spot: #fb7185; }
+@keyframes demo-spotlight {
+  0% {
+    box-shadow: 0 0 0 2px var(--spot), 0 0 22px color-mix(in srgb, var(--spot) 45%, transparent);
+    background-color: color-mix(in srgb, var(--spot) 14%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    background-color: transparent;
+  }
+}
+.demo-spotlight__pill {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.35rem;
+  border-radius: 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--spot) 55%, transparent);
+  background: color-mix(in srgb, var(--spot) 18%, #0b0b0f);
+  color: #fff;
+  font-size: 0.56rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: demo-spotlight-pill 6s ease-out forwards;
+}
+@keyframes demo-spotlight-pill {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.demo-nav-pulse {
+  animation: demo-nav-pulse 0.9s ease-out 1;
+}
+@keyframes demo-nav-pulse {
+  0% { background-color: color-mix(in srgb, var(--spot, var(--demo-accent)) 28%, transparent); }
+  100% { background-color: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-spotlight { animation: none; box-shadow: inset 3px 0 0 var(--spot); }
+  .demo-spotlight__pill { animation: none; }
+  .demo-nav-pulse { animation: none; }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;

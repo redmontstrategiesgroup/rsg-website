@@ -8,6 +8,7 @@ import type { Conversation } from "../types";
 import { ChannelBadge, EmptyState, PanelHeading, StatusPill } from "./primitives";
 import { SmallButton } from "./fields";
 import { applyNow, type ViewProps } from "./shared";
+import { Spotlight } from "./Spotlight";
 
 /**
  * Deterministic draft helpers: clearly labeled simulations built from the
@@ -120,7 +121,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
             const last = c.messages[c.messages.length - 1];
             const active = selected?.id === c.id;
             return (
-              <li key={c.id}>
+              <Spotlight as="li" pill={false} id={c.id} fresh={state.fresh} kind="message" key={c.id}>
                 <button
                   type="button"
                   onClick={() => {
@@ -146,7 +147,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                     </p>
                   )}
                 </button>
-              </li>
+              </Spotlight>
             );
           })}
         </ul>
@@ -202,7 +203,14 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
 
             <div className="flex max-h-[19rem] min-h-[13rem] flex-1 flex-col gap-3 overflow-y-auto p-4 no-scrollbar">
               {selected.messages.map((m) => (
-                <div key={m.id} className={`max-w-[85%] sm:max-w-[75%] ${m.from === "contact" ? "self-start" : "self-end"}`}>
+                <Spotlight
+                  as="div"
+                  id={m.id}
+                  fresh={state.fresh}
+                  kind="message"
+                  key={m.id}
+                  className={`max-w-[85%] sm:max-w-[75%] ${m.from === "contact" ? "self-start" : "self-end"}`}
+                >
                   <div
                     className={`rounded-lg px-3.5 py-2.5 text-xs leading-relaxed ${
                       m.internal
@@ -230,7 +238,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                     {!m.internal && m.from === "staff" && <span className="mr-1">{m.meta ?? "Staff"}</span>}
                     {m.time}
                   </p>
-                </div>
+                </Spotlight>
               ))}
             </div>
 

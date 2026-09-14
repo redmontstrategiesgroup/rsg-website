@@ -5,6 +5,7 @@ import type { BoundaryEvent, BoundaryOutcome, BoundaryRule } from "../types";
 import { EmptyState, PanelHeading, SampleDataTag, StatusPill } from "./primitives";
 import type { ViewProps } from "./shared";
 import { trackEvent } from "@/lib/events";
+import { Spotlight } from "./Spotlight";
 
 export function boundaryStats(events: BoundaryEvent[]) {
   const stats = { declined: 0, routed: 0, verified: 0, disclosed: 0 };
@@ -98,7 +99,14 @@ export function BoundariesView({ state, config, track, openRequest }: ViewProps)
               const rule = boundaries.rules.find((r) => r.id === e.ruleId);
               const meta = OUTCOME_META[e.outcome];
               return (
-                <li key={e.id} data-spot-id={e.id} className="flex items-start gap-3 px-4 py-3">
+                <Spotlight
+                  as="li"
+                  id={e.id}
+                  fresh={state.fresh}
+                  kind="boundary"
+                  key={e.id}
+                  className="flex items-start gap-3 px-4 py-3"
+                >
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400" aria-hidden />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs text-white/80">{e.summary}</p>
@@ -107,7 +115,7 @@ export function BoundariesView({ state, config, track, openRequest }: ViewProps)
                     </p>
                   </div>
                   <StatusPill tone={meta.tone}>{meta.label}</StatusPill>
-                </li>
+                </Spotlight>
               );
             })}
           </ul>
