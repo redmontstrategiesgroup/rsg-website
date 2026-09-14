@@ -69,11 +69,14 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
     return best;
   }, [state.fresh, state.conversations]);
 
+  const freshId = latestFreshConversation?.id;
+  const freshAt = latestFreshConversation?.at;
+
   useEffect(() => {
-    if (!latestFreshConversation || !isFresh({ kind: "message", at: latestFreshConversation.at })) return;
-    setSelectedId((cur) => (cur === latestFreshConversation.id ? cur : latestFreshConversation.id));
+    if (!freshId || freshAt === undefined || !isFresh({ kind: "message", at: freshAt })) return;
+    setSelectedId((cur) => (cur === freshId ? cur : freshId));
     setAiOutput(null);
-  }, [latestFreshConversation]);
+  }, [freshId, freshAt]);
 
   const selected =
     state.conversations.find((c) => c.id === selectedId) ?? state.conversations[0];
