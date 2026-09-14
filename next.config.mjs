@@ -64,6 +64,7 @@ const nextConfig = {
       { source: "/retail-business-systems", destination: "/industries", permanent: true },
       { source: "/industries/retail", destination: "/industries", permanent: true },
       { source: "/demos/retail", destination: "/demos", permanent: true },
+      { source: "/demos/gyms", destination: "/demos", permanent: true },
       // Real estate (Sep 2026): the data slug stayed hyphenated while the route
       // is de-hyphenated, same as health & wellness below. This rule is load-
       // bearing, not cosmetic — app/api/assessment/route.ts falls back to

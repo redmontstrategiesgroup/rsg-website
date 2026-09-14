@@ -1,19 +1,22 @@
-import { medspaConfig } from "./medspa";
+import { healthwellnessConfig } from "./healthwellness";
 import { contractorConfig } from "./contractor";
-import { gymConfig } from "./gym";
-import { dentalConfig } from "./dental";
-import { retailConfig } from "./retail";
+import { realestateConfig } from "./realestate";
 import type { IndustryConfig } from "../types";
+import { DEMO_REQUEST_SLUGS, type DemoSlug } from "@/lib/demo-request-schema";
 
-export const DEMO_CONFIGS: IndustryConfig[] = [
-  retailConfig,
-  medspaConfig,
-  contractorConfig,
-  gymConfig,
-  dentalConfig,
-];
+/**
+ * `satisfies` fails the build if a slug in DEMO_REQUEST_SLUGS has no config
+ * or a config is registered under a slug the request API doesn't accept.
+ */
+const registry = {
+  healthwellness: healthwellnessConfig,
+  contractors: contractorConfig,
+  realestate: realestateConfig,
+} satisfies Record<DemoSlug, IndustryConfig>;
 
-export { medspaConfig, contractorConfig, gymConfig, dentalConfig, retailConfig };
+export const DEMO_CONFIGS: IndustryConfig[] = DEMO_REQUEST_SLUGS.map((slug) => registry[slug]);
+
+export { healthwellnessConfig, contractorConfig, realestateConfig };
 
 export function demoBySlug(slug: string): IndustryConfig | undefined {
   return DEMO_CONFIGS.find((c) => c.slug === slug);

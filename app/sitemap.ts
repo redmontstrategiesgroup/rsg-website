@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
+import { DEMO_REQUEST_SLUGS } from "@/lib/demo-request-schema";
 
 /** Public, indexable marketing pages. Admin, portal, and API are excluded. */
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -17,10 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/faq", priority: 0.6 },
     // Interactive demo systems
     { path: "/demos", priority: 0.8 },
-    { path: "/demos/healthwellness", priority: 0.7 },
-    { path: "/demos/contractors", priority: 0.7 },
-    { path: "/demos/gyms", priority: 0.7 },
-    { path: "/demos/realestate", priority: 0.7 },
+    ...DEMO_REQUEST_SLUGS.map((slug) => ({ path: `/demos/${slug}`, priority: 0.7 })),
     // Local service pages
     { path: "/businessconsulting", priority: 0.8 },
     { path: "/systemsaudit", priority: 0.8 },
