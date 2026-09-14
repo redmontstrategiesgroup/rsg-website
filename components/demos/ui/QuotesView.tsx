@@ -102,7 +102,7 @@ export function QuotesView(props: ViewProps) {
                 {lines.map((l) => (
                   <li key={l.label} className="flex items-center justify-between px-3 py-2 text-xs">
                     <span className="text-white/60">{l.label}</span>
-                    <span className={`tabular-nums ${l.amount < 0 ? "text-emerald-400/80" : "text-white/75"}`}>
+                    <span className={`tabular-nums ${l.amount < 0 ? "text-white/60" : "text-white/75"}`}>
                       {l.amount < 0 ? "−" : ""}${Math.abs(l.amount).toLocaleString()}
                     </span>
                   </li>
@@ -110,7 +110,7 @@ export function QuotesView(props: ViewProps) {
               </ul>
               <div className="flex items-center justify-between border-t border-white/[0.1] px-3 py-2.5">
                 <span className="text-[0.64rem] font-medium uppercase tracking-[0.14em] text-white/45">
-                  Estimated total
+                  {q.totalLabel ?? "Estimated total"}
                 </span>
                 <span className="text-base font-medium tabular-nums text-white">
                   ${total.toLocaleString()}

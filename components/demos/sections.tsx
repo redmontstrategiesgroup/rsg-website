@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Check, ShieldCheck, Workflow, Inbox, Users } from "lucide-react";
 import { Reveal, RevealGroup } from "@/components/Reveal";
 import { TrackedLink } from "@/components/TrackedLink";
 import { BuildSystemCta } from "./BuildSystemCta";
@@ -81,111 +80,6 @@ export function AutomationFlow({
           </li>
         ))}
     </ScrollRail>
-  );
-}
-
-export function BuilderSection({ config }: { config: IndustryConfig }) {
-  return (
-    <section className="container-px py-10 sm:py-20">
-      <Reveal>
-        <span className="label">Automation builder</span>
-        <h2 className="display mt-4 text-2xl sm:text-3xl">
-          Under the hood: {config.builderFlow.title}
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55">
-          Every workflow in this demo is a sequence your team can see, edit, pause, and approve;
-          not a black box.
-        </p>
-      </Reveal>
-      <Reveal delay={0.1} className="mt-8">
-        <div className="rounded-xl border border-white/10 bg-base-900/60 p-4 sm:p-6">
-          <AutomationFlow flow={config.builderFlow} />
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* System breakdown                                                    */
-/* ------------------------------------------------------------------ */
-
-export function SystemBreakdown({ config }: { config: IndustryConfig }) {
-  const cols = [
-    {
-      icon: Inbox,
-      title: "What enters the system",
-      items: config.breakdown.inputs,
-    },
-    {
-      icon: Workflow,
-      title: "What the system does",
-      items: config.breakdown.systemDoes,
-    },
-    {
-      icon: Users,
-      title: "What your team still controls",
-      items: config.breakdown.teamControls,
-    },
-  ];
-  return (
-    <section className="border-y border-white/[0.07] bg-base-900/40">
-      <div className="container-px py-10 sm:py-20">
-        <Reveal>
-          <span className="label">System breakdown</span>
-          <h2 className="display mt-4 max-w-2xl text-2xl sm:text-3xl">
-            Automation does the chasing. Your team does the judging.
-          </h2>
-        </Reveal>
-        <div className="section-grid mt-10">
-          {cols.map((col, i) => {
-            const Icon = col.icon;
-            return (
-              <Reveal key={col.title} delay={i * 0.08} className="lg:col-span-4">
-                <div className="h-full border-t border-white/15 pt-6">
-                  <div className="flex items-center gap-2.5">
-                    <Icon size={15} className="text-crimson-light" aria-hidden />
-                    <h3 className="text-sm font-medium text-white">{col.title}</h3>
-                  </div>
-                  <ul className="mt-5 space-y-2.5">
-                    {col.items.map((item) => (
-                      <li key={item} className="flex items-start gap-2.5 text-sm text-white/55">
-                        <Check size={13} className="mt-0.5 shrink-0 text-white/30" aria-hidden />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
-            );
-          })}
-        </div>
-
-        <Reveal className="mt-9 sm:mt-14">
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck size={15} className="text-crimson-light" aria-hidden />
-            <h3 className="text-sm font-medium text-white">Potential integrations</h3>
-          </div>
-          <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/45">
-            Configured per engagement around the tools you already run, shown here as options, not
-            live connections.
-          </p>
-          <ul className="mt-5 flex flex-wrap gap-2">
-            {config.breakdown.integrations.map((integration) => (
-              <li
-                key={integration}
-                className="rounded border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/60"
-              >
-                {integration}
-                <span className="ml-2 text-[0.7rem] sm:text-[0.58rem] uppercase tracking-wider text-white/30">
-                  Configurable
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Reveal>
-      </div>
-    </section>
   );
 }
 
