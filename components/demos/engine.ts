@@ -1,18 +1,18 @@
 import type {
   Automation,
+  BoundaryEvent,
   CalendarEvent,
   DemoNotification,
   Effect,
+  FreshEntry,
+  FreshKind,
   IndustryConfig,
   IntakeField,
   Lead,
-  LoyaltyActivityItem,
-  LoyaltyMember,
-  LoyaltyReward,
   Metric,
   MetricFormat,
-  Product,
   QuoteRecord,
+  RecoveryEvent,
   RoleId,
   Stage,
   Template,
@@ -20,8 +20,8 @@ import type {
   WorkflowRun,
 } from "./types";
 
-/** Bump when the state shape or seed data changes — stale sessions are discarded. */
-export const DEMO_SCHEMA_VERSION = 5;
+/** Bump when the state shape or seed data changes, stale sessions are discarded. */
+export const DEMO_SCHEMA_VERSION = 6;
 
 /* ------------------------------------------------------------------ */
 /* State                                                               */
@@ -58,12 +58,6 @@ export type DemoState = {
   automations: Automation[];
   templates: Template[];
   quotes: QuoteRecord[];
-  /** Loyalty module records (empty when the industry has no loyalty config). */
-  loyaltyMembers: LoyaltyMember[];
-  loyaltyRewards: LoyaltyReward[];
-  loyaltyActivity: LoyaltyActivityItem[];
-  /** Inventory module records (empty when the industry has no inventory config). */
-  products: Product[];
   workflowRuns: WorkflowRun[];
   notifications: DemoNotification[];
   toasts: DemoNotification[];
@@ -74,6 +68,12 @@ export type DemoState = {
   stepIndex: number;
   /** Feature areas the visitor has touched (for the CTA context summary). */
   explored: string[];
+  /** Guardrail events, newest first (seeded from config, grown by effects). */
+  boundaryEvents: BoundaryEvent[];
+  /** Recovered-revenue ledger, newest first. */
+  recoveries: RecoveryEvent[];
+  /** Entities touched recently, for the tour spotlight. Never persisted. */
+  fresh: Record<string, FreshEntry>;
 };
 
 const DEFAULT_WIDGETS: WidgetPref[] = [
@@ -118,10 +118,6 @@ export function initialDemoState(config: IndustryConfig): DemoState {
     automations: config.automations.map((a) => ({ ...a, steps: [...a.steps] })),
     templates: config.templates.map((t) => ({ ...t })),
     quotes: [],
-    loyaltyMembers: (config.loyalty?.members ?? []).map((m) => ({ ...m })),
-    loyaltyRewards: (config.loyalty?.rewards ?? []).map((r) => ({ ...r })),
-    loyaltyActivity: (config.loyalty?.activity ?? []).map((a) => ({ ...a })),
-    products: (config.inventory?.products ?? []).map((p) => ({ ...p })),
     workflowRuns: [],
     notifications: [],
     toasts: [],
@@ -129,6 +125,9 @@ export function initialDemoState(config: IndustryConfig): DemoState {
     scenarioRuns: {},
     stepIndex: -1,
     explored: [],
+    boundaryEvents: (config.boundaries?.seed ?? []).map((e) => ({ ...e })),
+    recoveries: (config.recovered?.seed ?? []).map((r) => ({ ...r })),
+    fresh: {},
   };
 }
 
@@ -137,7 +136,7 @@ export function initialDemoState(config: IndustryConfig): DemoState {
 /* ------------------------------------------------------------------ */
 
 export type DemoAction =
-  | { type: "effects"; effects: Effect[] }
+  | { type: "effects"; effects: Effect[]; at?: number }
   | { type: "set-step"; index: number }
   | { type: "intro-seen" }
   | { type: "explored"; key: string }
@@ -165,17 +164,59 @@ export type DemoAction =
   | { type: "settings-personalization"; personalization: DemoSettings["personalization"] }
   | { type: "reset"; state: DemoState };
 
-/**
- * Derive a product's inventory status from its live numbers so demo stock
- * changes surface immediately (out of stock → low → reorder → slow/over).
- */
-export function productStatus(p: Product): Product["status"] {
-  if (p.stock === 0) return "out-of-stock";
-  if (p.stock <= Math.ceil(p.reorderPoint / 2)) return "reorder";
-  if (p.stock <= p.reorderPoint) return "low-stock";
-  if (p.velocity <= 1 && p.stock >= p.reorderPoint * 3) return "slow-moving";
-  if (p.stock >= p.reorderPoint * 4) return "overstocked";
-  return "in-stock";
+/** Fresh entries older than this are pruned on the next effects action. */
+export const FRESH_TTL_MS = 60_000;
+
+/** Which entities an effect touched, for the tour spotlight. */
+function touched(effect: Effect, produced?: { id: string }): { id: string; kind: FreshKind; parent?: string }[] {
+  switch (effect.kind) {
+    case "metric":
+      return [{ id: effect.id, kind: "metric" }];
+    case "stage":
+    case "updateLead":
+      return [{ id: effect.leadId, kind: "record" }];
+    case "lead":
+      return [{ id: effect.lead.id, kind: "record" }];
+    case "message":
+      return [
+        { id: effect.message.id, kind: "message", parent: effect.conversationId },
+        { id: effect.conversationId, kind: "message" },
+      ];
+    case "conversation":
+      return [
+        { id: effect.conversation.id, kind: "message" },
+        ...effect.conversation.messages.map((m) => ({ id: m.id, kind: "message" as const, parent: effect.conversation.id })),
+      ];
+    case "task":
+      return [{ id: effect.task.id, kind: "task" }];
+    case "completeTask":
+    case "reopenTask":
+      return [{ id: effect.taskId, kind: "task" }];
+    case "activity":
+      return [{ id: effect.item.id, kind: "record" }];
+    case "calendar":
+      return [{ id: effect.event.id, kind: "calendar" }];
+    case "calendarUpdate":
+    case "appointmentStatus":
+      return [{ id: effect.eventId, kind: "calendar" }];
+    case "review":
+      return [{ id: effect.item.id, kind: "record" }];
+    case "reviewStatus":
+      return [{ id: effect.reviewId, kind: "record" }];
+    case "workflowRun":
+      return [{ id: effect.run.id, kind: "record" }];
+    case "quote":
+      return [{ id: effect.quote.id, kind: "record" }];
+    case "quoteStatus":
+      return [{ id: effect.quoteId, kind: "record" }];
+    case "boundary":
+      return produced ? [{ id: produced.id, kind: "boundary" }] : [];
+    case "recovery":
+      return produced ? [{ id: produced.id, kind: "recovery" }] : [];
+    case "conversationMeta":
+    case "notify":
+      return [];
+  }
 }
 
 function applyEffect(state: DemoState, effect: Effect): DemoState {
@@ -304,55 +345,6 @@ function applyEffect(state: DemoState, effect: Effect): DemoState {
           q.id === effect.quoteId ? { ...q, status: effect.status } : q,
         ),
       };
-    case "loyaltyPoints":
-      return {
-        ...state,
-        loyaltyMembers: state.loyaltyMembers.map((m) =>
-          m.id === effect.memberId
-            ? { ...m, points: Math.max(0, m.points + effect.delta), lastActivity: "Just now" }
-            : m,
-        ),
-      };
-    case "loyaltyRedeem": {
-      const reward = state.loyaltyRewards.find((r) => r.id === effect.rewardId);
-      const member = state.loyaltyMembers.find((m) => m.id === effect.memberId);
-      if (!reward || !member || member.points < reward.cost) return state;
-      return {
-        ...state,
-        loyaltyMembers: state.loyaltyMembers.map((m) =>
-          m.id === member.id
-            ? { ...m, points: m.points - reward.cost, lastActivity: "Just now" }
-            : m,
-        ),
-        loyaltyRewards: state.loyaltyRewards.map((r) =>
-          r.id === reward.id ? { ...r, redeemedThisMonth: r.redeemedThisMonth + 1 } : r,
-        ),
-      };
-    }
-    case "loyaltyTier":
-      return {
-        ...state,
-        loyaltyMembers: state.loyaltyMembers.map((m) =>
-          m.id === effect.memberId ? { ...m, tierId: effect.tierId, lastActivity: "Just now" } : m,
-        ),
-      };
-    case "loyaltyReward":
-      return state.loyaltyRewards.some((r) => r.id === effect.reward.id)
-        ? state
-        : { ...state, loyaltyRewards: [...state.loyaltyRewards, effect.reward] };
-    case "loyaltyActivity":
-      return state.loyaltyActivity.some((a) => a.id === effect.item.id)
-        ? state
-        : { ...state, loyaltyActivity: [effect.item, ...state.loyaltyActivity].slice(0, 40) };
-    case "stock":
-      return {
-        ...state,
-        products: state.products.map((p) => {
-          if (p.id !== effect.productId) return p;
-          const stock = Math.max(0, p.stock + effect.delta);
-          return { ...p, stock, status: productStatus({ ...p, stock }) };
-        }),
-      };
     case "notify": {
       const n = effect.notification;
       if (state.notifications.some((x) => x.id === n.id)) return state;
@@ -362,13 +354,47 @@ function applyEffect(state: DemoState, effect: Effect): DemoState {
         toasts: [...state.toasts, n],
       };
     }
+    case "boundary": {
+      const event: BoundaryEvent = {
+        id: uid("bnd"),
+        ruleId: effect.ruleId,
+        at: "Just now",
+        summary: effect.summary,
+        outcome: effect.outcome,
+        source: effect.source ?? "receptionist",
+      };
+      return { ...state, boundaryEvents: [event, ...state.boundaryEvents] };
+    }
+    case "recovery": {
+      const event: RecoveryEvent = { id: uid("rec"), at: "Just now", ...effect.event };
+      return { ...state, recoveries: [event, ...state.recoveries] };
+    }
   }
 }
 
 export function demoReducer(state: DemoState, action: DemoAction): DemoState {
   switch (action.type) {
-    case "effects":
-      return action.effects.reduce(applyEffect, state);
+    case "effects": {
+      const at = action.at ?? Date.now();
+      const kept: Record<string, FreshEntry> = {};
+      for (const [id, entry] of Object.entries(state.fresh)) {
+        if (at - entry.at < FRESH_TTL_MS) kept[id] = entry;
+      }
+      let next: DemoState = { ...state, fresh: kept };
+      for (const effect of action.effects) {
+        const applied = applyEffect(next, effect);
+        const produced =
+          effect.kind === "boundary" ? applied.boundaryEvents[0]
+          : effect.kind === "recovery" ? applied.recoveries[0]
+          : undefined;
+        const fresh = { ...applied.fresh };
+        for (const t of touched(effect, produced)) {
+          fresh[t.id] = t.parent ? { kind: t.kind, at, parent: t.parent } : { kind: t.kind, at };
+        }
+        next = { ...applied, fresh };
+      }
+      return next;
+    }
     case "set-step":
       return { ...state, stepIndex: action.index };
     case "intro-seen":
@@ -539,7 +565,7 @@ function run(automation: Automation, detail: string): Effect[] {
 }
 
 /**
- * Simulated "test this workflow" run — generates visible, honest activity
+ * Simulated "test this workflow" run: generates visible, honest activity
  * describing what the workflow would do. Never contacts anyone.
  */
 export function testAutomationEffects(automation: Automation): Effect[] {
@@ -551,7 +577,7 @@ export function testAutomationEffects(automation: Automation): Effect[] {
       item: {
         id: uid("act"),
         icon: "automation",
-        text: `Simulated test of "${automation.name}" — ${automation.steps.length} steps executed against sample data.`,
+        text: `Simulated test of "${automation.name}": ${automation.steps.length} steps executed against sample data.`,
         time: "Just now",
       },
     },
@@ -560,7 +586,7 @@ export function testAutomationEffects(automation: Automation): Effect[] {
       notification: {
         id: uid("n"),
         title: `Workflow test complete: ${automation.name}`,
-        body: "Simulation only — no real messages were sent.",
+        body: "Simulation only, no real messages were sent.",
         tone: "success",
       },
     },
@@ -600,7 +626,7 @@ export function intakeEffects(
           id: convoId,
           contact: lead.name,
           channel: "sms",
-          topic: `${lead.service} — intake`,
+          topic: `${lead.service}: intake`,
           unread: false,
           messages: [
             { id: uid("m"), from: "system", meta: `Automated · ${intake.name}`, text, time: "Just now" },
@@ -611,7 +637,7 @@ export function intakeEffects(
         kind: "task",
         task: {
           id: uid("t"),
-          title: `Follow up with ${lead.name} — new ${lead.service} inquiry from intake form`,
+          title: `Follow up with ${lead.name}: new ${lead.service} inquiry from intake form`,
           assignee: lead.assignee ?? state.settings.staff[0]?.name ?? "Team",
           due: "Today",
           auto: true,
@@ -648,7 +674,7 @@ export function noShowEffects(
   state: DemoState,
   config: IndustryConfig,
 ): Effect[] {
-  const contact = event.title.split("—").pop()?.trim() ?? event.title;
+  const contact = event.title.split("-").pop()?.trim() ?? event.title;
   const first = contact.split(" ")[0];
   const auto = state.automations.find((a) => a.kind === "no-show");
   const effects: Effect[] = [
@@ -665,7 +691,7 @@ export function noShowEffects(
   if (auto && auto.status === "active") {
     const text = renderTemplate(
       auto.message ??
-        `Hi {first_name}, we missed you today — no stress! Want to grab a new time? Reply here and we'll get you rebooked.`,
+        `Hi {first_name}, we missed you today; no stress! Want to grab a new time? Reply here and we'll get you rebooked.`,
       templateVars(state, config, { first_name: first }),
     );
     const existing = state.conversations.find((c) =>
@@ -734,7 +760,7 @@ export function completedEffects(
   state: DemoState,
   config: IndustryConfig,
 ): Effect[] {
-  const contact = event.title.split("—").pop()?.trim() ?? event.title;
+  const contact = event.title.split("-").pop()?.trim() ?? event.title;
   const auto = state.automations.find((a) => a.kind === "review");
   const effects: Effect[] = [
     {
@@ -754,7 +780,7 @@ export function completedEffects(
         item: {
           id: uid("r"),
           name: contact,
-          service: event.title.split("—")[0]?.trim() ?? config.terminology.appointment,
+          service: event.title.split("-")[0]?.trim() ?? config.terminology.appointment,
           status: "requested",
           time: "Just now",
         },
@@ -765,7 +791,7 @@ export function completedEffects(
         notification: {
           id: uid("n"),
           title: `Review request queued: ${contact}`,
-          body: "Simulated — feedback is collected before any public review link.",
+          body: "Simulated: feedback is collected before any public review link.",
           tone: "success",
         },
       },
@@ -789,7 +815,7 @@ export function quoteSentEffects(
       item: {
         id: uid("act"),
         icon: "automation",
-        text: `${doc} for ${quote.contact} ($${quote.total.toLocaleString()}) delivered — follow-up sequence armed. Simulated.`,
+        text: `${doc} for ${quote.contact} ($${quote.total.toLocaleString()}) delivered: follow-up sequence armed. Simulated.`,
         time: "Just now",
       },
     },
@@ -798,7 +824,7 @@ export function quoteSentEffects(
   const existing = state.conversations.find(
     (c) => c.contact.toLowerCase() === quote.contact.toLowerCase(),
   );
-  const text = `Hi ${first}, your ${doc.toLowerCase()} from ${state.settings.businessName} is ready: $${quote.total.toLocaleString()}. Reply here with any questions — happy to walk through it.`;
+  const text = `Hi ${first}, your ${doc.toLowerCase()} from ${state.settings.businessName} is ready: $${quote.total.toLocaleString()}. Reply here with any questions, happy to walk through it.`;
   if (existing) {
     effects.push({
       kind: "message",
@@ -812,7 +838,7 @@ export function quoteSentEffects(
         id: uid("c"),
         contact: quote.contact,
         channel: "sms",
-        topic: `${doc} — delivery`,
+        topic: `${doc}: delivery`,
         messages: [
           { id: uid("m"), from: "system", meta: `Automated · ${doc} delivery`, text, time: "Just now" },
         ],
@@ -831,7 +857,7 @@ export function quoteSentEffects(
     notification: {
       id: uid("n"),
       title: `${doc} sent: ${quote.contact}`,
-      body: `$${quote.total.toLocaleString()} delivered by text and email — simulated, follow-ups queued.`,
+      body: `$${quote.total.toLocaleString()} delivered by text and email, simulated, follow-ups queued.`,
       tone: "success",
     },
   });
@@ -860,7 +886,7 @@ export function quoteAcceptedEffects(
       notification: {
         id: uid("n"),
         title: `${config.quote.documentLabel} accepted: ${quote.contact}`,
-        body: `$${quote.total.toLocaleString()} — next-step task created for your team.`,
+        body: `$${quote.total.toLocaleString()}: next-step task created for your team.`,
         tone: "success",
       },
     },
@@ -868,7 +894,7 @@ export function quoteAcceptedEffects(
       kind: "task",
       task: {
         id: uid("t"),
-        title: `Send agreement + deposit details — ${quote.contact} ($${quote.total.toLocaleString()} accepted)`,
+        title: `Send agreement + deposit details: ${quote.contact} ($${quote.total.toLocaleString()} accepted)`,
         assignee: state.settings.staff[0]?.name ?? "Team",
         due: "Today",
         priority: "high",
@@ -898,10 +924,12 @@ export type DerivedAnalytics = {
   pipelineValue: number;
   openTasks: number;
   workflowExecutions: number;
+  recoveredTotal: number;
+  recoveredByTrigger: { label: string; value: number }[];
 };
 
 /**
- * Analytics computed live from the visitor's demo records — filters and edits
+ * Analytics computed live from the visitor's demo records, filters and edits
  * change these numbers immediately.
  */
 export function deriveAnalytics(
@@ -926,6 +954,20 @@ export function deriveAnalytics(
     label: s.label,
     value: leads.filter((l) => l.stageId === s.id).length,
   }));
+  const TRIGGER_LABELS: Record<RecoveryEvent["trigger"], string> = {
+    "quote-followup": "Quote follow-up",
+    "missed-call": "Missed call",
+    "no-show": "No-show recovery",
+    reactivation: "Reactivation",
+    deadline: "Deadline watch",
+    "after-hours": "After hours",
+    referral: "Referral",
+  };
+  const byTrigger = new Map<string, number>();
+  for (const r of state.recoveries) {
+    const label = TRIGGER_LABELS[r.trigger];
+    byTrigger.set(label, (byTrigger.get(label) ?? 0) + r.amount);
+  }
   return {
     sources: [...bySource.entries()]
       .map(([name, v]) => ({ name, ...v }))
@@ -934,6 +976,8 @@ export function deriveAnalytics(
     pipelineValue: leads.reduce((sum, l) => sum + (l.value ?? 0), 0),
     openTasks: state.tasks.filter((t) => !t.done).length,
     workflowExecutions: state.workflowRuns.length,
+    recoveredTotal: state.recoveries.reduce((sum, r) => sum + r.amount, 0),
+    recoveredByTrigger: [...byTrigger.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value),
   };
 }
 

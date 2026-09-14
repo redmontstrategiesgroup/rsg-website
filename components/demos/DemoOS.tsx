@@ -19,6 +19,7 @@ import {
   FileText,
   ListVideo,
   Loader2,
+  LifeBuoy,
   Monitor,
   Play,
   RotateCcw,
@@ -78,6 +79,8 @@ const NAV_ICONS: Record<NavId, LucideIcon> = {
   reviews: Star,
   campaigns: Megaphone,
   analytics: BarChart3,
+  boundaries: ShieldCheck,
+  recovered: LifeBuoy,
   settings: Settings,
 };
 
