@@ -111,6 +111,7 @@ export function ActivityFeed({
 const WIDGET_LABELS: Record<string, string> = {
   metrics: "Key metrics",
   pipeline: "Pipeline summary",
+  recovered: "Recovered revenue",
   activity: "Live activity",
   schedule: "Upcoming schedule",
   tasks: "Open tasks",
@@ -239,6 +240,31 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                   )}
                 </div>
               );
+            case "recovered": {
+              const recent = state.recoveries.slice(0, 3);
+              return (
+                <div key={w.id} className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04]">
+                  <PanelHeading
+                    title={`Recovered this month · $${derived.recoveredTotal.toLocaleString()}`}
+                    right={<SampleDataTag />}
+                  />
+                  {recent.length === 0 ? (
+                    <EmptyState text="Nothing recovered yet. Run the guided tour." />
+                  ) : (
+                    <ul className="divide-y divide-white/[0.05]">
+                      {recent.map((r) => (
+                        <li key={r.id} data-spot-id={r.id} className="flex items-center gap-3 px-4 py-2.5">
+                          <p className="min-w-0 flex-1 truncate text-xs text-white/70">
+                            {r.contact} <span className="text-white/35">· {r.silentFor}</span>
+                          </p>
+                          <span className="text-xs tabular-nums text-emerald-300/90">${r.amount.toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            }
             default:
               return null;
           }
@@ -939,6 +965,7 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
     { id: "lk-2", label: `${config.terminology.records} in system`, value: state.leads.length },
     { id: "lk-3", label: "Open tasks", value: derived.openTasks },
     { id: "lk-4", label: "Workflow executions (session)", value: derived.workflowExecutions },
+    { id: "lk-5", label: "Recovered this month", value: derived.recoveredTotal, format: "currency" },
   ];
 
   return (
@@ -976,7 +1003,7 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {liveKpis.map((m) => (
           <MetricCard key={m.id} metric={m} />
         ))}

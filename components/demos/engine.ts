@@ -79,6 +79,7 @@ export type DemoState = {
 const DEFAULT_WIDGETS: WidgetPref[] = [
   { id: "metrics", visible: true },
   { id: "pipeline", visible: true },
+  { id: "recovered", visible: true },
   { id: "activity", visible: true },
   { id: "schedule", visible: true },
   { id: "tasks", visible: true },
