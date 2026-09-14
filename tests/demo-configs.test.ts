@@ -11,8 +11,9 @@ import { TEMPLATE_VARIABLES } from "../components/demos/types.ts";
 import type { Effect, IndustryConfig } from "../components/demos/types.ts";
 import { healthwellnessConfig } from "../components/demos/data/healthwellness.ts";
 import { contractorConfig } from "../components/demos/data/contractor.ts";
+import { realestateConfig } from "../components/demos/data/realestate.ts";
 
-const CONFIGS: IndustryConfig[] = [healthwellnessConfig, contractorConfig];
+const CONFIGS: IndustryConfig[] = [healthwellnessConfig, contractorConfig, realestateConfig];
 
 /** Strings that must never appear anywhere in a config (regulatory or stub leftovers). */
 const FORBIDDEN = [
