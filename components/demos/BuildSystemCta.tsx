@@ -62,7 +62,7 @@ export function BuildSystemCta({
       {step === "choose" && (
         <Modal
           title={config.cta.button}
-          subtitle={`${config.systemName} — pick how you'd like to start`}
+          subtitle={`${config.systemName}: pick how you'd like to start`}
           onClose={() => setStep("closed")}
         >
           <div className="space-y-2.5">
@@ -80,7 +80,7 @@ export function BuildSystemCta({
                   <ArrowRight size={13} className="text-white/30 transition-transform group-hover:translate-x-1 group-hover:text-crimson-light" aria-hidden />
                 </span>
                 <span className="mt-1 block text-xs leading-relaxed text-white/50">
-                  Open the working {config.osName} right now — add {config.terminology.records.toLowerCase()},
+                  Open the working {config.osName} right now, add {config.terminology.records.toLowerCase()},
                   run automations, talk to the AI receptionist. No account, no form.
                 </span>
               </span>
@@ -100,7 +100,7 @@ export function BuildSystemCta({
                   <ArrowRight size={13} className="text-crimson-light/50 transition-transform group-hover:translate-x-1 group-hover:text-crimson-light" aria-hidden />
                 </span>
                 <span className="mt-1 block text-xs leading-relaxed text-white/50">
-                  A short request form — we&apos;ll include the demo you viewed and the features you
+                  A short request form: we&apos;ll include the demo you viewed and the features you
                   tried, and follow up within one business day.
                 </span>
               </span>

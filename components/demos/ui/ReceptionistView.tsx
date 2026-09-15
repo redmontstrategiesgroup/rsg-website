@@ -12,7 +12,7 @@ const AI_REPLY_DELAY_MS = 750;
 
 /**
  * Interactive AI receptionist simulation. The visitor role-plays the caller by
- * choosing replies; the scripted assistant answers, qualifies, and books —
+ * choosing replies; the scripted assistant answers, qualifies, and books;
  * and the outcome lands in the demo's real records (lead, appointment, task).
  */
 export function ReceptionistView(props: ViewProps) {
@@ -171,7 +171,7 @@ export function ReceptionistView(props: ViewProps) {
               {outcome && (
                 <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/[0.06] p-3.5">
                   <p className="flex items-center gap-2 text-xs font-medium text-emerald-300/90">
-                    <CheckCircle2 size={13} aria-hidden /> Call handled — here&apos;s what the system just did
+                    <CheckCircle2 size={13} aria-hidden /> Call handled, here&apos;s what the system just did
                   </p>
                   <ul className="mt-2 space-y-1.5">
                     {outcome.map((line) => (
@@ -182,7 +182,7 @@ export function ReceptionistView(props: ViewProps) {
                     ))}
                   </ul>
                   <p className="mt-2.5 text-[0.62rem] text-white/35">
-                    Check Leads, Conversations, and the calendar — the records are really there.
+                    Check Leads, Conversations, and the calendar; the records are really there.
                   </p>
                 </div>
               )}
@@ -220,7 +220,7 @@ export function ReceptionistView(props: ViewProps) {
           </p>
           <ul className="mt-3 space-y-2.5">
             {[
-              "Every missed or after-hours call gets answered in seconds — not sent to voicemail.",
+              "Every missed or after-hours call gets answered in seconds, not sent to voicemail.",
               "The assistant collects the details your team needs and creates a qualified record automatically.",
               "Urgent situations are flagged and routed to a human immediately.",
               `Everything lands in one place: the ${config.terminology.record} record, the conversation, and the follow-up task.`,
@@ -247,7 +247,7 @@ export function ReceptionistView(props: ViewProps) {
             Honest by design
           </p>
           <p className="mt-2.5 text-xs leading-relaxed text-white/55">
-            This is a scripted demonstration — no live AI model, no real phone line, and nothing is
+            This is a scripted demonstration, no live AI model, no real phone line, and nothing is
             sent to anyone. Production assistants are configured to your services, pricing rules,
             and escalation policies, and always identify themselves as automated.
           </p>
