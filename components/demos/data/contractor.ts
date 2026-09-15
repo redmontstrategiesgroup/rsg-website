@@ -379,7 +379,7 @@ export const contractorConfig: IndustryConfig = {
         meta: "Checks the live schedule",
         choices: [
           { id: "c-deck-small-sat", label: "Saturday at 10 works.", next: "done-deck-small" },
-          { id: "c-deck-small-tue", label: "Tuesday afternoon, please.", next: "done-deck-small" },
+          { id: "c-deck-small-tue", label: "Tuesday afternoon, please.", next: "done-deck-small-tue" },
         ],
       },
       {
@@ -392,7 +392,7 @@ export const contractorConfig: IndustryConfig = {
             "The transcript is in Conversations, so the visit starts with the right numbers.",
           ],
           effects: [
-            { kind: "boundary", ruleId: "site-visit", summary: "Caller wanted a deck price on the phone. The assistant captured size and material and booked a measure instead of guessing.", outcome: "declined" },
+            { kind: "boundary", ruleId: "site-visit", summary: "Caller asked for a ballpark; the assistant booked a measure and gave no number before the site visit.", outcome: "declined" },
             { kind: "lead", lead: { id: "l-ai-deck-small", name: "Chris Nolan", service: "Deck rebuild: 180 sq ft pressure-treated", source: "After-hours call", stageId: "est-scheduled", value: 7400, lastActivity: "Just now", temp: "warm", note: "~180 sq ft pressure-treated · booked via AI receptionist after hours", assignee: "Dave Kessler" } },
             { kind: "calendar", event: { id: "cal-ai-deck-small", day: "Sat", date: "Jul 18", time: "10:00 AM", title: "Deck estimate: Chris Nolan", withWhom: "Dave Kessler", status: "confirmed" } },
             { kind: "conversation", conversation: { id: "c-ai-deck-small", contact: "Chris Nolan", channel: "phone", topic: "After-hours call: deck estimate", messages: [
@@ -402,6 +402,29 @@ export const contractorConfig: IndustryConfig = {
             { kind: "metric", id: "estimates", delta: 1 },
             { kind: "recovery", event: { contact: "Chris Nolan", amount: 7400, silentFor: "Called 9:40 PM, office closed", trigger: "after-hours", summary: "Deck estimate captured after hours instead of going to voicemail." } },
             { kind: "notify", notification: { id: "n-ai-deck-small", title: "After-hours estimate booked", body: "Chris Nolan: 180 sq ft deck, Saturday 10 AM. Captured while everyone slept.", tone: "success" } },
+          ],
+        },
+      },
+      {
+        id: "done-deck-small-tue",
+        say: "You're all set: estimate visit booked with Dave. I've texted the confirmation, and you can reply with photos any time to speed up the quote. Hartwell is licensed and insured. Thanks for calling!",
+        outcome: {
+          summary: [
+            "A deck-estimate lead was created with the size and material you gave.",
+            "The estimate visit was booked on Dave's schedule with confirmation and reminders queued.",
+            "The transcript is in Conversations, so the visit starts with the right numbers.",
+          ],
+          effects: [
+            { kind: "boundary", ruleId: "site-visit", summary: "Caller asked for a ballpark; the assistant booked a measure and gave no number before the site visit.", outcome: "declined" },
+            { kind: "lead", lead: { id: "l-ai-deck-small-tue", name: "Chris Nolan", service: "Deck rebuild: 180 sq ft pressure-treated", source: "After-hours call", stageId: "est-scheduled", value: 7400, lastActivity: "Just now", temp: "warm", note: "~180 sq ft pressure-treated · booked via AI receptionist after hours", assignee: "Dave Kessler" } },
+            { kind: "calendar", event: { id: "cal-ai-deck-small-tue", day: "Tue", date: "Jul 21", time: "1:30 PM", title: "Deck estimate: Chris Nolan", withWhom: "Dave Kessler", status: "confirmed" } },
+            { kind: "conversation", conversation: { id: "c-ai-deck-small-tue", contact: "Chris Nolan", channel: "phone", topic: "After-hours call: deck estimate", messages: [
+              { id: "ai-ds-1-tue", from: "system", meta: "AI receptionist · call summary", text: "After-hours call handled: ~180 sq ft pressure-treated deck rebuild. Estimate visit booked Tue 1:30 PM with Dave. Photo request sent by text. No price given before the site visit.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "requests", delta: 1 },
+            { kind: "metric", id: "estimates", delta: 1 },
+            { kind: "recovery", event: { contact: "Chris Nolan", amount: 7400, silentFor: "Called 9:40 PM, office closed", trigger: "after-hours", summary: "Deck estimate captured after hours instead of going to voicemail." } },
+            { kind: "notify", notification: { id: "n-ai-deck-small-tue", title: "After-hours estimate booked", body: "Chris Nolan: 180 sq ft deck, Tuesday 1:30 PM. Captured while everyone slept.", tone: "success" } },
           ],
         },
       },
@@ -458,6 +481,16 @@ export const contractorConfig: IndustryConfig = {
         choices: [
           { id: "c-deck-comp", label: "About 300 square feet: we'd like composite.", next: "deck-book" },
           { id: "c-deck-wood", label: "Smaller, maybe 180 square feet, pressure-treated wood.", next: "deck-book-small" },
+          { id: "c-deck-ballpark", label: "Can you give me a ballpark before someone comes out?", next: "deck-ballpark" },
+        ],
+      },
+      {
+        id: "deck-ballpark",
+        say: "I'd rather not guess a number you'd hold us to. Dave prices every deck on site; the calculator on our site gives a range if you want one tonight. Shall I book the measure?",
+        meta: "Holds the site-visit boundary",
+        choices: [
+          { id: "c-ballpark-comp", label: "Fair enough. It's about 300 square feet, composite; let's book it.", next: "deck-book" },
+          { id: "c-ballpark-wood", label: "Okay. It's small, around 180 square feet of pressure-treated wood.", next: "deck-book-small" },
         ],
       },
       {
@@ -466,7 +499,7 @@ export const contractorConfig: IndustryConfig = {
         meta: "Checks the live schedule",
         choices: [
           { id: "c-deck-sat", label: "Saturday at 10 works.", next: "done-deck" },
-          { id: "c-deck-tue", label: "Tuesday afternoon, please.", next: "done-deck" },
+          { id: "c-deck-tue", label: "Tuesday afternoon, please.", next: "done-deck-tue" },
         ],
       },
       {
@@ -479,7 +512,7 @@ export const contractorConfig: IndustryConfig = {
             "The transcript is in Conversations, so no detail is lost between the call and the visit.",
           ],
           effects: [
-            { kind: "boundary", ruleId: "site-visit", summary: "Caller wanted a deck price on the phone. The assistant captured size and material and booked a measure instead of guessing.", outcome: "declined" },
+            { kind: "boundary", ruleId: "site-visit", summary: "Caller asked for a ballpark; the assistant booked a measure and gave no number before the site visit.", outcome: "declined" },
             { kind: "recovery", event: { contact: "Chris Nolan", amount: 16800, silentFor: "Called 9:40 PM, office closed", trigger: "after-hours", summary: "Composite deck estimate captured after hours instead of going to voicemail." } },
             { kind: "lead", lead: { id: "l-ai-deck", name: "Chris Nolan", service: "Deck rebuild: estimate", source: "After-hours call", stageId: "est-scheduled", value: 16800, lastActivity: "Just now", temp: "warm", note: "~300 sq ft composite · booked via AI receptionist after hours", assignee: "Dave Kessler" } },
             { kind: "calendar", event: { id: "cal-ai-deck", day: "Sat", date: "Jul 18", time: "10:00 AM", title: "Deck estimate: Chris Nolan", withWhom: "Dave Kessler", status: "confirmed" } },
@@ -489,6 +522,29 @@ export const contractorConfig: IndustryConfig = {
             { kind: "metric", id: "requests", delta: 1 },
             { kind: "metric", id: "estimates", delta: 1 },
             { kind: "notify", notification: { id: "n-ai-deck", title: "After-hours estimate booked", body: "Chris Nolan: deck rebuild, Saturday 10 AM. Captured while everyone slept.", tone: "success" } },
+          ],
+        },
+      },
+      {
+        id: "done-deck-tue",
+        say: "You're all set: estimate visit booked with Dave. I've texted the confirmation, and you can reply with photos any time to speed up the quote. Hartwell is licensed and insured. Thanks for calling Hartwell!",
+        outcome: {
+          summary: [
+            "A deck-estimate lead was created with size and material preferences captured.",
+            "The estimate visit was booked on Dave's schedule with confirmation and reminders queued.",
+            "The transcript is in Conversations, so no detail is lost between the call and the visit.",
+          ],
+          effects: [
+            { kind: "boundary", ruleId: "site-visit", summary: "Caller asked for a ballpark; the assistant booked a measure and gave no number before the site visit.", outcome: "declined" },
+            { kind: "recovery", event: { contact: "Chris Nolan", amount: 16800, silentFor: "Called 9:40 PM, office closed", trigger: "after-hours", summary: "Composite deck estimate captured after hours instead of going to voicemail." } },
+            { kind: "lead", lead: { id: "l-ai-deck-tue", name: "Chris Nolan", service: "Deck rebuild: estimate", source: "After-hours call", stageId: "est-scheduled", value: 16800, lastActivity: "Just now", temp: "warm", note: "~300 sq ft composite · booked via AI receptionist after hours", assignee: "Dave Kessler" } },
+            { kind: "calendar", event: { id: "cal-ai-deck-tue", day: "Tue", date: "Jul 21", time: "1:30 PM", title: "Deck estimate: Chris Nolan", withWhom: "Dave Kessler", status: "confirmed" } },
+            { kind: "conversation", conversation: { id: "c-ai-deck-tue", contact: "Chris Nolan", channel: "phone", topic: "After-hours call: deck estimate", messages: [
+              { id: "ai-d-1-tue", from: "system", meta: "AI receptionist · call summary", text: "After-hours call handled: ~300 sq ft composite deck rebuild. Estimate visit booked Tue 1:30 PM with Dave. Photo request sent by text.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "requests", delta: 1 },
+            { kind: "metric", id: "estimates", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-deck-tue", title: "After-hours estimate booked", body: "Chris Nolan: deck rebuild, Tuesday 1:30 PM. Captured while everyone slept.", tone: "success" } },
           ],
         },
       },
@@ -669,7 +725,7 @@ export const contractorConfig: IndustryConfig = {
         effects: [
           { kind: "message", conversationId: "c-brian", message: { id: "bk-3b", from: "contact", text: "Could you do $17k if we skip the permit part?", time: "Just now" } },
           { kind: "message", conversationId: "c-brian", message: { id: "bk-3c", from: "system", meta: "Automated · Pricing question routed", text: "That's one for Mike, not me. I've passed it along with your quote; he'll call you today. The permit line stays on every deck we build.", time: "Just now" } },
-          { kind: "boundary", ruleId: "site-visit", summary: "Homeowner asked to cut the price by dropping permits. Routed to Mike; no discount and no scope change offered by the assistant.", outcome: "routed", source: "scenario" },
+          { kind: "boundary", ruleId: "site-visit", summary: "Homeowner asked to cut the price by dropping permits after the site visit. Routed to Mike; the assistant neither discounted nor changed scope.", outcome: "routed", source: "scenario" },
           { kind: "task", task: { id: "t-brian-price", title: "Call Brian Kowalski: pricing question on the deck quote (asked to skip permits)", assignee: "Mike Hartwell", due: "Today", priority: "high", auto: true } },
         ],
       },
@@ -1087,9 +1143,9 @@ export const contractorConfig: IndustryConfig = {
       effects: [
         { kind: "activity", item: { id: "a-sim-re", icon: "campaign", text: "Unclosed-estimates campaign sent to 14 quotes from the last 60 days.", time: "Just now" } },
         { kind: "metric", id: "requests", delta: 1 },
-        { kind: "notify", notification: { id: "n-sim-re", title: "Reactivation response", body: "A $9,200 fence quote from May replied: 'Ready to move forward.'", tone: "success" } },
-        { kind: "activity", item: { id: "a-sim-re2", icon: "message", text: "May fence quote re-engaged: office notified for scheduling.", time: "Just now" } },
-        { kind: "recovery", event: { contact: "Fence quote from May", amount: 9200, silentFor: "Quiet 8 weeks", trigger: "reactivation", summary: "Unclosed-estimates campaign brought back a $9,200 fence quote.", automationId: "auto-6" } },
+        { kind: "notify", notification: { id: "n-sim-re", title: "Reactivation response", body: "A $6,400 bathroom tile add-on quote from June replied: 'Ready to move forward.'", tone: "success" } },
+        { kind: "activity", item: { id: "a-sim-re2", icon: "message", text: "June tile add-on quote re-engaged: office notified for scheduling.", time: "Just now" } },
+        { kind: "recovery", event: { contact: "Marie Bissette", amount: 6400, silentFor: "Quiet 5 weeks", trigger: "reactivation", summary: "Bathroom tile add-on quote from June revived.", automationId: "auto-6" } },
       ],
     },
     {
