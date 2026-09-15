@@ -73,6 +73,25 @@ for (const config of CONFIGS) {
       for (const c of config.campaigns) assert.ok(c.message.endsWith("Reply STOP to opt out."), `${c.id}: ${c.message}`);
     });
 
+    it("transactional templates and automations do not carry campaign opt-out language", () => {
+      const OPT_OUT = "Reply STOP to opt out.";
+      for (const t of config.templates) assert.ok(!t.text.trim().endsWith(OPT_OUT), `template ${t.id}: ${t.text}`);
+      for (const a of config.automations) {
+        if (a.message) assert.ok(!a.message.trim().endsWith(OPT_OUT), `automation ${a.id}: ${a.message}`);
+      }
+    });
+
+    it("calendar titles are authored as 'service: contact'", () => {
+      const TITLE = /^[^:]+: .+/;
+      for (const e of config.calendar) assert.match(e.title, TITLE, `calendar ${e.id}: ${e.title}`);
+      for (const list of effectLists(config)) {
+        for (const e of list.effects) {
+          if (e.kind === "calendar") assert.match(e.event.title, TITLE, `${list.label}: ${e.event.title}`);
+          if (e.kind === "calendarUpdate" && e.patch.title !== undefined) assert.match(e.patch.title, TITLE, `${list.label}: ${e.patch.title}`);
+        }
+      }
+    });
+
     it("has the boundaries and recovered tabs in every role", () => {
       const ids = config.nav.map((n) => n.id);
       assert.ok(ids.includes("boundaries") && ids.includes("recovered"), "nav missing new tabs");
@@ -123,11 +142,22 @@ for (const config of CONFIGS) {
     });
 
     it("schedule days cover every calendar day/date pair", () => {
+      // Seed calendar, receptionist outcomes, and the guided tour are strict:
+      // they render on the schedule grid. Quick scenarios (config.scenarios)
+      // are allowed to book beyond the grid and are deliberately skipped.
       const days = new Set(config.scheduleDays.map((d) => `${d.day} ${d.date}`));
-      for (const e of config.calendar) assert.ok(days.has(`${e.day} ${e.date}`), `calendar ${e.id}: ${e.day} ${e.date}`);
+      const check = (label: string, day: string, date: string) => assert.ok(days.has(`${day} ${date}`), `${label}: ${day} ${date}`);
+      for (const e of config.calendar) check(`calendar ${e.id}`, e.day, e.date);
       for (const node of config.receptionist.nodes) {
         for (const e of node.outcome?.effects ?? []) {
-          if (e.kind === "calendar") assert.ok(days.has(`${e.event.day} ${e.event.date}`), `receptionist ${node.id}: ${e.event.day} ${e.event.date}`);
+          if (e.kind === "calendar") check(`receptionist ${node.id}`, e.event.day, e.event.date);
+          if (e.kind === "calendarUpdate" && e.patch.day && e.patch.date) check(`receptionist ${node.id} update`, e.patch.day, e.patch.date);
+        }
+      }
+      for (const step of config.scenario.steps) {
+        for (const e of step.effects) {
+          if (e.kind === "calendar") check(`tour ${step.id}`, e.event.day, e.event.date);
+          if (e.kind === "calendarUpdate" && e.patch.day && e.patch.date) check(`tour ${step.id} update`, e.patch.day, e.patch.date);
         }
       }
     });

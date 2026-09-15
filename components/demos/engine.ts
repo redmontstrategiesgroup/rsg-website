@@ -669,14 +669,38 @@ export function intakeEffects(
   return effects;
 }
 
+/**
+ * Calendar titles are authored as `"<service>: <contact>"`. Split on the first
+ * `": "` so an internal hyphen ("Pre-construction walkthrough") or a
+ * contact that is an address ("41 Bayberry Rd") stays intact. A title without
+ * the separator is both the service and the contact.
+ */
+export function splitEventTitle(title: string): { service: string; contact: string } {
+  const idx = title.indexOf(": ");
+  if (idx === -1) {
+    const whole = title.trim();
+    return { service: whole, contact: whole };
+  }
+  return { service: title.slice(0, idx).trim(), contact: title.slice(idx + 2).trim() };
+}
+
+/**
+ * What to call the contact in a greeting: a person's first name, or the whole
+ * string when the contact is an address / listing ("41 Bayberry Rd") so the
+ * message never opens with "Hi 41".
+ */
+function greetingName(contact: string): string {
+  return /^\d/.test(contact) ? contact : (contact.split(" ")[0] || contact);
+}
+
 /** Effects when an appointment is marked no-show. */
 export function noShowEffects(
   event: CalendarEvent,
   state: DemoState,
   config: IndustryConfig,
 ): Effect[] {
-  const contact = event.title.split("-").pop()?.trim() ?? event.title;
-  const first = contact.split(" ")[0];
+  const { contact } = splitEventTitle(event.title);
+  const first = greetingName(contact);
   const auto = state.automations.find((a) => a.kind === "no-show");
   const effects: Effect[] = [
     {
@@ -761,7 +785,7 @@ export function completedEffects(
   state: DemoState,
   config: IndustryConfig,
 ): Effect[] {
-  const contact = event.title.split("-").pop()?.trim() ?? event.title;
+  const { service, contact } = splitEventTitle(event.title);
   const auto = state.automations.find((a) => a.kind === "review");
   const effects: Effect[] = [
     {
@@ -781,7 +805,7 @@ export function completedEffects(
         item: {
           id: uid("r"),
           name: contact,
-          service: event.title.split("-")[0]?.trim() ?? config.terminology.appointment,
+          service: service || config.terminology.appointment,
           status: "requested",
           time: "Just now",
         },

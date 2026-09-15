@@ -6,12 +6,16 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   DEMO_SCHEMA_VERSION,
+  completedEffects,
   demoReducer,
   deriveAnalytics,
   initialDemoState,
+  noShowEffects,
+  splitEventTitle,
 } from "../components/demos/engine.ts";
 import { serializeSession } from "../components/demos/storage.ts";
 import { realestateConfig } from "../components/demos/data/realestate.ts";
+import { healthwellnessConfig } from "../components/demos/data/healthwellness.ts";
 import type { Effect } from "../components/demos/types.ts";
 
 const fresh = () => initialDemoState(realestateConfig);
@@ -106,5 +110,51 @@ describe("serializeSession", () => {
     assert.deepEqual(out.fresh, {});
     assert.equal(out.notifications.length, 1);
     assert.equal(out.metrics.find((m) => m.id === "new-leads")?.value, s.metrics.find((m) => m.id === "new-leads")?.value);
+  });
+});
+
+describe("calendar title parsing", () => {
+  it("splits 'service: contact' on the first colon and keeps internal hyphens", () => {
+    assert.deepEqual(splitEventTitle("Roof estimate: Elena Castillo"), { service: "Roof estimate", contact: "Elena Castillo" });
+    assert.deepEqual(splitEventTitle("Pre-construction walkthrough: Tom Reyes"), { service: "Pre-construction walkthrough", contact: "Tom Reyes" });
+    assert.deepEqual(splitEventTitle("Showing: 41 Bayberry Rd"), { service: "Showing", contact: "41 Bayberry Rd" });
+    assert.deepEqual(splitEventTitle("Team huddle"), { service: "Team huddle", contact: "Team huddle" });
+  });
+
+  it("no-show effects address a listing by its full address, not its street number", () => {
+    const state = initialDemoState(healthwellnessConfig);
+    const event = { id: "ev-x", day: "Thu", date: "Jul 16", time: "4:00 PM", title: "Showing: 41 Bayberry Rd" };
+    const effects = noShowEffects(event, state, healthwellnessConfig);
+    const activity = effects.find((e) => e.kind === "activity");
+    assert.ok(activity && activity.kind === "activity" && activity.item.text.startsWith("41 Bayberry Rd marked as a no-show"));
+    const sent = effects.flatMap((e) =>
+      e.kind === "conversation" ? e.conversation.messages.map((m) => m.text) : e.kind === "message" ? [e.message.text] : [],
+    );
+    assert.equal(sent.length, 1, "exactly one recovery message");
+    assert.ok(sent[0].includes("41 Bayberry Rd"), sent[0]);
+    assert.ok(!/Hi 41,/.test(sent[0]), sent[0]);
+    const task = effects.find((e) => e.kind === "task");
+    assert.ok(task && task.kind === "task" && task.task.title.includes("41 Bayberry Rd"));
+  });
+
+  it("no-show effects greet a person by first name", () => {
+    const state = initialDemoState(healthwellnessConfig);
+    const event = { id: "ev-y", day: "Thu", date: "Jul 16", time: "4:00 PM", title: "Roof estimate: Elena Castillo" };
+    const effects = noShowEffects(event, state, healthwellnessConfig);
+    const sent = effects.flatMap((e) =>
+      e.kind === "conversation" ? e.conversation.messages.map((m) => m.text) : e.kind === "message" ? [e.message.text] : [],
+    );
+    assert.equal(sent.length, 1);
+    assert.ok(sent[0].startsWith("Hi Elena"), sent[0]);
+    assert.ok(!sent[0].includes("Roof estimate"), sent[0]);
+  });
+
+  it("completed effects name the review after the contact and the service after the title prefix", () => {
+    const state = initialDemoState(healthwellnessConfig);
+    const event = { id: "ev-z", day: "Thu", date: "Jul 16", time: "4:00 PM", title: "Showing: 41 Bayberry Rd" };
+    const review = completedEffects(event, state, healthwellnessConfig).find((e) => e.kind === "review");
+    assert.ok(review && review.kind === "review");
+    assert.equal(review.item.name, "41 Bayberry Rd");
+    assert.equal(review.item.service, "Showing");
   });
 });
