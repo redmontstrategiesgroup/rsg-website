@@ -141,7 +141,7 @@ export const healthwellnessConfig: IndustryConfig = {
     {
       id: "c-dana",
       contact: "Dana Whitfield",
-      channel: "instagram",
+      channel: "sms",
       topic: "Botox consultation: reminders",
       messages: [
         { id: "c-dana-1", from: "system", meta: "Automated · 48-hr reminder", text: "Hi Dana! Reminder: your Botox consultation at Aura Health & Wellness is Wednesday at 3:30 PM with Nurse Injector Carly. Reply C to confirm or R to reschedule.", time: "Today 9:00 AM" },
@@ -333,12 +333,12 @@ export const healthwellnessConfig: IndustryConfig = {
         say: "Thanks, Rachel. Your Thursday 1:00 PM Hydrafacial can move to Friday 11:00 AM or Saturday 10:00 AM. Which do you prefer?",
         meta: "Looks up the live schedule",
         choices: [
-          { id: "c-fri", label: "Friday at 11, please.", next: "done-resched" },
-          { id: "c-sat", label: "Saturday morning works.", next: "done-resched" },
+          { id: "c-fri", label: "Friday at 11, please.", next: "done-resched-fri" },
+          { id: "c-sat", label: "Saturday morning works.", next: "done-resched-sat" },
         ],
       },
       {
-        id: "done-resched",
+        id: "done-resched-fri",
         say: "Done! Your appointment is moved and a new confirmation is on its way by text. The old reminders were cancelled automatically. Anything else I can help with?",
         outcome: {
           summary: [
@@ -348,8 +348,26 @@ export const healthwellnessConfig: IndustryConfig = {
           ],
           effects: [
             { kind: "boundary", ruleId: "identity", summary: "Caller asked to move a booking; the assistant confirmed the name on file before saying what the appointment was.", outcome: "verified" },
+            { kind: "calendarUpdate", eventId: "cal-2", patch: { day: "Fri", date: "Jul 17", time: "11:00 AM", status: "confirmed", note: "Rescheduled by the assistant during a missed call" } },
             { kind: "activity", item: { id: "a-ai-resched", icon: "calendar", text: "AI receptionist rescheduled Rachel Nguyen's Hydrafacial to Friday 11:00 AM, confirmations updated.", time: "Just now" } },
             { kind: "notify", notification: { id: "n-ai-resched", title: "Reschedule handled by assistant", body: "No hold music, no callback list, done during the missed call.", tone: "success" } },
+          ],
+        },
+      },
+      {
+        id: "done-resched-sat",
+        say: "Done! Your appointment is moved and a new confirmation is on its way by text. The old reminders were cancelled automatically. Anything else I can help with?",
+        outcome: {
+          summary: [
+            "The appointment was rescheduled with zero front-desk time.",
+            "Old reminders were cancelled and new ones queued automatically.",
+            "The change was logged on the client's record.",
+          ],
+          effects: [
+            { kind: "boundary", ruleId: "identity", summary: "Caller asked to move a booking; the assistant confirmed the name on file before saying what the appointment was.", outcome: "verified" },
+            { kind: "calendarUpdate", eventId: "cal-2", patch: { day: "Sat", date: "Jul 18", time: "10:00 AM", status: "confirmed", note: "Rescheduled by the assistant during a missed call" } },
+            { kind: "activity", item: { id: "a-ai-resched-sat", icon: "calendar", text: "AI receptionist rescheduled Rachel Nguyen's Hydrafacial to Saturday 10:00 AM, confirmations updated.", time: "Just now" } },
+            { kind: "notify", notification: { id: "n-ai-resched-sat", title: "Reschedule handled by assistant", body: "No hold music, no callback list, done during the missed call.", tone: "success" } },
           ],
         },
       },
@@ -375,7 +393,7 @@ export const healthwellnessConfig: IndustryConfig = {
         meta: "Checks the live schedule",
         choices: [
           { id: "c-thu", label: "Thursday at 4.", next: "done-booked" },
-          { id: "c-sat2", label: "Saturday at 10:30.", next: "done-booked" },
+          { id: "c-sat2", label: "Saturday at 10:30.", next: "done-booked-sat" },
         ],
       },
       {
@@ -384,7 +402,7 @@ export const healthwellnessConfig: IndustryConfig = {
         meta: "Checks the live schedule",
         choices: [
           { id: "c-thu-r", label: "Thursday at 4.", next: "done-booked-r" },
-          { id: "c-sat-r", label: "Saturday at 10:30.", next: "done-booked-r" },
+          { id: "c-sat-r", label: "Saturday at 10:30.", next: "done-booked-r-sat" },
         ],
       },
       {
@@ -412,6 +430,30 @@ export const healthwellnessConfig: IndustryConfig = {
         },
       },
       {
+        id: "done-booked-sat",
+        say: "Perfect: you're booked for a free wellness consult with Carly. I'm texting your confirmation and a short pre-visit form now. We can't wait to meet you!",
+        outcome: {
+          summary: [
+            "A new client record was created from a call nobody was free to answer.",
+            "The consultation went straight onto Carly's calendar with reminders queued.",
+            "The pre-visit form was texted automatically, and the call summary is in Conversations.",
+          ],
+          effects: [
+            { kind: "boundary", ruleId: "automated", summary: "Introduced itself as the practice's automated assistant before anything else.", outcome: "disclosed" },
+            { kind: "recovery", event: { contact: "Maya Torres", amount: 175, silentFor: "Answered during a missed call, nobody free", trigger: "missed-call", summary: "First-time IV inquiry booked a free consult while the front desk was with a client.", automationId: "auto-1" } },
+            { kind: "lead", lead: { id: "l-ai-iv-sat", name: "Maya Torres", service: "IV therapy: first time", source: "Missed call", stageId: "booked", value: 175, lastActivity: "Just now", temp: "hot", note: "First-timer, asked about hydration drips · booked by AI receptionist during missed call", assignee: "Carly Jensen, RN" } },
+            { kind: "calendar", event: { id: "cal-ai-iv-sat", day: "Sat", date: "Jul 18", time: "10:30 AM", title: "Free consultation: Maya Torres", withWhom: "Carly Jensen, RN", status: "confirmed" } },
+            { kind: "conversation", conversation: { id: "c-ai-iv-sat", contact: "Maya Torres", channel: "phone", topic: "Missed call: wellness consult booked", unread: true, messages: [
+              { id: "ai-b-1-sat", from: "system", meta: "AI receptionist · call summary", text: "Missed call handled: first-time IV therapy inquiry. Starting pricing explained ($175), consultation booked Sat 10:30 AM with Carly. Confirmation + pre-visit form texted. No clinical questions answered.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "inquiries", delta: 1 },
+            { kind: "metric", id: "consults", delta: 1 },
+            { kind: "metric", id: "missed-recovered", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-iv-sat", title: "Missed call converted", body: "Maya Torres: wellness consult booked Sat 10:30 AM while Amanda was with a client.", tone: "success" } },
+          ],
+        },
+      },
+      {
         id: "done-booked-r",
         say: "Perfect: you're booked for a free wellness consult with Carly. I'm texting your confirmation and a short pre-visit form now. We can't wait to meet you!",
         outcome: {
@@ -423,6 +465,7 @@ export const healthwellnessConfig: IndustryConfig = {
           effects: [
             { kind: "boundary", ruleId: "clinical", summary: "Caller asked whether IV therapy is uncomfortable. The assistant kept to scheduling and left the medical answer to Carly, RN.", outcome: "routed" },
             { kind: "boundary", ruleId: "automated", summary: "Introduced itself as the practice's automated assistant before anything else.", outcome: "disclosed" },
+            { kind: "recovery", event: { contact: "Maya Torres", amount: 175, silentFor: "Answered during a missed call, nobody free", trigger: "missed-call", summary: "First-time IV inquiry booked a free consult while the front desk was with a client.", automationId: "auto-1" } },
             { kind: "lead", lead: { id: "l-ai-iv", name: "Maya Torres", service: "IV therapy: first time", source: "Missed call", stageId: "booked", value: 175, lastActivity: "Just now", temp: "hot", note: "First-timer, asked about hydration drips · booked by AI receptionist during missed call", assignee: "Carly Jensen, RN" } },
             { kind: "calendar", event: { id: "cal-ai-iv", day: "Thu", date: "Jul 16", time: "4:00 PM", title: "Free consultation: Maya Torres", withWhom: "Carly Jensen, RN", status: "confirmed" } },
             { kind: "conversation", conversation: { id: "c-ai-iv", contact: "Maya Torres", channel: "phone", topic: "Missed call: wellness consult booked", unread: true, messages: [
@@ -432,6 +475,31 @@ export const healthwellnessConfig: IndustryConfig = {
             { kind: "metric", id: "consults", delta: 1 },
             { kind: "metric", id: "missed-recovered", delta: 1 },
             { kind: "notify", notification: { id: "n-ai-iv", title: "Missed call converted", body: "Maya Torres: wellness consult booked Thu 4 PM while Amanda was with a client.", tone: "success" } },
+          ],
+        },
+      },
+      {
+        id: "done-booked-r-sat",
+        say: "Perfect: you're booked for a free wellness consult with Carly. I'm texting your confirmation and a short pre-visit form now. We can't wait to meet you!",
+        outcome: {
+          summary: [
+            "A new client record was created from a call nobody was free to answer.",
+            "The consultation went straight onto Carly's calendar with reminders queued.",
+            "The pre-visit form was texted automatically, and the call summary is in Conversations.",
+          ],
+          effects: [
+            { kind: "boundary", ruleId: "clinical", summary: "Caller asked whether IV therapy is uncomfortable. The assistant kept to scheduling and left the medical answer to Carly, RN.", outcome: "routed" },
+            { kind: "boundary", ruleId: "automated", summary: "Introduced itself as the practice's automated assistant before anything else.", outcome: "disclosed" },
+            { kind: "recovery", event: { contact: "Maya Torres", amount: 175, silentFor: "Answered during a missed call, nobody free", trigger: "missed-call", summary: "First-time IV inquiry booked a free consult while the front desk was with a client.", automationId: "auto-1" } },
+            { kind: "lead", lead: { id: "l-ai-iv-sat", name: "Maya Torres", service: "IV therapy: first time", source: "Missed call", stageId: "booked", value: 175, lastActivity: "Just now", temp: "hot", note: "First-timer, asked about hydration drips · booked by AI receptionist during missed call", assignee: "Carly Jensen, RN" } },
+            { kind: "calendar", event: { id: "cal-ai-iv-sat", day: "Sat", date: "Jul 18", time: "10:30 AM", title: "Free consultation: Maya Torres", withWhom: "Carly Jensen, RN", status: "confirmed" } },
+            { kind: "conversation", conversation: { id: "c-ai-iv-sat", contact: "Maya Torres", channel: "phone", topic: "Missed call: wellness consult booked", unread: true, messages: [
+              { id: "ai-b-1-sat", from: "system", meta: "AI receptionist · call summary", text: "Missed call handled: first-time IV therapy inquiry. Starting pricing explained ($175), consultation booked Sat 10:30 AM with Carly. Confirmation + pre-visit form texted. No clinical questions answered.", time: "Just now" },
+            ] } },
+            { kind: "metric", id: "inquiries", delta: 1 },
+            { kind: "metric", id: "consults", delta: 1 },
+            { kind: "metric", id: "missed-recovered", delta: 1 },
+            { kind: "notify", notification: { id: "n-ai-iv-sat", title: "Missed call converted", body: "Maya Torres: wellness consult booked Sat 10:30 AM while Amanda was with a client.", tone: "success" } },
           ],
         },
       },
@@ -469,7 +537,7 @@ export const healthwellnessConfig: IndustryConfig = {
       ],
     },
     responseTime: {
-      title: "Average lead response time (minutes)",
+      title: "Average inquiry response time (minutes)",
       unit: "minutes",
       points: [
         { label: "W1", value: 47 }, { label: "W2", value: 38 }, { label: "W3", value: 21 },
@@ -568,11 +636,11 @@ export const healthwellnessConfig: IndustryConfig = {
       {
         id: "s-6",
         title: "Maya books a consultation",
-        detail: "She picks Tuesday at 4:00 PM. The calendar, her record, and the dashboard all update instantly.",
+        detail: "She picks Thursday at 4:00 PM. The calendar, her record, and the dashboard all update instantly.",
         tab: "calendar",
         effects: [
-          { kind: "message", conversationId: "c-maya", message: { id: "m-5", from: "contact", text: "Booked for Tuesday at 4! Thank you 😊", time: "Just now" } },
-          { kind: "calendar", event: { id: "cal-maya", day: "Tue", date: "Jul 14", time: "4:00 PM", title: "Wellness consult: Maya Torres", withWhom: "Carly Jensen, RN", status: "confirmed" } },
+          { kind: "message", conversationId: "c-maya", message: { id: "m-5", from: "contact", text: "Booked for Thursday at 4! Thank you 😊", time: "Just now" } },
+          { kind: "calendar", event: { id: "cal-maya", day: "Thu", date: "Jul 16", time: "4:00 PM", title: "Wellness consult: Maya Torres", withWhom: "Carly Jensen, RN", status: "confirmed" } },
           { kind: "metric", id: "consults", delta: 1 },
           { kind: "metric", id: "upcoming", delta: 1 },
           { kind: "recovery", event: { contact: "Maya Torres", amount: 175, silentFor: "DM answered in 40 s while staff were busy", trigger: "missed-call", summary: "Instagram inquiry converted to a booked consult with zero staff time.", automationId: "auto-2" } },
@@ -585,17 +653,17 @@ export const healthwellnessConfig: IndustryConfig = {
         tab: "conversations",
         effects: [
           { kind: "activity", item: { id: "a-s7", icon: "automation", text: "No-show prevention sequence scheduled for Maya Torres (48h / 24h / 2h).", time: "Just now" } },
-          { kind: "message", conversationId: "c-maya", message: { id: "m-6", from: "system", meta: "Automated · Confirmation", text: "You're all set, Maya, Tuesday, Jul 14 at 4:00 PM with Carly. Your pre-visit form: aura.demo/intake. We'll send a couple of reminders so it sneaks up easy.", time: "Just now" } },
+          { kind: "message", conversationId: "c-maya", message: { id: "m-6", from: "system", meta: "Automated · Confirmation", text: "You're all set, Maya, Thursday, Jul 16 at 4:00 PM with Carly. Your pre-visit form: aura.demo/intake. We'll send a couple of reminders so it sneaks up easy.", time: "Just now" } },
         ],
       },
       {
         id: "s-8",
         title: "A front-desk task is created",
-        detail: "Automation handles the routine; your team handles the human part. Amanda gets a task to review the pre-visit form before Tuesday.",
+        detail: "Automation handles the routine; your team handles the human part. Amanda gets a task to review the pre-visit form before Thursday.",
         tab: "tasks",
         effects: [
-          { kind: "task", task: { id: "t-maya", title: "Review pre-visit form & confirm deposit, Maya Torres (Tue 4:00 PM)", assignee: "Amanda Cruz", due: "Mon", auto: true } },
-          { kind: "notify", notification: { id: "n-s8", title: "Consultation booked: Maya Torres", body: "Tue 4:00 PM with Carly, RN. Intake review task assigned to Amanda.", tone: "success" } },
+          { kind: "task", task: { id: "t-maya", title: "Review pre-visit form & confirm deposit, Maya Torres (Thu 4:00 PM)", assignee: "Amanda Cruz", due: "Wed", auto: true } },
+          { kind: "notify", notification: { id: "n-s8", title: "Consultation booked: Maya Torres", body: "Thu 4:00 PM with Carly, RN. Intake review task assigned to Amanda.", tone: "success" } },
         ],
       },
       {
@@ -605,7 +673,7 @@ export const healthwellnessConfig: IndustryConfig = {
         tab: "boundaries",
         effects: [
           { kind: "message", conversationId: "c-maya", message: { id: "m-8b", from: "contact", text: "Also, is it ok with the iron supplement I'm on?", time: "Just now" } },
-          { kind: "message", conversationId: "c-maya", message: { id: "m-8c", from: "system", meta: "Automated · Clinical question routed", text: "Good question, and one for Carly rather than me. I've passed it to her with your consult notes; she'll answer before Tuesday.", time: "Just now" } },
+          { kind: "message", conversationId: "c-maya", message: { id: "m-8c", from: "system", meta: "Automated · Clinical question routed", text: "Good question, and one for Carly rather than me. I've passed it to her with your consult notes; she'll answer before Thursday.", time: "Just now" } },
           { kind: "boundary", ruleId: "clinical", summary: "Maya asked about a supplement interaction. Routed to Carly, RN; no answer given by the assistant.", outcome: "routed", source: "scenario" },
           { kind: "task", task: { id: "t-maya-clinical", title: "Answer Maya Torres: iron supplement and IV therapy (clinical question from DM)", assignee: "Carly Jensen, RN", due: "Mon", priority: "high", auto: true } },
         ],
