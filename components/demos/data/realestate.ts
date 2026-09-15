@@ -184,7 +184,7 @@ export const realestateConfig: IndustryConfig = {
     { id: "a-1", icon: "message", text: "Peter Abrams replied to the closing-anniversary touch offering a referral.", time: "2 days ago" },
     { id: "a-2", icon: "alert", text: "Inspection contingency on 14 Sea Breeze Ln flagged: expires tomorrow at 5:00 PM.", time: "8:15 AM" },
     { id: "a-3", icon: "automation", text: "Weekly seller update sent to 6 active listings with showing feedback attached.", time: "Yesterday 4:00 PM" },
-    { id: "a-4", icon: "call", text: "Sign call from 22 Cordwainer Dr answered by the assistant after hours.", time: "Yesterday 7:41 PM" },
+    { id: "a-4", icon: "call", text: "Sign call from 41 Bayberry Rd answered by the assistant after hours.", time: "Yesterday 7:41 PM" },
     { id: "a-5", icon: "pipeline", text: "Trevor Boyd claimed by Dev Okafor 94 seconds after the Zillow lead landed.", time: "11:04 AM" },
     { id: "a-6", icon: "calendar", text: "Showing block confirmed for Trevor Boyd: Saturday 10:00 AM, three properties.", time: "11:31 AM" },
     { id: "a-7", icon: "review", text: "Review request sent to Colleen McGrath after her closing on 8 Rockland Way.", time: "Yesterday" },
@@ -340,21 +340,21 @@ export const realestateConfig: IndustryConfig = {
   receptionist: {
     scenarioLabel: "After-hours sign call: buyer standing at a listing",
     description: "It's 7:40 PM on a Tuesday. A buyer is parked outside a listing and calls the number on the sign. Every agent is at dinner or with clients.",
-    callerRole: "a buyer outside 22 Cordwainer Drive at 7:40 PM",
+    callerRole: "a buyer outside 41 Bayberry Road at 7:40 PM",
     start: "greet",
     nodes: [
       {
         id: "greet",
         say: "Thanks for calling Harborline Realty Group! Our agents are out with clients right now, but I'm the team's automated assistant and I can help with most things. Are you calling about a specific property?",
         choices: [
-          { id: "c-avail", label: "I'm outside 22 Cordwainer Drive — is it still available?", next: "availability" },
+          { id: "c-avail", label: "I'm outside 41 Bayberry Road — is it still available?", next: "availability" },
           { id: "c-resched", label: "I need to move tomorrow's showing.", next: "resched" },
           { id: "c-value", label: "Actually, how much is my house worth?", next: "valuation" },
         ],
       },
       {
         id: "availability",
-        say: "It is — 22 Cordwainer Drive is active, listed at $749,000, three bedrooms and two and a half baths. Are you already working with an agent, or would you like me to get you inside?",
+        say: "It is — 41 Bayberry Road is active, listed at $589,000, three bedrooms and two baths. Are you already working with an agent, or would you like me to get you inside?",
         meta: "Reads listing status off the MLS feed",
         choices: [
           { id: "c-noagent", label: "Not working with anyone. I'd love to see it.", next: "buyer-times" },
@@ -430,15 +430,15 @@ export const realestateConfig: IndustryConfig = {
           ],
           effects: [
             { kind: "boundary", ruleId: "licensee", summary: "Booked a showing as the team's assistant; never presented itself as Dev or any licensee.", outcome: "disclosed" },
-            { kind: "lead", lead: { id: "l-ai-buyer", name: "Nathan Ruiz", service: "Buying: 22 Cordwainer Dr", source: "Sign call", stageId: "appointment-set", value: 22470, lastActivity: "Just now", temp: "hot", note: "After-hours sign call outside 22 Cordwainer Dr · showing booked by AI receptionist", assignee: "Dev Okafor", fields: { intent: "Buying", timeline: "Within 30 days" } } },
-            { kind: "calendar", event: { id: "cal-ai-showing", day: "Thu", date: "Oct 16", time: "5:30 PM", title: "Showing: 22 Cordwainer Dr, Nathan Ruiz", withWhom: "Dev Okafor", status: "confirmed" } },
+            { kind: "lead", lead: { id: "l-ai-buyer", name: "Nathan Ruiz", service: "Buying: 41 Bayberry Rd", source: "Sign call", stageId: "appointment-set", value: 22470, lastActivity: "Just now", temp: "hot", note: "After-hours sign call outside 41 Bayberry Rd · showing booked by AI receptionist", assignee: "Dev Okafor", fields: { intent: "Buying", timeline: "Within 30 days" } } },
+            { kind: "calendar", event: { id: "cal-ai-showing", day: "Thu", date: "Oct 16", time: "5:30 PM", title: "Showing: Nathan Ruiz", withWhom: "Dev Okafor", status: "confirmed", note: "41 Bayberry Rd; booked by the assistant during an after-hours sign call" } },
             { kind: "conversation", conversation: { id: "c-ai-buyer", contact: "Nathan Ruiz", channel: "phone", topic: "After-hours sign call: showing booked", unread: true, messages: [
-              { id: "ai-buyer-1", from: "system", meta: "AI receptionist · call summary", text: "After-hours sign call handled. Unrepresented buyer outside 22 Cordwainer Dr. Showing booked Thu 5:30 PM with Dev; seller notified; listing sheet texted. No valuation discussed.", time: "Just now" },
+              { id: "ai-buyer-1", from: "system", meta: "AI receptionist · call summary", text: "After-hours sign call handled. Unrepresented buyer outside 41 Bayberry Rd. Showing booked Thu 5:30 PM with Dev; seller notified; listing sheet texted. No valuation discussed.", time: "Just now" },
             ] } },
             { kind: "metric", id: "new-leads", delta: 1 },
             { kind: "metric", id: "showings-booked", delta: 1 },
             { kind: "recovery", event: { contact: "Nathan Ruiz", amount: 22470, silentFor: "Called 7:40 PM, every agent busy", trigger: "after-hours", summary: "Buyer parked outside a listing got a showing instead of a voicemail.", automationId: "auto-2" } },
-            { kind: "notify", notification: { id: "n-ai-buyer", title: "Sign call converted", body: "Nathan Ruiz: showing at 22 Cordwainer Dr, Thu 5:30 PM with Dev.", tone: "success" } },
+            { kind: "notify", notification: { id: "n-ai-buyer", title: "Sign call converted", body: "Nathan Ruiz: showing at 41 Bayberry Rd, Thu 5:30 PM with Dev.", tone: "success" } },
           ],
         },
       },
@@ -496,7 +496,7 @@ export const realestateConfig: IndustryConfig = {
           effects: [
             { kind: "boundary", ruleId: "valuation", summary: "Caller asked what their home is worth, then pushed for a ballpark. Declined both and booked Marisol for a CMA.", outcome: "declined" },
             { kind: "recovery", event: { contact: "Nathan Ruiz", amount: 19500, silentFor: "Called 7:40 PM, every agent busy", trigger: "after-hours", summary: "Seller sign call became a listing appointment; no number given over the phone.", automationId: "auto-2" } },
-            { kind: "lead", lead: { id: "l-ai-sign", name: "Nathan Ruiz", service: "Selling: interested in a CMA", source: "Sign call", stageId: "appointment-set", value: 19500, lastActivity: "Just now", temp: "hot", note: "After-hours sign call at 22 Cordwainer Dr · booked by AI receptionist · no valuation given", assignee: "Marisol Vega", fields: { intent: "Selling", timeline: "Exploring" } } },
+            { kind: "lead", lead: { id: "l-ai-sign", name: "Nathan Ruiz", service: "Selling: interested in a CMA", source: "Sign call", stageId: "appointment-set", value: 19500, lastActivity: "Just now", temp: "hot", note: "After-hours sign call at 41 Bayberry Rd · booked by AI receptionist · no valuation given", assignee: "Marisol Vega", fields: { intent: "Selling", timeline: "Exploring" } } },
             { kind: "calendar", event: { id: "cal-ai-sign", day: "Thu", date: "Oct 16", time: "5:30 PM", title: "Listing appointment: Nathan Ruiz", withWhom: "Marisol Vega", status: "confirmed" } },
             { kind: "conversation", conversation: { id: "c-ai-sign", contact: "Nathan Ruiz", channel: "phone", topic: "After-hours sign call: appointment booked", unread: true, messages: [
               { id: "ai-sign-1", from: "system", meta: "AI receptionist · call summary", text: "After-hours sign call handled. Caller asked for a home value; assistant declined to estimate and routed to a licensed agent. Listing appointment booked Thu 5:30 PM with Marisol. Confirmation texted. No valuation, no opinion of price given.", time: "Just now" },
@@ -907,7 +907,7 @@ export const realestateConfig: IndustryConfig = {
       { label: "Ask Timeline & Motivation" },
       { label: "Offer Calendar Times" },
       { label: "Book Appointment", sub: "Live availability" },
-      { label: "Send Pre-Listing Packet", sub: "Comps + net sheet" },
+      { label: "Send Pre-Listing Packet", sub: "Checklist + net sheet" },
       { label: "Schedule Reminders", sub: "48h / 24h" },
       { label: "Create Agent Prep Tasks" },
     ],
@@ -959,11 +959,11 @@ export const realestateConfig: IndustryConfig = {
       { id: "valuation", label: "Never gives a value or an opinion of price", kind: "route", detail: "Any 'what's it worth' goes to a licensed agent with a CMA appointment, even under pressure for a ballpark.", routesTo: "st-marisol" },
       { id: "representation", label: "Never solicits a represented buyer", kind: "never", detail: "If the caller has an agent, they get the listing sheet and no pitch. No lead is created." },
       { id: "licensee", label: "Never signs as a licensed agent", kind: "always", detail: "Every automated call and text identifies itself as the team's assistant for the named agent, never as the agent." },
-      { id: "comps", label: "Never sends comparable sales or CMA conclusions without agent review", kind: "never", detail: "Checklists and worksheets go out automatically; the comps and the price conversation stay with the agent." },
+      { id: "comps", label: "Never sends a CMA conclusion or opinion of price without agent review", kind: "never", detail: "Market notes and sold-nearby updates go out on schedule; any number that says what a specific home is worth comes from a licensed agent." },
       { id: "consent", label: "Never texts without consent on file", kind: "never", detail: "Anniversary, nurture, and just-listed touches go only to contacts with consent, and every campaign carries STOP." },
     ],
     seed: [
-      { id: "bnd-seed-1", ruleId: "valuation", at: "Yesterday 7:41 PM", summary: "Sign call asked what 22 Cordwainer Dr would sell for. Declined; booked a CMA with Marisol.", outcome: "declined", source: "receptionist" },
+      { id: "bnd-seed-1", ruleId: "valuation", at: "Yesterday 7:41 PM", summary: "Sign call asked what 41 Bayberry Rd would sell for. Declined; booked a CMA with Marisol.", outcome: "declined", source: "receptionist" },
       { id: "bnd-seed-2", ruleId: "representation", at: "Yesterday 12:15 PM", summary: "Open-house follow-up text: buyer replied 'we have an agent'. Sequence stopped, no further contact.", outcome: "declined", source: "automation" },
       { id: "bnd-seed-3", ruleId: "consent", at: "Monday 9:00 AM", summary: "Just-listed sphere batch skipped 22 contacts with no consent on file.", outcome: "declined", source: "automation" },
       { id: "bnd-seed-4", ruleId: "comps", at: "Sunday 8:30 PM", summary: "IDX seller inquiry received a prep checklist; comparable sales held for Marisol's Tuesday appointment.", outcome: "declined", source: "automation" },
@@ -974,7 +974,7 @@ export const realestateConfig: IndustryConfig = {
     attributionRule: "counted when a contact who had gone quiet for 48 hours or more re-engaged within 24 hours of an automated touch and advanced a stage, when an unclaimed lead was escalated inside the claim window and booked, or when an after-hours inquiry was booked before an agent saw it.",
     seed: [
       { id: "rec-seed-1", at: "Yesterday", contact: "Trevor Boyd", amount: 14100, silentFor: "Zillow lead, answered in 94 s", trigger: "after-hours", summary: "Claimed by Dev inside the window; tour block booked the same morning.", automationId: "auto-1" },
-      { id: "rec-seed-2", at: "2 days ago", contact: "Peter Abrams", amount: 16500, silentFor: "Quiet 2 years", trigger: "referral", summary: "Closing-anniversary touch produced a referral for his sister.", automationId: "auto-7" },
+      { id: "rec-seed-2", at: "2 days ago", contact: "Owen Hartley", amount: 12600, silentFor: "Quiet 2 years", trigger: "referral", summary: "Closing-anniversary touch produced a referral for a coworker.", automationId: "auto-7" },
       { id: "rec-seed-3", at: "Friday", contact: "Gordon Whitaker", amount: 26000, silentFor: "Quiet 21 days", trigger: "reactivation", summary: "Long-timeline buyer nurture got a reply and a call with Dev.", automationId: "auto-6" },
       { id: "rec-seed-4", at: "Thursday", contact: "Renata Santos", amount: 15870, silentFor: "Deadline inside 72 h", trigger: "deadline", summary: "Inspection contingency flagged; repair response filed before it lapsed.", automationId: "auto-4" },
       { id: "rec-seed-5", at: "Wednesday", contact: "Owen Hartley", amount: 17400, silentFor: "Sign call 8:05 PM, no agent free", trigger: "after-hours", summary: "Listing appointment booked by the assistant after hours.", automationId: "auto-2" },
@@ -991,6 +991,7 @@ export const realestateConfig: IndustryConfig = {
     "Long-timeline buyer follow-up",
     "Agent accountability and production reporting",
     "Source attribution from spend to closing",
+    "Guardrails & compliance boundaries",
   ],
   requestExtras: [
     { id: "brokerage-type", label: "What best describes you?", options: ["Solo agent", "Agent team inside a brokerage", "Independent brokerage", "Franchise brokerage", "Multi-office brokerage"] },
