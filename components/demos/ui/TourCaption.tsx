@@ -54,7 +54,7 @@ export function TourCaption({ eyebrow, title, detail, chips, accent, onChip, con
   return (
     <div
       data-tour-caption
-      className="sticky top-0 z-20 -mx-4 -mt-4 mb-4 border-b px-4 py-3 backdrop-blur sm:-mx-5 sm:-mt-5 sm:px-5"
+      className="sticky top-16 z-20 sm:top-20 -mx-4 -mt-4 mb-4 border-b px-4 py-3 backdrop-blur sm:-mx-5 sm:-mt-5 sm:px-5"
       style={{ borderColor: `${accent}66`, backgroundColor: `color-mix(in srgb, ${accent} 10%, #0b0b0f)` }}
       aria-live="polite"
     >

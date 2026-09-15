@@ -184,6 +184,14 @@ export function DemoOS({
     setPulse({ tab: id, kind, key: Date.now() });
   }, []);
 
+  /**
+   * The OS window scrolls into view only when the visitor (or autoplay)
+   * advances the tour or runs a scenario, never when a persisted step is
+   * restored on hydration. Each request bumps a counter the effect keys on.
+   */
+  const [scrollRequest, setScrollRequest] = useState(0);
+  const requestScroll = useCallback(() => setScrollRequest((n) => n + 1), []);
+
   const runStep = useCallback(
     (index: number) => {
       flushPending();
@@ -191,10 +199,11 @@ export function DemoOS({
       if (!step) return;
       if (index === 0 && stepIndex === -1) tourSnapshot.current = state;
       dispatch({ type: "set-step", index });
+      requestScroll();
       if (step.tab) goToTab(step.tab, chipsForEffects(step.effects, config, state.stages)[0]?.kind);
       applyEffectsStaggered(step.effects);
     },
-    [steps, applyEffectsStaggered, state, stepIndex, flushPending, goToTab, config],
+    [steps, applyEffectsStaggered, state, stepIndex, flushPending, goToTab, config, requestScroll],
   );
 
   const nextStep = useCallback(() => {
@@ -208,14 +217,17 @@ export function DemoOS({
     setPlaying(false);
     const target = stepIndex - 1;
     let rebuilt = tourSnapshot.current;
+    // Earlier steps replay with `at: 0` so their fresh entries are already
+    // expired; only the target step's records stay spotlit.
     for (let i = 0; i <= target; i++) {
-      rebuilt = demoReducer(rebuilt, { type: "effects", effects: steps[i].effects });
+      rebuilt = demoReducer(rebuilt, { type: "effects", effects: steps[i].effects, at: i === target ? Date.now() : 0 });
     }
     rebuilt = { ...rebuilt, stepIndex: target, toasts: [] };
     dispatch({ type: "reset", state: rebuilt });
+    requestScroll();
     const stepTab = target >= 0 ? steps[target].tab : undefined;
     if (stepTab) goToTab(stepTab, chipsForEffects(steps[target].effects, config, rebuilt.stages)[0]?.kind);
-  }, [stepIndex, steps, clearTimers, goToTab, config]);
+  }, [stepIndex, steps, clearTimers, goToTab, config, requestScroll]);
 
   useEffect(() => {
     if (!playing) return;
@@ -236,6 +248,7 @@ export function DemoOS({
       dispatch({ type: "scenario-ran", id: scenario.id });
       track(`ran the "${scenario.label}" scenario`);
       setRunningScenario({ id: scenario.id, step: 0, total: scenario.steps.length });
+      requestScroll();
       scenario.steps.forEach((step, i) => {
         schedule(() => {
           setRunningScenario({ id: scenario.id, step: i + 1, total: scenario.steps.length });
@@ -247,7 +260,7 @@ export function DemoOS({
         }, i * QUICK_SCENARIO_STEP_MS);
       });
     },
-    [applyEffectsStaggered, flushPending, schedule, track, goToTab, config, state.stages],
+    [applyEffectsStaggered, flushPending, schedule, track, goToTab, config, state.stages, requestScroll],
   );
 
   /** Replay = deterministic: restore fresh data first, then run the scenario. */
@@ -389,11 +402,15 @@ export function DemoOS({
       : null;
 
   useEffect(() => {
+    if (scrollRequest === 0) return;
     const el = windowRef.current;
-    if (!el || (stepIndex < 0 && !runningScenario)) return;
+    if (!el) return;
     const top = el.getBoundingClientRect().top;
-    if (top < 0 || top > window.innerHeight * 0.5) el.scrollIntoView({ block: "start", behavior: "smooth" });
-  }, [stepIndex, runningScenario]);
+    if (top < 0 || top > window.innerHeight * 0.5) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      el.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+    }
+  }, [scrollRequest]);
 
   return (
     <div id={embedded ? undefined : "demo-os"} className="scroll-mt-24" style={{ ["--demo-accent" as string]: accent }}>
