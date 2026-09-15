@@ -635,9 +635,8 @@ export const healthwellnessConfig: IndustryConfig = {
         title: "Now try it yourself",
         detail:
           "Take a missed call as the AI receptionist's caller, build an instant treatment quote, or reschedule a consultation on the calendar. Everything here is safe to touch.",
-        tab: "overview",
+        tab: "receptionist",
         effects: [
-          { kind: "metric", id: "conversion", delta: 0 },
           { kind: "notify", notification: { id: "n-s11", title: "Your turn", body: "Try the AI receptionist call, then price a service in Treatment Quotes.", tone: "default" } },
         ],
       },

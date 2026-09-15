@@ -712,9 +712,8 @@ export const contractorConfig: IndustryConfig = {
         title: "Now try it yourself",
         detail:
           "Take an after-hours call as the AI receptionist's caller, build an instant quote in the Quotes tab, or drag a lead through the pipeline. Everything here is safe to touch.",
-        tab: "overview",
+        tab: "receptionist",
         effects: [
-          { kind: "metric", id: "pipeline-value", delta: 0 },
           { kind: "notify", notification: { id: "n-s12", title: "Your turn", body: "Try the AI receptionist call, then build a quote in the Quotes tab.", tone: "default" } },
         ],
       },

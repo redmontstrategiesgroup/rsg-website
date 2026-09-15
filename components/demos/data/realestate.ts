@@ -713,9 +713,8 @@ export const realestateConfig: IndustryConfig = {
         title: "Now try it yourself",
         detail:
           "Take an after-hours sign call as the AI receptionist's caller (ask it what your house is worth), build a seller net sheet, or flag a contingency deadline. Everything here is safe to touch.",
-        tab: "overview",
+        tab: "receptionist",
         effects: [
-          { kind: "metric", id: "lead-to-appt", delta: 0 },
           { kind: "notify", notification: { id: "n-s11", title: "Your turn", body: "Try the sign call, then build a net sheet in Listing Proposals.", tone: "default" } },
         ],
       },

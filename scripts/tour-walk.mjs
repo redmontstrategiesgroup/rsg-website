@@ -42,9 +42,13 @@ for (const vp of VIEWPORTS) {
       const caption = page.locator("[data-tour-caption]");
       const problems = [];
       if (!(await caption.isVisible())) problems.push("caption not visible");
-      if ((await caption.locator("li").count()) === 0) problems.push("no chips");
-      const freshVisible = await page.locator('[data-fresh="true"]:visible').count();
-      if (freshVisible === 0) problems.push("no spotlighted element on the visible tab");
+      // The final step of every tour is narration-only by design ("Now try it
+      // yourself") — it has no entity effects, so it earns no chip and no spotlight.
+      if (step < total) {
+        if ((await caption.locator("li").count()) === 0) problems.push("no chips");
+        const freshVisible = await page.locator('[data-fresh="true"]:visible').count();
+        if (freshVisible === 0) problems.push("no spotlighted element on the visible tab");
+      }
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
       if (overflow) problems.push("horizontal page overflow");
       await page.screenshot({ path: `.tour-shots/${slug}-${vp.width}-${String(step).padStart(2, "0")}.png`, fullPage: false });
