@@ -581,6 +581,7 @@ export const contractorConfig: IndustryConfig = {
         detail: "Project details, budget, timeline, and photos land in one record; not in an inbox someone checks after 5 PM.",
         tab: "pipeline",
         effects: [
+          { kind: "updateLead", leadId: "l-brian", patch: { assignee: "Dave Kessler" } },
           { kind: "notify", notification: { id: "n-s2", title: "New lead assigned", body: "Brian Kowalski (deck, $15–25k budget) auto-assigned to Dave.", tone: "success" } },
         ],
       },
@@ -711,8 +712,9 @@ export const contractorConfig: IndustryConfig = {
         title: "Now try it yourself",
         detail:
           "Take an after-hours call as the AI receptionist's caller, build an instant quote in the Quotes tab, or drag a lead through the pipeline. Everything here is safe to touch.",
-        tab: "receptionist",
+        tab: "overview",
         effects: [
+          { kind: "metric", id: "pipeline-value", delta: 0 },
           { kind: "notify", notification: { id: "n-s12", title: "Your turn", body: "Try the AI receptionist call, then build a quote in the Quotes tab.", tone: "default" } },
         ],
       },

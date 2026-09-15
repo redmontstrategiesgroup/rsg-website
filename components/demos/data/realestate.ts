@@ -658,7 +658,7 @@ export const realestateConfig: IndustryConfig = {
         id: "s-7",
         title: "The pre-listing packet and net sheet go out",
         detail: "The pre-listing checklist and a net-sheet worksheet go out now. The comparable sales come from Marisol in person Thursday; the system never sends an opinion of price.",
-        tab: "quotes",
+        tab: "automations",
         effects: [
           { kind: "workflowRun", run: { id: "wr-s7", automationId: "auto-0", name: "Pre-listing packet", detail: "Pre-listing checklist and net-sheet worksheet sent to Alicia Harmon; comps held for the agent.", time: "Just now", simulated: true } },
           { kind: "message", conversationId: "c-alicia", message: { id: "sa-6", from: "system", meta: "Automated · Pre-listing packet", text: "Sent — a prep checklist and a net-sheet worksheet at the payoff you mentioned, so Thursday is a numbers conversation. Marisol will bring the comparable sales herself.", time: "Just now" } },
@@ -713,8 +713,9 @@ export const realestateConfig: IndustryConfig = {
         title: "Now try it yourself",
         detail:
           "Take an after-hours sign call as the AI receptionist's caller (ask it what your house is worth), build a seller net sheet, or flag a contingency deadline. Everything here is safe to touch.",
-        tab: "receptionist",
+        tab: "overview",
         effects: [
+          { kind: "metric", id: "lead-to-appt", delta: 0 },
           { kind: "notify", notification: { id: "n-s11", title: "Your turn", body: "Try the sign call, then build a net sheet in Listing Proposals.", tone: "default" } },
         ],
       },

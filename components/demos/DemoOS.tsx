@@ -384,7 +384,7 @@ export function DemoOS({
   const scenarioStep = scenarioDef && runningScenario && runningScenario.step > 0 ? scenarioDef.steps[runningScenario.step - 1] : undefined;
   const caption = scenarioStep
     ? { eyebrow: `Scenario · step ${runningScenario!.step} of ${runningScenario!.total}`, title: scenarioStep.title, detail: scenarioStep.detail, chips: chipsForEffects(scenarioStep.effects, config, state.stages), controls: undefined }
-    : currentStep && !tourDone
+    : currentStep
       ? { eyebrow: `Guided tour · step ${stepIndex + 1} of ${steps.length}`, title: currentStep.title, detail: currentStep.detail, chips: chipsForEffects(currentStep.effects, config, state.stages), controls: { playing, canPrev: stepIndex > 0, canNext: !tourDone, onPrev: prevStep, onNext: nextStep, onToggle: () => setPlaying((p) => !p) } }
       : null;
 

@@ -582,7 +582,7 @@ export const healthwellnessConfig: IndustryConfig = {
         id: "s-7",
         title: "Reminders are scheduled automatically",
         detail: "Confirmation now; reminders at 48 hours, 24 hours, and 2 hours before; the sequence that keeps the no-show number low.",
-        tab: "automations",
+        tab: "conversations",
         effects: [
           { kind: "activity", item: { id: "a-s7", icon: "automation", text: "No-show prevention sequence scheduled for Maya Torres (48h / 24h / 2h).", time: "Just now" } },
           { kind: "message", conversationId: "c-maya", message: { id: "m-6", from: "system", meta: "Automated · Confirmation", text: "You're all set, Maya, Tuesday, Jul 14 at 4:00 PM with Carly. Your pre-visit form: aura.demo/intake. We'll send a couple of reminders so it sneaks up easy.", time: "Just now" } },
@@ -635,8 +635,9 @@ export const healthwellnessConfig: IndustryConfig = {
         title: "Now try it yourself",
         detail:
           "Take a missed call as the AI receptionist's caller, build an instant treatment quote, or reschedule a consultation on the calendar. Everything here is safe to touch.",
-        tab: "receptionist",
+        tab: "overview",
         effects: [
+          { kind: "metric", id: "conversion", delta: 0 },
           { kind: "notify", notification: { id: "n-s11", title: "Your turn", body: "Try the AI receptionist call, then price a service in Treatment Quotes.", tone: "default" } },
         ],
       },

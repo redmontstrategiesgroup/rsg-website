@@ -35,3 +35,6 @@ next-env.d.ts
 
 # Responsive audit raw output (the .txt summary is committed as evidence)
 audit-out/*.json
+
+# Tour walker screenshots (debugging aid, not committed evidence)
+/.tour-shots/

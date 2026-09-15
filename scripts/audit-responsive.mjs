@@ -67,7 +67,6 @@ const PUBLIC_ROUTES = [
   "/demos",
   "/demos/healthwellness",
   "/demos/contractors",
-  "/demos/gyms",
   "/demos/realestate",
   "/businessconsulting",
   "/systemsaudit",
