@@ -1,10 +1,11 @@
-import { describe, it, beforeEach } from "node:test";
+import { describe, it, beforeEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import { z } from "zod";
 import { withApi, optionsHandler, type PipelineDeps } from "../lib/apiv1/pipeline.ts";
 import { generateApiKey, type ApiKeyRow } from "../lib/apiv1/keys.ts";
 import type { Principal } from "../lib/apiv1/principal.ts";
 import { ApiError } from "../lib/apiv1/errors.ts";
+import { requestHash } from "../lib/apiv1/idempotency.ts";
 import { resetOperations, listOperations } from "../lib/apiv1/registry.ts";
 
 const key = generateApiKey();
@@ -27,17 +28,19 @@ function idemDb() {
 function mkDeps(over: Partial<PipelineDeps> = {}) {
   const usage: unknown[] = [];
   const limited = { allow: true };
+  const rateCalls: { key: string; limit: number; windowMs: number }[] = [];
+  const idem = idemDb();
   const deps: PipelineDeps = {
     enabled: () => true,
     resolveKey: async (b) => (b === key.plaintext ? keyRow : null),
     resolvePrincipal: async () => clientPrincipal,
-    rateLimit: async () => limited.allow,
+    rateLimit: async (k, limit, windowMs) => { rateCalls.push({ key: k, limit, windowMs }); return limited.allow; },
     clientIp: () => "9.9.9.9",
-    idempotency: idemDb(),
+    idempotency: idem,
     usage: { from: () => ({ insert: async (r: unknown) => { usage.push(r); return { error: null }; } }) },
     ...over,
   };
-  return { deps, usage, limited };
+  return { deps, usage, limited, rateCalls, idem };
 }
 
 const ctx = (params: Record<string, string> = {}) => ({ params: Promise.resolve(params) });
@@ -63,10 +66,24 @@ describe("withApi", () => {
   it("401 missing / invalid key; 403 wrong principal type; 403 missing scope", async () => {
     const { deps } = mkDeps();
     const h = withApi("GET", { auth: "client", scopes: ["tickets:read"], meta: meta("b") }, async () => ({ data: 1 }), deps);
-    assert.equal((await h(req("GET", "/api/v1/x", { auth: null }), ctx())).status, 401);
-    assert.equal((await h(req("GET", "/api/v1/x", { auth: "rsg_live_bad" }), ctx())).status, 401);
+
+    const missing = await h(req("GET", "/api/v1/x", { auth: null }), ctx());
+    assert.equal(missing.status, 401);
+    const missingBody = await missing.json();
+    assert.equal(missingBody.error.code, "unauthenticated");
+    assert.equal(missingBody.error.message, "Missing API key.");
+
+    const invalid = await h(req("GET", "/api/v1/x", { auth: "rsg_live_bad" }), ctx());
+    assert.equal(invalid.status, 401);
+    const invalidBody = await invalid.json();
+    assert.equal(invalidBody.error.code, "unauthenticated");
+    assert.equal(invalidBody.error.message, "Invalid API key.");
+
     const admin = withApi("GET", { auth: "admin", meta: meta("c") }, async () => ({ data: 1 }), deps);
-    assert.equal((await admin(req("GET", "/api/v1/x"), ctx())).status, 403);
+    const adminRes = await admin(req("GET", "/api/v1/x"), ctx());
+    assert.equal(adminRes.status, 403);
+    assert.equal((await adminRes.json()).error.code, "insufficient_scope");
+
     const scoped = withApi("GET", { auth: "client", scopes: ["billing:read"], meta: meta("d") }, async () => ({ data: 1 }), deps);
     const res = await scoped(req("GET", "/api/v1/x"), ctx());
     assert.equal(res.status, 403);
@@ -94,6 +111,34 @@ describe("withApi", () => {
     const res = await h(req("GET", "/api/v1/x", { auth: null }), ctx());
     assert.equal(res.status, 429);
     assert.equal(res.headers.get("retry-after"), "60");
+  });
+
+  it("rate limit uses the correct bucket key/limit/window per route", async () => {
+    const { deps: keyedDeps, rateCalls: keyedCalls } = mkDeps();
+    const keyed = withApi("GET", { auth: "client", scopes: ["tickets:read"], meta: meta("k1") }, async () => ({ data: 1 }), keyedDeps);
+    await keyed(req("GET", "/api/v1/x"), ctx());
+    assert.deepEqual(keyedCalls.at(-1), { key: "api:key:k1", limit: 600, windowMs: 600_000 });
+
+    const { deps: keylessDeps, rateCalls: keylessCalls } = mkDeps();
+    const keyless = withApi("GET", { auth: "none", meta: meta("k2") }, async () => ({ data: 1 }), keylessDeps);
+    await keyless(req("GET", "/api/v1/x", { auth: null }), ctx());
+    assert.deepEqual(keylessCalls.at(-1), { key: "api:ip:9.9.9.9", limit: 60, windowMs: 600_000 });
+
+    const { deps: customDeps, rateCalls: customCalls } = mkDeps();
+    const custom = withApi("GET", { auth: "client", scopes: ["tickets:read"], rateLimit: { limit: 5, windowMs: 1000 }, meta: meta("k3") }, async () => ({ data: 1 }), customDeps);
+    await custom(req("GET", "/api/v1/x"), ctx());
+    assert.deepEqual(customCalls.at(-1), { key: "api:key:k1", limit: 5, windowMs: 1000 });
+  });
+
+  it("a bad bearer consults the keyless IP bucket and 429s (not 401) when it's exhausted", async () => {
+    const { deps, rateCalls, limited } = mkDeps();
+    limited.allow = false;
+    const h = withApi("GET", { auth: "client", scopes: ["tickets:read"], meta: meta("k4") }, async () => ({ data: 1 }), deps);
+    const res = await h(req("GET", "/api/v1/x", { auth: "rsg_live_bad" }), ctx());
+    assert.equal(res.status, 429);
+    assert.equal(res.headers.get("retry-after"), "60");
+    assert.equal(rateCalls.length, 1);
+    assert.deepEqual(rateCalls[0], { key: "api:ip:9.9.9.9", limit: 60, windowMs: 600_000 });
   });
 
   it("422 on invalid JSON and on schema failure; query validated", async () => {
@@ -131,14 +176,49 @@ describe("withApi", () => {
     assert.equal(calls, 3);
   });
 
+  it("a genuinely in-flight idempotency row returns 409 conflict", async () => {
+    const { deps, idem } = mkDeps();
+    const body = { n: 1 };
+    const rawBody = JSON.stringify(body);
+    const hash = requestHash("POST", "/api/v1/t", rawBody);
+    idem.rows.set("c1:live-12345", { principal_id: "c1", key: "live-12345", request_hash: hash, status: "in_flight", response_status: null, response_body: null });
+    const h = withApi("POST", { auth: "client", idempotent: true, body: z.object({ n: z.number() }), meta: meta("o") }, async () => ({ data: {}, status: 201 }), deps);
+    const res = await h(req("POST", "/api/v1/t", { body, headers: { "idempotency-key": "live-12345" } }), ctx());
+    assert.equal(res.status, 409);
+    assert.equal((await res.json()).error.code, "conflict");
+  });
+
+  it("idempotent route with no idempotency store returns 503 unavailable", async () => {
+    const { deps } = mkDeps({ idempotency: null });
+    const h = withApi("POST", { auth: "client", idempotent: true, body: z.object({ n: z.number() }), meta: meta("p") }, async () => ({ data: {} }), deps);
+    const res = await h(req("POST", "/api/v1/t", { body: { n: 1 }, headers: { "idempotency-key": "abc-12345" } }), ctx());
+    assert.equal(res.status, 503);
+    assert.equal((await res.json()).error.code, "unavailable");
+  });
+
+  it("merges HandlerResult.headers (e.g. Location), includes meta, and sets content-type", async () => {
+    const { deps } = mkDeps();
+    const h = withApi("GET", { auth: "client", scopes: ["tickets:read"], meta: meta("q") }, async () => ({ data: {}, meta: { total: 1 }, status: 302, headers: { Location: "https://x/y" } }), deps);
+    const res = await h(req("GET", "/api/v1/x"), ctx());
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.get("location"), "https://x/y");
+    assert.equal(res.headers.get("content-type"), "application/json");
+    assert.deepEqual(await res.json(), { data: {}, meta: { total: 1 } });
+  });
+
   it("maps unknown errors to opaque 500 and still logs usage", async () => {
     const { deps, usage } = mkDeps();
-    const h = withApi("GET", { auth: "none", meta: meta("i") }, async () => { throw new Error("pg down"); }, deps);
-    const res = await h(req("GET", "/api/v1/x", { auth: null }), ctx());
-    assert.equal(res.status, 500);
-    assert.equal((await res.json()).error.message, "Something went wrong.");
-    await new Promise((r) => setImmediate(r));
-    assert.equal((usage[0] as any).status, 500);
+    const errorStub = mock.method(console, "error", () => {});
+    try {
+      const h = withApi("GET", { auth: "none", meta: meta("i") }, async () => { throw new Error("pg down"); }, deps);
+      const res = await h(req("GET", "/api/v1/x", { auth: null }), ctx());
+      assert.equal(res.status, 500);
+      assert.equal((await res.json()).error.message, "Something went wrong.");
+      await new Promise((r) => setImmediate(r));
+      assert.equal((usage[0] as any).status, 500);
+    } finally {
+      errorStub.mock.restore();
+    }
   });
 
   it("registers operations and answers OPTIONS", async () => {

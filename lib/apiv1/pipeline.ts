@@ -37,9 +37,12 @@ export function optionsHandler(): RouteHandler {
 }
 
 function json(status: number, body: unknown, correlationId: string, extra: Record<string, string> = {}): Response {
+  // `extra` (including a handler's own HandlerResult.headers, e.g. Location) is spread FIRST so
+  // the pipeline's own Content-Type/x-correlation-id/CORS headers always win and can't be
+  // overridden by a handler or an error path.
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", "x-correlation-id": correlationId, ...corsHeaders(), ...extra },
+    headers: { ...extra, "Content-Type": "application/json", "x-correlation-id": correlationId, ...corsHeaders() },
   });
 }
 
@@ -68,6 +71,8 @@ export function withApi<B = undefined, Q = undefined>(
     const start = now();
     const correlationId = request.headers.get("x-correlation-id")?.slice(0, 64) || crypto.randomUUID();
     const url = new URL(request.url);
+    const ip = deps.clientIp(request); // computed once, up front: used both for the keyless
+    // rate-limit bucket below and as the fallback bucket for a bogus/expired bearer (see auth).
     let principal: Principal | null = null;
     let params: Record<string, string> = {};
     let idem: { principalId: string; key: string } | null = null;
@@ -98,7 +103,16 @@ export function withApi<B = undefined, Q = undefined>(
       if (bearer) {
         const key = await deps.resolveKey(bearer);
         principal = key ? await deps.resolvePrincipal(key) : null;
-        if (!principal) throw new ApiError(401, "unauthenticated", "Invalid API key.");
+        if (!principal) {
+          // A bogus/expired bearer still costs a DB lookup (resolveKey/resolvePrincipal above).
+          // Charge it against the keyless IP bucket BEFORE rejecting, so a flood of invalid keys
+          // can't bypass rate limiting by never producing a principal. A successful auth below
+          // is charged only once, against its own api:key:<id> bucket in the rate-limit step.
+          if (!(await deps.rateLimit(`api:ip:${ip}`, KEYLESS_LIMIT.limit, KEYLESS_LIMIT.windowMs))) {
+            return fail(new ApiError(429, "rate_limited", "Rate limit exceeded."), { "Retry-After": "60" });
+          }
+          throw new ApiError(401, "unauthenticated", "Invalid API key.");
+        }
       } else if (config.auth !== "none") {
         throw new ApiError(401, "unauthenticated", "Missing API key.");
       }
@@ -111,7 +125,6 @@ export function withApi<B = undefined, Q = undefined>(
       }
 
       // Rate limit
-      const ip = deps.clientIp(request);
       const rl = config.rateLimit ?? (principal ? KEYED_LIMIT : KEYLESS_LIMIT);
       const rlKey = principal ? `api:key:${principal.keyId}` : `api:ip:${ip}`;
       // Spec deviation (§2.4): X-RateLimit-Limit/Remaining are intentionally NOT emitted in
@@ -122,7 +135,7 @@ export function withApi<B = undefined, Q = undefined>(
 
       // Query
       const rawQuery: Record<string, string> = {};
-      url.searchParams.forEach((v, k) => { if (!(k in rawQuery)) rawQuery[k] = v; });
+      url.searchParams.forEach((v, k) => { if (!Object.hasOwn(rawQuery, k)) rawQuery[k] = v; });
       let query: Q = {} as Q;
       if (config.query) {
         const r = config.query.safeParse(rawQuery);
@@ -144,6 +157,8 @@ export function withApi<B = undefined, Q = undefined>(
         }
       }
 
+      params = await ctx.params;
+
       // Idempotency
       if (config.idempotent) {
         const k = request.headers.get("idempotency-key")?.trim() ?? "";
@@ -157,18 +172,19 @@ export function withApi<B = undefined, Q = undefined>(
         idem = { principalId, key: k };
       }
 
-      params = await ctx.params;
-      let result: HandlerResult;
+      // Handler + envelope + idempotency completion all share one try: any throw here — from the
+      // handler itself, or from building/finishing the response — must abandon a "new" idempotent
+      // row so a retry re-executes instead of getting stuck in_flight forever.
       try {
-        result = await handler({ principal, body, query, params, request, correlationId });
+        const result: HandlerResult = await handler({ principal, body, query, params, request, correlationId });
+        const status = result.status ?? 200;
+        const payload = { data: result.data, ...(result.meta ? { meta: result.meta } : {}) };
+        if (idem && deps.idempotency) await completeIdempotent(deps.idempotency, { ...idem, status, body: payload });
+        return finish(json(status, payload, correlationId, result.headers));
       } catch (err) {
         if (idem && deps.idempotency) await abandonIdempotent(deps.idempotency, idem).catch(() => {});
         throw err;
       }
-      const status = result.status ?? 200;
-      const payload = { data: result.data, ...(result.meta ? { meta: result.meta } : {}) };
-      if (idem && deps.idempotency) await completeIdempotent(deps.idempotency, { ...idem, status, body: payload });
-      return finish(json(status, payload, correlationId, result.headers));
     } catch (err) {
       const apiErr = toApiError(err);
       if (apiErr.code === "internal") console.error("[apiv1]", correlationId, err);
