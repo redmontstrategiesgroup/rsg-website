@@ -2,7 +2,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import * as s from "../lib/apiv1/serializers.ts";
-import { requireOwned, ticketOwnedBy, fileOwnedBy } from "../lib/apiv1/ownership.ts";
+import { requireOwned, requireUuid, ticketOwnedBy, fileOwnedBy } from "../lib/apiv1/ownership.ts";
 
 /** Feed every serializer an object that has every denylisted key set; none may survive. */
 const poison = Object.fromEntries(s.DENYLIST.map((k) => [k, "LEAK"]));
@@ -34,5 +34,12 @@ describe("ownership", () => {
     assert.throws(() => requireOwned(null, true), (e: any) => e.code === "not_found");
     assert.throws(() => requireOwned({ x: 1 }, false), (e: any) => e.status === 404);
     assert.deepEqual(requireOwned({ x: 1 }, true), { x: 1 });
+  });
+
+  it("requireUuid", () => {
+    const uuid = "11111111-1111-1111-1111-111111111111";
+    assert.equal(requireUuid(uuid), uuid);
+    assert.throws(() => requireUuid("abc"), (e: any) => e.code === "not_found");
+    assert.throws(() => requireUuid(undefined), (e: any) => e.code === "not_found");
   });
 });

@@ -16,7 +16,7 @@ import type { Approval, Milestone, ProjectTask } from "@/lib/lifecycle/types";
 import { clientOf } from "../client";
 import { ApiError } from "../errors";
 import { parseListParams } from "../pagination";
-import { approvalOwnedBy, projectOwnedBy, requireOwned } from "../ownership";
+import { approvalOwnedBy, projectOwnedBy, requireOwned, requireUuid } from "../ownership";
 import { toApprovalDto, toMilestoneDto, toProjectDto, toTaskDto } from "../serializers";
 import type { ApiHandler } from "../types";
 
@@ -40,7 +40,7 @@ export const listProjects: ApiHandler<undefined, z.infer<typeof listQuery>> = as
 };
 
 async function ownedProjectDetail(projectId: string, clientId: string) {
-  const detail = await getProjectWithDetail(projectId);
+  const detail = await getProjectWithDetail(requireUuid(projectId));
   return requireOwned(detail, projectOwnedBy(detail?.project ?? null, clientId));
 }
 
@@ -64,14 +64,16 @@ export const getProject: ApiHandler<undefined, undefined> = async ({ principal, 
 
 async function ownedMilestone(projectId: string, milestoneId: string, clientId: string): Promise<Milestone> {
   const detail = await ownedProjectDetail(projectId, clientId);
-  const m = detail.milestones.find((x) => x.id === milestoneId) ?? null;
+  const m = detail.milestones.find((x) => x.id === requireUuid(milestoneId)) ?? null;
   return requireOwned(m, m !== null);
 }
 
 export const approveMilestoneHandler: ApiHandler<z.infer<typeof noteBody>, undefined> = async ({ principal, params, body }) => {
   const c = clientOf(principal);
   const m = await ownedMilestone(params.id!, params.mid!, c.portal.client.id);
-  if (m.status !== "under_review") throw new ApiError(409, "conflict", "This milestone isn't awaiting review.");
+  if (m.status !== "under_review" || !m.approval_required) {
+    throw new ApiError(409, "conflict", "This milestone isn't awaiting review.");
+  }
   const r = await approveMilestone(m.id, { approvedBy: c.keyName });
   await logClientActivity({
     clientId: c.portal.client.id,
@@ -105,7 +107,7 @@ export const requestChangesHandler: ApiHandler<z.infer<typeof changesBody>, unde
 export const completeTaskHandler: ApiHandler<undefined, undefined> = async ({ principal, params }) => {
   const c = clientOf(principal);
   const detail = await ownedProjectDetail(params.id!, c.portal.client.id);
-  const task = detail.tasks.find((t) => t.id === params.tid) ?? null;
+  const task = detail.tasks.find((t) => t.id === requireUuid(params.tid)) ?? null;
   const owned = requireOwned<ProjectTask>(task, task !== null);
   if (owned.assignee_party !== "client") throw new ApiError(409, "conflict", "This task belongs to the Redmont team.");
   if (owned.status === "done") return { data: toTaskDto(owned) };
@@ -125,7 +127,7 @@ export const completeTaskHandler: ApiHandler<undefined, undefined> = async ({ pr
 export const decideApprovalHandler: ApiHandler<z.infer<typeof decideBody>, undefined> = async ({ principal, params, body }) => {
   const c = clientOf(principal);
   const all = await listApprovalsForClient(c.portal.client.id);
-  const a = all.find((x) => x.id === params.id) ?? null;
+  const a = all.find((x) => x.id === requireUuid(params.id)) ?? null;
   const owned = requireOwned<Approval>(a, approvalOwnedBy(a, c.portal.client.id));
   if (owned.status !== "pending") throw new ApiError(409, "conflict", "This approval has already been decided.");
   const decided = await decideApproval(owned.id, {
