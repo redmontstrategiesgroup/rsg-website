@@ -21,7 +21,9 @@ describe("resolvePrincipal", () => {
   });
   it("rejects a missing or inactive client", async () => {
     assert.equal(await resolvePrincipal(key({}), deps(null, null)), null);
-    assert.equal(await resolvePrincipal(key({}), deps({ id: "c1", name: "", company: "", email: "", status: "inactive" }, null)), null);
+    assert.equal(await resolvePrincipal(key({}), deps({ id: "c1", name: "", company: "", email: "", status: "former" }, null)), null);
+    assert.equal(await resolvePrincipal(key({}), deps({ id: "c1", name: "", company: "", email: "", status: "paused" }, null)), null);
+    assert.notEqual(await resolvePrincipal(key({}), deps({ id: "c1", name: "", company: "", email: "", status: "onboarding" }, null)), null);
   });
   it("caps admin scopes by the admin's current role", async () => {
     const p = await resolvePrincipal(

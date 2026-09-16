@@ -12,7 +12,9 @@ export type PrincipalDeps = {
   getAdmin(id: string): Promise<{ id: string; email: string; role: SchedulingRole } | null>;
 };
 
-const BLOCKED_CLIENT_STATUSES = new Set(["inactive", "churned", "suspended"]);
+// clients.status values are prospect/onboarding/active/paused/support/former
+// (20260717120000_client_lifecycle.sql); onboarding, active and support clients may use the API.
+const BLOCKED_CLIENT_STATUSES = new Set(["former", "paused", "prospect"]);
 
 export async function resolvePrincipal(key: ApiKeyRow, deps: PrincipalDeps): Promise<Principal | null> {
   if (key.principal_type === "client") {
