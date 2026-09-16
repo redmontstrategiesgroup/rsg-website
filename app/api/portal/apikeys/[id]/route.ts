@@ -1,24 +1,16 @@
 import { NextResponse } from "next/server";
-import { requirePortalContext, canManageTeam } from "@/lib/lifecycle/access";
 import { requireSupabase } from "@/lib/lifecycle/core";
 import { logClientActivity } from "@/lib/lifecycle/activity";
-import { isSupabaseConfigured } from "@/lib/supabase";
-import { apiPlatformEnabled } from "@/lib/env";
 import { revokeApiKey } from "@/lib/apiv1/key-store";
 import { writeAuditEvent } from "@/lib/audit";
+import { portalKeyGuard } from "@/lib/apiv1/route-guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
-  if (!apiPlatformEnabled() || !isSupabaseConfigured()) {
-    return NextResponse.json({ error: "Not available." }, { status: 503 });
-  }
-  const ctx = await requirePortalContext();
-  if (!ctx) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  if (!canManageTeam(ctx.user.role)) {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
-  }
+  const ctx = await portalKeyGuard();
+  if (ctx instanceof NextResponse) return ctx;
   const { id } = await context.params;
   const ok = await revokeApiKey(requireSupabase(), { type: "client", id: ctx.client.id }, id);
   if (!ok) return NextResponse.json({ error: "Key not found." }, { status: 404 });

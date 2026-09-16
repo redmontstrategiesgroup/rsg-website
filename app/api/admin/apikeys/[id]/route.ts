@@ -1,21 +1,17 @@
 import { NextResponse } from "next/server";
-import { isAdminContext, requireAdmin, rateLimitAdminMutator } from "@/lib/admin-auth";
+import { rateLimitAdminMutator } from "@/lib/admin-auth";
 import { requireSupabase } from "@/lib/lifecycle/core";
-import { isSupabaseConfigured } from "@/lib/supabase";
-import { apiPlatformEnabled } from "@/lib/env";
 import { revokeApiKey, revokeAnyAdminKey } from "@/lib/apiv1/key-store";
 import { can } from "@/lib/scheduling/permissions";
 import { writeAuditEvent } from "@/lib/audit";
+import { adminKeyGuard } from "@/lib/apiv1/route-guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
-  if (!apiPlatformEnabled() || !isSupabaseConfigured()) {
-    return NextResponse.json({ error: "Not available." }, { status: 503 });
-  }
-  const ctx = await requireAdmin();
-  if (!isAdminContext(ctx)) return ctx;
+  const ctx = await adminKeyGuard();
+  if (ctx instanceof NextResponse) return ctx;
   const limited = await rateLimitAdminMutator(request, ctx.admin.id);
   if (limited) return limited;
   const { id } = await context.params;

@@ -14,8 +14,9 @@ function fakeSb(state: { keys: any[]; requests: any[] }) {
   const builder = (table: string) => {
     let rows = table === "api_keys" ? state.keys : state.requests;
     let pendingUpdate: any = null;
+    let selectOpts: { count?: string; head?: boolean } | null = null;
     const q: any = {};
-    q.select = () => q;
+    q.select = (_cols?: string, opts?: { count?: string; head?: boolean }) => { selectOpts = opts ?? null; return q; };
     q.eq = (c: string, v: unknown) => { rows = rows.filter((r) => r[c] === v); return q; };
     q.is = (c: string, v: unknown) => { rows = rows.filter((r) => r[c] === v); return q; };
     q.in = (c: string, vs: unknown[]) => { rows = rows.filter((r) => vs.includes(r[c])); return q; };
@@ -24,7 +25,14 @@ function fakeSb(state: { keys: any[]; requests: any[] }) {
     q.insert = (v: any) => { const row = { id: `id${state.keys.length + 1}`, created_at: "t", last_used_at: null, expires_at: null, revoked_at: null, ...v }; state.keys.push(row); rows = [row]; return q; };
     q.update = (v: any) => { pendingUpdate = v; return q; };
     q.single = async () => ({ data: rows[0], error: null });
-    q.then = (res: any) => { if (pendingUpdate) { for (const r of rows) Object.assign(r, pendingUpdate); } res({ data: rows, error: null }); };
+    q.then = (res: any) => {
+      if (pendingUpdate) { for (const r of rows) Object.assign(r, pendingUpdate); }
+      if (selectOpts?.count === "exact" && selectOpts.head) {
+        res({ data: null, count: rows.length, error: null });
+      } else {
+        res({ data: rows, error: null });
+      }
+    };
     return q;
   };
   return { from: builder } as any;
@@ -60,14 +68,16 @@ describe("key-store", () => {
         { id: "a2", principal_type: "admin", principal_id: "admin-2", revoked_at: null, name: "B", key_prefix: "bbbbbbbb", scopes: ["leads:read"], created_by: "x", last_used_at: null, expires_at: null, created_at: "t" },
         { id: "c1k", principal_type: "client", principal_id: "c1", revoked_at: null, name: "C", key_prefix: "cccccccc", scopes: ["projects:read"], created_by: "x", last_used_at: null, expires_at: null, created_at: "t" },
       ],
-      requests: [{ key_id: "a1" }],
+      requests: [{ key_id: "a1" }, { key_id: "a1" }],
     };
     const sb = fakeSb(state);
     const all = await listAllAdminKeys(sb);
     assert.equal(all.length, 2);
     assert.ok(all.every((k) => "principal_id" in k));
     const a1 = all.find((k) => k.id === "a1")!;
-    assert.equal(a1.requests_30d, 1);
+    const a2 = all.find((k) => k.id === "a2")!;
+    assert.equal(a1.requests_30d, 2);
+    assert.equal(a2.requests_30d, 0);
   });
 
   it("revokeAnyAdminKey revokes an admin key regardless of owner", async () => {

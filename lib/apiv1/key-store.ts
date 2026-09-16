@@ -44,18 +44,32 @@ async function activeRows(sb: SupabaseClient, owner: KeyOwner): Promise<ApiKeyRo
   return (data ?? []) as ApiKeyRow[];
 }
 
+/**
+ * Exact 30-day request count per key, one `count: "exact", head: true` query
+ * per key (run in parallel). A row-fetching `.select("key_id")` grouped in
+ * JS would silently truncate at PostgREST's default max-rows (1000) with no
+ * visible error, undercounting busy keys — so each key gets its own
+ * server-side count instead of a shared row scan.
+ */
 async function requests30dByKeyId(sb: SupabaseClient, keyIds: string[]): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
   if (keyIds.length === 0) return counts;
   const since = new Date(Date.now() - 30 * 24 * 60 * 60_000).toISOString();
-  const { data } = await sb
-    .from("api_requests")
-    .select("key_id")
-    .in("key_id", keyIds)
-    .gte("created_at", since);
-  for (const r of (data ?? []) as { key_id: string }[]) {
-    counts.set(r.key_id, (counts.get(r.key_id) ?? 0) + 1);
-  }
+  await Promise.all(
+    keyIds.map(async (id) => {
+      const { count, error } = await sb
+        .from("api_requests")
+        .select("*", { count: "exact", head: true })
+        .eq("key_id", id)
+        .gte("created_at", since);
+      if (error) {
+        console.warn(`[key-store] requests_30d count failed for key ${id}: ${error.message}`);
+        counts.set(id, 0);
+        return;
+      }
+      counts.set(id, count ?? 0);
+    }),
+  );
   return counts;
 }
 
