@@ -90,3 +90,8 @@ export function requireSupabaseInProduction(): void {
     );
   }
 }
+
+/** Public API (/api/v1) is dark until this is "true" in the environment. */
+export function apiPlatformEnabled(): boolean {
+  return process.env.API_PLATFORM_ENABLED === "true";
+}

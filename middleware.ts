@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { isApiV1Path } from "@/lib/apiv1/paths";
 
 /**
  * Edge middleware: CSRF protection and coarse bot filtering for every
@@ -154,6 +155,11 @@ async function handle(request: NextRequest, correlationId: string) {
   }
 
   if (pathname.startsWith("/api/") && MUTATING_METHODS.has(request.method)) {
+    // Public API: bearer-key authentication in the route handler (lib/apiv1)
+    // replaces browser CSRF / user-agent checks. See spec §2.9.
+    if (isApiV1Path(pathname)) {
+      return forward();
+    }
     // External brief delivery is not a browser-cookie flow. It has its own
     // bearer-secret authentication, idempotency requirement, validation, and
     // rate limit in the route handler, so CSRF and browser user-agent checks do
