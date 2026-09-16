@@ -28,7 +28,13 @@ export const realDeps: PipelineDeps = {
       getClient: async (id) => {
         const c = await getClientById(id);
         if (!c) return null;
-        const status = typeof (c as unknown as { status?: unknown }).status === "string" ? ((c as unknown as { status: string }).status) : "active";
+        // ClientRecord (lib/types.ts) has no `status` field — rowToClient() drops it — so it
+        // must be read straight off the `clients` row, the same way lib/lifecycle/access.ts
+        // resolves portal context status. Without this, every client principal would resolve
+        // as "active" and resolvePrincipal()'s blocked-status check could never fire.
+        const sb = getSupabase();
+        const { data } = sb ? await sb.from("clients").select("status").eq("id", id).maybeSingle() : { data: null };
+        const status = typeof data?.status === "string" ? data.status : "active";
         return { id: c.id, name: c.name, company: c.company, email: c.email, status };
       },
       getAdmin: async (id) => {
