@@ -30,12 +30,12 @@ async function ownedFile(id: string, clientId: string) {
 
 export const getFileHandler: ApiHandler<undefined, undefined> = async ({ principal, params }) => {
   const c = clientOf(principal);
-  return { data: toFileDto(await ownedFile(params.id!, c.portal.client.id)) };
+  return { data: toFileDto(await ownedFile(params.id, c.portal.client.id)) };
 };
 
 export const downloadFile: ApiHandler<undefined, undefined> = async ({ principal, params }) => {
   const c = clientOf(principal);
-  const f = await ownedFile(params.id!, c.portal.client.id);
+  const f = await ownedFile(params.id, c.portal.client.id);
   if (f.scan_status !== "clean") {
     throw new ApiError(409, "conflict", "File is not available for download yet.");
   }

@@ -43,9 +43,18 @@ export const createBriefHandler: ApiHandler<z.infer<typeof createBody>, undefine
   const idem = request.headers.get("idempotency-key")!.trim();
   const result = await ingestBrief(body, `client:${c.portal.client.id}:${idem}`, "api");
   if (!result.duplicate) {
-    await db.from("briefs").update({ client_id: c.portal.client.id }).eq("id", result.briefId);
+    const { error } = await db.from("briefs").update({ client_id: c.portal.client.id }).eq("id", result.briefId);
+    if (error) {
+      console.error("[apiv1] brief attribution failed:", error.message);
+      throw new ApiError(500, "internal", "Something went wrong.");
+    }
   }
-  const { data } = await db.from("briefs").select("*").eq("id", result.briefId).maybeSingle();
+  const { data } = await db
+    .from("briefs")
+    .select("*")
+    .eq("id", result.briefId)
+    .eq("client_id", c.portal.client.id)
+    .maybeSingle();
   if (!data) throw notFound();
   return { data: toBriefDto(data as BriefRow), status: result.duplicate ? 200 : 201 };
 };
