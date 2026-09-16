@@ -38,3 +38,6 @@ audit-out/*.json
 
 # Tour walker screenshots (debugging aid, not committed evidence)
 /.tour-shots/
+
+# Claude Code worktrees
+.claude/worktrees/
