@@ -11,6 +11,12 @@ describe("cursor codec", () => {
     assert.equal(decodeCursor("!!!"), null);
     assert.equal(decodeCursor(Buffer.from('{"a":1}').toString("base64url")), null);
   });
+  it("rejects injection attempts", () => {
+    // Cursor with comma in createdAt (PostgREST filter injection)
+    assert.equal(decodeCursor(Buffer.from(JSON.stringify(["2026-01-01T00:00:00Z,x", "11111111-1111-1111-1111-111111111111"])).toString("base64url")), null);
+    // Cursor with non-UUID id
+    assert.equal(decodeCursor(Buffer.from(JSON.stringify(["2026-01-01T00:00:00.000Z", "not-a-uuid"])).toString("base64url")), null);
+  });
 });
 
 describe("parseListParams", () => {
@@ -35,10 +41,10 @@ describe("applyCursor / pageResult", () => {
     assert.equal(calls.length, 1);
   });
   it("trims to limit and emits next_cursor from the last kept row", () => {
-    const rows = [1, 2, 3].map((n) => ({ id: `id${n}`, created_at: `t${n}` }));
+    const rows = [1, 2, 3].map((n) => ({ id: `0000000${n}-0000-4000-8000-000000000000`, created_at: `2026-01-0${n}T00:00:00.000Z` }));
     const r = pageResult(rows, 2);
     assert.equal(r.data.length, 2);
-    assert.deepEqual(decodeCursor(r.next_cursor!), { createdAt: "t2", id: "id2" });
+    assert.deepEqual(decodeCursor(r.next_cursor!), { createdAt: "2026-01-02T00:00:00.000Z", id: "00000002-0000-4000-8000-000000000000" });
     assert.equal(pageResult(rows, 3).next_cursor, null);
   });
 });

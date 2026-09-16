@@ -5,6 +5,12 @@ export type Cursor = { createdAt: string; id: string };
 export const DEFAULT_LIMIT = 25;
 export const MAX_LIMIT = 100;
 
+/** Regex for ISO-8601 timestamps (e.g. 2026-09-15T00:00:00.000Z) */
+export const ISO_TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/;
+
+/** Regex for UUIDs (e.g. 11111111-1111-1111-1111-111111111111) */
+export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function encodeCursor(c: Cursor): string {
   return Buffer.from(JSON.stringify([c.createdAt, c.id])).toString("base64url");
 }
@@ -14,7 +20,9 @@ export function decodeCursor(s: string): Cursor | null {
     const v = JSON.parse(Buffer.from(s, "base64url").toString("utf8"));
     if (!Array.isArray(v) || v.length !== 2) return null;
     const [createdAt, id] = v;
-    if (typeof createdAt !== "string" || typeof id !== "string" || !createdAt || !id) return null;
+    if (typeof createdAt !== "string" || typeof id !== "string") return null;
+    if (!ISO_TIMESTAMP_RE.test(createdAt)) return null;
+    if (!UUID_RE.test(id)) return null;
     return { createdAt, id };
   } catch {
     return null;
