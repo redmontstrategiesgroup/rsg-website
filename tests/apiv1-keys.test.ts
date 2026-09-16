@@ -34,7 +34,7 @@ describe("resolveApiKey", () => {
   const k = generateApiKey();
   const mk = (r: ApiKeyRow | null) => {
     const touched: string[] = [];
-    let t = 1_000_000;
+    let t = Date.parse("2026-09-15T00:00:00.000Z");
     return {
       touched,
       deps: { findByHash: async (h: string) => (r && h === k.hash ? r : null), touch: async (id: string) => { touched.push(id); }, now: () => t },
@@ -57,5 +57,9 @@ describe("resolveApiKey", () => {
     assert.equal(await resolveApiKey(k.plaintext, mk(null).deps), null);
     assert.equal(await resolveApiKey(k.plaintext, mk(row({ revoked_at: "2026-01-02T00:00:00Z" })).deps), null);
     assert.equal(await resolveApiKey(k.plaintext, mk(row({ expires_at: "2000-01-01T00:00:00Z" })).deps), null);
+  });
+  it("accepts a key with future expiry", async () => {
+    const r = await resolveApiKey(k.plaintext, mk(row({ expires_at: "2099-01-01T00:00:00Z" })).deps);
+    assert.ok(r);
   });
 });

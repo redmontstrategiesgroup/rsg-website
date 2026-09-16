@@ -52,7 +52,7 @@ export async function resolveApiKey(bearer: string | null, deps: KeyDeps): Promi
   if (!row) return null;
   const now = deps.now ? deps.now() : Date.now();
   if (row.revoked_at) return null;
-  if (row.expires_at && Date.parse(row.expires_at) >= now) return null;
+  if (row.expires_at && Date.parse(row.expires_at) <= now) return null;
   const prev = lastTouched.get(row.id) ?? 0;
   if (now - prev >= TOUCH_INTERVAL_MS) {
     lastTouched.set(row.id, now);
