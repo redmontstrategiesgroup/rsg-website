@@ -157,7 +157,9 @@ export function withApi<B = undefined, Q = undefined>(
         }
       }
 
-      params = await ctx.params;
+      // Next.js omits/undefines ctx.params for routes with no dynamic segments (e.g. /api/v1/me);
+      // fall back to {} so templatePath()/Object.entries() below never sees undefined.
+      params = (await ctx.params) ?? {};
 
       // Idempotency
       if (config.idempotent) {
