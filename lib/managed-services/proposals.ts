@@ -255,7 +255,7 @@ export async function upsertProposal(input: ProposalInput): Promise<Proposal | n
       if (error) throw error;
       return proposal;
     } catch (err) {
-      console.warn("[proposals] upsert failed — using file store.", err);
+      console.warn("[proposals] upsert failed: using file store.", err);
     }
   }
 
@@ -441,7 +441,7 @@ export async function recordProposalAcceptance(input: {
       if (error) throw error;
       return data?.length ? next : null;
     } catch (err) {
-      console.warn("[proposals] acceptance update failed — using file store.", err);
+      console.warn("[proposals] acceptance update failed: using file store.", err);
     }
   }
 

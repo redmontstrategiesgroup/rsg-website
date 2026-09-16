@@ -12,7 +12,7 @@ const DEPLOYMENT_NAMES: Record<DeploymentModelId, { name: string; summary: strin
       "The AI model, company data, databases, and supporting services run on hardware controlled by your organization.",
   },
   on_premise: {
-    name: "On-Premise AI",
+    name: "Onpremise AI",
     summary:
       "Installed within your office, facility, warehouse, practice, or other physical location on your local network.",
   },
@@ -147,7 +147,7 @@ export function buildSimulatedArchitecture(
   ];
 
   return {
-    recommendedDeployment: `${deployment.name} — ${deployment.summary}`,
+    recommendedDeployment: `${deployment.name}: ${deployment.summary}`,
     coreComponents: [
       `${systemLabel} application layer`,
       ...SYSTEM_COMPONENTS[config.systemType],

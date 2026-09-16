@@ -3,7 +3,7 @@
 /**
  * Shared primitives for the Managed Services admin panel sub-views.
  * Client-safe only: types from lib/managed-services/types.ts and display
- * helpers — never import the server-only store here.
+ * helpers, never import the server-only store here.
  */
 
 import { Inbox } from "lucide-react";
@@ -167,9 +167,9 @@ export function slugifyKey(name: string): string {
 }
 
 export function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -178,9 +178,9 @@ export function fmtDate(iso: string | null | undefined): string {
 }
 
 export function fmtDateTime(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleString();
 }
 
@@ -188,7 +188,7 @@ export function clientLabel(
   clients: MinimalClient[],
   clientId: string | null | undefined
 ): string {
-  if (!clientId) return "—";
+  if (!clientId) return "-";
   const c = clients.find((x) => x.id === clientId);
   if (!c) return `${clientId.slice(0, 8)}…`;
   return c.company ? `${c.name} · ${c.company}` : c.name;

@@ -5,7 +5,7 @@ booking → preparation → consultation → proposal → contract → deposit �
 onboarding → milestones → training → support → reporting → renewal/expansion.
 
 This document is the implementation architecture and setup guide. It extends the
-existing platform — it does not replace the booking engine, portal auth, admin
+existing platform: it does not replace the booking engine, portal auth, admin
 console, or email systems.
 
 ## What is reused (do not rebuild)
@@ -53,8 +53,8 @@ proposal phases, and generates onboarding tasks.
 
 ## Data model (migration `20260717090000_client_lifecycle.sql`)
 
-All new tables: RLS enabled, no policies, `revoke all ... from anon, authenticated`
-— service-role access only, matching the platform convention. Client separation
+All new tables: RLS enabled, no policies, `revoke all ... from anon, authenticated`:
+service-role access only, matching the platform convention. Client separation
 is enforced in the app layer: every portal query is scoped by the session's
 `client_id` through `lib/lifecycle/access.ts` (single choke point).
 
@@ -85,13 +85,13 @@ Presentation content (proposal/contract sections, report narratives) is JSONB;
 workflow-critical facts (statuses, amounts, dates, signers, approvals) are
 proper columns per the "no critical data in unstructured JSON" rule.
 
-## Domain layer — `lib/lifecycle/`
+## Domain layer: `lib/lifecycle/`
 
 | Module | Responsibility |
 |---|---|
 | `types.ts` | All entity types, status unions, labels, stage definitions |
 | `db.ts` | Supabase CRUD per entity (service-role), snake↔camel mapping |
-| `access.ts` | `requirePortalContext()` — session → client + client_user + role; portal permission checks; admin permission map |
+| `access.ts` | `requirePortalContext()`: session → client + client_user + role; portal permission checks; admin permission map |
 | `journey.ts` | Stage computation: status / next action / responsible party / deadline per opportunity + client |
 | `assessment-content.ts` | Assessment sections, conditional visibility, scoring, summary generation |
 | `questionnaire-content.ts` | Prep questionnaire templates per service category; prep-brief builder |
@@ -108,13 +108,13 @@ proper columns per the "no critical data in unstructured JSON" rule.
 ## Routes
 
 Public token flows (no login; unguessable 128-bit tokens; rate limited):
-- `/start` — conversational qualification funnel → lead + opportunity + routing
-- `/assessment/[token]` — business systems assessment (save/resume, invite teammate)
-- `/prepare/[token]` — consultation preparation questionnaire
-- `/proposals/[token]` — lifecycle proposal viewer (options, comments, approval,
+- `/start`: conversational qualification funnel → lead + opportunity + routing
+- `/assessment/[token]`: business systems assessment (save/resume, invite teammate)
+- `/prepare/[token]`: consultation preparation questionnaire
+- `/proposals/[token]`: lifecycle proposal viewer (options, comments, approval,
   tracking). `/proposal/[token]` (singular) belongs to managed services.
-- `/agreement/[token]` — e-signature flow (typed signature, acknowledgments, audit trail, content hash, print-ready signed copy)
-- `/pay/[token]` — deposit/invoice payment (Stripe Checkout or recorded manual/ACH)
+- `/agreement/[token]`: e-signature flow (typed signature, acknowledgments, audit trail, content hash, print-ready signed copy)
+- `/pay/[token]`: deposit/invoice payment (Stripe Checkout or recorded manual/ACH)
 
 Portal (client session; every page checks `getSession` + live session):
 `/portal` overview, `/portal/project`, `/portal/workspace` (requests+messages+files),
@@ -129,14 +129,14 @@ APIs: `/api/assessment`, `/api/questionnaire/[token]`, `/api/proposal/[token]`,
 
 ## Admin
 
-One new AdminConsole tab — **Client OS** (`LifecycleAdminPanel`) — with subtabs:
+One new AdminConsole tab: **Client OS** (`LifecycleAdminPanel`), with subtabs:
 Pipeline, Assessments, Questionnaires, Proposals, Contracts, Billing, Clients &
 Projects, Requests, Tickets, Training, Reports, Renewals, Automations, plus a
 unified Client 360 record (full history from first submission onward).
 
 New permissions in `lib/scheduling/permissions.ts`: `manage_projects`,
 `manage_billing`, `manage_support`, `manage_training`, `manage_automations`,
-`manage_proposals` — mapped onto the existing role matrix.
+`manage_proposals`: mapped onto the existing role matrix.
 
 ## Automations
 
@@ -159,7 +159,7 @@ reminders, renewal reminders, ticket inactivity, report delivery).
   IP/UA/timestamp rows in `contract_signatures` and `contract_events`.
 - Files: private bucket, signed URLs (short TTL), size/extension/mime
   allowlists, executable-type flagging; credential requests route to a
-  dedicated secure flow — the UI never invites passwords into messages/files.
+  dedicated secure flow: the UI never invites passwords into messages/files.
 - Admin actions audited via `audit_events`; portal-visible history via
   `client_activity`.
 - All mutating routes rate-limited; public token routes additionally
@@ -183,7 +183,7 @@ Everything typechecks with `npm run typecheck`.
 
 1. Apply `supabase/migrations/20260717120000_client_lifecycle.sql` in the
    Supabase SQL editor (after the existing migrations). Until it is applied,
-   every lifecycle page degrades to friendly fallbacks — nothing crashes.
+   every lifecycle page degrades to friendly fallbacks, nothing crashes.
 2. (Optional) Set the Stripe env vars and point a Stripe webhook at
    `POST /api/stripe/webhook` with the `checkout.session.completed`,
    `payment_intent.payment_failed`, and `charge.refunded` events.

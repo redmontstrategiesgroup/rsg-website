@@ -6,18 +6,18 @@ import { Reveal } from "../Reveal";
 
 const CAPABILITIES = [
   {
-    name: "Business Consulting",
-    body: "We find the bottlenecks across operations, sales, and lead flow, then fix them.",
-    href: "/businessconsulting",
-  },
-  {
     name: "AI Strategy & Implementation",
-    body: "We use AI only where it removes real work and speeds up execution.",
+    body: "We map the business first, then apply AI only where it removes real work and speeds up execution.",
     href: "/aistrategy",
   },
   {
+    name: "AI Automation",
+    body: "We install automation for missed calls, follow-up, reviews, and other moments where revenue slips away.",
+    href: "/aiautomation",
+  },
+  {
     name: "Custom Private AI Systems",
-    body: "AI built around your workflows, data, and security—local, private cloud, or managed.",
+    body: "AI built around your workflows, data, and security, local, private cloud, or managed.",
     href: "/services/customprivateaisystems",
   },
   {
@@ -37,7 +37,7 @@ export function Capabilities({
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
-            <p className="label">What RSG Does</p>
+            <p className="label">What the agency does</p>
           </Reveal>
           <Reveal y={12} delay={0.08}>
             <Heading className="display mt-6 text-[2.1rem] leading-[1.08] sm:text-[3rem]">

@@ -130,7 +130,7 @@ export function ProjectView({
           value={clientTasks.length + approvals.length}
           sub={
             clientTasks.length + approvals.length === 0
-              ? "Nothing — we're on it"
+              ? "Nothing: we're on it"
               : "Items below need your input"
           }
           tone={clientTasks.length + approvals.length > 0 ? "warning" : "success"}
@@ -249,7 +249,7 @@ export function ProjectView({
                   </div>
                   {m.status === "delayed" && (
                     <p className="mt-2 text-amber-300/80">
-                      Running behind its target — the dates above are current and honest.
+                      Running behind its target: the dates above are current and honest.
                     </p>
                   )}
                   {m.client_action && !DONE.has(m.status) && (
@@ -264,7 +264,7 @@ export function ProjectView({
                         <li key={j} className="flex gap-2 text-white/55">
                           <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-white/25" />
                           {d.title}
-                          {d.detail ? ` — ${d.detail}` : ""}
+                          {d.detail ? `: ${d.detail}` : ""}
                         </li>
                       ))}
                     </ul>
@@ -336,7 +336,7 @@ export function ProjectView({
               onClick={() => {
                 if (!decision) return;
                 if (decision.mode === "changes" && note.trim().length === 0) {
-                  setError("A short note helps us get it right — what should change?");
+                  setError("A short note helps us get it right, what should change?");
                   return;
                 }
                 void act(
@@ -370,7 +370,7 @@ export function ProjectView({
           </p>
         ) : (
           <p className="text-sm leading-relaxed text-white/55">
-            Tell us what needs adjusting — we&rsquo;ll revise and bring it back
+            Tell us what needs adjusting: we&rsquo;ll revise and bring it back
             for another look.
           </p>
         )}

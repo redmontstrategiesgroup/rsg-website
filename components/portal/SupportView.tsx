@@ -160,14 +160,14 @@ export function SupportView({
             {t.status === "resolved" && (
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button busy={busy} onClick={() => void act({ action: "confirm_close", ticketId: t.id })}>
-                  Everything works — close it
+                  Everything works: close it
                 </Button>
                 <Button
                   variant="ghost"
                   busy={busy}
                   onClick={() => void act({ action: "reopen", ticketId: t.id })}
                 >
-                  Still not right — reopen
+                  Still not right: reopen
                 </Button>
               </div>
             )}
@@ -226,7 +226,7 @@ export function SupportView({
         <div className="card">
           <EmptyState
             title="No support tickets"
-            description="If anything ever misbehaves — an automation, the website, a report — open a ticket and it's tracked from first report to confirmed fix."
+            description="If anything ever misbehaves (an automation, the website, a report) open a ticket and it's tracked from first report to confirmed fix."
             action={<Button onClick={() => setCreating(true)}>Open your first ticket</Button>}
           />
         </div>
@@ -296,11 +296,11 @@ export function SupportView({
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                 >
-                  <option value="low">Low — no rush</option>
+                  <option value="low">Low, no rush</option>
                   <option value="normal">Normal</option>
-                  <option value="high">High — impacting our work</option>
-                  <option value="urgent">Urgent — major disruption</option>
-                  <option value="critical">Critical — business is down</option>
+                  <option value="high">High: impacting our work</option>
+                  <option value="urgent">Urgent: major disruption</option>
+                  <option value="critical">Critical: business is down</option>
                 </select>
               )}
             </Field>

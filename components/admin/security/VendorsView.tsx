@@ -46,8 +46,8 @@ export function VendorsView({
         <div className="max-w-2xl">
           <p className={labelClass}>Vendor & subprocessor registry</p>
           <p className="mt-1 text-xs leading-relaxed text-white/45">
-            Every third-party service in a project — hosting, databases, email,
-            SMS, payments, analytics, AI models, storage, auth — with what data
+            Every third-party service in a project, hosting, databases, email,
+            SMS, payments, analytics, AI models, storage, auth; with what data
             it handles, its agreement status, and a removal procedure. RSG does
             not claim any vendor is approved for a regulated industry.
           </p>
@@ -102,7 +102,7 @@ export function VendorsView({
                   </td>
                   <td className="max-w-[220px] px-4 py-3.5 text-white/55">{v.purpose}</td>
                   <td className="max-w-[180px] px-4 py-3.5 text-xs text-white/50">
-                    {v.dataCategories.join(", ") || "—"}
+                    {v.dataCategories.join(", ") || "-"}
                   </td>
                   <td className="px-4 py-3.5 text-white/60">{AGREEMENT_STATUS_LABELS[v.agreementStatus]}</td>
                   <td className="px-4 py-3.5">

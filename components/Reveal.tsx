@@ -14,12 +14,12 @@ type RevealProps = {
  *
  * Critically, this renders **visible** markup: the server HTML carries no
  * opacity:0, so text paints on first frame and LCP is never gated on JS.
- * The animation is opt-in and desktop-only — the inline script in the root
+ * The animation is opt-in and desktop-only, the inline script in the root
  * layout sets `data-reveal="on"` on <html> before first paint when the
  * viewport is wide and motion is welcome, and only then does the CSS in
  * globals.css hide these nodes for RevealObserver to bring back in.
  *
- * On phones there is no observer, no framer-motion, and no hidden content —
+ * On phones there is no observer, no framer-motion, and no hidden content;
  * a plain <div> that costs nothing. This is a server component; it adds zero
  * JavaScript to the 222 places it is used.
  */
@@ -49,7 +49,7 @@ export function RevealGroup({
 }: {
   children: ReactNode;
   className?: string;
-  /** Accepted and ignored — children carry their own delays. */
+  /** Accepted and ignored: children carry their own delays. */
   stagger?: number;
 }) {
   return <div className={className}>{children}</div>;

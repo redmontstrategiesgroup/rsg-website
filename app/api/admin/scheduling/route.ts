@@ -157,7 +157,7 @@ export async function GET(request: Request) {
           );
         }
       }
-      let popularType = "—";
+      let popularType = "-";
       let maxT = 0;
       for (const t of types.data ?? []) {
         const c = typeCounts.get(t.id) ?? 0;
@@ -176,7 +176,7 @@ export async function GET(request: Request) {
           );
         }
       }
-      let popularService = "—";
+      let popularService = "-";
       let maxS = 0;
       for (const [k, v] of serviceCounts) {
         if (v > maxS) {
@@ -296,7 +296,7 @@ export async function GET(request: Request) {
         sb.from("availability_schedules").select("*"),
         sb.from("availability_windows").select("*"),
         getSettings(),
-        // Never ship the webhook HMAC signing secret to the browser — the
+        // Never ship the webhook HMAC signing secret to the browser, the
         // config section is readable by edit_availability roles, but the
         // secret is only relevant to owners who manage webhooks.
         sb
@@ -314,7 +314,7 @@ export async function GET(request: Request) {
           .eq("status", "failed")
           .order("created_at", { ascending: false })
           .limit(50),
-        // Omit `config` — it can hold provider OAuth/credential material.
+        // Omit `config`: it can hold provider OAuth/credential material.
         sb
           .from("calendar_integrations")
           .select("id, provider, team_member_id, status, created_at, updated_at"),

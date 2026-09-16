@@ -22,14 +22,14 @@ const ENVIRONMENT_ID =
   process.env.RSG_BRIEF_ENV_ID ?? "env_01H6mxmz5kwPedwkdEmsMv21";
 
 function kickoff(url: string, business: string, notes: string): string {
-  return `You are preparing an INTERNAL pre-call brief for Redmont Strategies Group (RSG), a business consulting and AI strategy firm that helps service businesses fix lead flow, follow-up, website conversion, CRM, and operations.
+  return `You are preparing an INTERNAL pre-call brief for Redmont Strategies Group (RSG), a business consulting and AI implementation firm that helps service businesses fix lead flow, follow-up, website conversion, CRM, and operations.
 
 Research this prospective client's website: ${url}
 ${business ? `Business name: ${business}\n` : ""}${notes ? `Context from the lead: ${notes}\n` : ""}
 Visit the website (and search for the business if useful). Then write a "Business Systems Audit Brief" in markdown with exactly these sections:
 
 ## Snapshot
-What the business is, what it sells, location/market — two or three sentences.
+What the business is, what it sells, location/market; two or three sentences.
 
 ## Lead Capture Review
 What exists on the site today: phone number placement, contact forms, booking/scheduling, chat, hours, response expectations. Note what is missing.
@@ -43,7 +43,7 @@ Three to five concrete improvements RSG could implement, ordered by likely impac
 ## Talking Points
 Three or four questions or observations for the strategy call.
 
-Rules: only state what you can verify from the website or search results — mark anything uncertain as "could not verify". No fabricated metrics, competitors, or claims. Keep the whole brief under 600 words. Output only the brief itself.`;
+Rules: only state what you can verify from the website or search results, mark anything uncertain as "could not verify". No fabricated metrics, competitors, or claims. Keep the whole brief under 600 words. Output only the brief itself.`;
 }
 
 /** Minimal structural view of session events (avoids deep SDK type coupling). */
@@ -56,7 +56,7 @@ type SessionEvent = {
 };
 
 export async function POST(request: Request) {
-  // Lead pre-call research tool — gate on manage_leads (mirrors the admin UI
+  // Lead pre-call research tool: gate on manage_leads (mirrors the admin UI
   // capability flag at app/admin/page.tsx) so RBAC + forced-MFA apply. (audit L2)
   const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY isn't configured — add it to the environment first." },
+      { error: "ANTHROPIC_API_KEY isn't configured: add it to the environment first." },
       { status: 503 }
     );
   }
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
       const say = (text: string) => controller.enqueue(encoder.encode(text));
       let sessionId: string | null = null;
       try {
-        // Session creation is where this path fails in practice — bad key,
+        // Session creation is where this path fails in practice, bad key,
         // rate limit, agent/environment misconfigured. Everything after it
         // depends on the session existing, so classifying this one call
         // separates "Anthropic rejected us" from "the agent ran and produced
@@ -145,11 +145,11 @@ export async function POST(request: Request) {
             say(`\n· ${event.name ?? "working"} …\n`);
           } else if (event.type === "session.error") {
             say(
-              `\n\n[Agent error: ${event.error?.message ?? "unknown"} — try again.]`
+              `\n\n[Agent error: ${event.error?.message ?? "unknown"}, try again.]`
             );
             break;
           } else if (event.type === "session.status_terminated") {
-            say("\n\n[Session terminated unexpectedly — try again.]");
+            say("\n\n[Session terminated unexpectedly: try again.]");
             break;
           } else if (event.type === "session.status_idle") {
             if (event.stop_reason?.type === "requires_action") {
@@ -166,7 +166,7 @@ export async function POST(request: Request) {
           "\n\n[Something went wrong generating the brief. Check the server logs and that the agent and environment IDs are valid.]"
         );
       } finally {
-        // Sessions are per-run and disposable — archive to free resources.
+        // Sessions are per-run and disposable: archive to free resources.
         if (sessionId) {
           try {
             await client.beta.sessions.archive(sessionId);

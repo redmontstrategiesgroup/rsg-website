@@ -47,12 +47,12 @@ export async function writeAuditEvent(event: AuditEventInput): Promise<void> {
     // the audit_events table missing/unmigrated, EVERY admin action would land
     // here and the trail would be silently empty. Log at error level (Sentry
     // captures console.error) with the action, so "no audit rows" is
-    // distinguishable from "nobody did anything". Still non-throwing — the
+    // distinguishable from "nobody did anything". Still non-throwing: the
     // audit sink must never break the user-facing action it records.
     console.error(
       `[audit] WRITE FAILED for action="${event.action}" actor="${
         event.actorEmail ?? event.actorId ?? "?"
-      }" — the audit trail is not being persisted. Is audit_events migrated?`,
+      }". The audit trail is not being persisted. Is audit_events migrated?`,
       err
     );
   }
@@ -62,7 +62,7 @@ export async function listAuditEvents(params: {
   limit?: number;
   offset?: number;
   action?: string;
-  /** Prefix match, e.g. "security." — mutually exclusive with `action`. */
+  /** Prefix match, e.g. "security.", mutually exclusive with `action`. */
   actionPrefix?: string;
   actorEmail?: string;
   actorType?: AuditActorType;
@@ -91,9 +91,9 @@ export async function listAuditEvents(params: {
     if (error) throw error;
     return data ?? [];
   } catch (err) {
-    // Degrade gracefully (e.g. audit table not yet migrated) rather than 500 —
+    // Degrade gracefully (e.g. audit table not yet migrated) rather than 500;
     // the audit log is a Supabase-backed feature; when unavailable it is empty.
-    console.warn("[audit] list failed — returning empty.", err);
+    console.warn("[audit] list failed: returning empty.", err);
     return [];
   }
 }

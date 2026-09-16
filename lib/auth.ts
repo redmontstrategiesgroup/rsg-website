@@ -5,21 +5,29 @@ import {
   timingSafeEqual,
   createHmac,
 } from "node:crypto";
-import { cookies } from "next/headers";
+
+let cookiesFn: typeof import("next/headers").cookies | undefined;
+
+async function getCookies() {
+  if (cookiesFn) return cookiesFn();
+  const { cookies } = await import("next/headers");
+  cookiesFn = cookies;
+  return cookiesFn();
+}
 
 /**
  * Zero-dependency auth primitives for the RSG client portal.
  *
  * Passwords are hashed with scrypt (salt stored alongside the digest).
  * Sessions are stateless, signed tokens (HMAC-SHA256) stored in an
- * httpOnly cookie — a compact JWT-style envelope without pulling in a lib.
+ * httpOnly cookie: a compact JWT-style envelope without pulling in a lib.
  *
  * In production set AUTH_SECRET to a long random string.
  */
 
 /**
  * No hardcoded fallback secret: a guessable signing key would let anyone
- * forge session cookies. Production fails closed without AUTH_SECRET —
+ * forge session cookies. Production fails closed without AUTH_SECRET,
  * resolved lazily (at first use, not module load) so `next build` can
  * collect page data without env vars. Development generates a random
  * per-process secret (sessions simply reset when the dev server restarts).
@@ -80,7 +88,7 @@ export function verifyPassword(password: string, stored: string): boolean {
 
 /**
  * A fixed valid scrypt hash used only to burn the same CPU as a real password
- * check when an account doesn't exist — closes the login timing side-channel
+ * check when an account doesn't exist; closes the login timing side-channel
  * that would otherwise reveal whether an email is registered.
  */
 let decoyHash: string | null = null;
@@ -95,7 +103,7 @@ type SessionPayload = {
   sub: string; // client id (or admin id)
   email: string;
   role?: "admin";
-  sid?: string; // session id — links the cookie to a revocable DB record
+  sid?: string; // session id: links the cookie to a revocable DB record
   iat?: number; // unix seconds (issued at)
   exp: number; // unix seconds
 };
@@ -164,7 +172,7 @@ export async function setSessionCookie(
 ): Promise<string> {
   const sessionId = sid ?? randomUUID();
   const token = createSessionToken(clientId, email, undefined, sessionId);
-  const store = await cookies();
+  const store = await getCookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
@@ -176,12 +184,12 @@ export async function setSessionCookie(
 }
 
 export async function clearSessionCookie() {
-  const store = await cookies();
+  const store = await getCookies();
   store.set(SESSION_COOKIE, "", { path: "/", maxAge: 0 });
 }
 
 export async function getSession(): Promise<SessionPayload | null> {
-  const store = await cookies();
+  const store = await getCookies();
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
   return verifySessionToken(token);
@@ -200,7 +208,7 @@ export async function setAdminSessionCookie(
 ): Promise<string> {
   const sessionId = sid ?? randomUUID();
   const token = createSessionToken(adminId, email, "admin", sessionId);
-  const store = await cookies();
+  const store = await getCookies();
   store.set(ADMIN_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
@@ -212,18 +220,18 @@ export async function setAdminSessionCookie(
 }
 
 export async function clearAdminSessionCookie() {
-  const store = await cookies();
+  const store = await getCookies();
   store.set(ADMIN_COOKIE, "", { path: "/", maxAge: 0 });
 }
 
 export async function getAdminSession(): Promise<SessionPayload | null> {
-  const store = await cookies();
+  const store = await getCookies();
   const token = store.get(ADMIN_COOKIE)?.value;
   if (!token) return null;
   const payload = verifySessionToken(token);
   if (payload?.role !== "admin") return null;
   // Revocation check is done in requireAdminSession / page loaders that
-  // call isAdminSessionLive — keep this fast for API hot paths that already
+  // call isAdminSessionLive: keep this fast for API hot paths that already
   // verified recently. Callers that need hard revoke should use
   // requireLiveAdminSession().
   return payload;

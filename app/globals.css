@@ -31,18 +31,18 @@
   }
 
   /*
-    The document's own scrollbar is hidden: the page scrolls, the chrome
-    doesn't. Only the document. An unscoped ::-webkit-scrollbar rule used to
-    strip the bar from every inner scroller too, which left ~50 horizontal
-    rails and wide tables with no visible sign that they continue off-screen.
-    Inner scrollers now keep a native (dark, via color-scheme) bar; add
-    .no-scrollbar to opt one out on purpose.
+    No visible scrollbars anywhere: the document, inner rails, tables, and
+    the demo panes all scroll by wheel, touch, and keyboard with the chrome
+    hidden. Continuation cues come from ScrollRail's edge fade and prev/next
+    arrows instead of a native bar, so every horizontal rail should use it.
+    (This used to be scoped to `html` only; the inner bars were dropped on
+    request, 2026-09-15.)
   */
-  html {
+  * {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-  html::-webkit-scrollbar {
+  ::-webkit-scrollbar {
     width: 0;
     height: 0;
     display: none;

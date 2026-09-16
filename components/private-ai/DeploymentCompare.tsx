@@ -83,7 +83,7 @@ export function DeploymentCompare() {
                 <ul className="mt-3 space-y-2">
                   {current.suitable.map((item) => (
                     <li key={item} className="text-sm text-white/65">
-                      <span className="mr-2 text-crimson-light">—</span>
+                      <span className="mr-2 text-crimson-light">-</span>
                       {item}
                     </li>
                   ))}

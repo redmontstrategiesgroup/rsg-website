@@ -248,7 +248,7 @@ export async function runQualification(input: {
   }
 
   // Qualification runs once per lead, so the lead id is the identity. If a lead
-  // is ever re-qualified in place, add the attempt number here — otherwise the
+  // is ever re-qualified in place, add the attempt number here, otherwise the
   // second outcome is deduped away.
   await enqueueWebhook(
     "lead.submitted",

@@ -174,7 +174,7 @@ export function ProposalViewer({
           <div className="mb-8 print:hidden">
             <Banner tone="success" title="Proposal approved.">
               Thank you{proposal.approved_by_name ? `, ${proposal.approved_by_name}` : ""}.
-              Your agreement is being prepared — it will arrive by email for
+              Your agreement is being prepared: it will arrive by email for
               electronic signature.
             </Banner>
           </div>
@@ -190,7 +190,7 @@ export function ProposalViewer({
         {status === "revision_requested" && (
           <div className="mb-8 print:hidden">
             <Banner tone="info" title="Revision requested.">
-              We&rsquo;re on it — you&rsquo;ll receive an updated version shortly.
+              We&rsquo;re on it: you&rsquo;ll receive an updated version shortly.
             </Banner>
           </div>
         )}
@@ -220,7 +220,7 @@ export function ProposalViewer({
                         <span>
                           <span className="text-white/85">{item.title}</span>
                           {item.detail && (
-                            <span className="text-white/50"> — {item.detail}</span>
+                            <span className="text-white/50">: {item.detail}</span>
                           )}
                           {item.meta && (
                             <span className="ml-2 font-mono text-[0.6rem] uppercase tracking-label text-white/35">
@@ -421,7 +421,7 @@ export function ProposalViewer({
             placeholder={
               dialog === "revision"
                 ? "What should we adjust?"
-                : "Your question — we'll reply here and by email."
+                : "Your question: we'll reply here and by email."
             }
             value={note}
             onChange={(e) => setNote(e.target.value)}

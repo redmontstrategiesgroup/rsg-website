@@ -4,12 +4,12 @@
  * Security model:
  *  - Signature verified via constructWebhookEvent (raw text body).
  *  - Replay-guarded by claimStripeEvent(event.id) BEFORE any processing.
- *  - Amounts are never read from the webhook to set pricing — subscription
+ *  - Amounts are never read from the webhook to set pricing, subscription
  *    economics were resolved server-side at proposal acceptance.
  *  - Returns 200 for handled AND unhandled event types; 500 only when OUR
  *    storage fails, so Stripe retries. NOTE: because claimStripeEvent runs
  *    first, a retry after a partial failure will be seen as a duplicate and
- *    skipped — an accepted trade-off (admin email + event log surface the
+ *    skipped: an accepted trade-off (admin email + event log surface the
  *    failure for manual reconciliation).
  */
 
@@ -61,7 +61,7 @@ import {
 export const runtime = "nodejs";
 
 // ---------------------------------------------------------------------------
-// Defensive helpers — Stripe API versions move fields around. Period fields
+// Defensive helpers: Stripe API versions move fields around. Period fields
 // live on the subscription in older versions and on subscription items in
 // newer ones; the invoice→subscription link moved from invoice.subscription
 // to invoice.parent.subscription_details.subscription.
@@ -186,7 +186,7 @@ async function handleCheckoutCompleted(event: Stripe.Event): Promise<void> {
     } catch {
       // Non-fatal: the subscription activates without period dates and the
       // next customer.subscription.updated fills them in. Recorded by
-      // stripeCall — a console.warn here meant a persistently failing
+      // stripeCall: a console.warn here meant a persistently failing
       // retrieve left every subscription without billing periods, silently.
     }
   }
@@ -221,7 +221,7 @@ async function handleCheckoutCompleted(event: Stripe.Event): Promise<void> {
     subscriptionId: sub.id,
     clientId: sub.clientId,
     type: "subscription.activated",
-    description: `Checkout completed — ${sub.planName ?? sub.planKey ?? "managed services"} plan activated.`,
+    description: `Checkout completed: ${sub.planName ?? sub.planKey ?? "managed services"} plan activated.`,
     actor: "stripe",
   });
 
@@ -246,7 +246,7 @@ async function handleCheckoutCompleted(event: Stripe.Event): Promise<void> {
         type: "review_request",
         title: "Schedule your first management review",
         details:
-          "Auto-created after plan activation — coordinate the first monthly/quarterly review with the client.",
+          "Auto-created after plan activation: coordinate the first monthly/quarterly review with the client.",
         actorLabel: "system",
       });
       await recordSubscriptionEvent({
@@ -274,9 +274,9 @@ async function handleCheckoutCompleted(event: Stripe.Event): Promise<void> {
           : `${formatCents(sub.monthlyPriceCents)} / month`,
       ],
       ["Setup fee", formatCents(sub.setupFeeCents)],
-      ["Payment method", paymentMethodSummary || "—"],
-      ["Proposal ID", proposalId || "—"],
-      ["Stripe subscription", stripeSubscriptionId ?? "—"],
+      ["Payment method", paymentMethodSummary || "-"],
+      ["Proposal ID", proposalId || "-"],
+      ["Stripe subscription", stripeSubscriptionId ?? "-"],
     ]
   );
   await sendAdminEmail(
@@ -307,16 +307,16 @@ async function handleDepositCompleted(event: Stripe.Event): Promise<boolean> {
   await recordSubscriptionEvent({
     clientId: proposal?.clientId ?? null,
     type: "deposit.paid",
-    description: `Implementation deposit paid — ${formatCents(amountCents)}${
+    description: `Implementation deposit paid: ${formatCents(amountCents)}${
       proposal ? ` (${proposal.title})` : ""
     }.`,
     actor: "stripe",
   });
 
   const { html, text } = detailEmail("Implementation deposit paid", [
-    ["Proposal", proposal?.title ?? meta.rsg_proposal_id ?? "—"],
+    ["Proposal", proposal?.title ?? meta.rsg_proposal_id ?? "-"],
     ["Amount", formatCents(amountCents)],
-    ["Payer email", session.customer_details?.email ?? "—"],
+    ["Payer email", session.customer_details?.email ?? "-"],
     ["Checkout session", session.id],
   ]);
   await sendAdminEmail("Implementation deposit paid", html, text);
@@ -377,7 +377,7 @@ async function handleInvoiceEvent(event: Stripe.Event): Promise<void> {
       subscriptionId: ourSub.id,
       clientId: ourSub.clientId,
       type: "invoice.paid",
-      description: `Invoice ${inv.number ?? stripeInvoiceId} paid — ${formatCents(inv.amount_paid ?? 0)}.`,
+      description: `Invoice ${inv.number ?? stripeInvoiceId} paid: ${formatCents(inv.amount_paid ?? 0)}.`,
       actor: "stripe",
     });
   }
@@ -392,7 +392,7 @@ async function handleInvoiceEvent(event: Stripe.Event): Promise<void> {
       subscriptionId: ourSub.id,
       clientId: ourSub.clientId,
       type: "payment.failed",
-      description: `Payment failed for invoice ${inv.number ?? stripeInvoiceId} — ${formatCents(inv.amount_due ?? 0)}.`,
+      description: `Payment failed for invoice ${inv.number ?? stripeInvoiceId}: ${formatCents(inv.amount_due ?? 0)}.`,
       actor: "stripe",
     });
 
@@ -405,24 +405,24 @@ async function handleInvoiceEvent(event: Stripe.Event): Promise<void> {
           <p style="margin: 0 0 12px; color: #333;">Hi ${esc(client.name || "there")},</p>
           <p style="margin: 0 0 12px; color: #333;">
             The most recent charge of ${esc(amount)} for your managed-services plan didn't
-            go through. This is usually an expired card or a temporary bank decline —
+            go through. This is usually an expired card or a temporary bank decline,
             Stripe will automatically retry the payment over the next few days.
           </p>
           <p style="margin: 0 0 12px; color: #333;">
             To resolve it right away, you can update your payment method from your
             client portal using the <strong>Manage billing</strong> button.
           </p>
-          <p style="margin: 0; color: #333;">— Redmont Strategies Group</p>
+          <p style="margin: 0; color: #333;">, Redmont Strategies Group</p>
         </div>`;
       const clientText = [
         `Hi ${client.name || "there"},`,
         "",
         `The most recent charge of ${amount} for your managed-services plan didn't go through.`,
-        "This is usually an expired card or a temporary bank decline — Stripe will automatically retry the payment over the next few days.",
+        "This is usually an expired card or a temporary bank decline, Stripe will automatically retry the payment over the next few days.",
         "",
         "To resolve it right away, update your payment method from your client portal using the Manage billing button.",
         "",
-        "— Redmont Strategies Group",
+        "Redmont Strategies Group",
       ].join("\n");
       await sendClientEmail(
         client.email,
@@ -479,7 +479,7 @@ async function handleSubscriptionUpdated(event: Stripe.Event): Promise<void> {
     subscriptionId: ourSub.id,
     clientId: ourSub.clientId,
     type: "subscription.synced",
-    description: `Stripe subscription synced — status ${status ?? ourSub.status}${
+    description: `Stripe subscription synced: status ${status ?? ourSub.status}${
       s.cancel_at_period_end ? " (cancels at period end)" : ""
     }.`,
     actor: "stripe",
@@ -502,7 +502,7 @@ async function handleSubscriptionDeleted(event: Stripe.Event): Promise<void> {
     subscriptionId: ourSub.id,
     clientId: ourSub.clientId,
     type: "subscription.ended",
-    description: "Stripe subscription cancelled — managed services ended.",
+    description: "Stripe subscription cancelled: managed services ended.",
     actor: "stripe",
   });
 
@@ -563,14 +563,14 @@ export async function POST(request: Request) {
   }
 
   // Stripe's event id IS the correlation id. It is stable across Stripe's own
-  // delivery retries, so every attempt at the same event — ours and theirs —
+  // delivery retries, so every attempt at the same event, ours and theirs, 
   // groups under one id. A minted uuid would scatter them.
   return withCorrelation(event.id, () => handleEvent(event));
 }
 
 async function handleEvent(event: Stripe.Event) {
   // Touch the connection on arrival. This is what detects a webhook that
-  // silently STOPPED arriving — a revoked endpoint or a changed URL produces
+  // silently STOPPED arriving: a revoked endpoint or a changed URL produces
   // no errors and no logs on our side, only a last_success_at that stops
   // moving. Nothing else in the system would notice.
   await recordInboundEvent({
@@ -579,7 +579,7 @@ async function handleEvent(event: Stripe.Event) {
     connectionId: "webhook",
   });
 
-  // Replay guard — claim the event id exactly once, before processing.
+  // Replay guard: claim the event id exactly once, before processing.
   // A storage failure here (as opposed to a duplicate) returns 500 so
   // Stripe retries: nothing was claimed and nothing was processed.
   let fresh: boolean;
@@ -624,7 +624,7 @@ async function handleEvent(event: Stripe.Event) {
         break;
     }
   } catch (err) {
-    // Our storage failed mid-processing. Return 500 so Stripe retries — but
+    // Our storage failed mid-processing. Return 500 so Stripe retries, but
     // the event id was already claimed above, so that retry is treated as a
     // duplicate and skipped. This event is therefore PERMANENTLY DROPPED and
     // needs manual reconciliation.
@@ -644,7 +644,7 @@ async function handleEvent(event: Stripe.Event) {
       correlationId: event.id,
       attempt: 1,
       errorClass: "our_bug",
-      errorMessage: `Event claimed then processing failed — permanently dropped, needs manual reconciliation. ${
+      errorMessage: `Event claimed then processing failed: permanently dropped, needs manual reconciliation. ${
         err instanceof Error ? err.message : String(err)
       }`,
     });

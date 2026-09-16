@@ -8,6 +8,7 @@ import type { ServiceCategory } from "@/lib/lifecycle/types";
  */
 const SLUG_TO_CATEGORY: Record<string, ServiceCategory> = {
   "more-leads": "growth_systems",
+  "real-estate-listings-deals": "growth_systems",
   "customer-communication": "growth_systems",
   "website-presence": "website_platform",
   "automate-tasks": "operations_systems",

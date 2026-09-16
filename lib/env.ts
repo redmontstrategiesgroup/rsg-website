@@ -66,7 +66,7 @@ export function getEnv(): ServerEnv {
     }
     if (env.NEXT_PUBLIC_ENABLE_DEMO_DATA === "true") {
       console.warn(
-        "[env] NEXT_PUBLIC_ENABLE_DEMO_DATA=true in production — disable for live traffic."
+        "[env] NEXT_PUBLIC_ENABLE_DEMO_DATA=true in production: disable for live traffic."
       );
     }
   }

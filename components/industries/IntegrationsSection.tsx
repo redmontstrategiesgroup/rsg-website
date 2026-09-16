@@ -2,8 +2,8 @@ import { Reveal } from "@/components/Reveal";
 import type { IndustryVertical } from "@/lib/industries/types";
 
 /**
- * Vertical-relevant integrations. Every entry explains what it connects —
- * never a bare logo wall — and the section carries the availability
+ * Vertical-relevant integrations. Every entry explains what it connects,
+ * never a bare logo wall, and the section carries the availability
  * disclaimer (no claimed official partnerships).
  */
 export function IntegrationsSection({ vertical }: { vertical: IndustryVertical }) {

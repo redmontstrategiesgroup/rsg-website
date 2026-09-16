@@ -75,7 +75,7 @@ const OPEN_REQUEST_STATUSES: ServiceRequestStatus[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// GET — section reads (view_analytics)
+// GET: section reads (view_analytics)
 // ---------------------------------------------------------------------------
 
 export async function GET(request: Request) {
@@ -150,7 +150,7 @@ export async function GET(request: Request) {
 }
 
 // ---------------------------------------------------------------------------
-// POST — mutations (manage_billing)
+// POST: mutations (manage_billing)
 // ---------------------------------------------------------------------------
 
 const subscriptionStatusEnum = z.enum(
@@ -505,7 +505,7 @@ export async function POST(request: Request) {
       });
       if (!sub) {
         return NextResponse.json(
-          { error: "Plan not found — subscription was not created." },
+          { error: "Plan not found: subscription was not created." },
           { status: 400 }
         );
       }
@@ -585,7 +585,7 @@ export async function POST(request: Request) {
           }
         } catch {
           return NextResponse.json(
-            { error: "Stripe update failed — subscription unchanged." },
+            { error: "Stripe update failed: subscription unchanged." },
             { status: 502 }
           );
         }

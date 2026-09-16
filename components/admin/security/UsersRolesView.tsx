@@ -9,7 +9,7 @@ import { MfaSetup } from "@/components/admin/security/MfaSetup";
 
 /**
  * A readable map of what each role can do. Mirrors ROLE_PERMISSIONS but is
- * presentation-only — the server is always the source of truth on enforcement.
+ * presentation-only: the server is always the source of truth on enforcement.
  */
 const ROLE_SUMMARY: Record<AdminRole, string> = {
   owner: "Full access to every area, including team management and all security controls.",
@@ -123,7 +123,7 @@ export function UsersRolesView({
             <p className={labelClass}>Roles & permissions</p>
             <p className="mt-1 max-w-2xl text-xs text-white/45">
               Permissions are enforced server-side on every API route and, for
-              Supabase tables, by Row Level Security — hiding a button is never
+              Supabase tables, by Row Level Security, hiding a button is never
               the control. This matrix summarizes each role.
             </p>
           </div>
@@ -155,7 +155,7 @@ export function UsersRolesView({
                         {grid[c.key] ? (
                           <span className="text-emerald-300">●</span>
                         ) : (
-                          <span className="text-white/15">—</span>
+                          <span className="text-white/15">-</span>
                         )}
                       </td>
                     ))}

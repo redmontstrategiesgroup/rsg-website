@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-// Type-only: this route no longer constructs a client — every Anthropic call
+// Type-only: this route no longer constructs a client, every Anthropic call
 // goes through lib/ai/proxy.
 import type Anthropic from "@anthropic-ai/sdk";
 import { rateLimit, rateLimitResponse, clientIp } from "@/lib/security";
@@ -19,7 +19,7 @@ export const runtime = "nodejs";
 
 /**
  * RSG consulting intake assistant. Model calls stay server-side via the
- * official SDK — API key, system prompt, and knowledge base never reach the
+ * official SDK: API key, system prompt, and knowledge base never reach the
  * browser. Streams plain text; the submit_lead tool hands qualified visitors
  * into the same lead pipeline as the contact form.
  */
@@ -33,7 +33,7 @@ const MAX_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 2_000;
 /** Total character budget for the history sent to the model. */
 const MAX_TOTAL_CHARS = 8_000;
-/** Hard cap on conversation length — after this, visitors go to the form. */
+/** Hard cap on conversation length, after this, visitors go to the form. */
 const MAX_CONVERSATION_MESSAGES = 40;
 /** Max output tokens per reply (the bot is instructed to be concise). */
 const MAX_OUTPUT_TOKENS = 800;
@@ -56,25 +56,25 @@ async function underGlobalDailyLimit(): Promise<boolean> {
 }
 
 const LIMIT_MESSAGE =
-  "The assistant is at capacity right now. Please use the contact form in the Contact section — we'll follow up directly.";
+  "The assistant is at capacity right now. Please use the contact form in the Contact section, we'll follow up directly.";
 const CONVERSATION_END_MESSAGE =
-  "This conversation has reached its limit. The best next step is the contact form in the Contact section — share your details there and RSG will review your business directly.";
+  "This conversation has reached its limit. The best next step is the contact form in the Contact section, share your details there and RSG will review your business directly.";
 
-const SYSTEM_PROMPT = `You are the intake assistant on the website of Redmont Strategies Group (RSG). You act like a calm, sharp, premium consulting intake assistant — not a generic AI helper, not a chatbot salesperson, not a hype-heavy AI agency bot.
+const SYSTEM_PROMPT = `You are the intake assistant on the website of Redmont Strategies Group (RSG). You act like a calm, sharp, premium consulting intake assistant; not a generic AI helper, not a chatbot salesperson, not a hype-heavy AI agency bot.
 
 # What RSG is
-RSG is a business consulting and strategy company FIRST. AI automation, web development, CRM systems, booking systems, dashboards, and digital infrastructure are execution tools used to improve business operations and growth — never the identity. RSG does not offer marketing or lead generation as a service.
+RSG is a business consulting and strategy company FIRST. AI automation, web development, CRM systems, booking systems, dashboards, and digital infrastructure are execution tools used to improve business operations and growth; never the identity. RSG does not offer marketing or lead generation as a service.
 
 Core message: RSG helps businesses find the leaks, fix the systems, and build the infrastructure needed to operate sharper.
 
 When a visitor asks what RSG does, answer with:
-"Redmont Strategies Group is a business consulting and AI strategy company. We help service businesses improve operations, follow-up, websites, CRM systems, and automation. We start with the business problem first, then build the right systems around it."
+"Redmont Strategies Group is a business consulting and AI implementation company. We help service businesses improve operations, follow-up, websites, CRM systems, and automation. We start with the business problem first, then build the right systems around it."
 
-# Knowledge base (canonical — treat as the only source of company facts)
+# Knowledge base (canonical: treat as the only source of company facts)
 ${RSG_KNOWLEDGE_BASE}
 
 # Tone
-Direct, professional, confident, calm, strategic, human, premium. No hype, no fake guarantees, no cheesy AI language. Never use phrases like "revolutionary", "game-changing", "unlock your potential", "AI-powered everything", or "transform your business overnight". No emoji. No exclamation marks. No bullet lists unless the visitor asks for a breakdown. Plain confident prose. Keep answers to 2–4 sentences unless the visitor asks for detail. Do not over-answer simple questions. Do not reintroduce yourself or restate what RSG is unless asked — continue the conversation like a colleague would.
+Direct, professional, confident, calm, strategic, human, premium. No hype, no fake guarantees, no cheesy AI language. Never use phrases like "revolutionary", "game-changing", "unlock your potential", "AI-powered everything", or "transform your business overnight". No emoji. No exclamation marks. No bullet lists unless the visitor asks for a breakdown. Plain confident prose. Keep answers to 2–4 sentences unless the visitor asks for detail. Do not over-answer simple questions. Do not reintroduce yourself or restate what RSG is unless asked, continue the conversation like a colleague would.
 
 # Conversation behavior
 Your goals, in order: understand the visitor's business; identify likely operational, sales, lead-flow, marketing, website, CRM, follow-up, or automation problems; explain briefly how RSG thinks about the issue; recommend the most relevant next step; qualify the visitor; and move serious prospects toward a strategy call or Business Systems Audit.
@@ -92,7 +92,7 @@ ${RSG_GUARDRAILS}
 # Handoff
 ${RSG_BOOKING_PLAYBOOK}
 
-Never trap the visitor in conversation. Once the right next step is clear — the booking link, submitting details here via submit_lead, or the contact form in the Contact section — point them to it plainly and let them act. Treat a Business Systems Audit request the same way: collect their details with submit_lead or direct them to the contact form.`;
+Never trap the visitor in conversation. Once the right next step is clear, the booking link, submitting details here via submit_lead, or the contact form in the Contact section, point them to it plainly and let them act. Treat a Business Systems Audit request the same way: collect their details with submit_lead or direct them to the contact form.`;
 
 /* ------------------------------ Lead tool ------------------------------ */
 
@@ -240,7 +240,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: LIMIT_MESSAGE }, { status: 503 });
     }
   } catch {
-    /* settings unavailable — fail open to normal rate-limited behavior */
+    /* settings unavailable: fail open to normal rate-limited behavior */
   }
 
   // Layered limits: short burst, per-IP daily ceiling, site-wide daily cap.
@@ -263,7 +263,7 @@ export async function POST(request: Request) {
   }
 
   // Hard stop for marathon conversations (based on full history length,
-  // before trimming) — the visitor is politely handed to the contact form.
+  // before trimming): the visitor is politely handed to the contact form.
   if (Array.isArray(body.messages) && body.messages.length > MAX_CONVERSATION_MESSAGES) {
     return NextResponse.json({ error: CONVERSATION_END_MESSAGE }, { status: 429 });
   }
@@ -291,12 +291,12 @@ export async function POST(request: Request) {
   // Routed through lib/ai/proxy rather than a local `new Anthropic()`, so every
   // Anthropic call in the app goes through one place: the same preflight, the
   // same error classification, the same integration logging. This route keeps
-  // its own kill-switch check and its own (stricter) layered rate limits above
-  // — the proxy's are defense in depth behind them, not a replacement.
+  // its own kill-switch check and its own (stricter) layered rate limits above;
+  // the proxy's are defense in depth behind them, not a replacement.
   //
   // No onUsage: this is a public surface with no client id, and
   // ai_usage.client_id is a NOT NULL foreign key to clients(id). Public chat
-  // spend is therefore still unmetered — bounded by the rate limits above, but
+  // spend is therefore still unmetered: bounded by the rate limits above, but
   // not attributed. Closing that needs a schema change, not a refactor.
   let readable: ReadableStream<Uint8Array>;
   try {
@@ -319,7 +319,7 @@ export async function POST(request: Request) {
         if (name !== "submit_lead") return "Unknown tool.";
         const outcome = await handleSubmitLead(input);
         // The widget reacts to this the moment the lead lands, rather than
-        // waiting for the model's confirmation turn — hence emit (to the
+        // waiting for the model's confirmation turn, hence emit (to the
         // visitor) alongside the returned result (to the model).
         if (outcome.submitted) emit(QUALIFIED_LEAD_SENTINEL);
         return outcome.result;

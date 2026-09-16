@@ -212,13 +212,13 @@ export function RoadmapsView({
                   <td className="max-w-[240px] truncate px-4 py-3 text-white/85">
                     {r.title}
                   </td>
-                  <td className="px-4 py-3 text-white/60">{r.periodLabel || "—"}</td>
+                  <td className="px-4 py-3 text-white/60">{r.periodLabel || "-"}</td>
                   <td className="px-4 py-3">
                     <StatusPill value={r.status} />
                   </td>
                   <td className="px-4 py-3 text-white/60">{r.items.length}</td>
                   <td className="px-4 py-3 text-xs text-white/50">
-                    {r.approvedAt ? `${fmtDate(r.approvedAt)}` : "—"}
+                    {r.approvedAt ? `${fmtDate(r.approvedAt)}` : "-"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
@@ -443,7 +443,7 @@ export function RoadmapsView({
               </div>
             ) : (
               <p className="mt-2 text-xs text-white/35">
-                No items yet — add current systems, problems, and planned work.
+                No items yet: add current systems, problems, and planned work.
               </p>
             )}
           </div>

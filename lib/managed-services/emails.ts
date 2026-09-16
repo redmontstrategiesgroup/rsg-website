@@ -3,32 +3,32 @@
  *
  * Follows the lib/leads.ts Resend pattern: gated on RESEND_API_KEY, sender
  * from CONTACT_FROM_EMAIL, admin notifications to CONTACT_TO_EMAIL. Email
- * failures are never fatal — billing/webhook flows log and continue.
+ * failures are never fatal: billing/webhook flows log and continue.
  */
 
 import { Resend } from "resend";
-import { DEFAULT_CONTACT_TO_EMAIL } from "@/lib/lead-score";
+import { contactNotifyEmails } from "@/lib/notify-emails";
 import { callProvider, recordSkipped } from "@/lib/integration-log";
 
 function fromAddress(): string {
   return process.env.CONTACT_FROM_EMAIL ?? "RSG <onboarding@resend.dev>";
 }
 
-function adminAddress(): string {
-  return process.env.CONTACT_TO_EMAIL?.trim() || DEFAULT_CONTACT_TO_EMAIL;
+function adminAddresses(): string[] {
+  return contactNotifyEmails();
 }
 
 /**
  * Single funnel for every managed-services email, so instrumentation lives in
  * one place rather than at each caller.
  *
- * Still never throws — billing and webhook flows must continue when email
+ * Still never throws: billing and webhook flows must continue when email
  * fails. The difference from before is that the failure is now *recorded*
  * against the Resend connection instead of vanishing into a console line: a
  * dead API key now moves last_success_at and shows up in the health endpoint.
  */
 async function send(
-  to: string,
+  to: string | string[],
   subject: string,
   html: string,
   text: string,
@@ -74,7 +74,7 @@ export async function sendAdminEmail(
   html: string,
   text: string
 ): Promise<boolean> {
-  return send(adminAddress(), subject, html, text, "email.send.admin_notice");
+  return send(adminAddresses(), subject, html, text, "email.send.admin_notice");
 }
 
 /** Notify a client. Never throws. */
