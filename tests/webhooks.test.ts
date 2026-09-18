@@ -6,39 +6,10 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import path from "node:path";
 import { createHmac } from "node:crypto";
-import { pathToFileURL, fileURLToPath } from "node:url";
-import * as nodeModule from "node:module";
 
 // outbox.ts imports "@/lib/..." aliases; register a resolve hook for node --test.
-type ResolveHook = (
-  specifier: string,
-  context: unknown,
-  nextResolve: (specifier: string, context?: unknown) => unknown,
-) => unknown;
-const { registerHooks } = nodeModule as unknown as {
-  registerHooks: (hooks: { resolve: ResolveHook }) => void;
-};
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    let spec = specifier;
-    if (spec.startsWith("@/")) spec = pathToFileURL(path.join(repoRoot, spec.slice(2))).href;
-    try {
-      return nextResolve(spec, context);
-    } catch (err) {
-      for (const suffix of [".ts", ".tsx", "/index.ts"]) {
-        try {
-          return nextResolve(`${spec}${suffix}`, context);
-        } catch {
-          /* try the next candidate */
-        }
-      }
-      throw err;
-    }
-  },
-});
+import "./_alias-hook.ts";
 
 const { signPayload, verifySignature, signingMaterial } = await import("../lib/webhooks/sign.ts");
 const { backoffMs, isRetryableStatus } = await import("../lib/webhooks/outbox.ts");
