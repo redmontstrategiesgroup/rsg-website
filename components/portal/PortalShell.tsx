@@ -55,6 +55,13 @@ const NAV: { href: string; label: string; icon: LucideIcon }[] = [
     : []),
 ];
 
+/** Nav entries hidden from the `member` role. */
+const MEMBER_HIDDEN_HREFS = new Set([
+  "/portal/billing",
+  "/portal/team",
+  "/portal/developers",
+]);
+
 export function PortalShell({
   company,
   userName,
@@ -76,10 +83,7 @@ export function PortalShell({
   }, [pathname]);
 
   const visibleNav = NAV.filter((item) => {
-    if (
-      (item.href === "/portal/billing" || item.href === "/portal/team" || item.href === "/portal/developers") &&
-      role === "member"
-    ) {
+    if (MEMBER_HIDDEN_HREFS.has(item.href) && role === "member") {
       return false;
     }
     return true;
