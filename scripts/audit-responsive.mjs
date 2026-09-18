@@ -96,6 +96,7 @@ const PORTAL_ROUTES = [
   "/portal/roadmap",
   "/portal/billing",
   "/portal/team",
+  "/portal/developers",
 ];
 
 const ADMIN_ROUTES = ["/admin", "/dashboard"];

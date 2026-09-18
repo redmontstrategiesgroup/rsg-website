@@ -13,6 +13,7 @@ import {
   Map,
   Receipt,
   Users,
+  KeyRound,
   Menu,
   X,
   LogOut,
@@ -49,6 +50,9 @@ const NAV: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/portal/roadmap", label: "Roadmap", icon: Map },
   { href: "/portal/billing", label: "Billing", icon: Receipt },
   { href: "/portal/team", label: "Team", icon: Users },
+  ...(process.env.NEXT_PUBLIC_API_PLATFORM_ENABLED === "true"
+    ? [{ href: "/portal/developers", label: "Developers", icon: KeyRound }]
+    : []),
 ];
 
 export function PortalShell({
@@ -72,7 +76,10 @@ export function PortalShell({
   }, [pathname]);
 
   const visibleNav = NAV.filter((item) => {
-    if ((item.href === "/portal/billing" || item.href === "/portal/team") && role === "member") {
+    if (
+      (item.href === "/portal/billing" || item.href === "/portal/team" || item.href === "/portal/developers") &&
+      role === "member"
+    ) {
       return false;
     }
     return true;
