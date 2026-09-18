@@ -6,6 +6,7 @@ import { toPublic } from "@/lib/seed";
 import { summarizeAnalytics } from "@/lib/analytics";
 import { can } from "@/lib/scheduling/permissions";
 import { apiPlatformEnabled } from "@/lib/env";
+import { UUID_RE } from "@/lib/apiv1/pagination";
 import { AdminConsole } from "@/components/admin/AdminConsole";
 
 export const runtime = "nodejs";
@@ -32,7 +33,10 @@ export default async function AdminPage() {
     privateAi: can("manage_leads", role),
     brief: can("manage_leads", role),
     security: can("view_security", role),
-    apiKeys: apiPlatformEnabled(),
+    // The env bootstrap admin (non-UUID id) can't own API keys — see
+    // lib/apiv1/route-guards.ts adminKeyGuard() — so hide the tab rather
+    // than server-render a console that 500s on every call.
+    apiKeys: apiPlatformEnabled() && UUID_RE.test(ctx.admin.id),
   };
 
   // Only load what this role is allowed to see.
