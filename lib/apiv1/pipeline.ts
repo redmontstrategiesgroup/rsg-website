@@ -27,7 +27,7 @@ export function corsHeaders(): Record<string, string> {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Authorization, Content-Type, Idempotency-Key",
-    "Access-Control-Expose-Headers": "x-correlation-id, X-RateLimit-Limit, X-RateLimit-Remaining, Idempotent-Replayed",
+    "Access-Control-Expose-Headers": "x-correlation-id, Idempotent-Replayed",
     "Access-Control-Max-Age": "86400",
   };
 }

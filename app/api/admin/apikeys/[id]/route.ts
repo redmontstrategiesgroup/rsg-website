@@ -5,6 +5,7 @@ import { revokeApiKey, revokeAnyAdminKey } from "@/lib/apiv1/key-store";
 import { can } from "@/lib/scheduling/permissions";
 import { writeAuditEvent } from "@/lib/audit";
 import { adminKeyGuard } from "@/lib/apiv1/route-guards";
+import { UUID_RE } from "@/lib/apiv1/pagination";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   const limited = await rateLimitAdminMutator(request, ctx.admin.id);
   if (limited) return limited;
   const { id } = await context.params;
+  if (!UUID_RE.test(id)) return NextResponse.json({ error: "Key not found." }, { status: 404 });
   const sb = requireSupabase();
   const ok = can("manage_team", ctx.role)
     ? await revokeAnyAdminKey(sb, id)

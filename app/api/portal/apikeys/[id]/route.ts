@@ -4,6 +4,7 @@ import { logClientActivity } from "@/lib/lifecycle/activity";
 import { revokeApiKey } from "@/lib/apiv1/key-store";
 import { writeAuditEvent } from "@/lib/audit";
 import { portalKeyGuard } from "@/lib/apiv1/route-guards";
+import { UUID_RE } from "@/lib/apiv1/pagination";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,7 @@ export async function DELETE(_req: Request, context: { params: Promise<{ id: str
   const ctx = await portalKeyGuard();
   if (ctx instanceof NextResponse) return ctx;
   const { id } = await context.params;
+  if (!UUID_RE.test(id)) return NextResponse.json({ error: "Key not found." }, { status: 404 });
   const ok = await revokeApiKey(requireSupabase(), { type: "client", id: ctx.client.id }, id);
   if (!ok) return NextResponse.json({ error: "Key not found." }, { status: 404 });
   await writeAuditEvent({

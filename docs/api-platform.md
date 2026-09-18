@@ -10,7 +10,8 @@ self-service (projects, tickets, briefs, files, billing) and reads. Spec:
   permissions, key issuance/revocation, and a max of 10 active keys per
   principal.
 - Cursor pagination, idempotency for mutating requests, per-key usage
-  logging, and rate limiting (in-memory token bucket).
+  logging, and rate limiting (Upstash Redis sliding window, with an
+  in-memory sliding-window fallback for local/dev).
 - Client-facing resources: `me`, `projects`, `tickets` (+ messages),
   `briefs`, `files` (+ download), `invoices`, `payments`, `subscription`,
   and milestone/task approval actions.
@@ -23,7 +24,8 @@ self-service (projects, tickets, briefs, files, billing) and reads. Spec:
 
 Two flags gate the platform; both must be `true`:
 
-- `API_PLATFORM_ENABLED` — server-side gate. Routes return 404 when unset.
+- `API_PLATFORM_ENABLED` — server-side gate. Routes return 503 `unavailable`
+  when unset (same code as a backing-store outage; see Error codes below).
 - `NEXT_PUBLIC_API_PLATFORM_ENABLED` — client-side gate for the portal
   Developers page / admin API keys tab.
 
@@ -47,8 +49,12 @@ curl https://<host>/api/v1/tickets \
   -H "Authorization: Bearer rsg_live_..." \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: <uuid-or-random-string>" \
-  -d '{"subject":"Question about invoice","body":"...","category":"billing"}'
+  -d '{"subject":"Question about invoice","body":"...","category":"bug"}'
 ```
+
+`category` must be one of: `outage`, `bug`, `access`, `integration`,
+`automation`, `data_reporting`, `website_update`, `training`, `feature`,
+`billing`, `security` (defaults to `bug` if omitted).
 
 ## Error codes
 
@@ -61,10 +67,10 @@ Errors are `{ "error": { "code", "message", "details?", "correlation_id" } }`.
 | `not_found` | 404 | Resource missing, or not owned by the caller |
 | `validation_failed` | 422 | Request body/query failed validation |
 | `rate_limited` | 429 | Too many requests in the current window |
-| `idempotency_required` | 400 | Mutating request missing `Idempotency-Key` |
-| `idempotency_mismatch` | 409 | Same key, different request body |
-| `conflict` | 409 | State conflict (e.g. max active keys) |
-| `unavailable` | 503 | Backing store unreachable |
+| `idempotency_required` | 400 | Mutating request missing (or malformed) `Idempotency-Key` |
+| `idempotency_mismatch` | 422 | Same key, different request body |
+| `conflict` | 409 | State conflict (e.g. milestone not under review, max active keys) or a request with this `Idempotency-Key` still in flight |
+| `unavailable` | 503 | Platform flag is off, or backing store unreachable |
 | `internal` | 500 | Unexpected error |
 
 ## Pagination
@@ -75,22 +81,27 @@ List endpoints accept `?limit=` (default 25, max 100) and `?cursor=`
 
 ## Idempotency
 
-All mutating requests (`POST`/`PATCH`/`PUT`/`DELETE`) require an
-`Idempotency-Key` header. The pipeline hashes method + path + body; a
-replayed request with the same key and body returns the original response
-with `Idempotent-Replayed: true`. The same key with a different body
-returns `idempotency_mismatch` (409). Idempotency rows expire after 24h.
+Every route marked idempotent in Phase 1 (all Phase 1 `POST` routes —
+mutating create/action endpoints; there are no idempotent `PATCH`/`PUT`/
+`DELETE` routes yet) requires an `Idempotency-Key` header, 8–200
+characters. A missing or
+out-of-range key returns `idempotency_required` (400). The pipeline hashes
+method + path + body; a replayed request with the same key and body
+returns the original response with `Idempotent-Replayed: true`. The same
+key with a different body returns `idempotency_mismatch` (422). A second
+request reusing a key that is still being processed returns `conflict`
+(409). Idempotency rows expire after 24h.
 
 ## Rate limits
 
 Keyed requests: 600 requests / 10 minutes. Keyless (unauthenticated)
 requests: 60 requests / 10 minutes. Over the limit returns `rate_limited`
-(429).
+(429) with a `Retry-After: 60` header.
 
 **Known deviation:** `X-RateLimit-Limit`/`X-RateLimit-Remaining` response
-headers are not yet populated (the CORS `Access-Control-Expose-Headers`
-list reserves the names, but the pipeline does not set them). Deferred to
-Phase 2.
+headers are not populated (`lib/security.rateLimit()` returns only a
+boolean, not remaining counts) and are not advertised in the CORS
+`Access-Control-Expose-Headers` list. Deferred to Phase 2.
 
 ## Usage and cleanup
 

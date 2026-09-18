@@ -35,5 +35,12 @@ export function errorBody(err: ApiError, correlationId: string) {
 /** Anything that is not already an ApiError becomes an opaque 500. */
 export function toApiError(err: unknown): ApiError {
   if (err instanceof ApiError) return err;
+  // lib/lifecycle/core.ts requireSupabase() throws this when the platform
+  // has no Supabase client configured. Checked by name (not `instanceof`)
+  // so this file can stay `@/`-free and test-importable without the
+  // alias-resolve hook.
+  if (err instanceof Error && err.name === "LifecycleUnavailableError") {
+    return new ApiError(503, "unavailable", "The API is temporarily unavailable.");
+  }
   return new ApiError(500, "internal", "Something went wrong.");
 }

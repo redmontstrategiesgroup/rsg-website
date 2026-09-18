@@ -24,4 +24,16 @@ describe("ApiError", () => {
     const passthrough = new ApiError(409, "conflict", "x");
     assert.equal(toApiError(passthrough), passthrough);
   });
+  it("maps LifecycleUnavailableError to a 503 unavailable ApiError", () => {
+    class LifecycleUnavailableError extends Error {
+      constructor() {
+        super("Supabase is not configured.");
+        this.name = "LifecycleUnavailableError";
+      }
+    }
+    const e = toApiError(new LifecycleUnavailableError());
+    assert.equal(e.status, 503);
+    assert.equal(e.code, "unavailable");
+    assert.equal(e.message, "The API is temporarily unavailable.");
+  });
 });
