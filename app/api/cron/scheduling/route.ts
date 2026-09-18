@@ -3,10 +3,11 @@ import { authorizeCron } from "@/lib/cron-auth";
 import { processDueJobs } from "@/lib/scheduling/reminders";
 import { deliverPendingWebhooks } from "@/lib/scheduling/webhooks";
 import { emitTombstones } from "@/lib/webhooks/registry-sync";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { processEmailJobs, runLeadRetention } from "@/lib/email-jobs";
 import { runLifecycleCron } from "@/lib/lifecycle/orchestrate";
 import { writeAuditEvent } from "@/lib/audit";
+import { cleanupApiTables } from "@/lib/apiv1/cleanup";
 import {
   correlationFromRequest,
   recordInboundEvent,
@@ -73,11 +74,18 @@ async function runCron() {
   // Lifecycle sweeps (reminders, expirations, delayed automations) never
   // throw: failures are reported in the counts.
   const lifecycle = await runLifecycleCron();
+  // API platform retention: expired idempotency keys (24h) and old request
+  // log rows (30d). Never throws the cron: a failure here is reported in
+  // the summary, not fatal to reminders/webhooks/email above.
+  const sb = getSupabase();
+  const apiCleanup = sb
+    ? await cleanupApiTables(sb).catch((e) => ({ error: String(e) }))
+    : { error: "Supabase unavailable" };
 
   await writeAuditEvent({
     actorType: "cron",
     action: "cron.scheduling",
-    metadata: { jobs, webhooks, tombstones, emails, retained, lifecycle },
+    metadata: { jobs, webhooks, tombstones, emails, retained, lifecycle, apiCleanup },
   });
 
   return NextResponse.json({
@@ -88,6 +96,7 @@ async function runCron() {
     emails,
     retained,
     lifecycle,
+    apiCleanup,
     at: new Date().toISOString(),
   });
 }
