@@ -5,6 +5,7 @@ import { getClients, getLeads, getSubscribers, getPageViews } from "@/lib/store"
 import { toPublic } from "@/lib/seed";
 import { summarizeAnalytics } from "@/lib/analytics";
 import { can } from "@/lib/scheduling/permissions";
+import { apiPlatformEnabled } from "@/lib/env";
 import { AdminConsole } from "@/components/admin/AdminConsole";
 
 export const runtime = "nodejs";
@@ -31,6 +32,7 @@ export default async function AdminPage() {
     privateAi: can("manage_leads", role),
     brief: can("manage_leads", role),
     security: can("view_security", role),
+    apiKeys: apiPlatformEnabled(),
   };
 
   // Only load what this role is allowed to see.

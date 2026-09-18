@@ -28,6 +28,7 @@ import {
   ShieldAlert,
   Wrench,
   Route,
+  KeyRound,
 } from "lucide-react";
 import type { AdminRole, ClientPublic, Lead, LeadStatus, Subscriber } from "@/lib/types";
 import { LEAD_STATUSES } from "@/lib/types";
@@ -42,6 +43,7 @@ import { SecurityCenterPanel } from "@/components/admin/SecurityCenterPanel";
 import { IndustriesAdminPanel } from "@/components/admin/IndustriesAdminPanel";
 import { ManagedServicesAdminPanel } from "@/components/admin/ManagedServicesAdminPanel";
 import { LifecycleAdminPanel } from "@/components/admin/LifecycleAdminPanel";
+import { ApiKeysAdminPanel } from "@/components/admin/ApiKeysAdminPanel";
 import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Tab =
@@ -55,7 +57,8 @@ type Tab =
   | "managed"
   | "scheduling"
   | "private-ai"
-  | "security";
+  | "security"
+  | "api-keys";
 
 export type AdminCaps = {
   clients: boolean;
@@ -66,6 +69,7 @@ export type AdminCaps = {
   privateAi: boolean;
   brief: boolean;
   security: boolean;
+  apiKeys: boolean;
 };
 
 export function AdminConsole({
@@ -103,6 +107,7 @@ export function AdminConsole({
     caps.clients && ("managed" as Tab),
     caps.privateAi && ("private-ai" as Tab),
     caps.security && ("security" as Tab),
+    caps.apiKeys && ("api-keys" as Tab),
     caps.brief && ("brief" as Tab),
   ].filter(Boolean) as Tab[];
   const [tab, setTab] = useState<Tab>(availableTabs[0] ?? "security");
@@ -296,6 +301,13 @@ export function AdminConsole({
                 badge: 0,
               },
               {
+                id: "api-keys" as Tab,
+                label: "API keys",
+                icon: KeyRound,
+                count: null,
+                badge: 0,
+              },
+              {
                 id: "brief" as Tab,
                 label: "Audit Brief",
                 icon: FileSearch,
@@ -424,6 +436,8 @@ export function AdminConsole({
               mfaEnabled={mfaEnabled}
               mfaSetupRequired={mfaSetupRequired}
             />
+          ) : tab === "api-keys" && caps.apiKeys ? (
+            <ApiKeysAdminPanel />
           ) : tab === "brief" && caps.brief ? (
             <BriefPanel />
           ) : (

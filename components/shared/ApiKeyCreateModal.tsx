@@ -5,7 +5,7 @@ import { Check, Copy } from "lucide-react";
 import { Banner, Button, Modal } from "@/components/portal/ui";
 import { Field, inputClass } from "@/components/booking/ui";
 import { postJson } from "@/lib/api";
-import type { ApiKeyDto } from "@/components/portal/ApiKeysView";
+import type { ApiKeyDto } from "@/lib/apiv1/key-store";
 
 /** Groups scopes like "projects:read" / "projects:write" under "projects". */
 function groupScopes(scopes: string[]): [string, string[]][] {
@@ -19,19 +19,23 @@ function groupScopes(scopes: string[]): [string, string[]][] {
 
 /**
  * Create-key flow: a name + grouped scope checkboxes, then (on success) a
- * one-time plaintext reveal. Split out of ApiKeysView to keep both files
- * under the repo's ~250-line component guideline.
+ * one-time plaintext reveal. Shared between the portal (Task 18) and the
+ * admin console (Task 19) via ApiKeysManager. Split out to keep both this
+ * file and ApiKeysManager under the repo's ~250-line component guideline.
  */
 export function ApiKeyCreateModal({
   open,
   onClose,
   scopes,
+  allowedScopes,
   endpoint,
   onCreated,
 }: {
   open: boolean;
   onClose: () => void;
   scopes: string[];
+  /** Scopes the caller's role may grant. When set, other scopes are shown but disabled. */
+  allowedScopes?: string[];
   endpoint: string;
   onCreated: (key: ApiKeyDto) => void;
 }) {
@@ -43,6 +47,7 @@ export function ApiKeyCreateModal({
   const [copied, setCopied] = useState(false);
 
   const grouped = groupScopes(scopes);
+  const isAllowed = (scope: string) => !allowedScopes || allowedScopes.includes(scope);
 
   function reset() {
     setName("");
@@ -58,6 +63,7 @@ export function ApiKeyCreateModal({
   }
 
   function toggleScope(scope: string) {
+    if (!isAllowed(scope)) return;
     setSelectedScopes((prev) =>
       prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope],
     );
@@ -164,17 +170,27 @@ export function ApiKeyCreateModal({
                 <div key={resource}>
                   <p className="mb-1.5 text-xs font-medium capitalize text-white/60">{resource}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
-                    {group.map((scope) => (
-                      <label key={scope} className="flex min-h-11 items-center gap-2 text-sm text-white/80">
-                        <input
-                          type="checkbox"
-                          checked={selectedScopes.includes(scope)}
-                          onChange={() => toggleScope(scope)}
-                          className="h-4 w-4 rounded border-white/30 bg-white/[0.03] text-crimson focus-visible:ring-2 focus-visible:ring-crimson/60"
-                        />
-                        {scope}
-                      </label>
-                    ))}
+                    {group.map((scope) => {
+                      const allowed = isAllowed(scope);
+                      return (
+                        <label
+                          key={scope}
+                          className={`flex min-h-11 items-center gap-2 text-sm ${
+                            allowed ? "text-white/80" : "text-white/35"
+                          }`}
+                          title={allowed ? undefined : "Your role doesn't include this scope"}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedScopes.includes(scope)}
+                            disabled={!allowed}
+                            onChange={() => toggleScope(scope)}
+                            className="h-4 w-4 rounded border-white/30 bg-white/[0.03] text-crimson focus-visible:ring-2 focus-visible:ring-crimson/60 disabled:cursor-not-allowed disabled:opacity-50"
+                          />
+                          {scope}
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
