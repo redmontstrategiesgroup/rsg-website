@@ -38,7 +38,15 @@ describe("admin entities", () => {
   it("get + patch by id; strict patch → 422", async () => {
     assert.equal(((await getEntity(args({ params: { entity: "risks", id: RID } }))).data as { title: string }).title, "Smoke");
     const r = await patchEntity(args({ params: { entity: "risks", id: RID }, body: { status: "closed" } }));
-    assert.ok(log.some((l) => l.startsWith('update:[{"status":"closed"}')));
+    // The recorded call is `update:${JSON.stringify([payload])}` (see fakeSb above) — parse it
+    // back out rather than matching the whole literal, so this tolerates the `updated_at`
+    // timestamp the handler stamps onto every patch (mirroring the cookie route at
+    // app/api/dashboard/entities/[entity]/[id]/route.ts:29) without pinning its exact value.
+    const updateCall = log.find((l) => l.startsWith("update:"));
+    assert.ok(updateCall);
+    const [payload] = JSON.parse(updateCall.slice("update:".length)) as [Record<string, unknown>];
+    assert.equal(payload.status, "closed");
+    assert.equal(typeof payload.updated_at, "string");
     assert.ok(r.data);
     await assert.rejects(patchEntity(args({ params: { entity: "risks", id: RID }, body: { bogus: 1 } })), (e: { code: string }) => e.code === "validation_failed");
   });

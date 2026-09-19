@@ -81,7 +81,7 @@ export const patchEntity: ApiHandler<Record<string, unknown>, undefined> = async
   if (!parsed.success) throw new ApiError(422, "validation_failed", "Invalid update.", parsed.error.flatten());
   if (Object.keys(parsed.data).length === 0) throw new ApiError(422, "validation_failed", "Invalid update.");
   const sb = requireSupabase();
-  const { data, error } = await sb.from(config.table).update(parsed.data as never).eq("id", id).select("*").single();
+  const { data, error } = await sb.from(config.table).update({ ...parsed.data, updated_at: new Date().toISOString() } as never).eq("id", id).select("*").single();
   if (error) throw new ApiError(500, "internal", "The record could not be updated.");
   if (!data) throw notFound();
   const row = data as EntityRow;
