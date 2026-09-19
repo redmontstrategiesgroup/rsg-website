@@ -1,7 +1,9 @@
-# API Platform — Phase 1
+# API Platform
 
-External REST API under `/api/v1`, gated by a feature flag. Covers client
-self-service (projects, tickets, briefs, files, billing) and reads. Spec:
+External REST API under `/api/v1`, gated by a feature flag. Phase 1 covers
+client self-service (projects, tickets, briefs, files, billing). Phase 2
+adds staff/admin CRM endpoints and a small keyless public surface (booking,
+lead capture, catalog reads). Spec:
 [`docs/superpowers/specs/2026-09-15-api-platform-design.md`](superpowers/specs/2026-09-15-api-platform-design.md).
 
 ## What shipped
@@ -19,6 +21,9 @@ self-service (projects, tickets, briefs, files, billing) and reads. Spec:
   keys** tab for staff/admin keys.
 - Retention cron: expired idempotency rows (24h) and old request logs (30d)
   are purged on every `scheduling` cron tick (`lib/apiv1/cleanup.ts`).
+- **Phase 2:** admin (bearer, staff-only) CRM endpoints for leads, clients,
+  proposals, dashboard entities, audit, and pageview analytics; a keyless
+  public surface for booking, lead capture, and catalog reads.
 
 ## Enabling it
 
@@ -56,6 +61,75 @@ curl https://<host>/api/v1/tickets \
 `automation`, `data_reporting`, `website_update`, `training`, `feature`,
 `billing`, `security` (defaults to `bug` if omitted).
 
+## Admin endpoints (Phase 2)
+
+Staff/admin bearer keys only (`principal.type === "admin"`; a client key
+gets `insufficient_scope` 403 on every route below). Minted from the admin
+dashboard's API keys tab, capped by the issuing admin's role. Standard
+keyed rate limit (600 / 10 min) and pagination apply unless noted.
+
+| Endpoint | Scope | Notes |
+| --- | --- | --- |
+| `GET /admin/leads` | `leads:read` | `?status=`, `?since=`, `?q=` (search), cursor pagination |
+| `POST /admin/leads` | `leads:write` | Idempotent. 201, or 200 if `processLead` dedupes |
+| `GET /admin/leads/{id}` | `leads:read` | |
+| `PATCH /admin/leads/{id}` | `leads:write` | `status`/`notes`/`owner`/`archived_at`, at least one field |
+| `DELETE /admin/leads/{id}` | `leads:write` | Soft delete |
+| `GET /admin/leads/export` | `leads:read` | **10 / 10 min** (not the standard 600); same filters as list, no pagination |
+| `GET /admin/clients` | `clients:read` | |
+| `GET /admin/clients/{id}` | `clients:read` | |
+| `GET /admin/proposals` | `proposals:read` | |
+| `GET /admin/proposals/{id}` | `proposals:read` | |
+| `GET /admin/{entity}` | `dashboard:read` | `entity` is one of `actions`, `opportunities`, `risks`, `ideas`; unknown entity is `not_found` 404, not 400 |
+| `POST /admin/{entity}` | `dashboard:write` | Idempotent. Body schema is per-entity, validated in the handler |
+| `GET /admin/{entity}/{id}` | `dashboard:read` | |
+| `PATCH /admin/{entity}/{id}` | `dashboard:write` | Per-entity patch schema |
+| `GET /admin/audit` | `audit:read` | `?action=`, `?since=` |
+| `GET /admin/analytics/pageviews` | `analytics:read` | `?since=`, `?until=` |
+
+**CSV export:** `GET /admin/leads/export` returns raw `text/csv` (with
+`Content-Disposition: attachment`), **not** the `{ data, meta }` JSON
+envelope every other endpoint uses — parse it as CSV, not JSON.
+
+## Public endpoints (Phase 2)
+
+No API key required (`auth: "none"`). All keyless traffic still shares the
+default 60 / 10 min IP rate limit unless a route sets its own (below).
+
+| Endpoint | Rate limit | Notes |
+| --- | --- | --- |
+| `GET /public/status` | default | Health check; `checks.database` is `ok`/`unconfigured`/`unreachable`; 503 when `unreachable` |
+| `GET /public/plans` | 120 / 10 min | Active managed-service plans |
+| `GET /public/industries` | 120 / 10 min | Published industry verticals only |
+| `GET /public/booking/services` | 120 / 10 min | Active services + public appointment types |
+| `GET /public/booking/slots` | 120 / 10 min | `?appointment_type_id=` (uuid, required), `?from=`/`?to=` (max 31-day window), `?timezone=` |
+| `POST /public/booking` | **10 / hour** | Idempotent. Creates a session + booking in one call; see captcha and idempotency notes below |
+| `POST /public/leads` | **5 / hour** | Idempotent. Always 202; see honeypot note below |
+
+**Captcha gate — both env vars must be set together.** `POST
+/public/booking` only verifies a Turnstile token when
+`TURNSTILE_SECRET_KEY` is set (`isTurnstileConfigured()`). But
+`verifyTurnstile()` itself short-circuits to "pass" whenever
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY` is unset — it never reaches the secret-key
+check. So setting only `TURNSTILE_SECRET_KEY` without also setting
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY` is a **silent no-op**: the gate looks
+active (`isTurnstileConfigured()` is true) but every request passes
+unchecked. Set both or neither.
+
+**Booking idempotency is namespaced per caller IP.** `Idempotency-Key` on
+`POST /public/booking` is rewritten to `pub:<ip-derived-id>:<key>` before
+it reaches the shared booking dedupe (a global lookup by key, otherwise
+guessable). Two callers behind the same NAT/proxy share that namespace, so
+a key one of them used is unavailable to the other until it expires (24h) —
+pick unique keys, not shared conventions like `"1"`.
+
+**Honeypot field.** `POST /public/leads` accepts an undocumented
+`website_url` field. A real visitor never sees or fills it (it's a hidden
+form field for bot traps); if it arrives non-empty, the endpoint still
+replies `202 { "accepted": true }` but silently drops the submission —
+no lead is created. Integrators building their own form against this
+endpoint should simply never send `website_url`.
+
 ## Error codes
 
 Errors are `{ "error": { "code", "message", "details?", "correlation_id" } }`.
@@ -81,10 +155,10 @@ List endpoints accept `?limit=` (default 25, max 100) and `?cursor=`
 
 ## Idempotency
 
-Every route marked idempotent in Phase 1 (all Phase 1 `POST` routes —
-mutating create/action endpoints; there are no idempotent `PATCH`/`PUT`/
-`DELETE` routes yet) requires an `Idempotency-Key` header, 8–200
-characters. A missing or
+Every route marked idempotent (all Phase 1 `POST` routes, plus Phase 2's
+`POST /admin/leads`, `POST /admin/{entity}`, `POST /public/booking`, and
+`POST /public/leads`; there are no idempotent `PATCH`/`PUT`/`DELETE`
+routes) requires an `Idempotency-Key` header, 8–200 characters. A missing or
 out-of-range key returns `idempotency_required` (400). The pipeline hashes
 method + path + body; a replayed request with the same key and body
 returns the original response with `Idempotent-Replayed: true`. The same
@@ -94,14 +168,17 @@ request reusing a key that is still being processed returns `conflict`
 
 ## Rate limits
 
-Keyed requests: 600 requests / 10 minutes. Keyless (unauthenticated)
-requests: 60 requests / 10 minutes. Over the limit returns `rate_limited`
-(429) with a `Retry-After: 60` header.
+Default: keyed requests 600 / 10 minutes, keyless (unauthenticated)
+requests 60 / 10 minutes. Several Phase 2 routes override the default with
+a tighter, endpoint-specific limit (see the Admin/Public endpoint tables
+above — e.g. `leads/export` 10 / 10 min, public booking 10 / hour, public
+leads 5 / hour). Over the limit returns `rate_limited` (429) with a
+`Retry-After: 60` header.
 
 **Known deviation:** `X-RateLimit-Limit`/`X-RateLimit-Remaining` response
 headers are not populated (`lib/security.rateLimit()` returns only a
 boolean, not remaining counts) and are not advertised in the CORS
-`Access-Control-Expose-Headers` list. Deferred to Phase 2.
+`Access-Control-Expose-Headers` list. Still outstanding as of Phase 2.
 
 ## Usage and cleanup
 

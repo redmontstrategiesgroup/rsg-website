@@ -26,8 +26,10 @@ describe("public catalog", () => {
     const plans = (await listPlansHandler(args())).data as Record<string, unknown>[];
     assert.equal("detailedScope" in plans[0]!, false); assert.equal(plans[0]!.monthly_price_cents, 100);
   });
-  it("status ok / degraded", async () => {
-    assert.equal(((await getStatus(args())).data as { status: string }).status, "ok");
+  it("status ok / degraded; version resolves from package.json, not npm_package_version", async () => {
+    const ok = await getStatus(args());
+    assert.equal((ok.data as { status: string }).status, "ok");
+    assert.notEqual((ok.data as { version: string }).version, "unknown");
     pingThrows = true;
     const r = await getStatus(args());
     assert.equal(r.status, 503); assert.equal((r.data as { checks: { database: string } }).checks.database, "unreachable");
