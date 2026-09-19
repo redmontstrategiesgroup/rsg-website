@@ -26,7 +26,7 @@ mock.module("@/lib/scheduling/notifications", { namedExports: { getSettings: asy
 mock.module("@/lib/scheduling/turnstile", {
   namedExports: {
     isTurnstileConfigured: () => turnstileConfigured,
-    verifyTurnstile: async () => turnstileValid,
+    verifyTurnstileStrict: async () => turnstileValid,
   },
 });
 

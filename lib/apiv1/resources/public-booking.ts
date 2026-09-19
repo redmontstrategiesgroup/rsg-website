@@ -8,7 +8,7 @@ import { completeBooking, startPublicSession } from "@/lib/scheduling/book-flow"
 import { createBody } from "@/lib/scheduling/book-flow-schema";
 import { getAvailableSlots } from "@/lib/scheduling/slots";
 import { getSettings } from "@/lib/scheduling/notifications";
-import { isTurnstileConfigured, verifyTurnstile } from "@/lib/scheduling/turnstile";
+import { isTurnstileConfigured, verifyTurnstileStrict } from "@/lib/scheduling/turnstile";
 import type { ApiHandler } from "../types.ts";
 
 export { createBody };
@@ -64,7 +64,7 @@ export const createBookingHandler: ApiHandler<z.infer<typeof createBody>, undefi
   // caller's own captcha token before minting anything — fail closed only
   // when Turnstile is actually configured, so local/dev is unaffected.
   if (isTurnstileConfigured()) {
-    const ok = await verifyTurnstile(body.turnstile_token, ip);
+    const ok = await verifyTurnstileStrict(body.turnstile_token, ip);
     if (!ok) {
       throw new ApiError(403, "insufficient_scope", "Captcha verification failed.");
     }
@@ -83,6 +83,10 @@ export const createBookingHandler: ApiHandler<z.infer<typeof createBody>, undefi
   // manage_token, which grants PII read + cancel/reschedule access. The
   // cookie route is authenticated by its session cookie already, so its key
   // is left as-is.
+  // This isolation boundary trusts clientIp() (lib/security.ts), which
+  // reads `x-real-ip`/the rightmost `x-forwarded-for` hop — correct behind
+  // Vercel's trusted proxy, but spoofable by any caller that reaches this
+  // route directly without going through it.
   const headerKey = request.headers.get("idempotency-key") ?? undefined;
   const idempotencyKey = headerKey ? `pub:${keylessPrincipalId(ip)}:${headerKey}` : undefined;
 

@@ -85,7 +85,7 @@ keyed rate limit (600 / 10 min) and pagination apply unless noted.
 | `GET /admin/{entity}/{id}` | `dashboard:read` | |
 | `PATCH /admin/{entity}/{id}` | `dashboard:write` | Per-entity patch schema |
 | `GET /admin/audit` | `audit:read` | `?action=`, `?since=` |
-| `GET /admin/analytics/pageviews` | `analytics:read` | `?since=`, `?until=` |
+| `GET /admin/analytics/pageviews` | `analytics:read` | `?since=`, `?until=`; reads a local JSON file (`getPageViews()`, `lib/store.ts`) that is never written on Vercel, so it returns `[]` in production |
 
 **CSV export:** `GET /admin/leads/export` returns raw `text/csv` (with
 `Content-Disposition: attachment`), **not** the `{ data, meta }` JSON
@@ -107,21 +107,23 @@ default 60 / 10 min IP rate limit unless a route sets its own (below).
 | `POST /public/leads` | **5 / hour** | Idempotent. Always 202; see honeypot note below |
 
 **Captcha gate — both env vars must be set together.** `POST
-/public/booking` only verifies a Turnstile token when
-`TURNSTILE_SECRET_KEY` is set (`isTurnstileConfigured()`). But
-`verifyTurnstile()` itself short-circuits to "pass" whenever
-`NEXT_PUBLIC_TURNSTILE_SITE_KEY` is unset — it never reaches the secret-key
-check. So setting only `TURNSTILE_SECRET_KEY` without also setting
-`NEXT_PUBLIC_TURNSTILE_SITE_KEY` is a **silent no-op**: the gate looks
-active (`isTurnstileConfigured()` is true) but every request passes
-unchecked. Set both or neither.
+/public/booking` verifies a Turnstile token only when
+`isTurnstileConfigured()` is true, which requires BOTH
+`TURNSTILE_SECRET_KEY` and `NEXT_PUBLIC_TURNSTILE_SITE_KEY` to be set. If
+only one is set, `isTurnstileConfigured()` reports the gate as inactive
+(not silently active-but-passing) and the endpoint proceeds without a
+captcha check, same as local/dev with neither var set. Set both to enforce
+the gate.
 
 **Booking idempotency is namespaced per caller IP.** `Idempotency-Key` on
 `POST /public/booking` is rewritten to `pub:<ip-derived-id>:<key>` before
 it reaches the shared booking dedupe (a global lookup by key, otherwise
 guessable). Two callers behind the same NAT/proxy share that namespace, so
 a key one of them used is unavailable to the other until it expires (24h) —
-pick unique keys, not shared conventions like `"1"`.
+pick unique keys, not shared conventions like `"1"`. This isolation
+boundary trusts `clientIp()` (`lib/security.ts`), which reads
+`x-real-ip`/the rightmost `x-forwarded-for` hop — correct behind Vercel's
+trusted proxy, but spoofable by any caller reaching the route directly.
 
 **Honeypot field.** `POST /public/leads` accepts an undocumented
 `website_url` field. A real visitor never sees or fills it (it's a hidden
