@@ -17,6 +17,11 @@ export const ADMIN_DENYLIST = [
   "ip",
   "user_agent",
   "storageMetadata",
+  "key_hash",
+  "secret",
+  "mfa_secret",
+  "configuration_encrypted",
+  "internal_notes",
 ];
 
 export type LeadRow = {

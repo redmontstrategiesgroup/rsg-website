@@ -2,6 +2,13 @@
  * Cursor-paged Supabase queries and mutations backing the admin API
  * (leads, clients, proposals, entities, audit events). Mirrors
  * `lib/lifecycle/paged.ts`'s structure but is not client-scoped.
+ *
+ * `o.q` on `listLeadsPage`/`listClientsPage` is interpolated verbatim into
+ * a PostgREST `.or()` filter string (via `orIlike`). Callers MUST pass a
+ * value already sanitised by `searchTerm()` (lib/apiv1/search.ts) — never
+ * a raw query-string value — or a crafted `q` can break out of the
+ * intended filter. All six current call sites do this correctly; keep it
+ * that way for any new one.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { applyCursor, pageResult, type Cursor } from "../apiv1/pagination.ts";

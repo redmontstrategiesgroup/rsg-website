@@ -11,6 +11,7 @@ import { clientIp } from "@/lib/security";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { requireSupabase } from "@/lib/lifecycle/core";
 import { softDeleteLead } from "@/lib/lifecycle/paged-admin";
+import { UUID_RE } from "@/lib/apiv1/pagination";
 
 export const runtime = "nodejs";
 
@@ -99,8 +100,11 @@ export async function DELETE(
   if (limited) return limited;
 
   const { id } = await context.params;
-  if (!id || id.length > 80) {
-    return NextResponse.json({ error: "Invalid lead id." }, { status: 400 });
+  // A non-UUID id must be indistinguishable from an unowned one (404, not
+  // a 500 from Postgres choking on an invalid uuid literal) — mirrors
+  // lib/apiv1/ownership.ts's requireUuid() used by the v1 twin.
+  if (!id || !UUID_RE.test(id)) {
+    return NextResponse.json({ error: "Lead not found." }, { status: 404 });
   }
 
   if (!isSupabaseConfigured()) {

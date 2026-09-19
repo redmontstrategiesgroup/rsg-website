@@ -60,7 +60,12 @@ export async function GET(request: Request) {
     );
   }
 
-  const { limit, cursor } = parseListParams(sp);
+  let limit: number, cursor: ReturnType<typeof parseListParams>["cursor"];
+  try {
+    ({ limit, cursor } = parseListParams(sp));
+  } catch {
+    return NextResponse.json({ error: "Invalid cursor." }, { status: 400 });
+  }
   const page = await listLeadsPage(requireSupabase(), {
     limit,
     cursor,

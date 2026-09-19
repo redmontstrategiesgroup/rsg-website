@@ -7,12 +7,21 @@ import { decodeCursor } from "@/lib/apiv1/pagination";
 import { searchTerm } from "@/lib/apiv1/search";
 import { toCsv } from "@/lib/apiv1/csv";
 import { LEAD_CSV_COLUMNS, exportQuery } from "@/lib/apiv1/resources/admin-leads";
+import { rateLimit, rateLimitResponse } from "@/lib/security";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;
+
+  // Matches the v1 twin's 10 / 10 min cap (docs/api-platform.md §Admin
+  // endpoints) — this is an unbounded-scan-capable 10k-row export, not a
+  // read to leave unthrottled. Deliberately not rateLimitAdminMutator,
+  // whose 120 / 10 min mutator cap is far looser than the export needs.
+  if (!(await rateLimit(`admin-leads-export:${ctx.admin.id}`, 10, 10 * 60_000))) {
+    return rateLimitResponse();
+  }
 
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: "Supabase required" }, { status: 503 });
@@ -47,7 +56,7 @@ export async function GET(request: Request) {
     cursor = page.next_cursor ? decodeCursor(page.next_cursor) : null;
   } while (cursor && all.length < 10_000);
 
-  const csv = toCsv(all, LEAD_CSV_COLUMNS);
+  const csv = toCsv(all.slice(0, 10_000), LEAD_CSV_COLUMNS);
   const date = new Date().toISOString().slice(0, 10);
   return new Response(csv, {
     headers: {
