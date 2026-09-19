@@ -123,15 +123,31 @@ export const patchLead: ApiHandler<z.infer<typeof patchBody>, undefined> = async
   const id = requireUuid(params.id);
   const existing = await getLeadRow(requireSupabase(), id);
   if (!existing) throw notFound();
-  await updateLead(id, {
+  const updated = await updateLead(id, {
     status: body.status,
     notes: body.notes,
     owner: body.owner,
     archivedAt: body.archived_at,
   });
-  await auditVia(admin, { action: "lead.update", entityType: "lead", entityId: id, metadata: { fields: Object.keys(body) } });
+  // updateLead() prefers Supabase but silently falls back to a local JSON
+  // file store on a Supabase error (or returns null when the id isn't
+  // found in either store) — getLeadRow() only ever reads Supabase. So a
+  // 200 from updateLead() does not guarantee the write actually landed in
+  // the table this API reads from. Re-fetch and confirm every field the
+  // request asked to change before reporting success / auditing.
+  if (!updated) throw notFound();
   const row = await getLeadRow(requireSupabase(), id);
-  return { data: row ? toLeadDto(row) : null };
+  if (!row) throw notFound();
+  const landed =
+    (body.status === undefined || row.status === body.status) &&
+    (body.notes === undefined || row.notes === body.notes) &&
+    (body.owner === undefined || row.owner === body.owner) &&
+    (body.archived_at === undefined || row.archived_at === body.archived_at);
+  if (!landed) {
+    throw new ApiError(503, "unavailable", "The update could not be confirmed. Try again.");
+  }
+  await auditVia(admin, { action: "lead.update", entityType: "lead", entityId: id, metadata: { fields: Object.keys(body) } });
+  return { data: toLeadDto(row) };
 };
 
 export const deleteLead: ApiHandler<undefined, undefined> = async ({ principal, params }) => {
