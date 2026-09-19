@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import {
   isAdminContext,
   rateLimitAdminMutator,
@@ -9,14 +10,66 @@ import { toPublic } from "@/lib/seed";
 import { Validator, toStr, isEmail, LIMITS } from "@/lib/validate";
 import { writeAuditEvent } from "@/lib/audit";
 import { clientIp } from "@/lib/security";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { requireSupabase } from "@/lib/lifecycle/core";
+import { listClientsPage } from "@/lib/lifecycle/paged-admin";
+import { parseListParams } from "@/lib/apiv1/pagination";
+import { searchTerm } from "@/lib/apiv1/search";
+import { toClientAdminDto } from "@/lib/apiv1/serializers-admin";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+const CLIENT_STATUSES = ["active", "paused", "former"] as const;
+
+const ListQuery = z.object({
+  status: z.enum(CLIENT_STATUSES).optional(),
+  q: z.string().max(80).optional(),
+  limit: z.string().optional(),
+  cursor: z.string().optional(),
+});
+
+export async function GET(request: Request) {
   const ctx = await requireAdmin("manage_clients");
   if (!isAdminContext(ctx)) return ctx;
-  const clients = await getClients();
-  return NextResponse.json({ clients: clients.map(toPublic) });
+
+  const url = new URL(request.url);
+  const sp = url.searchParams;
+  const hasPagedParams =
+    sp.has("q") || sp.has("status") || sp.has("limit") || sp.has("cursor");
+
+  if (!hasPagedParams) {
+    const clients = await getClients();
+    return NextResponse.json({ clients: clients.map(toPublic) });
+  }
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ error: "Supabase required" }, { status: 503 });
+  }
+
+  const parsed = ListQuery.safeParse({
+    status: sp.get("status") ?? undefined,
+    q: sp.get("q") ?? undefined,
+    limit: sp.get("limit") ?? undefined,
+    cursor: sp.get("cursor") ?? undefined,
+  });
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Invalid query." },
+      { status: 400 }
+    );
+  }
+
+  const { limit, cursor } = parseListParams(sp);
+  const page = await listClientsPage(requireSupabase(), {
+    limit,
+    cursor,
+    q: searchTerm(parsed.data.q),
+    status: parsed.data.status,
+  });
+  return NextResponse.json({
+    data: page.data.map(toClientAdminDto),
+    meta: { next_cursor: page.next_cursor, limit },
+  });
 }
 
 /** Provision a new client account. */

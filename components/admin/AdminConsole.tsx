@@ -1184,6 +1184,7 @@ function LeadsTable({
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [sourceFilter, setSourceFilter] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("");
+  const [leadQuery, setLeadQuery] = useState("");
 
   async function refresh() {
     setRefreshing(true);
@@ -1259,6 +1260,14 @@ function LeadsTable({
     l.demo?.slug === "realestate";
   const visible = leads.filter((l) => {
     if (sourceFilter && (l.source ?? "website_contact_form") !== sourceFilter) return false;
+    if (
+      leadQuery &&
+      ![l.name, l.company, l.email].some((v) =>
+        v?.toLowerCase().includes(leadQuery.toLowerCase())
+      )
+    ) {
+      return false;
+    }
     switch (segmentFilter) {
       case "real-estate":
         return isRealEstate(l);
@@ -1285,6 +1294,16 @@ function LeadsTable({
           {visible.length} shown · {leads.length} total
         </p>
         <div className="flex flex-wrap items-center gap-2">
+          <label className="sr-only" htmlFor="lead-search">Search leads</label>
+          <input
+            id="lead-search"
+            type="search"
+            aria-label="Search leads"
+            placeholder="Search name, company, email…"
+            value={leadQuery}
+            onChange={(e) => setLeadQuery(e.target.value)}
+            className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm text-white/70 placeholder:text-white/30 focus:border-crimson/60 focus:outline-none"
+          />
           <label className="sr-only" htmlFor="lead-source-filter">Filter by source</label>
           <select
             id="lead-source-filter"
@@ -1323,6 +1342,13 @@ function LeadsTable({
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
             Refresh
           </button>
+          <a
+            href="/api/admin/leads/export"
+            download
+            className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm text-white/70 hover:text-white"
+          >
+            Export CSV
+          </a>
         </div>
       </div>
 

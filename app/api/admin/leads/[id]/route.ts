@@ -8,6 +8,9 @@ import {
 import { updateLead } from "@/lib/store";
 import { writeAuditEvent } from "@/lib/audit";
 import { clientIp } from "@/lib/security";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { requireSupabase } from "@/lib/lifecycle/core";
+import { softDeleteLead } from "@/lib/lifecycle/paged-admin";
 
 export const runtime = "nodejs";
 
@@ -83,4 +86,41 @@ export async function PATCH(
   });
 
   return NextResponse.json({ lead });
+}
+
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const ctx = await requireAdmin("manage_leads");
+  if (!isAdminContext(ctx)) return ctx;
+
+  const limited = await rateLimitAdminMutator(request, ctx.admin.id);
+  if (limited) return limited;
+
+  const { id } = await context.params;
+  if (!id || id.length > 80) {
+    return NextResponse.json({ error: "Invalid lead id." }, { status: 400 });
+  }
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ error: "Supabase required" }, { status: 503 });
+  }
+
+  const deleted = await softDeleteLead(requireSupabase(), id);
+  if (!deleted) {
+    return NextResponse.json({ error: "Lead not found." }, { status: 404 });
+  }
+
+  await writeAuditEvent({
+    actorType: "admin",
+    actorId: ctx.admin.id,
+    actorEmail: ctx.admin.email,
+    action: "lead.delete",
+    entityType: "lead",
+    entityId: id,
+    ip: clientIp(request),
+  });
+
+  return NextResponse.json({ ok: true });
 }
