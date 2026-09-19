@@ -9,7 +9,25 @@ mock.module("@/lib/scheduling/catalog", { namedExports: {
 mock.module("@/lib/industries/store", { namedExports: { getVerticals: async () => [{ slug: "contractors", name: "Contractors", shortName: "Trades", status: "published", hero: { LEAK: 1 } }, { slug: "x", name: "X", shortName: "X", status: "draft" }] } });
 mock.module("@/lib/managed-services/store", { namedExports: { listPlans: async () => [{ id: "p", key: "core", name: "Core", tagline: "t", monthlyPriceCents: 100, annualPriceCents: null, setupFeeCents: 0, customPricing: false, includedHours: 5, supportLevel: "s", responseTime: "r", minimumCommitmentMonths: 3, features: ["f"], recommended: true, detailedScope: ["LEAK"], addons: [], comparison: {} }] } });
 let pingThrows = false;
-mock.module("@/lib/supabase", { namedExports: { isSupabaseConfigured: () => true, getSupabase: () => ({ from: () => ({ select: async () => { if (pingThrows) throw new Error("down"); return { count: 0, error: null }; } }) }) } });
+let pingErrors = false;
+let configured = true;
+mock.module("@/lib/supabase", {
+  namedExports: {
+    isSupabaseConfigured: () => configured,
+    getSupabase: () =>
+      configured
+        ? {
+            from: () => ({
+              select: async () => {
+                if (pingThrows) throw new Error("down");
+                if (pingErrors) return { count: null, error: { message: "down" } };
+                return { count: 0, error: null };
+              },
+            }),
+          }
+        : null,
+  },
+});
 
 const { listServices, listIndustries, listPlansHandler } = await import("../lib/apiv1/resources/public-catalog.ts");
 const { getStatus } = await import("../lib/apiv1/resources/public-status.ts");
@@ -33,5 +51,23 @@ describe("public catalog", () => {
     pingThrows = true;
     const r = await getStatus(args());
     assert.equal(r.status, 503); assert.equal((r.data as { checks: { database: string } }).checks.database, "unreachable");
+    pingThrows = false;
+  });
+
+  it("status: supabase-js returns { error } without throwing (real client shape) → unreachable, not ok", async () => {
+    pingErrors = true;
+    const r = await getStatus(args());
+    assert.equal(r.status, 503);
+    assert.equal((r.data as { checks: { database: string } }).checks.database, "unreachable");
+    pingErrors = false;
+  });
+
+  it("status: not configured → unconfigured, degraded, no 503", async () => {
+    configured = false;
+    const r = await getStatus(args());
+    assert.equal(r.status, undefined);
+    assert.equal((r.data as { status: string }).status, "degraded");
+    assert.equal((r.data as { checks: { database: string } }).checks.database, "unconfigured");
+    configured = true;
   });
 });

@@ -70,7 +70,16 @@ mock.module("@/lib/store", { namedExports: {
       if (patch.status !== undefined) row.status = patch.status as string;
       if (patch.notes !== undefined) row.notes = patch.notes as string;
       if (patch.owner !== undefined) row.owner = patch.owner as string;
-      if (patch.archivedAt !== undefined) row.archived_at = patch.archivedAt as string | null;
+      if (patch.archivedAt !== undefined) {
+        // Mimic PostgREST's timestamptz rendering (`+00:00`, no
+        // milliseconds) rather than echoing back the request's ISO-Z
+        // string verbatim, so tests exercise the same string mismatch the
+        // real client produces.
+        row.archived_at =
+          patch.archivedAt === null
+            ? null
+            : (patch.archivedAt as string).replace(/\.\d{3}Z$/, "+00:00");
+      }
     }
     return row;
   },
@@ -118,6 +127,16 @@ describe("admin leads handlers", () => {
     assert.ok(calls.includes("audit:lead.update"));
     assert.deepEqual((await deleteLead(args({ params: { id: rows[0]!.id } }))).data, { id: rows[0]!.id, deleted: true });
     await assert.rejects(deleteLead(args({ params: { id: "22222222-2222-4222-8222-222222222222" } })), (e: { code: string }) => e.code === "not_found");
+  });
+  it("patch with a non-null archived_at compares by value, not by string, and still 200s + audits", async () => {
+    rows[0]!.archived_at = null;
+    const before = calls.length;
+    const r = await patchLead(args({ params: { id: rows[0]!.id }, body: { archived_at: "2026-09-19T12:00:00.000Z" } }));
+    // Stored as PostgREST would render it — a different string, same instant.
+    assert.equal(rows[0]!.archived_at, "2026-09-19T12:00:00+00:00");
+    assert.equal((r.data as { archived_at: string | null }).archived_at, "2026-09-19T12:00:00+00:00");
+    assert.ok(calls.slice(before).includes("audit:lead.update"));
+    rows[0]!.archived_at = null;
   });
   it("patch → 503 unavailable when the re-fetched row does not reflect the requested change, and does not audit", async () => {
     rows[0]!.status = "new";

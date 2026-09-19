@@ -138,11 +138,21 @@ export const patchLead: ApiHandler<z.infer<typeof patchBody>, undefined> = async
   if (!updated) throw notFound();
   const row = await getLeadRow(requireSupabase(), id);
   if (!row) throw notFound();
+  // archived_at is a timestamptz: PostgREST renders it as
+  // `2026-09-19T12:00:00+00:00` while the request carries the ISO-Z form
+  // (`2026-09-19T12:00:00.000Z`). They never string-match even when they
+  // name the same instant, so compare by value (both-null counts as
+  // equal; one-null-one-set does not).
+  const archivedAtLanded =
+    body.archived_at === undefined ||
+    (body.archived_at === null
+      ? row.archived_at === null
+      : row.archived_at !== null && Date.parse(row.archived_at) === Date.parse(body.archived_at));
   const landed =
     (body.status === undefined || row.status === body.status) &&
     (body.notes === undefined || row.notes === body.notes) &&
     (body.owner === undefined || row.owner === body.owner) &&
-    (body.archived_at === undefined || row.archived_at === body.archived_at);
+    archivedAtLanded;
   if (!landed) {
     throw new ApiError(503, "unavailable", "The update could not be confirmed. Try again.");
   }
@@ -179,7 +189,7 @@ export const exportLeads: ApiHandler<undefined, z.infer<typeof exportQuery>> = a
     cursor = page.next_cursor ? decodeCursor(page.next_cursor) : null;
   } while (cursor && all.length < 10_000);
 
-  const csv = toCsv(all as unknown as Record<string, unknown>[], LEAD_CSV_COLUMNS);
+  const csv = toCsv(all.slice(0, 10_000) as unknown as Record<string, unknown>[], LEAD_CSV_COLUMNS);
   const date = new Date().toISOString().slice(0, 10);
   return {
     data: null,

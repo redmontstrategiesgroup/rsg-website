@@ -13,8 +13,13 @@ async function pingDatabase(): Promise<DatabaseCheck> {
   const sb = getSupabase();
   if (!sb) return "unconfigured";
   try {
-    await sb.from("clients").select("id", { count: "exact", head: true });
-    return "ok";
+    // supabase-js returns query AND network failures as `{ data: null,
+    // error }` rather than throwing — it does not raise like every other
+    // call site in this repo assumes. Destructure `error` as the primary
+    // signal; the try/catch stays as a belt-and-braces guard for anything
+    // that does throw (e.g. a client misconfiguration).
+    const { error } = await sb.from("clients").select("id", { count: "exact", head: true });
+    return error ? "unreachable" : "ok";
   } catch {
     return "unreachable";
   }
