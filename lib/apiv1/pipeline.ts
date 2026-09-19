@@ -168,6 +168,7 @@ export function withApi<B = undefined, Q = undefined>(
         if (!deps.idempotency) throw new ApiError(503, "unavailable", "Idempotency storage is not configured.");
         const principalId = principal ? principalIdOf(principal) : keylessPrincipalId(ip);
         const begun = await beginIdempotent(deps.idempotency, { principalId, key: k, requestHash: requestHash(request.method, url.pathname, rawBody) });
+        if (begun.kind === "replay" && begun.body === null) throw new ApiError(409, "conflict", "This request was already completed.");
         if (begun.kind === "replay") return finish(json(begun.status, begun.body, correlationId, { "Idempotent-Replayed": "true" }));
         if (begun.kind === "mismatch") throw new ApiError(422, "idempotency_mismatch", "Idempotency-Key was already used with a different request.");
         if (begun.kind === "in_flight") throw new ApiError(409, "conflict", "A request with this Idempotency-Key is still in progress.");
@@ -179,6 +180,14 @@ export function withApi<B = undefined, Q = undefined>(
       // row so a retry re-executes instead of getting stuck in_flight forever.
       try {
         const result: HandlerResult = await handler({ principal, body, query, params, request, correlationId });
+        if (result.raw) {
+          const headers = new Headers(result.raw.headers);
+          headers.set("x-correlation-id", correlationId);
+          for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
+          const status = result.raw.status;
+          if (idem && deps.idempotency) await completeIdempotent(deps.idempotency, { ...idem, status, body: null });
+          return finish(new Response(result.raw.body, { status, headers }));
+        }
         const status = result.status ?? 200;
         const payload = { data: result.data, ...(result.meta ? { meta: result.meta } : {}) };
         if (idem && deps.idempotency) await completeIdempotent(deps.idempotency, { ...idem, status, body: payload });

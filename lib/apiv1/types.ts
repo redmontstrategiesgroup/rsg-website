@@ -29,7 +29,7 @@ export type HandlerArgs<B, Q> = {
   correlationId: string;
 };
 
-export type HandlerResult = { data: unknown; meta?: Record<string, unknown>; status?: number; headers?: Record<string, string> };
+export type HandlerResult = { data: unknown; meta?: Record<string, unknown>; status?: number; headers?: Record<string, string>; raw?: Response };
 
 export type ApiHandler<B, Q> = (args: HandlerArgs<B, Q>) => Promise<HandlerResult>;
 

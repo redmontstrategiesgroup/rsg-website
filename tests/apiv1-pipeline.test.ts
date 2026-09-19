@@ -230,4 +230,21 @@ describe("withApi", () => {
     assert.equal(res.status, 204);
     assert.ok(res.headers.get("access-control-allow-headers")?.includes("Idempotency-Key"));
   });
+
+  it("passes a raw Response through with pipeline headers and usage", async () => {
+    const { deps, usage } = mkDeps();
+    const h = withApi("GET", { auth: "none", meta: meta("raw") }, async () => ({
+      data: null,
+      raw: new Response("a,b\r\n1,2\r\n", { status: 200, headers: { "Content-Type": "text/csv", "Content-Disposition": 'attachment; filename="x.csv"' } }),
+    }), deps);
+    const res = await h(req("GET", "/api/v1/x.csv", { auth: null }), ctx());
+    assert.equal(res.status, 200);
+    assert.equal(res.headers.get("content-type"), "text/csv");
+    assert.equal(res.headers.get("content-disposition"), 'attachment; filename="x.csv"');
+    assert.ok(res.headers.get("x-correlation-id"));
+    assert.equal(res.headers.get("access-control-allow-origin"), "*");
+    assert.equal(await res.text(), "a,b\r\n1,2\r\n");
+    await new Promise((r) => setImmediate(r));
+    assert.equal((usage.at(-1) as { status: number }).status, 200);
+  });
 });
