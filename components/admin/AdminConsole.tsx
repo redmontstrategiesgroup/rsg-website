@@ -1298,7 +1298,6 @@ function LeadsTable({
           <input
             id="lead-search"
             type="search"
-            aria-label="Search leads"
             placeholder="Search name, company, email…"
             value={leadQuery}
             onChange={(e) => setLeadQuery(e.target.value)}

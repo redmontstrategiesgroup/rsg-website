@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { isAdminContext, requireAdmin } from "@/lib/admin-auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { requireSupabase } from "@/lib/lifecycle/core";
@@ -7,15 +6,9 @@ import { listLeadsPage } from "@/lib/lifecycle/paged-admin";
 import { decodeCursor } from "@/lib/apiv1/pagination";
 import { searchTerm } from "@/lib/apiv1/search";
 import { toCsv } from "@/lib/apiv1/csv";
-import { LEAD_CSV_COLUMNS, LEAD_STATUSES } from "@/lib/apiv1/resources/admin-leads";
+import { LEAD_CSV_COLUMNS, exportQuery } from "@/lib/apiv1/resources/admin-leads";
 
 export const runtime = "nodejs";
-
-const ExportQuery = z.object({
-  status: z.enum(LEAD_STATUSES).optional(),
-  since: z.string().datetime().optional(),
-  q: z.string().max(80).optional(),
-});
 
 export async function GET(request: Request) {
   const ctx = await requireAdmin("manage_leads");
@@ -26,7 +19,7 @@ export async function GET(request: Request) {
   }
 
   const sp = new URL(request.url).searchParams;
-  const parsed = ExportQuery.safeParse({
+  const parsed = exportQuery.safeParse({
     status: sp.get("status") ?? undefined,
     since: sp.get("since") ?? undefined,
     q: sp.get("q") ?? undefined,

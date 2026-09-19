@@ -15,17 +15,15 @@ import { getLeadRow, listLeadsPage } from "@/lib/lifecycle/paged-admin";
 import { parseListParams } from "@/lib/apiv1/pagination";
 import { searchTerm } from "@/lib/apiv1/search";
 import { toLeadDto } from "@/lib/apiv1/serializers-admin";
-import { LEAD_STATUSES } from "@/lib/apiv1/resources/admin-leads";
+import { listQuery, createBody } from "@/lib/apiv1/resources/admin-leads";
 import type { Lead } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-const ListQuery = z.object({
-  status: z.enum(LEAD_STATUSES).optional(),
-  since: z.string().datetime().optional(),
-  q: z.string().max(80).optional(),
-  limit: z.string().optional(),
-  cursor: z.string().optional(),
+// Cookie-route creates default to a distinct source than the v1 API's
+// "api" default, so admin-console-created leads are attributable.
+const CreateBody = createBody.extend({
+  source: z.string().max(60).optional().default("admin_console"),
 });
 
 function unavailable() {
@@ -48,7 +46,7 @@ export async function GET(request: Request) {
 
   if (!isSupabaseConfigured()) return unavailable();
 
-  const parsed = ListQuery.safeParse({
+  const parsed = listQuery.safeParse({
     status: sp.get("status") ?? undefined,
     since: sp.get("since") ?? undefined,
     q: sp.get("q") ?? undefined,
@@ -75,17 +73,6 @@ export async function GET(request: Request) {
     meta: { next_cursor: page.next_cursor, limit },
   });
 }
-
-const CreateBody = z.object({
-  name: z.string().min(1).max(160),
-  email: z.string().email().max(200),
-  company: z.string().max(160).optional().default(""),
-  phone: z.string().max(40).optional().default(""),
-  website: z.string().max(200).optional().default(""),
-  industry: z.string().max(80).optional().default(""),
-  message: z.string().max(4000).optional().default(""),
-  source: z.string().max(60).optional().default("admin_console"),
-});
 
 export async function POST(request: Request) {
   const ctx = await requireAdmin("manage_leads");

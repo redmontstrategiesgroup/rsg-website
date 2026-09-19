@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import {
   isAdminContext,
   rateLimitAdminMutator,
@@ -16,17 +15,9 @@ import { listClientsPage } from "@/lib/lifecycle/paged-admin";
 import { parseListParams } from "@/lib/apiv1/pagination";
 import { searchTerm } from "@/lib/apiv1/search";
 import { toClientAdminDto } from "@/lib/apiv1/serializers-admin";
+import { clientsQuery } from "@/lib/apiv1/resources/admin-clients";
 
 export const runtime = "nodejs";
-
-const CLIENT_STATUSES = ["active", "paused", "former"] as const;
-
-const ListQuery = z.object({
-  status: z.enum(CLIENT_STATUSES).optional(),
-  q: z.string().max(80).optional(),
-  limit: z.string().optional(),
-  cursor: z.string().optional(),
-});
 
 export async function GET(request: Request) {
   const ctx = await requireAdmin("manage_clients");
@@ -46,7 +37,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Supabase required" }, { status: 503 });
   }
 
-  const parsed = ListQuery.safeParse({
+  const parsed = clientsQuery.safeParse({
     status: sp.get("status") ?? undefined,
     q: sp.get("q") ?? undefined,
     limit: sp.get("limit") ?? undefined,

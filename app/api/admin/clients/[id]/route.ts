@@ -104,16 +104,13 @@ export async function PATCH(
     );
   }
 
-  if (status !== undefined && !isSupabaseConfigured()) {
-    return NextResponse.json({ error: "Supabase required" }, { status: 503 });
-  }
-
-  const updated = await updateClient(id, patch);
-  if (!updated) {
-    return NextResponse.json({ error: "Client not found." }, { status: 404 });
-  }
-
   if (status !== undefined) {
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json({ error: "Supabase required" }, { status: 503 });
+    }
+    // Confirm the Supabase clients row exists FIRST: if the id isn't found
+    // there, bail out before touching the local store, so a status patch on
+    // an unknown id never leaves other fields mutated with a 404 response.
     const changed = await setClientStatus(requireSupabase(), id, status);
     if (!changed) {
       return NextResponse.json({ error: "Client not found." }, { status: 404 });
@@ -128,6 +125,11 @@ export async function PATCH(
       metadata: { status },
       ip: clientIp(request),
     });
+  }
+
+  const updated = await updateClient(id, patch);
+  if (!updated) {
+    return NextResponse.json({ error: "Client not found." }, { status: 404 });
   }
 
   return NextResponse.json({ client: { ...toPublic(updated), ...(status !== undefined ? { status } : {}) } });
