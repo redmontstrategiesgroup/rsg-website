@@ -64,4 +64,8 @@ export const sessionBodySchema = bookingBodySchema.extend({
 export const createBody = bookingBodySchema.extend({
   intake: bookingBodySchema.shape.intake.unwrap(),
   attribution: attributionSchema.optional(),
+  // Anonymous callers mint their own session server-side (no Turnstile check
+  // on the way in like the cookie session route gets), so the public create
+  // endpoint verifies a Turnstile token itself before minting one.
+  turnstile_token: z.string().max(4000).optional(),
 });

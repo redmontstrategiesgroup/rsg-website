@@ -155,8 +155,13 @@ async function handle(request: NextRequest, correlationId: string) {
   }
 
   if (pathname.startsWith("/api/") && MUTATING_METHODS.has(request.method)) {
-    // Public API: bearer-key authentication in the route handler (lib/apiv1)
-    // replaces browser CSRF / user-agent checks. See spec §2.9.
+    // Public API: authenticated (`auth: "client"`/`"admin"`) routes replace
+    // browser CSRF / user-agent checks with bearer-key authentication in the
+    // route handler (lib/apiv1). See spec §2.9. Keyless (`auth: "none"`)
+    // routes have no bearer auth to stand in for those checks — they rely
+    // instead on their own per-route rate limits, the idempotency layer
+    // (lib/apiv1/idempotency.ts), and, for booking creation specifically, a
+    // Turnstile captcha check (lib/scheduling/turnstile.ts).
     if (isApiV1Path(pathname)) {
       return forward();
     }

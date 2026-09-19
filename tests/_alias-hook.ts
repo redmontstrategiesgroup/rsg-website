@@ -27,7 +27,7 @@ registerHooks({
     try {
       return nextResolve(spec, context);
     } catch (err) {
-      for (const suffix of [".ts", ".tsx", "/index.ts"]) {
+      for (const suffix of [".ts", ".tsx", "/index.ts", ".js"]) {
         try {
           return nextResolve(`${spec}${suffix}`, context);
         } catch {

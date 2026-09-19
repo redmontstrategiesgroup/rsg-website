@@ -8,30 +8,9 @@ import {
   patchBookingSession,
 } from "@/lib/scheduling/sessions";
 import { SchedulingUnavailableError } from "@/lib/scheduling/db";
+import { verifyTurnstile } from "@/lib/scheduling/turnstile";
 
 export const runtime = "nodejs";
-
-async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  if (!siteKey) return true;
-  if (!secret) return false;
-  if (!token) return false;
-  const res = await fetch(
-    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        secret,
-        response: token,
-        remoteip: ip,
-      }),
-    }
-  );
-  const data = (await res.json()) as { success?: boolean };
-  return Boolean(data.success);
-}
 
 const startSchema = z.object({
   turnstileToken: z.string().max(4000).optional(),

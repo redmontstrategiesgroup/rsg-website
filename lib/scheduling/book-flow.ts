@@ -20,7 +20,7 @@ export type BookFlowResult =
       manageToken: string;
       confirmedUrl: string;
       recommendedPlanKey?: string;
-      recommendedPlanName?: string;
+      recommendedPlanName?: string | null;
     }
   | { ok: false; status: 400 | 401 | 403 | 409; error: string; code?: string };
 
@@ -31,6 +31,10 @@ export type BookFlowResult =
  * booking API. Never throws for expected failures and never touches
  * `NextResponse` — callers map the discriminated result to their own
  * response shape.
+ *
+ * Callers MUST pass values already parsed through `bookingBodySchema` (or
+ * `sessionBodySchema`/`createBody`, which extend it) — `submitIntake` does
+ * not re-parse or re-apply zod defaults itself.
  */
 export async function completeBooking(
   // z.input (not z.infer/output): the defaulted intake-contact fields
@@ -158,7 +162,7 @@ export async function completeBooking(
     ...(recommendedPlanKey
       ? { recommendedPlanKey, recommendedPlanName }
       : {}),
-  } as BookFlowResult;
+  };
 }
 
 /** Create a fresh booking session for an anonymous public-API caller. */

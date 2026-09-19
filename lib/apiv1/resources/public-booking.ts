@@ -1,11 +1,14 @@
 // lib/apiv1/resources/public-booking.ts
 import { z } from "zod";
-import { DateTime } from "luxon";
+import { DateTime, IANAZone } from "luxon";
+import { clientIp } from "@/lib/security";
+import { keylessPrincipalId } from "@/lib/apiv1/idempotency";
 import { ApiError } from "../errors";
 import { completeBooking, startPublicSession } from "@/lib/scheduling/book-flow";
 import { createBody } from "@/lib/scheduling/book-flow-schema";
 import { getAvailableSlots } from "@/lib/scheduling/slots";
 import { getSettings } from "@/lib/scheduling/notifications";
+import { isTurnstileConfigured, verifyTurnstile } from "@/lib/scheduling/turnstile";
 import type { ApiHandler } from "../types.ts";
 
 export { createBody };
@@ -21,6 +24,10 @@ const MAX_WINDOW_DAYS = 31;
 const DEFAULT_WINDOW_DAYS = 14;
 
 export const listSlots: ApiHandler<undefined, z.infer<typeof slotsQuery>> = async ({ query }) => {
+  if (!IANAZone.isValidZone(query.timezone)) {
+    throw new ApiError(422, "validation_failed", "Invalid timezone.", { timezone: ["unrecognized"] });
+  }
+
   const settings = await getSettings();
   if (settings.bookings_paused) {
     return { data: { slots: [], paused: true } };
@@ -48,27 +55,54 @@ export const listSlots: ApiHandler<undefined, z.infer<typeof slotsQuery>> = asyn
 };
 
 export const createBookingHandler: ApiHandler<z.infer<typeof createBody>, undefined> = async ({ body, request }) => {
+  const ip = clientIp(request);
+
+  // The cookie flow gates session creation behind a Turnstile check
+  // (app/api/booking/session/route.ts); startPublicSession mints a session
+  // server-side with no equivalent front door, and /api/v1/* is exempt from
+  // the middleware's browser/bot checks. So this endpoint must verify the
+  // caller's own captcha token before minting anything — fail closed only
+  // when Turnstile is actually configured, so local/dev is unaffected.
+  if (isTurnstileConfigured()) {
+    const ok = await verifyTurnstile(body.turnstile_token, ip);
+    if (!ok) {
+      throw new ApiError(403, "insufficient_scope", "Captcha verification failed.");
+    }
+  }
+
   const { token } = await startPublicSession({
     appointmentTypeId: body.appointmentTypeId,
     timezone: body.visitorTimezone,
     attribution: body.attribution,
   });
 
-  const idempotencyKey = request.headers.get("idempotency-key") ?? undefined;
+  // Namespace the caller-chosen Idempotency-Key by an IP-derived principal
+  // id before it reaches createBooking's dedupe (a GLOBAL select on
+  // bookings.idempotency_key — lib/scheduling/booking.ts). Unnamespaced, a
+  // guessable key from one caller could return a stranger's booking id and
+  // manage_token, which grants PII read + cancel/reschedule access. The
+  // cookie route is authenticated by its session cookie already, so its key
+  // is left as-is.
+  const headerKey = request.headers.get("idempotency-key") ?? undefined;
+  const idempotencyKey = headerKey ? `pub:${keylessPrincipalId(ip)}:${headerKey}` : undefined;
+
   const result = await completeBooking({ ...body, sessionToken: token, idempotencyKey });
 
   if (!result.ok) {
+    if (result.status === 401) {
+      // Cannot occur for the public path: the session was just created.
+      // Mapped defensively so it never leaks as a client-facing error.
+      throw new ApiError(500, "internal", "Something went wrong.");
+    }
+    if (result.code === "paused") {
+      throw new ApiError(503, "unavailable", result.error);
+    }
     const code =
       result.status === 409
         ? "conflict"
         : result.status === 403
           ? "insufficient_scope"
           : "validation_failed";
-    if (result.status === 401) {
-      // Cannot occur for the public path: the session was just created.
-      // Mapped defensively so it never leaks as a client-facing error.
-      throw new ApiError(500, "internal", "Something went wrong.");
-    }
     throw new ApiError(result.status, code, result.error, result.code ? { code: result.code } : undefined);
   }
 
