@@ -8,6 +8,11 @@ Two kinds of destination use it, differing only in payload and endpoint:
 | `client` | a subscriber's URL in `webhook_endpoints` | `enqueueWebhook()` from booking / qualification / reminders |
 | `registry` | a per-app Supabase project's `registry-sync` function | `lib/webhooks/registry-sync.ts` |
 
+Owned, subscription-based endpoints (created from the portal, the admin
+console or `/api/v1/webhooks`) and the event catalog are documented in
+[api-platform.md → Webhooks](api-platform.md#webhooks-phase-3); this file is
+the wire-level contract they share.
+
 Inbound webhooks we *receive* (Stripe) are separate, see
 `app/api/stripe/webhook/route.ts`, which is already replay-guarded by
 `claimStripeEvent(event.id)` before any processing.

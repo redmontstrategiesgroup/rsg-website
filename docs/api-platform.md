@@ -132,6 +132,87 @@ replies `202 { "accepted": true }` but silently drops the submission —
 no lead is created. Integrators building their own form against this
 endpoint should simply never send `website_url`.
 
+## Webhooks (Phase 3)
+
+Outbound webhooks ride the existing outbox (`lib/webhooks/outbox.ts`):
+signed POSTs, exponential backoff with jitter, dead-lettering after 8
+attempts, at-least-once delivery. **Receivers must dedupe on `id`** and
+verify the signature — the wire format, signature scheme and retry rules
+are documented in [webhooks.md](webhooks.md); this section covers what
+Phase 3 adds on top.
+
+### Endpoints are owned
+
+Every endpoint belongs to the principal that created it: a client key
+manages its client's endpoints, an admin key the admin's own. Each owner may
+have at most **10** endpoints. An endpoint subscribes to an explicit list of
+events; a client endpoint only ever receives events about its own client,
+an admin endpoint receives everything it subscribes to (with `client_id` in
+`data` for client events).
+
+Rules for the URL: `https:` only in production (`http:` is accepted outside
+it); no `localhost`, `.local`, `.internal`, loopback, RFC1918, link-local
+(incl. the cloud metadata address), CGNAT or IPv6 ULA/link-local literals;
+no credentials; ≤ 2048 chars. The check is DNS-free — a public hostname
+that resolves to a private address at delivery time is not caught.
+`WEBHOOK_URL_ALLOW_PRIVATE=1` lifts only the host block, only outside
+production, for local delivery tests.
+
+### Payload envelope
+
+```json
+{ "id": "ticket.created:<ticket-id>:<updated_at>", "type": "ticket.created",
+  "sequence": 41, "created_at": "…", "data": { …the same DTO the REST API returns…, "client_id": "…" } }
+```
+
+`id` is deterministic (`<type>:<entity id>:<version>`), so a re-emitted
+event collapses to one delivery per endpoint and receivers can dedupe.
+
+### Event catalog
+
+| Event | Audience | Fires from |
+|---|---|---|
+| `project.updated` | client + admin | `updateProject` |
+| `milestone.completed` / `.approved` / `.changes_requested` | client + admin | milestone status changes, client approval |
+| `task.completed` | client + admin | a client task set to `done` |
+| `approval.requested` / `approval.decided` | client + admin | approvals |
+| `ticket.created` / `.replied` (non-internal messages only) / `.resolved` | client + admin | support |
+| `brief.received` | client + admin | client-API brief ingest |
+| `file.uploaded` | client + admin | workspace uploads |
+| `invoice.created` / `invoice.paid` | client + admin | billing, Stripe checkout |
+| `lead.created` / `lead.updated` | admin | any lead capture / admin edit |
+| `booking.created` / `.rescheduled` / `.cancelled` | admin | scheduling |
+| `client.activated` | admin | client provisioning |
+| `proposal.accepted` / `proposal.declined` | admin | proposal approval / revision request |
+| `ping` | both | the endpoint's **Test** action |
+
+`GET /api/v1/webhooks/events` returns the list for the caller's audience.
+
+### Management API (`webhooks:manage`, client or admin key)
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/webhooks` | your endpoints (never the secret) |
+| POST | `/api/v1/webhooks` | `{ url, events[], description? }` → 201 with `secret` — **shown once** |
+| GET / PATCH / DELETE | `/api/v1/webhooks/{id}` | PATCH `url`, `events`, `description`, `enabled`; deleting cascades its deliveries |
+| POST | `/api/v1/webhooks/{id}/rotate-secret` | new `secret`, shown once; old signatures stop verifying immediately |
+| POST | `/api/v1/webhooks/{id}/test` | 202; queues a `ping` regardless of subscriptions |
+| GET | `/api/v1/webhooks/{id}/deliveries` | cursor-paged; `?status=` filter; never includes the payload |
+| POST | `/api/v1/webhooks/{id}/deliveries/{did}/replay` | re-queues a `failed` or `dead` delivery |
+| GET | `/api/v1/webhooks/events` | catalog for your audience |
+
+Writes are idempotent (`Idempotency-Key` required). The same actions are
+available in the portal's Developers page and the admin console's API keys
+→ Webhooks tab.
+
+### Health
+
+After **20** consecutive dead-lettered deliveries an endpoint is
+auto-disabled (`disabled_at` set, `enabled` false); a successful delivery
+resets the counter. `PATCH { "enabled": true }` re-enables it and clears the
+counter. Delivery runs on the scheduling cron (`/api/cron/scheduling`), so
+events reach receivers on its cadence, not instantly.
+
 ## Error codes
 
 Errors are `{ "error": { "code", "message", "details?", "correlation_id" } }`.
