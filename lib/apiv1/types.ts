@@ -1,7 +1,8 @@
 import type { ZodType } from "zod";
 import type { Principal } from "./principal.ts";
 
-export type AuthMode = "client" | "admin" | "none";
+/** `any` = a key is required (401 without one) but either principal type passes; scopes still apply. */
+export type AuthMode = "client" | "admin" | "any" | "none";
 
 export type OperationMeta = {
   operationId: string;

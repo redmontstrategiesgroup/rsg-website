@@ -116,7 +116,7 @@ export function withApi<B = undefined, Q = undefined>(
       } else if (config.auth !== "none") {
         throw new ApiError(401, "unauthenticated", "Missing API key.");
       }
-      if (config.auth !== "none" && principal!.type !== config.auth) {
+      if (config.auth !== "none" && config.auth !== "any" && principal!.type !== config.auth) {
         throw new ApiError(403, "insufficient_scope", "This key cannot access this resource.");
       }
       const required = config.scopes ?? [];

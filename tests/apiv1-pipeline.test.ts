@@ -221,6 +221,19 @@ describe("withApi", () => {
     }
   });
 
+  it('auth: "any" requires a key but accepts either principal type', async () => {
+    const adminPrincipal: Principal = { type: "admin", keyId: "k2", keyName: "n", scopes: ["webhooks:manage"], adminId: "a1", email: "ops@rsg.com", role: "owner" };
+    const both = withApi("GET", { auth: "any", scopes: ["webhooks:manage"], meta: meta("any") }, async ({ principal }) => ({ data: principal?.type }), mkDeps({ resolvePrincipal: async () => ({ ...clientPrincipal, scopes: ["webhooks:manage"] }) }).deps);
+    assert.equal((await both(req("GET", "/api/v1/webhooks", { auth: null }), ctx())).status, 401);
+    const asClient = await both(req("GET", "/api/v1/webhooks"), ctx());
+    assert.equal(asClient.status, 200); assert.deepEqual(await asClient.json(), { data: "client" });
+    const asAdmin = withApi("GET", { auth: "any", scopes: ["webhooks:manage"], meta: meta("any2") }, async ({ principal }) => ({ data: principal?.type }), mkDeps({ resolvePrincipal: async () => adminPrincipal }).deps);
+    const r = await asAdmin(req("GET", "/api/v1/webhooks"), ctx());
+    assert.equal(r.status, 200); assert.deepEqual(await r.json(), { data: "admin" });
+    const noScope = withApi("GET", { auth: "any", scopes: ["webhooks:manage"], meta: meta("any3") }, async () => ({ data: 1 }), mkDeps().deps);
+    assert.equal((await noScope(req("GET", "/api/v1/webhooks"), ctx())).status, 403);
+  });
+
   it("registers operations and answers OPTIONS", async () => {
     const { deps } = mkDeps();
     withApi("GET", { auth: "none", meta: meta("j") }, async () => ({ data: 1 }), deps);
