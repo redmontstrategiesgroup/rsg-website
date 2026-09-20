@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Banner } from "@/components/portal/ui";
 import { ApiKeysManager, type ApiKeysExtraColumn } from "@/components/shared/ApiKeysManager";
+import { WebhooksManager, type WebhookEventOption } from "@/components/shared/WebhooksManager";
+import { TabBar } from "@/components/portal/ui";
+import type { EndpointDto } from "@/lib/webhooks/endpoints";
 import { ADMIN_SCOPES } from "@/lib/apiv1/scopes";
 import type { ApiKeyDto } from "@/lib/apiv1/key-store";
 
@@ -24,6 +27,27 @@ function shortenId(id: string): string {
  */
 export function ApiKeysAdminPanel() {
   const [keys, setKeys] = useState<AdminApiKeyDto[] | null>(null);
+  const [tab, setTab] = useState<"keys" | "webhooks">("keys");
+  const [hooks, setHooks] = useState<{ endpoints: EndpointDto[]; events: WebhookEventOption[] } | null>(null);
+  const [hooksError, setHooksError] = useState<string | null>(null);
+
+  // Webhooks load on first switch to that tab so the keys tab stays as fast as before.
+  useEffect(() => {
+    if (tab !== "webhooks" || hooks) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/webhooks");
+        const data = (await res.json().catch(() => ({}))) as { endpoints?: EndpointDto[]; events?: WebhookEventOption[]; error?: string };
+        if (cancelled) return;
+        if (!res.ok) { setHooksError(data.error || "Couldn't load webhooks."); return; }
+        setHooks({ endpoints: data.endpoints ?? [], events: data.events ?? [] });
+      } catch {
+        if (!cancelled) setHooksError("Couldn't load webhooks.");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [tab, hooks]);
   const [allowedScopes, setAllowedScopes] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,12 +113,30 @@ export function ApiKeysAdminPanel() {
   ];
 
   return (
-    <ApiKeysManager
-      endpoint="/api/admin/apikeys"
-      scopes={[...ADMIN_SCOPES]}
-      allowedScopes={allowedScopes}
-      initialKeys={keys}
-      extraColumns={extraColumns}
-    />
+    <div>
+      <TabBar
+        tabs={[{ id: "keys", label: "API keys", count: keys.length }, { id: "webhooks", label: "Webhooks", count: hooks?.endpoints.length }]}
+        active={tab}
+        onSelect={setTab}
+      />
+      {tab === "keys" ? (
+        <ApiKeysManager
+          endpoint="/api/admin/apikeys"
+          scopes={[...ADMIN_SCOPES]}
+          allowedScopes={allowedScopes}
+          initialKeys={keys}
+          extraColumns={extraColumns}
+        />
+      ) : hooksError ? (
+        <div className="mt-6"><Banner tone="danger">{hooksError}</Banner></div>
+      ) : !hooks ? (
+        <div className="mt-6 flex items-center gap-2 text-sm text-white/50">
+          <Loader2 size={16} className="animate-spin" aria-hidden />
+          Loading webhooks&hellip;
+        </div>
+      ) : (
+        <WebhooksManager endpoint="/api/admin/webhooks" events={hooks.events} initialEndpoints={hooks.endpoints} />
+      )}
+    </div>
   );
 }
