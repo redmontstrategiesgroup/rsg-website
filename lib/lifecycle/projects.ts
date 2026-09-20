@@ -8,6 +8,8 @@
  */
 
 import { requireSupabase, nowIso } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toMilestoneDto, toProjectDto, toTaskDto } from "@/lib/apiv1/serializers";
 import {
   MILESTONE_DONE_STATUSES,
   type Milestone,
@@ -590,7 +592,9 @@ export async function updateProject(
     .select()
     .single();
   if (error) throw new Error(`Failed to update project ${id}: ${error.message}`);
-  return data as Project;
+  const project = data as Project;
+  void emitEvent("project.updated", toProjectDto(project), { entityId: project.id, version: project.updated_at, clientId: project.client_id });
+  return project;
 }
 
 // ---------------------------------------------------------------------------
@@ -655,6 +659,9 @@ export async function updateMilestone(
     ? await bumpNextMilestone(milestone.project_id, milestone.sort_order)
     : await fetchMilestones(milestone.project_id);
   const project = await recomputeProject(milestone.project_id, milestones);
+  if (becameDone) {
+    void emitEvent("milestone.completed", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
+  }
   return { milestone, project };
 }
 
@@ -690,6 +697,7 @@ export async function approveMilestone(
 
   const milestones = await bumpNextMilestone(milestone.project_id, milestone.sort_order);
   const project = await recomputeProject(milestone.project_id, milestones);
+  void emitEvent("milestone.approved", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
   return { milestone, project };
 }
 
@@ -717,6 +725,7 @@ export async function requestMilestoneChanges(
   }
   const milestone = data as Milestone;
   const project = await recomputeProject(milestone.project_id);
+  void emitEvent("milestone.changes_requested", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
   return { milestone, project };
 }
 
@@ -885,7 +894,12 @@ export async function updateTask(
     .select()
     .single();
   if (error) throw new Error(`Failed to update task ${id}: ${error.message}`);
-  return data as ProjectTask;
+  const task = data as ProjectTask;
+  if (patch.status === "done" && existing.status !== "done") {
+    const project = await getProject(task.project_id);
+    void emitEvent("task.completed", toTaskDto(task), { entityId: task.id, version: task.updated_at, clientId: project?.client_id ?? null });
+  }
+  return task;
 }
 
 /** Client-assigned tasks still needing attention (open / in progress / waiting). */

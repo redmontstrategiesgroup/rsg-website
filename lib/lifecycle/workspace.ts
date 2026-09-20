@@ -9,6 +9,8 @@
  */
 
 import { nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toApprovalDto, toMessageDto } from "@/lib/apiv1/serializers";
 import {
   CHANGE_ORDER_CATEGORIES,
   type Approval,
@@ -224,7 +226,11 @@ export async function addMessage(input: {
   if (error || !data) {
     throw new Error(`addMessage: ${error?.message || "insert returned no row"}`);
   }
-  return data as Message;
+  const message = data as Message;
+  if (message.ticket_id && !message.internal) {
+    void emitEvent("ticket.replied", { ...toMessageDto(message), ticket_id: message.ticket_id }, { entityId: message.id, version: message.created_at, clientId: message.client_id });
+  }
+  return message;
 }
 
 export type MessageScope =
@@ -318,7 +324,9 @@ export async function createApproval(input: {
   if (error || !data) {
     throw new Error(`createApproval: ${error?.message || "insert returned no row"}`);
   }
-  return data as Approval;
+  const approval = data as Approval;
+  void emitEvent("approval.requested", toApprovalDto(approval), { entityId: approval.id, version: approval.updated_at, clientId: approval.client_id });
+  return approval;
 }
 
 export async function listApprovalsForClient(
@@ -364,7 +372,9 @@ export async function decideApproval(
     .maybeSingle();
   if (error) throw new Error(`decideApproval: ${error.message}`);
   if (!data) throw new Error("decideApproval: approval not found or already decided.");
-  return data as Approval;
+  const approval = data as Approval;
+  void emitEvent("approval.decided", toApprovalDto(approval), { entityId: approval.id, version: approval.updated_at, clientId: approval.client_id });
+  return approval;
 }
 
 export async function cancelApproval(id: string): Promise<Approval> {

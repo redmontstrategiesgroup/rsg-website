@@ -10,6 +10,8 @@
  */
 
 import { requireSupabase, nowIso } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toTicketDto } from "@/lib/apiv1/serializers";
 import type {
   SlaPolicy,
   Ticket,
@@ -129,7 +131,9 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     .select("*")
     .single();
   if (error) throw new Error(`Failed to create ticket: ${error.message}`);
-  return data as Ticket;
+  const ticket = data as Ticket;
+  void emitEvent("ticket.created", toTicketDto(ticket), { entityId: ticket.id, version: ticket.updated_at, clientId: ticket.client_id });
+  return ticket;
 }
 
 export async function getTicket(id: string): Promise<Ticket | null> {
@@ -286,7 +290,9 @@ export async function resolveTicket(
     .select("*")
     .single();
   if (error) throw new Error(`Failed to resolve ticket ${id}: ${error.message}`);
-  return data as Ticket;
+  const ticket = data as Ticket;
+  void emitEvent("ticket.resolved", toTicketDto(ticket), { entityId: ticket.id, version: ticket.updated_at, clientId: ticket.client_id });
+  return ticket;
 }
 
 /** Client confirms a resolved ticket is actually fixed: resolved → closed. */
