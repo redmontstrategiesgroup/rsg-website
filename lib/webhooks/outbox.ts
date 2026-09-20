@@ -7,6 +7,7 @@ import {
   withCorrelation,
   type ErrorClass,
 } from "@/lib/integration-log";
+import { AUTO_DISABLE_AFTER } from "./endpoints";
 import { SIGNATURE_HEADER, TIMESTAMP_HEADER, signPayload } from "./sign";
 
 /**
@@ -52,6 +53,13 @@ export type EnqueueInput = {
   kind?: "client" | "registry";
   /** Restrict to specific endpoints; defaults to all enabled ones that subscribe. */
   endpointIds?: string[];
+  /**
+   * The caller already resolved which endpoints subscribe (lib/webhooks/emit
+   * does owner + audience + subscription filtering in JS). Skip the per-endpoint
+   * subscription check so a `ping` can reach an endpoint that does not list it.
+   * Only meaningful together with `endpointIds`.
+   */
+  skipSubscriptionFilter?: boolean;
 };
 
 type ClaimedRow = {
@@ -147,6 +155,7 @@ export async function enqueue(input: EnqueueInput): Promise<{ queued: number }> 
     for (const ep of endpoints) {
       const subscribed = (ep.events as string[]) ?? [];
       if (
+        !input.skipSubscriptionFilter &&
         subscribed.length &&
         !subscribed.includes(input.eventType) &&
         !subscribed.includes("*")
@@ -206,6 +215,45 @@ export async function enqueue(input: EnqueueInput): Promise<{ queued: number }> 
       error: err instanceof Error ? err.message : String(err),
     });
     return { queued: 0 };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Endpoint health (owned endpoints only)
+// ---------------------------------------------------------------------------
+
+/**
+ * Consecutive dead letters disable an endpoint after AUTO_DISABLE_AFTER so a
+ * dead receiver stops burning retries. Read-modify-write rather than an RPC:
+ * two deliverers racing can undercount by one, which only delays the disable
+ * by a single event. Registry-sync endpoints are never touched.
+ */
+async function bumpFailureCount(sb: ReturnType<typeof requireSupabase>, row: ClaimedRow): Promise<void> {
+  if (row.kind !== "client") return;
+  try {
+    const { data } = await sb
+      .from("webhook_endpoints")
+      .select("failure_count")
+      .eq("id", row.endpoint_id)
+      .maybeSingle();
+    const next = Number((data as { failure_count?: number } | null)?.failure_count ?? 0) + 1;
+    const update: Record<string, unknown> = { failure_count: next };
+    if (next >= AUTO_DISABLE_AFTER) {
+      update.enabled = false;
+      update.disabled_at = new Date().toISOString();
+    }
+    await sb.from("webhook_endpoints").update(update).eq("id", row.endpoint_id);
+  } catch (err) {
+    console.error("[outbox] failure_count bump failed", { endpointId: row.endpoint_id, error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+async function resetFailureCount(sb: ReturnType<typeof requireSupabase>, row: ClaimedRow): Promise<void> {
+  if (row.kind !== "client") return;
+  try {
+    await sb.from("webhook_endpoints").update({ failure_count: 0 }).eq("id", row.endpoint_id).gt("failure_count", 0);
+  } catch (err) {
+    console.error("[outbox] failure_count reset failed", { endpointId: row.endpoint_id, error: err instanceof Error ? err.message : String(err) });
   }
 }
 
@@ -308,6 +356,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
           last_error: null,
         })
         .eq("id", row.id);
+      await resetFailureCount(sb, row);
       return "delivered";
     }
 
@@ -343,6 +392,8 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
 
     // Surface it. A dead letter nobody is told about is a lost event with
     // extra steps.
+    await bumpFailureCount(sb, row);
+
     await recordDeadLettered({
       provider: "internal",
       operation: `webhook.${row.kind}.${row.event_type}`,
