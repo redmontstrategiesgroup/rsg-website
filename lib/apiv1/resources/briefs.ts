@@ -41,7 +41,7 @@ export const createBriefHandler: ApiHandler<z.infer<typeof createBody>, undefine
   if (!db) throw new ApiError(503, "unavailable", "Brief storage is not configured.");
   // The pipeline already required Idempotency-Key; reuse it for the ingest RPC's own dedupe.
   const idem = request.headers.get("idempotency-key")!.trim();
-  const result = await ingestBrief(body, `client:${c.portal.client.id}:${idem}`, "api");
+  const result = await ingestBrief(body, `client:${c.portal.client.id}:${idem}`, "api", c.portal.client.id);
   if (!result.duplicate) {
     const { error } = await db.from("briefs").update({ client_id: c.portal.client.id }).eq("id", result.briefId);
     if (error) {

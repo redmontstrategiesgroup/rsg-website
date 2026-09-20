@@ -8,6 +8,8 @@
  */
 
 import { links, newToken, nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toInvoiceDto } from "@/lib/apiv1/serializers";
 import type {
   Invoice,
   InvoiceKind,
@@ -94,7 +96,9 @@ export async function createInvoice(input: {
     .single();
 
   if (error) throw new Error(`Failed to create invoice: ${error.message}`);
-  return data as Invoice;
+  const invoice = data as Invoice;
+  void emitEvent("invoice.created", toInvoiceDto(invoice), { entityId: invoice.id, version: invoice.updated_at, clientId: invoice.client_id });
+  return invoice;
 }
 
 export async function getInvoice(id: string): Promise<Invoice | null> {
@@ -712,6 +716,11 @@ async function handleCheckoutCompleted(
     stripe_checkout_session_id:
       invoice.stripe_checkout_session_id ?? sessionId,
   });
+
+  const paid = await getInvoice(invoice.id);
+  if (paid && paid.status === "paid") {
+    void emitEvent("invoice.paid", toInvoiceDto(paid), { entityId: paid.id, version: paid.updated_at, clientId: paid.client_id });
+  }
 
   return { handled: true, invoiceId: invoice.id, outcome: "paid" };
 }

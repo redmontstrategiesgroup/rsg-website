@@ -4,7 +4,7 @@ import { EVENTS, EVENT_TYPES, eventsFor, isEventType, visibleTo } from "../lib/w
 
 describe("event catalog", () => {
   it("has 22 types, every one described with an audience and a schema", () => {
-    assert.equal(EVENT_TYPES.length, 22);
+    assert.equal(EVENT_TYPES.length, 23);
     for (const t of EVENT_TYPES) {
       const e = EVENTS[t];
       assert.ok(e.description.length > 10, t);
@@ -19,7 +19,7 @@ describe("event catalog", () => {
     assert.equal(visibleTo("lead.created", "admin"), true);
     assert.equal(visibleTo("ticket.created", "client"), true);
     assert.equal(eventsFor("client").length, 15);
-    assert.equal(eventsFor("admin").length, 22);
+    assert.equal(eventsFor("admin").length, 23);
     assert.ok(!eventsFor("client").includes("booking.created"));
   });
   it("ping schema is strict", () => {

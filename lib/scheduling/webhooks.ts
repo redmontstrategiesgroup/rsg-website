@@ -1,4 +1,6 @@
 import { deliverBatch, enqueue } from "@/lib/webhooks/outbox";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { isEventType } from "@/lib/webhooks/events";
 
 /**
  * Scheduling webhooks: now a thin adapter over the shared outbox
@@ -32,12 +34,28 @@ export async function enqueueWebhook(
   payload: Record<string, unknown>,
   opts?: { eventId?: string }
 ): Promise<void> {
+  // Catalogued events go through the owner/audience-aware emitter so they
+  // reach exactly the endpoints that subscribe (booking.* are admin-only).
+  // The event id keeps the scheduling layer's proven identity scheme.
+  if (isEventType(eventType)) {
+    const eventId = opts?.eventId ?? `${eventType}:${String(payload.bookingId ?? "")}`;
+    const [entityId = "", ...rest] = eventId.split(":").slice(1);
+    await emitEvent(eventType, toSnakeCase(payload), { entityId, version: rest.join(":") || "1" });
+    return;
+  }
   await enqueue({
     eventType,
     eventId: opts?.eventId,
     payload,
     kind: "client",
   });
+}
+
+/** `{ bookingId, startsAt }` → `{ booking_id, starts_at }` for the public payload contract. */
+function toSnakeCase(payload: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(payload).map(([k, v]) => [k.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`), v]),
+  );
 }
 
 /**

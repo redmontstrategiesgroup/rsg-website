@@ -2,6 +2,8 @@ import "server-only";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { getSupabase } from "@/lib/supabase";
 import type { BriefPayload } from "@/lib/briefs/schema";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toBriefDto, type BriefRow } from "@/lib/apiv1/serializers";
 
 export function hashPayload(payload: BriefPayload): string {
   return createHash("sha256").update(JSON.stringify(payload)).digest("hex");
@@ -19,7 +21,9 @@ export function verifyIngestionSecret(provided: string | null): boolean {
 export async function ingestBrief(
   payload: BriefPayload,
   idempotencyKey: string,
-  sourceType: "webhook" | "api" | "manual" | "email" = "webhook"
+  sourceType: "webhook" | "api" | "manual" | "email" = "webhook",
+  /** Client the brief belongs to (client-API ingests); emits `brief.received` to their endpoints. */
+  clientId?: string | null,
 ) {
   const db = getSupabase();
   if (!db) throw new Error("Dashboard storage is not configured.");
@@ -44,5 +48,12 @@ export async function ingestBrief(
     }).then(() => undefined);
     throw new Error("Brief ingestion failed.");
   }
-  return data as { duplicate: boolean; briefId: string; requestId?: string };
+  const result = data as { duplicate: boolean; briefId: string; requestId?: string };
+  if (!result.duplicate) {
+    const { data: brief } = await db.from("briefs").select("*").eq("id", result.briefId).maybeSingle();
+    if (brief) {
+      void emitEvent("brief.received", toBriefDto(brief as BriefRow), { entityId: result.briefId, version: (brief as BriefRow).created_at, clientId: clientId ?? null });
+    }
+  }
+  return result;
 }

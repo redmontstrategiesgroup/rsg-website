@@ -9,6 +9,8 @@
  */
 
 import { randomUUID } from "node:crypto";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toFileDto } from "@/lib/apiv1/serializers";
 import { FILES_BUCKET, nowIso, requireSupabase } from "@/lib/lifecycle/core";
 import type { FileCategory, FileVersion, StoredFile } from "@/lib/lifecycle/types";
 
@@ -217,7 +219,9 @@ export async function createFileRecord(input: {
   if (error || !data) {
     throw new Error(`createFileRecord: ${error?.message || "insert returned no row"}`);
   }
-  return { file: data as StoredFile, uploadUrl: signed.signedUrl, uploadToken: signed.token };
+  const file = data as StoredFile;
+  void emitEvent("file.uploaded", toFileDto(file), { entityId: file.id, version: file.created_at, clientId: file.client_id });
+  return { file, uploadUrl: signed.signedUrl, uploadToken: signed.token };
 }
 
 export async function addFileVersion(

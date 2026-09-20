@@ -12,6 +12,7 @@ import {
   isSessionLive,
 } from "@/lib/store";
 import { newToken, nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
 import { escapeLikePattern } from "@/lib/validate";
 import type { ClientUser, ClientUserRole } from "@/lib/lifecycle/types";
 
@@ -441,6 +442,11 @@ export async function provisionClientForOpportunity(input: {
     email,
     password: unusablePassword,
   });
+  void emitEvent(
+    "client.activated",
+    { id: record.id, company: record.company, name: record.name, email: record.email, status: "onboarding" },
+    { entityId: record.id, version: "activated" },
+  );
 
   await sb
     .from("clients")

@@ -24,6 +24,11 @@ registerHooks({
   resolve(specifier, context, nextResolve) {
     let spec = specifier;
     if (spec.startsWith("@/")) spec = pathToFileURL(path.join(repoRoot, spec.slice(2))).href;
+    // `import "server-only"` is a Next.js build-time guard; under node --test
+    // resolve it to the empty stub Next ships instead of a missing package.
+    if (spec === "server-only") {
+      spec = pathToFileURL(path.join(repoRoot, "node_modules/next/dist/compiled/server-only/empty.js")).href;
+    }
     try {
       return nextResolve(spec, context);
     } catch (err) {

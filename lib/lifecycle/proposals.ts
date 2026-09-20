@@ -1,4 +1,6 @@
 import { newToken, nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toProposalDto } from "@/lib/apiv1/serializers-admin";
 import type {
   PaymentScheduleEntry,
   Proposal,
@@ -501,6 +503,7 @@ export async function requestRevision(
     body: input.note,
   });
   await recordProposalEvent(proposalId, "revision_requested", { actor: "client" });
+  void emitEvent("proposal.declined", toProposalDto(proposal), { entityId: proposal.id, version: proposal.updated_at, clientId: proposal.client_id });
   return proposal;
 }
 
@@ -529,6 +532,7 @@ export async function approveProposal(
     ip: input.ip,
     metadata: { name: input.name.trim() },
   });
+  void emitEvent("proposal.accepted", toProposalDto(proposal), { entityId: proposal.id, version: proposal.updated_at, clientId: proposal.client_id });
   return proposal;
 }
 

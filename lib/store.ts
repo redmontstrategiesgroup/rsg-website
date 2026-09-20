@@ -6,6 +6,7 @@ import { hashPassword } from "./auth.ts";
 import { getSupabase } from "./supabase.ts";
 import { isDemoDataEnabled } from "./demo.ts";
 import { escapeLikePattern } from "./validate.ts";
+import { toLeadDto, type LeadRow as LeadDtoRow } from "./apiv1/serializers-admin.ts";
 import { SEED_CLIENTS, DEMO_PASSWORD } from "./seed.ts";
 import type {
   ClientRecord,
@@ -628,6 +629,20 @@ export type LeadPatch = {
 };
 
 /** Update lead pipeline fields. Prefers Supabase; falls back to file store. */
+/**
+ * Lazy, Supabase-gated webhook emission (see lib/leads.ts for why the emitter
+ * cannot be imported statically from a relative-import module). Never throws.
+ */
+async function emitLeadUpdated(row: LeadRow): Promise<void> {
+  if (!getSupabase()) return;
+  try {
+    const { emitEvent } = await import("./webhooks/emit.ts");
+    await emitEvent("lead.updated", toLeadDto(row as unknown as LeadDtoRow), { entityId: row.id, version: new Date().toISOString() });
+  } catch (err) {
+    console.error("[store] webhook emit failed", { id: row.id, error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
 export async function updateLead(
   id: string,
   patch: LeadPatch
@@ -658,7 +673,10 @@ export async function updateLead(
         .limit(1);
       if (error) throw error;
       const row = (data as LeadRow[])?.[0];
-      if (row) return rowToLead(row);
+      if (row) {
+        void emitLeadUpdated(row);
+        return rowToLead(row);
+      }
     } catch (err) {
       console.warn("[store] lead update to Supabase failed, trying file store.", err);
     }

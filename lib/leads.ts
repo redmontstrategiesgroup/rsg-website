@@ -4,6 +4,7 @@ import { contactNotifyEmails } from "./notify-emails.ts";
 import { getSupabase } from "./supabase.ts";
 import type { Lead, LeadStatus } from "./types.ts";
 import { callProvider } from "./integration-log.ts";
+import { toLeadDto, type LeadRow } from "./apiv1/serializers-admin.ts";
 
 export { scoreLead } from "./lead-score.ts";
 export {
@@ -110,6 +111,22 @@ export function leadToRow(lead: Lead): Record<string, unknown> {
  * many notification emails went out. Every other sink (file store, n8n, email)
  * is a convenience on top of this one.
  */
+/**
+ * Webhook emission for leads. Loaded lazily and only when Supabase is
+ * configured: this module is imported by hermetic node tests with relative
+ * paths, and the emitter's dependency chain uses `@/` aliases that only
+ * resolve under Next or the test alias hook. Never throws.
+ */
+async function emitLeadEvent(type: "lead.created" | "lead.updated", row: LeadRow): Promise<void> {
+  if (!getSupabase()) return;
+  try {
+    const { emitEvent } = await import("./webhooks/emit.ts");
+    await emitEvent(type, toLeadDto(row), { entityId: row.id, version: row.created_at });
+  } catch (err) {
+    console.error("[leads] webhook emit failed", { type, id: row.id, error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
 async function storeInSupabase(lead: Lead): Promise<{ ok: boolean; id?: string }> {
   const supabase = getSupabase();
   if (!supabase) return { ok: false };
@@ -119,10 +136,12 @@ async function storeInSupabase(lead: Lead): Promise<{ ok: boolean; id?: string }
     const { data, error } = await supabase
       .from("leads")
       .insert(row)
-      .select("id")
+      .select("*")
       .limit(1);
     if (error) throw error;
-    return { ok: true, id: (data as { id: string }[] | null)?.[0]?.id ?? lead.id };
+    const inserted = (data as LeadRow[] | null)?.[0];
+    if (inserted?.id) void emitLeadEvent("lead.created", inserted);
+    return { ok: true, id: inserted?.id ?? lead.id };
   } catch (err) {
     // Loud on purpose: this is the failure that makes a lead invisible in the
     // admin portal, and the visitor still sees a success screen.
