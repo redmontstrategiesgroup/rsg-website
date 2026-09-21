@@ -24,6 +24,8 @@ lead capture, catalog reads). Spec:
 - **Phase 2:** admin (bearer, staff-only) CRM endpoints for leads, clients,
   proposals, dashboard entities, audit, and pageview analytics; a keyless
   public surface for booking, lead capture, and catalog reads.
+- **Phase 4:** a generated OpenAPI 3.1 document at `/api/v1/openapi.json`
+  and a public reference page at `/developers` (see below).
 
 ## Enabling it
 
@@ -212,6 +214,39 @@ auto-disabled (`disabled_at` set, `enabled` false); a successful delivery
 resets the counter. `PATCH { "enabled": true }` re-enables it and clears the
 counter. Delivery runs on the scheduling cron (`/api/cron/scheduling`), so
 events reach receivers on its cadence, not instantly.
+
+## OpenAPI & reference (Phase 4)
+
+`GET /api/v1/openapi.json` serves an OpenAPI 3.1 document (keyless, cached
+1h, 404 while the flag is off). `/developers` renders it server-side as a
+public reference page with prose sections (`lib/developers/content.ts`),
+one block per operation, curl examples and a webhook-events section; it
+also 404s while the flag is off and is added to the sitemap only when on.
+
+The document is built by `lib/apiv1/openapi.ts` from two sources and
+nothing else:
+
+- **Routes.** `withApi()` stamps its registration (method, auth, scopes,
+  idempotent, `body`/`query`/`response` zod schemas, `rateLimit`) on the
+  handler it returns; `buildOpenApi()` imports every `app/api/v1/**/route.ts`
+  via the generated index `lib/apiv1/openapi-routes.ts` and reads them back
+  with `operationOf()`. Paths come from the file location
+  (`tickets/[id]` → `/api/v1/tickets/{id}`).
+- **Webhooks.** `EVENT_TYPES`/`EVENTS` in `lib/webhooks/events.ts` become the
+  OpenAPI `webhooks` map, with the signing headers documented.
+
+To add an operation that documents itself: give `meta` a real `response`
+schema from `lib/apiv1/response-schemas.ts` (`envelope(X)` /
+`listEnvelope(X)`; `z.any()` fails CI), put `.meta({ example })` on the
+request body schema if the route takes one, and if it is a new file run
+`npm run gen:v1-index` and commit `lib/apiv1/openapi-routes.ts`.
+
+Guardrails (`tests/apiv1-openapi-*.test.ts`, `tests/apiv1-response-schemas.test.ts`):
+the index matches the filesystem; every handler export is a `withApi`
+operation with a non-`any` response and a unique `operationId`; every
+operation appears in the document under its path; every `$ref` resolves;
+every request example validates against the zod schema it is declared on;
+every DTO schema names exactly the keys its serializer emits.
 
 ## Error codes
 
