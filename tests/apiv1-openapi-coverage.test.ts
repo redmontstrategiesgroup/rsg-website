@@ -33,6 +33,57 @@ describe("every v1 route is registered with a real response schema", () => {
       });
     }
   }
+  it("buildOpenApi() documents every handler, every $ref resolves, every example validates", async () => {
+    const { buildOpenApi } = await import("../lib/apiv1/openapi.ts");
+    const doc = await buildOpenApi();
+    assert.equal(doc.openapi, "3.1.0");
+    assert.ok(doc.info.version.length > 0);
+    assert.ok(doc.servers[0].url.startsWith("http"));
+
+    // (a) every handler export is in the document under its path
+    let count = 0;
+    for (const r of modules) {
+      for (const method of METHODS) {
+        if (r.module[method] === undefined) continue;
+        const op = doc.paths[r.path]?.[method.toLowerCase() as "get"];
+        assert.ok(op, `${method} ${r.path} missing from openapi.json`);
+        assert.equal(op.operationId, operationOf(r.module[method])!.operationId);
+        count++;
+      }
+    }
+    assert.equal(count, 56, "operation count changed — update this number deliberately");
+
+    // (b) every $ref in the document resolves
+    const refs: string[] = [];
+    JSON.stringify(doc, (k, v) => { if (k === "$ref" && typeof v === "string") refs.push(v); return v; });
+    assert.ok(refs.length > 0);
+    for (const ref of refs) {
+      assert.ok(ref.startsWith("#/"), ref);
+      const target = ref.slice(2).split("/").reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], doc);
+      assert.ok(target, `unresolved ${ref}`);
+    }
+
+    // (c) every request example validates against the zod schema it was declared on
+    let examples = 0;
+    for (const r of modules) {
+      for (const method of METHODS) {
+        const op = operationOf(r.module[method]);
+        if (!op?.body) continue;
+        const example = doc.paths[r.path][method.toLowerCase() as "post"]?.requestBody?.content["application/json"].example;
+        if (example === undefined) continue;
+        const parsed = op.body.safeParse(example);
+        assert.ok(parsed.success, `${op.operationId} example is invalid: ${parsed.success ? "" : JSON.stringify(parsed.error.issues)}`);
+        examples++;
+      }
+    }
+    assert.ok(examples >= 9, `expected the seeded examples, found ${examples}`);
+
+    // (d) list endpoints reference the shared pagination params
+    const list = doc.paths["/api/v1/tickets"].get!;
+    assert.ok(list.parameters.some((p) => "$ref" in p && p.$ref === "#/components/parameters/cursor"));
+    assert.ok(doc.webhooks["ticket.created"]);
+  });
+
   it("has at least one operation per route and unique operationIds", () => {
     const ids = new Set<string>();
     for (const r of modules) {
