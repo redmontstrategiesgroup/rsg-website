@@ -1,9 +1,9 @@
-import type { ZodError } from "zod";
+import type { ZodError, ZodType } from "zod";
 import { ApiError, errorBody, toApiError } from "./errors.ts";
 import { abandonIdempotent, beginIdempotent, completeIdempotent, keylessPrincipalId, requestHash, type IdemDb } from "./idempotency.ts";
 import { parseBearer, type ApiKeyRow } from "./keys.ts";
 import type { Principal } from "./principal.ts";
-import { registerOperation } from "./registry.ts";
+import { attachOperation, registerOperation, type RegisteredOperation } from "./registry.ts";
 import type { ApiConfig, ApiHandler, HandlerResult, RouteHandler } from "./types.ts";
 import { recordUsage, templatePath, type UsageDb } from "./usage.ts";
 
@@ -64,9 +64,19 @@ export function withApi<B = undefined, Q = undefined>(
   if (config.auth === "none" && config.scopes?.length) {
     throw new Error(`withApi(${config.meta.operationId}): scopes on an unauthenticated route`);
   }
-  registerOperation({ ...config.meta, method, auth: config.auth, scopes: config.scopes ?? [], idempotent: Boolean(config.idempotent) });
+  const operation: RegisteredOperation = {
+    ...config.meta,
+    method,
+    auth: config.auth,
+    scopes: config.scopes ?? [],
+    idempotent: Boolean(config.idempotent),
+    ...(config.body ? { body: config.body as ZodType } : {}),
+    ...(config.query ? { query: config.query as ZodType } : {}),
+    ...(config.rateLimit ? { rateLimit: config.rateLimit } : {}),
+  };
+  registerOperation(operation);
 
-  return async (request, ctx) => {
+  const routeHandler: RouteHandler = async (request, ctx) => {
     const now = deps.now ?? Date.now;
     const start = now();
     const correlationId = request.headers.get("x-correlation-id")?.slice(0, 64) || crypto.randomUUID();
@@ -202,4 +212,5 @@ export function withApi<B = undefined, Q = undefined>(
       return fail(apiErr);
     }
   };
+  return attachOperation(routeHandler, operation);
 }
