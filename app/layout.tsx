@@ -121,6 +121,11 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrains.variable}`}
+      // REVEAL_BOOTSTRAP adds data-reveal="on" to <html> before hydration on
+      // desktop; without this React reports the attribute as a mismatch on
+      // every page. Scoped to this element only — attribute diffs elsewhere
+      // still surface.
+      suppressHydrationWarning
     >
       <body>
         <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOTSTRAP }} />
