@@ -8,86 +8,76 @@ import {
   revokeAnyAdminKey,
   MAX_ACTIVE_KEYS,
 } from "../lib/apiv1/key-store.ts";
-import { KEY_PREFIX } from "../lib/apiv1/keys.ts";
+import { KEY_PREFIX, hashApiKey } from "../lib/apiv1/keys.ts";
+import { API_PLATFORM_SCHEMA, fakeDb, type Row } from "./_fake-db.ts";
 
-function fakeSb(state: { keys: any[]; requests: any[] }) {
-  const builder = (table: string) => {
-    let rows = table === "api_keys" ? state.keys : state.requests;
-    let pendingUpdate: any = null;
-    let selectOpts: { count?: string; head?: boolean } | null = null;
-    const q: any = {};
-    q.select = (_cols?: string, opts?: { count?: string; head?: boolean }) => { selectOpts = opts ?? null; return q; };
-    q.eq = (c: string, v: unknown) => { rows = rows.filter((r) => r[c] === v); return q; };
-    q.is = (c: string, v: unknown) => { rows = rows.filter((r) => r[c] === v); return q; };
-    q.in = (c: string, vs: unknown[]) => { rows = rows.filter((r) => vs.includes(r[c])); return q; };
-    q.gte = () => q;
-    q.order = () => q;
-    q.insert = (v: any) => { const row = { id: `id${state.keys.length + 1}`, created_at: "t", last_used_at: null, expires_at: null, revoked_at: null, ...v }; state.keys.push(row); rows = [row]; return q; };
-    q.update = (v: any) => { pendingUpdate = v; return q; };
-    q.single = async () => ({ data: rows[0], error: null });
-    q.then = (res: any) => {
-      if (pendingUpdate) { for (const r of rows) Object.assign(r, pendingUpdate); }
-      if (selectOpts?.count === "exact" && selectOpts.head) {
-        res({ data: null, count: rows.length, error: null });
-      } else {
-        res({ data: rows, error: null });
-      }
-    };
-    return q;
-  };
-  return { from: builder } as any;
+/** The store runs against the constraint-enforcing fake — see tests/_fake-db.ts. */
+function db(keys: Row[] = [], requests: Row[] = []) {
+  return fakeDb(API_PLATFORM_SCHEMA, { api_keys: keys, api_requests: requests });
 }
+const adminKey = (id: string, principal: string): Row => ({
+  id, principal_type: "admin", principal_id: principal, revoked_at: null, name: "A", key_prefix: "aaaaaaaa", key_hash: `hash-${id}`,
+  scopes: ["leads:read"], created_by: "x", created_at: "t",
+});
 
 describe("key-store", () => {
   const owner = { type: "client" as const, id: "c1" };
-  it("creates, lists with 30d counts, revokes", async () => {
-    const state = { keys: [] as any[], requests: [] as any[] };
-    const sb = fakeSb(state);
-    const { key, plaintext } = await createApiKey(sb, { owner, name: "CI", scopes: ["projects:read"], createdBy: "ann@acme.com" });
+  it("creates (hash at rest, never in the DTO), lists with 30d counts, revokes", async () => {
+    const f = db();
+    const { key, plaintext } = await createApiKey(f.sb, { owner, name: "CI", scopes: ["projects:read"], createdBy: "ann@acme.com" });
     assert.ok(plaintext.startsWith(KEY_PREFIX));
     assert.equal(key.key_prefix.length, 8);
     assert.equal("key_hash" in key, false);
-    state.requests.push({ key_id: key.id }, { key_id: key.id });
-    const list = await listApiKeys(sb, owner);
+    const stored = f.rows("api_keys")[0]!;
+    assert.equal(stored.key_hash, hashApiKey(plaintext), "the stored hash is of the plaintext we handed out");
+    assert.equal(JSON.stringify(stored).includes(plaintext), false, "plaintext is never persisted");
+    f.rows("api_requests").push({ id: 1, key_id: key.id, created_at: new Date().toISOString() }, { id: 2, key_id: key.id, created_at: new Date().toISOString() });
+    f.rows("api_requests").push({ id: 3, key_id: key.id, created_at: "2020-01-01T00:00:00.000Z" }); // outside 30d
+    const list = await listApiKeys(f.sb, owner);
     assert.equal(list.length, 1);
     assert.equal(list[0]!.requests_30d, 2);
-    assert.equal(await revokeApiKey(sb, owner, key.id), true);
-    assert.equal((await listApiKeys(sb, owner)).length, 0);
-    assert.equal(await revokeApiKey(sb, { type: "client", id: "other" }, key.id), false);
+    assert.equal(await revokeApiKey(f.sb, owner, key.id), true);
+    assert.ok(stored.revoked_at, "revocation is persisted");
+    assert.equal((await listApiKeys(f.sb, owner)).length, 0);
+    assert.equal(await revokeApiKey(f.sb, owner, key.id), false, "already revoked");
+    assert.equal(await revokeApiKey(f.sb, { type: "client", id: "other" }, key.id), false);
   });
-  it("enforces the active-key cap and non-empty scopes", async () => {
-    const state = { keys: Array.from({ length: MAX_ACTIVE_KEYS }, (_, i) => ({ id: `k${i}`, principal_type: "client", principal_id: "c1", revoked_at: null })), requests: [] };
-    await assert.rejects(createApiKey(fakeSb(state), { owner, name: "x", scopes: ["projects:read"], createdBy: "a" }), (e: any) => e.code === "conflict");
-    await assert.rejects(createApiKey(fakeSb({ keys: [], requests: [] }), { owner, name: "x", scopes: [], createdBy: "a" }), (e: any) => e.code === "validation_failed");
+  it("enforces the active-key cap (revoked keys do not count) and non-empty scopes", async () => {
+    const active = (i: number): Row => ({ id: `k${i}`, principal_type: "client", principal_id: "c1", revoked_at: null, key_hash: `h${i}`, name: "n" });
+    const full = db(Array.from({ length: MAX_ACTIVE_KEYS }, (_, i) => active(i)));
+    await assert.rejects(createApiKey(full.sb, { owner, name: "x", scopes: ["projects:read"], createdBy: "a" }), (e: { code: string }) => e.code === "conflict");
+    assert.equal(full.rows("api_keys").length, MAX_ACTIVE_KEYS);
+    const withRevoked = db([...Array.from({ length: MAX_ACTIVE_KEYS - 1 }, (_, i) => active(i)), { ...active(99), revoked_at: "t" }]);
+    const r = await createApiKey(withRevoked.sb, { owner, name: "x", scopes: ["projects:read"], createdBy: "a" });
+    assert.ok(r.key.id);
+    await assert.rejects(createApiKey(db().sb, { owner, name: "x", scopes: [], createdBy: "a" }), (e: { code: string }) => e.code === "validation_failed");
+  });
+  it("the DB rejects a name outside 1–80 chars and an unknown principal type", async () => {
+    await assert.rejects(createApiKey(db().sb, { owner, name: "x".repeat(81), scopes: ["projects:read"], createdBy: "a" }), /check constraint/);
+    await assert.rejects(
+      createApiKey(db().sb, { owner: { type: "robot" as never, id: "r" }, name: "x", scopes: ["projects:read"], createdBy: "a" }),
+      /check constraint/,
+    );
   });
 
   it("listAllAdminKeys returns every active admin key across principals", async () => {
-    const state = {
-      keys: [
-        { id: "a1", principal_type: "admin", principal_id: "admin-1", revoked_at: null, name: "A", key_prefix: "aaaaaaaa", scopes: ["leads:read"], created_by: "x", last_used_at: null, expires_at: null, created_at: "t" },
-        { id: "a2", principal_type: "admin", principal_id: "admin-2", revoked_at: null, name: "B", key_prefix: "bbbbbbbb", scopes: ["leads:read"], created_by: "x", last_used_at: null, expires_at: null, created_at: "t" },
-        { id: "c1k", principal_type: "client", principal_id: "c1", revoked_at: null, name: "C", key_prefix: "cccccccc", scopes: ["projects:read"], created_by: "x", last_used_at: null, expires_at: null, created_at: "t" },
-      ],
-      requests: [{ key_id: "a1" }, { key_id: "a1" }],
-    };
-    const sb = fakeSb(state);
-    const all = await listAllAdminKeys(sb);
-    assert.equal(all.length, 2);
+    const f = db(
+      [adminKey("a1", "admin-1"), adminKey("a2", "admin-2"), { ...adminKey("c1k", "c1"), principal_type: "client", scopes: ["projects:read"] }, { ...adminKey("a3", "admin-1"), revoked_at: "t" }],
+      [{ id: 1, key_id: "a1", created_at: new Date().toISOString() }, { id: 2, key_id: "a1", created_at: new Date().toISOString() }],
+    );
+    const all = await listAllAdminKeys(f.sb);
+    assert.deepEqual(all.map((k) => k.id).sort(), ["a1", "a2"]);
     assert.ok(all.every((k) => "principal_id" in k));
-    const a1 = all.find((k) => k.id === "a1")!;
-    const a2 = all.find((k) => k.id === "a2")!;
-    assert.equal(a1.requests_30d, 2);
-    assert.equal(a2.requests_30d, 0);
+    assert.equal(all.find((k) => k.id === "a1")!.requests_30d, 2);
+    assert.equal(all.find((k) => k.id === "a2")!.requests_30d, 0);
   });
 
-  it("revokeAnyAdminKey revokes an admin key regardless of owner", async () => {
-    const state = {
-      keys: [{ id: "a1", principal_type: "admin", principal_id: "admin-1", revoked_at: null }],
-      requests: [] as any[],
-    };
-    const sb = fakeSb(state);
-    assert.equal(await revokeAnyAdminKey(sb, "a1"), true);
-    assert.equal(await revokeAnyAdminKey(sb, "a1"), false);
-    assert.equal(await revokeAnyAdminKey(sb, "missing"), false);
+  it("revokeAnyAdminKey revokes an admin key regardless of owner, never a client key", async () => {
+    const f = db([adminKey("a1", "admin-1"), { ...adminKey("c1k", "c1"), principal_type: "client" }]);
+    assert.equal(await revokeAnyAdminKey(f.sb, "a1"), true);
+    assert.equal(await revokeAnyAdminKey(f.sb, "a1"), false);
+    assert.equal(await revokeAnyAdminKey(f.sb, "missing"), false);
+    assert.equal(await revokeAnyAdminKey(f.sb, "c1k"), false);
+    assert.equal(f.rows("api_keys").find((r) => r.id === "c1k")!.revoked_at, null);
   });
 });

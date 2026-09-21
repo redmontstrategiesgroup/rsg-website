@@ -315,6 +315,18 @@ headers are not populated (`lib/security.rateLimit()` returns only a
 boolean, not remaining counts) and are not advertised in the CORS
 `Access-Control-Expose-Headers` list. Still outstanding as of Phase 2.
 
+## Testing the stores
+
+Tests are hermetic (no Supabase). Store tests run against
+`tests/_fake-db.ts`, an in-memory client whose `API_PLATFORM_SCHEMA` declares
+the primary keys, unique indexes (including partial ones) and check
+constraints from `supabase/migrations`, and returns real Postgres codes
+(`23505`, `23514`). `tests/fake-db-schema.test.ts` greps the migrations to
+prove the declarations are current, so a constraint added on one side but
+not the other fails CI. Use it for any new store code instead of a bespoke
+fake — the fan-out bug above was invisible to fakes that accepted every
+insert.
+
 ## Usage and cleanup
 
 Every request is logged to `api_requests` (used for the `requests_30d`

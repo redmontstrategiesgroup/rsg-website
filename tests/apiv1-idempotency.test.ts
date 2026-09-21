@@ -1,6 +1,26 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { abandonIdempotent, beginIdempotent, completeIdempotent, keylessPrincipalId, requestHash } from "../lib/apiv1/idempotency.ts";
+import { API_PLATFORM_SCHEMA, fakeDb as constraintDb } from "./_fake-db.ts";
+
+describe("idempotency against the real (principal_id, key) primary key", () => {
+  it("new → in_flight for a concurrent begin → mismatch → done → replay; other principal independent; abandon frees the key", async () => {
+    const f = constraintDb(API_PLATFORM_SCHEMA);
+    const db = f.sb as never;
+    const a = { principalId: "11111111-1111-4111-8111-111111111111", key: "order-42", requestHash: "h1" };
+    assert.deepEqual(await beginIdempotent(db, a), { kind: "new" });
+    assert.equal(f.rows("api_idempotency").length, 1);
+    assert.deepEqual(await beginIdempotent(db, a), { kind: "in_flight" }, "the PK makes the second insert collide");
+    assert.deepEqual(await beginIdempotent(db, { ...a, requestHash: "h2" }), { kind: "mismatch" });
+    assert.deepEqual(await beginIdempotent(db, { ...a, principalId: "22222222-2222-4222-8222-222222222222" }), { kind: "new" }, "same key, other principal");
+    await completeIdempotent(db, { principalId: a.principalId, key: a.key, status: 201, body: { data: { id: "x" } } });
+    assert.deepEqual(await beginIdempotent(db, a), { kind: "replay", status: 201, body: { data: { id: "x" } } });
+    assert.equal(f.rows("api_idempotency").find((r) => r.principal_id === a.principalId)!.status, "done");
+    await abandonIdempotent(db, { principalId: a.principalId, key: a.key });
+    assert.equal(f.rows("api_idempotency").some((r) => r.principal_id === a.principalId), false);
+    assert.deepEqual(await beginIdempotent(db, a), { kind: "new" }, "an abandoned key can be reused");
+  });
+});
 
 type Row = { request_hash: string; status: "in_flight" | "done"; response_status: number | null; response_body: unknown };
 type InsertOutcome = { error?: { code: string; message: string } | null };
