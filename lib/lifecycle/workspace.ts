@@ -228,7 +228,7 @@ export async function addMessage(input: {
   }
   const message = data as Message;
   if (message.ticket_id && !message.internal) {
-    void emitEvent("ticket.replied", { ...toMessageDto(message), ticket_id: message.ticket_id }, { entityId: message.id, version: message.created_at, clientId: message.client_id });
+    await emitEvent("ticket.replied", { ...toMessageDto(message), ticket_id: message.ticket_id }, { entityId: message.id, version: message.created_at, clientId: message.client_id });
   }
   return message;
 }
@@ -325,7 +325,7 @@ export async function createApproval(input: {
     throw new Error(`createApproval: ${error?.message || "insert returned no row"}`);
   }
   const approval = data as Approval;
-  void emitEvent("approval.requested", toApprovalDto(approval), { entityId: approval.id, version: approval.updated_at, clientId: approval.client_id });
+  await emitEvent("approval.requested", toApprovalDto(approval), { entityId: approval.id, version: approval.updated_at, clientId: approval.client_id });
   return approval;
 }
 
@@ -373,7 +373,7 @@ export async function decideApproval(
   if (error) throw new Error(`decideApproval: ${error.message}`);
   if (!data) throw new Error("decideApproval: approval not found or already decided.");
   const approval = data as Approval;
-  void emitEvent("approval.decided", toApprovalDto(approval), { entityId: approval.id, version: approval.updated_at, clientId: approval.client_id });
+  await emitEvent("approval.decided", toApprovalDto(approval), { entityId: approval.id, version: approval.updated_at, clientId: approval.client_id });
   return approval;
 }
 

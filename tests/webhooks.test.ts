@@ -140,6 +140,12 @@ describe("webhook retry classification", () => {
     }
   });
 
+  it("does not retry 3xx: redirects are never followed, so the target can never be reached", () => {
+    for (const status of [301, 302, 307, 308]) {
+      assert.equal(isRetryableStatus(status), false, `${status} should not retry`);
+    }
+  });
+
   it("retries the timing-related 4xx", () => {
     assert.equal(isRetryableStatus(408), true);
     assert.equal(isRetryableStatus(429), true);

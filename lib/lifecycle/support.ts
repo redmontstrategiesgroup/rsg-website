@@ -132,7 +132,7 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     .single();
   if (error) throw new Error(`Failed to create ticket: ${error.message}`);
   const ticket = data as Ticket;
-  void emitEvent("ticket.created", toTicketDto(ticket), { entityId: ticket.id, version: ticket.updated_at, clientId: ticket.client_id });
+  await emitEvent("ticket.created", toTicketDto(ticket), { entityId: ticket.id, version: ticket.updated_at, clientId: ticket.client_id });
   return ticket;
 }
 
@@ -291,7 +291,7 @@ export async function resolveTicket(
     .single();
   if (error) throw new Error(`Failed to resolve ticket ${id}: ${error.message}`);
   const ticket = data as Ticket;
-  void emitEvent("ticket.resolved", toTicketDto(ticket), { entityId: ticket.id, version: ticket.updated_at, clientId: ticket.client_id });
+  await emitEvent("ticket.resolved", toTicketDto(ticket), { entityId: ticket.id, version: ticket.updated_at, clientId: ticket.client_id });
   return ticket;
 }
 

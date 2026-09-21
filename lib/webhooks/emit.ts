@@ -15,6 +15,12 @@ import { visibleTo, type EventType } from "./events";
  * admin-owned endpoint (sees everything) or a client-owned endpoint for the
  * event's client. Subscription and audience are checked here in JS because
  * `events` is a jsonb array and an owner has at most ten endpoints.
+ *
+ * Call sites `await` this. It never throws and does one select plus at most a
+ * handful of inserts, and on serverless the function may be frozen the moment
+ * the response is sent — a `void`ed call can be dropped before the delivery
+ * rows exist. Actual sending is the cron's job, so awaiting costs one round
+ * trip, not a network delivery.
  */
 
 type EndpointPick = {

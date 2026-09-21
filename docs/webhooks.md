@@ -88,6 +88,7 @@ Use the sequence to *detect* a gap or a reorder. Do not assume it never happens.
 |---|---|
 | `2xx` | mark delivered, done |
 | `408`, `429` | retry with backoff (`Retry-After` honoured, capped at 1h) |
+| `3xx` | **give up immediately**: redirects are never followed (the target was never URL-checked) |
 | other `4xx` | **give up immediately**: dead-letter it |
 | `5xx`, timeout, connection error | retry with backoff |
 

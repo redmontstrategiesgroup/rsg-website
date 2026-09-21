@@ -52,7 +52,7 @@ export async function ingestBrief(
   if (!result.duplicate) {
     const { data: brief } = await db.from("briefs").select("*").eq("id", result.briefId).maybeSingle();
     if (brief) {
-      void emitEvent("brief.received", toBriefDto(brief as BriefRow), { entityId: result.briefId, version: (brief as BriefRow).created_at, clientId: clientId ?? null });
+      await emitEvent("brief.received", toBriefDto(brief as BriefRow), { entityId: result.briefId, version: (brief as BriefRow).created_at, clientId: clientId ?? null });
     }
   }
   return result;

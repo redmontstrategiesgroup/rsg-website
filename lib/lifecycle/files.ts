@@ -220,7 +220,7 @@ export async function createFileRecord(input: {
     throw new Error(`createFileRecord: ${error?.message || "insert returned no row"}`);
   }
   const file = data as StoredFile;
-  void emitEvent("file.uploaded", toFileDto(file), { entityId: file.id, version: file.created_at, clientId: file.client_id });
+  await emitEvent("file.uploaded", toFileDto(file), { entityId: file.id, version: file.created_at, clientId: file.client_id });
   return { file, uploadUrl: signed.signedUrl, uploadToken: signed.token };
 }
 

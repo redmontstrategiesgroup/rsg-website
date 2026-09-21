@@ -115,6 +115,9 @@ export function backoffMs(attempt: number, retryAfterSeconds?: number | null): n
 export function isRetryableStatus(status: number): boolean {
   if (status === 408 || status === 429) return true;
   if (status >= 400 && status < 500) return false;
+  // Redirects are never followed (see the fetch below): a 3xx is the endpoint
+  // asking us to POST somewhere the URL check never saw, so it is permanent.
+  if (status >= 300 && status < 400) return false;
   return true; // 5xx and anything unexpected
 }
 
@@ -327,6 +330,10 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
   try {
     const res = await fetch(row.url, {
       method: "POST",
+      // The registered URL passed checkWebhookUrl(); a redirect target did not.
+      // Following one would let a public host bounce the signed POST to a
+      // private/metadata address from inside the deployment.
+      redirect: "manual",
       headers: {
         "Content-Type": "application/json",
         [SIGNATURE_HEADER]: signature,

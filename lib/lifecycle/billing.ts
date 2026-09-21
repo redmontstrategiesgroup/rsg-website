@@ -97,7 +97,7 @@ export async function createInvoice(input: {
 
   if (error) throw new Error(`Failed to create invoice: ${error.message}`);
   const invoice = data as Invoice;
-  void emitEvent("invoice.created", toInvoiceDto(invoice), { entityId: invoice.id, version: invoice.updated_at, clientId: invoice.client_id });
+  await emitEvent("invoice.created", toInvoiceDto(invoice), { entityId: invoice.id, version: invoice.updated_at, clientId: invoice.client_id });
   return invoice;
 }
 
@@ -719,7 +719,7 @@ async function handleCheckoutCompleted(
 
   const paid = await getInvoice(invoice.id);
   if (paid && paid.status === "paid") {
-    void emitEvent("invoice.paid", toInvoiceDto(paid), { entityId: paid.id, version: paid.updated_at, clientId: paid.client_id });
+    await emitEvent("invoice.paid", toInvoiceDto(paid), { entityId: paid.id, version: paid.updated_at, clientId: paid.client_id });
   }
 
   return { handled: true, invoiceId: invoice.id, outcome: "paid" };

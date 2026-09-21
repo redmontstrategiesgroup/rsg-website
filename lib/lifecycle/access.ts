@@ -442,7 +442,7 @@ export async function provisionClientForOpportunity(input: {
     email,
     password: unusablePassword,
   });
-  void emitEvent(
+  await emitEvent(
     "client.activated",
     { id: record.id, company: record.company, name: record.name, email: record.email, status: "onboarding" },
     { entityId: record.id, version: "activated" },

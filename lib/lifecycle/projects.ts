@@ -593,7 +593,7 @@ export async function updateProject(
     .single();
   if (error) throw new Error(`Failed to update project ${id}: ${error.message}`);
   const project = data as Project;
-  void emitEvent("project.updated", toProjectDto(project), { entityId: project.id, version: project.updated_at, clientId: project.client_id });
+  await emitEvent("project.updated", toProjectDto(project), { entityId: project.id, version: project.updated_at, clientId: project.client_id });
   return project;
 }
 
@@ -660,7 +660,7 @@ export async function updateMilestone(
     : await fetchMilestones(milestone.project_id);
   const project = await recomputeProject(milestone.project_id, milestones);
   if (becameDone) {
-    void emitEvent("milestone.completed", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
+    await emitEvent("milestone.completed", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
   }
   return { milestone, project };
 }
@@ -697,7 +697,7 @@ export async function approveMilestone(
 
   const milestones = await bumpNextMilestone(milestone.project_id, milestone.sort_order);
   const project = await recomputeProject(milestone.project_id, milestones);
-  void emitEvent("milestone.approved", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
+  await emitEvent("milestone.approved", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
   return { milestone, project };
 }
 
@@ -725,7 +725,7 @@ export async function requestMilestoneChanges(
   }
   const milestone = data as Milestone;
   const project = await recomputeProject(milestone.project_id);
-  void emitEvent("milestone.changes_requested", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
+  await emitEvent("milestone.changes_requested", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
   return { milestone, project };
 }
 
@@ -897,7 +897,7 @@ export async function updateTask(
   const task = data as ProjectTask;
   if (patch.status === "done" && existing.status !== "done") {
     const project = await getProject(task.project_id);
-    void emitEvent("task.completed", toTaskDto(task), { entityId: task.id, version: task.updated_at, clientId: project?.client_id ?? null });
+    await emitEvent("task.completed", toTaskDto(task), { entityId: task.id, version: task.updated_at, clientId: project?.client_id ?? null });
   }
   return task;
 }
