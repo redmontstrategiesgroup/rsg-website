@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { DEMO_REQUEST_SLUGS } from "@/lib/demo-request-schema";
+import { apiPlatformEnabled } from "@/lib/env";
 
 /** Public, indexable marketing pages. Admin, portal, and API are excluded. */
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -40,6 +41,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Legal
     { path: "/privacy", priority: 0.3 },
     { path: "/terms", priority: 0.3 },
+    // API reference — only exists while the platform flag is on (it 404s otherwise)
+    ...(apiPlatformEnabled() ? [{ path: "/developers", priority: 0.5 }] : []),
   ];
 
   return routes.map(({ path, priority }) => ({
