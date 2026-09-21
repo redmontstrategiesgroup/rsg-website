@@ -16,8 +16,9 @@ export const POST = api("POST", {
   auth: "any",
   scopes: ["webhooks:manage"],
   idempotent: true,
+  sensitiveResponse: true,
   body: createBody,
-  meta: { operationId: "createWebhook", summary: "Create a webhook endpoint", tag: "Webhooks", response: envelope(WebhookEndpointWithSecretSchema) },
+  meta: { operationId: "createWebhook", summary: "Create a webhook endpoint", tag: "Webhooks", response: envelope(WebhookEndpointWithSecretSchema), status: 201 },
 }, createWebhook);
 
 export const OPTIONS = options;

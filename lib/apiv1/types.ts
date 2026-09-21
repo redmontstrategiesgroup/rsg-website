@@ -11,12 +11,22 @@ export type OperationMeta = {
   response: ZodType;
   /** Response media type when the handler returns a raw non-JSON body (e.g. `text/csv`). Defaults to `application/json`. */
   contentType?: string;
+  /** HTTP status of the documented success response. Defaults to 200. Must match what the handler actually returns. */
+  status?: number;
+  /** Other statuses the handler returns with the SAME `response` body, keyed by status with a short reason. */
+  extraResponses?: Record<string, string>;
 };
 
 export type ApiConfig<B = unknown, Q = unknown> = {
   auth: AuthMode;
   scopes?: string[];
   idempotent?: boolean;
+  /**
+   * The success body carries a secret (e.g. a `whsec_` value shown once). With this set the
+   * idempotency row records only the status, so a replay answers 409 `conflict` instead of
+   * serving the secret again from `api_idempotency.response_body`.
+   */
+  sensitiveResponse?: boolean;
   rateLimit?: { limit: number; windowMs: number };
   body?: ZodType<B>;
   query?: ZodType<Q>;

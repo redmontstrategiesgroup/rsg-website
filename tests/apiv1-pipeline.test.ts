@@ -176,6 +176,21 @@ describe("withApi", () => {
     assert.equal(calls, 3);
   });
 
+  it("sensitiveResponse: the body is never stored, so a replay is 409 rather than the secret again", async () => {
+    const { deps, idem } = mkDeps();
+    let calls = 0;
+    const h = withApi("POST", { auth: "client", idempotent: true, sensitiveResponse: true, meta: meta("s") }, async () => { calls++; return { data: { secret: "whsec_once" }, status: 201 }; }, deps);
+    const hdr = { "idempotency-key": "sec-12345" };
+    const r1 = await h(req("POST", "/api/v1/t", { headers: hdr }), ctx());
+    assert.equal(r1.status, 201);
+    assert.deepEqual(await r1.json(), { data: { secret: "whsec_once" } });
+    assert.equal(JSON.stringify([...idem.rows.values()]).includes("whsec_once"), false, "secret must not be persisted");
+    const r2 = await h(req("POST", "/api/v1/t", { headers: hdr }), ctx());
+    assert.equal(r2.status, 409);
+    assert.equal((await r2.json()).error.code, "conflict");
+    assert.equal(calls, 1);
+  });
+
   it("a genuinely in-flight idempotency row returns 409 conflict", async () => {
     const { deps, idem } = mkDeps();
     const body = { n: 1 };

@@ -178,7 +178,7 @@ export function withApi<B = undefined, Q = undefined>(
         if (!deps.idempotency) throw new ApiError(503, "unavailable", "Idempotency storage is not configured.");
         const principalId = principal ? principalIdOf(principal) : keylessPrincipalId(ip);
         const begun = await beginIdempotent(deps.idempotency, { principalId, key: k, requestHash: requestHash(request.method, url.pathname, rawBody) });
-        if (begun.kind === "replay" && begun.body === null) throw new ApiError(409, "conflict", "This request was already completed.");
+        if (begun.kind === "replay" && begun.body === null) throw new ApiError(409, "conflict", "This request was already completed; its response is not replayable.");
         if (begun.kind === "replay") return finish(json(begun.status, begun.body, correlationId, { "Idempotent-Replayed": "true" }));
         if (begun.kind === "mismatch") throw new ApiError(422, "idempotency_mismatch", "Idempotency-Key was already used with a different request.");
         if (begun.kind === "in_flight") throw new ApiError(409, "conflict", "A request with this Idempotency-Key is still in progress.");
@@ -200,7 +200,7 @@ export function withApi<B = undefined, Q = undefined>(
         }
         const status = result.status ?? 200;
         const payload = { data: result.data, ...(result.meta ? { meta: result.meta } : {}) };
-        if (idem && deps.idempotency) await completeIdempotent(deps.idempotency, { ...idem, status, body: payload });
+        if (idem && deps.idempotency) await completeIdempotent(deps.idempotency, { ...idem, status, body: config.sensitiveResponse ? null : payload });
         return finish(json(status, payload, correlationId, result.headers));
       } catch (err) {
         if (idem && deps.idempotency) await abandonIdempotent(deps.idempotency, idem).catch(() => {});

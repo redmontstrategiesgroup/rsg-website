@@ -9,6 +9,7 @@ export const POST = api("POST", {
   auth: "any",
   scopes: ["webhooks:manage"],
   idempotent: true,
+  sensitiveResponse: true,
   meta: { operationId: "rotateWebhookSecret", summary: "Rotate the signing secret", tag: "Webhooks", response: envelope(WebhookSecretSchema) },
 }, rotateWebhookSecret);
 
