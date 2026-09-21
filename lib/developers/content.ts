@@ -98,7 +98,7 @@ curl "https://redmontstrategiesgroup.com/api/v1/tickets?limit=50&cursor=MjAyNi0w
     title: "Webhooks",
     paragraphs: [
       "Subscribe an HTTPS endpoint to events with the webhook management operations (webhooks:manage). Each endpoint has its own secret (whsec_…), shown once at creation and rotatable. Client endpoints receive only events about that client; admin endpoints receive everything they subscribe to, with client_id in data.",
-      "Every delivery is a POST with a JSON body { id, type, sequence, created_at, data } and is signed: x-rsg-signature is the hex HMAC-SHA256 of \"<x-rsg-timestamp>.<raw body>\" using the endpoint secret. Reject deliveries whose timestamp is more than five minutes old. Deliveries are at-least-once — dedupe on id (also sent as Idempotency-Key). X-RSG-Sequence is monotonic per endpoint.",
+      "Every delivery is a POST with a JSON body { id, type, sequence, created_at, data } and is signed: x-rsg-signature is the hex HMAC-SHA256 of \"<x-rsg-timestamp>.<raw body>\" using the endpoint secret. The timestamp is Unix time in milliseconds; reject deliveries more than five minutes from your clock. Deliveries are at-least-once — dedupe on id (also sent as Idempotency-Key). X-RSG-Sequence is monotonic per endpoint.",
       "Respond with any 2xx to acknowledge. Anything else, or a timeout after 10 seconds, is retried with exponential backoff and jitter for up to 8 attempts (capped at an hour apart); after that the delivery is dead-lettered and can be replayed from the API or the portal. An endpoint that fails 20 deliveries in a row is disabled automatically. The events, their audiences and payload schemas are listed in the Webhook events section below.",
     ],
     code: {
@@ -108,7 +108,7 @@ curl "https://redmontstrategiesgroup.com/api/v1/tickets?limit=50&cursor=MjAyNi0w
 export function verify(req, rawBody, secret) {
   const ts = req.headers["x-rsg-timestamp"];
   const sig = req.headers["x-rsg-signature"];
-  if (Math.abs(Date.now() / 1000 - Number(ts)) > 300) return false;
+  if (Math.abs(Date.now() - Number(ts)) > 5 * 60 * 1000) return false; // timestamp is Unix milliseconds
   const expected = createHmac("sha256", secret).update(\`\${ts}.\${rawBody}\`).digest("hex");
   return sig.length === expected.length && timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
 }`,

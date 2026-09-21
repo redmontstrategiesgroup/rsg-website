@@ -10,7 +10,7 @@ export const POST = api("POST", {
   idempotent: true,
   rateLimit: { limit: 5, windowMs: 3_600_000 },
   body: createBody,
-  meta: { operationId: "submitLead", summary: "Submit a lead", tag: "Public Leads", response: envelope(LeadAcceptedSchema) },
+  meta: { operationId: "submitLead", summary: "Submit a lead", tag: "Public Leads", response: envelope(LeadAcceptedSchema), status: 202 },
 }, submitLead);
 
 export const OPTIONS = options;

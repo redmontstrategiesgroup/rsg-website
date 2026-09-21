@@ -21,7 +21,7 @@ export const POST = api("POST", {
   // since the pipeline resolves `body` before path params are known to the handler), so the
   // route only checks the body is a JSON object; createEntity() does the real validation.
   body: z.record(z.string(), z.unknown()),
-  meta: { operationId: "createEntity", summary: "Create a dashboard entity record", tag: "Admin Entities", response: envelope(EntitySchema) },
+  meta: { operationId: "createEntity", summary: "Create a dashboard entity record", tag: "Admin Entities", response: envelope(EntitySchema), status: 201 },
 }, createEntity);
 
 export const OPTIONS = options;

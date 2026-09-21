@@ -10,7 +10,7 @@ export const POST = api("POST", {
   idempotent: true,
   rateLimit: { limit: 10, windowMs: 3_600_000 },
   body: createBody,
-  meta: { operationId: "createBooking", summary: "Create a booking", tag: "Public Booking", response: envelope(BookingCreatedSchema) },
+  meta: { operationId: "createBooking", summary: "Create a booking", tag: "Public Booking", response: envelope(BookingCreatedSchema), status: 201 },
 }, createBookingHandler);
 
 export const OPTIONS = options;

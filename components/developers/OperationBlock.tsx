@@ -24,8 +24,10 @@ export function OperationBlock({ method, path, op, doc }: { method: string; path
   const components = doc.components.schemas;
   const params = op.parameters.map((p) => resolveParam(p, doc));
   const body = op.requestBody?.content["application/json"];
-  const success = Object.entries(op.responses).find(([status]) => status.startsWith("2"));
-  const successContent = success?.[1].content ? Object.entries(success[1].content)[0] : undefined;
+  // Concrete statuses (200/201/302/503…) in declaration order; 4XX/5XX are the shared Error envelope.
+  const concrete = Object.entries(op.responses).filter(([status]) => /^\d{3}$/.test(status));
+  const [primary, ...others] = concrete;
+  const primaryContent = primary?.[1].content ? Object.entries(primary[1].content)[0] : undefined;
 
   return (
     <article id={`op-${op.operationId}`} className="scroll-mt-28 border-t border-white/10 py-8">
@@ -89,9 +91,23 @@ export function OperationBlock({ method, path, op, doc }: { method: string; path
         <CodeBlock code={curlFor(method, path, op, doc, params)} label="curl" />
       </Section>
 
-      {successContent && (
-        <Section title={`Response · ${success?.[0]} · ${successContent[0]}`}>
-          <SchemaView schema={successContent[1].schema} components={components} />
+      {primaryContent && (
+        <Section title={`Response · ${primary?.[0]} · ${primaryContent[0]}`}>
+          {primary?.[0].startsWith("3") && (
+            <p className="mb-2 text-[0.8rem] text-white/50">Redirects via the <code className="font-mono">Location</code> header; the same details are also returned in the body.</p>
+          )}
+          <SchemaView schema={primaryContent[1].schema} components={components} />
+        </Section>
+      )}
+      {others.length > 0 && (
+        <Section title="Also returns">
+          <ul className="space-y-1 text-[0.8rem] text-white/50">
+            {others.map(([status, r]) => (
+              <li key={status}>
+                <code className="font-mono text-white/80">{status}</code> — {r.description} (same body)
+              </li>
+            ))}
+          </ul>
         </Section>
       )}
     </article>
@@ -140,7 +156,8 @@ export function curlFor(method: string, path: string, op: OpenApiOperation, doc:
   if (body) {
     lines.push(`-H "Content-Type: application/json"`);
     const example = body.example !== undefined ? body.example : skeleton(body.schema);
-    lines.push(`-d '${JSON.stringify(example)}'`);
+    // A single quote inside the JSON would end the shell string; '\'' is the POSIX escape.
+    lines.push(`-d '${JSON.stringify(example).replace(/'/g, "'\\''")}'`);
   }
   return lines.join(" \\\n  ");
 }

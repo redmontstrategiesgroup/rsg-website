@@ -74,17 +74,11 @@ const ERROR_SCHEMA: JsonSchema = {
 
 const WEBHOOK_HEADERS: OpenApiParameter[] = [
   { name: "x-rsg-signature", in: "header", required: true, description: "Hex HMAC-SHA256 of `${x-rsg-timestamp}.${raw body}` keyed by the endpoint secret.", schema: { type: "string" } },
-  { name: "x-rsg-timestamp", in: "header", required: true, description: "Unix seconds when the delivery was signed; reject if older than 5 minutes.", schema: { type: "string" } },
+  { name: "x-rsg-timestamp", in: "header", required: true, description: "Unix time in milliseconds when the delivery was signed; reject if more than 5 minutes from your clock.", schema: { type: "string" } },
   { name: "X-RSG-Event", in: "header", required: true, description: "The event type.", schema: { type: "string" } },
   { name: "X-RSG-Sequence", in: "header", required: true, description: "Per-endpoint monotonic sequence; use it to detect reordering.", schema: { type: "string" } },
   { name: "Idempotency-Key", in: "header", required: true, description: "Stable across retries of the same event — dedupe on it.", schema: { type: "string" } },
 ];
-
-function successStatus(op: RegisteredOperation): string {
-  if (op.operationId === "submitLead" || op.operationId === "testWebhook") return "202";
-  if (op.method === "POST" && op.operationId.startsWith("create")) return "201";
-  return "200";
-}
 
 function audienceOf(op: RegisteredOperation): OpenApiOperation["x-audience"] {
   return op.auth === "none" ? "public" : op.auth;
@@ -102,16 +96,23 @@ function buildOperation(path: string, op: RegisteredOperation): OpenApiOperation
     });
   }
   const contentType = op.contentType ?? "application/json";
+  const body = zodToSchema(op.response, "output");
+  // Statuses come from the registration, never from guessing by name: the route
+  // author declares what the handler returns and the page documents exactly that.
+  const responses: OpenApiOperation["responses"] = {
+    [String(op.status ?? 200)]: { description: "Success", content: { [contentType]: { schema: body } } },
+  };
+  for (const [status, description] of Object.entries(op.extraResponses ?? {})) {
+    responses[status] = { description, content: { [contentType]: { schema: body } } };
+  }
+  responses["4XX"] = { description: "Client error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } };
+  responses["5XX"] = { description: "Server error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } };
   const out: OpenApiOperation = {
     operationId: op.operationId,
     summary: op.summary,
     tags: [op.tag],
     parameters,
-    responses: {
-      [successStatus(op)]: { description: "Success", content: { [contentType]: { schema: zodToSchema(op.response, "output") } } },
-      "4XX": { description: "Client error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-      "5XX": { description: "Server error", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-    },
+    responses,
     "x-audience": audienceOf(op),
     "x-scopes": op.scopes,
     "x-idempotent": op.idempotent,
@@ -143,7 +144,7 @@ function buildWebhooks(): OpenApiDocument["webhooks"] {
         tags: ["Webhooks"],
         parameters: WEBHOOK_HEADERS,
         requestBody: { required: true, content: { "application/json": { schema: zodToSchema(body, "output") } } },
-        responses: { "2XX": { description: "Acknowledged. Any other status (or a timeout) is retried with backoff." } },
+        responses: { "2XX": { description: "Acknowledged. 5xx, 408, 429 and timeouts are retried with backoff; other 3xx/4xx are dead-lettered (redirects are never followed)." } },
         "x-audience": ev.audience === "both" ? "any" : ev.audience,
         "x-scopes": [],
         "x-idempotent": true,
@@ -201,8 +202,16 @@ let cached: Promise<OpenApiDocument> | null = null;
 
 /** The document for the real routes; built once per process. */
 export function buildOpenApi(): Promise<OpenApiDocument> {
-  cached ??= Promise.all(V1_ROUTES.map(async (r) => ({ path: r.path, module: await r.load() }))).then((routes) =>
-    openApiForRoutes(routes, { version: pkg.version, serverUrl: SITE_URL }),
-  );
+  if (!cached) {
+    const building = Promise.all(V1_ROUTES.map(async (r) => ({ path: r.path, module: await r.load() }))).then((routes) =>
+      openApiForRoutes(routes, { version: pkg.version, serverUrl: SITE_URL }),
+    );
+    cached = building;
+    // A failed build (a route module that throws on import) must not be pinned for the
+    // life of the process — drop it so the next request rebuilds.
+    building.catch(() => {
+      if (cached === building) cached = null;
+    });
+  }
   return cached;
 }

@@ -78,6 +78,18 @@ describe("every v1 route is registered with a real response schema", () => {
     }
     assert.ok(examples >= 9, `expected the seeded examples, found ${examples}`);
 
+    // (c2) webhook examples must also pass the semantic check the handler runs
+    // (catalogued event, visible to the audience) — zod alone only sees string[].
+    const { validateEvents } = await import("../lib/webhooks/endpoints.ts");
+    for (const id of ["createWebhook", "updateWebhook"]) {
+      const op = Object.values(doc.paths).flatMap((item) => Object.values(item)).find((o) => o?.operationId === id);
+      const example = op?.requestBody?.content["application/json"].example as { events?: string[] } | undefined;
+      if (!example?.events) continue;
+      for (const type of ["client", "admin"] as const) {
+        assert.doesNotThrow(() => validateEvents(example.events!, { type, id: "x" }), `${id} example events invalid for ${type}`);
+      }
+    }
+
     // (d) list endpoints reference the shared pagination params
     const list = doc.paths["/api/v1/tickets"].get!;
     assert.ok(list.parameters.some((p) => "$ref" in p && p.$ref === "#/components/parameters/cursor"));

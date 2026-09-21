@@ -17,7 +17,7 @@ export const POST = api("POST", {
   scopes: ["leads:write"],
   idempotent: true,
   body: createBody,
-  meta: { operationId: "createLead", summary: "Create a lead", tag: "Admin Leads", response: envelope(LeadSchema) },
+  meta: { operationId: "createLead", summary: "Create a lead", tag: "Admin Leads", response: envelope(LeadSchema), status: 201, extraResponses: { "200": "Duplicate — the existing lead is returned unchanged" } },
 }, createLead);
 
 export const OPTIONS = options;

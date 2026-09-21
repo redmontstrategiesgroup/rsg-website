@@ -17,7 +17,7 @@ export const POST = api("POST", {
   scopes: ["tickets:write"],
   idempotent: true,
   body: createBody,
-  meta: { operationId: "createTicket", summary: "Create a ticket", tag: "Tickets", response: envelope(TicketSchema) },
+  meta: { operationId: "createTicket", summary: "Create a ticket", tag: "Tickets", response: envelope(TicketSchema), status: 201 },
 }, createTicketHandler);
 
 export const OPTIONS = options;

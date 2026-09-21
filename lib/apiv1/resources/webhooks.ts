@@ -67,7 +67,7 @@ export const createBody = z.object({
   url: z.string().max(2048),
   events: z.array(z.string()).min(1).max(30),
   description: z.string().max(200).optional(),
-}).meta({ example: { url: "https://hooks.example.com/rsg", events: ["ticket.created", "ticket.updated"], description: "Ticket sync" } });
+}).meta({ example: { url: "https://hooks.example.com/rsg", events: ["ticket.created", "ticket.replied"], description: "Ticket sync" } });
 
 export const patchBody = z
   .object({

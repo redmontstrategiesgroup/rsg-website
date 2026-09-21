@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export const GET = api("GET", {
   auth: "none",
-  meta: { operationId: "getStatus", summary: "API health and dependency status", tag: "Public Catalog", response: envelope(StatusSchema) },
+  meta: { operationId: "getStatus", summary: "API health and dependency status", tag: "Public Catalog", response: envelope(StatusSchema), extraResponses: { "503": "Database unreachable — same body, status is degraded" } },
 }, getStatus);
 
 export const OPTIONS = options;

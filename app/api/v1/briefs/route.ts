@@ -17,7 +17,7 @@ export const POST = api("POST", {
   scopes: ["briefs:write"],
   idempotent: true,
   body: createBody,
-  meta: { operationId: "createBrief", summary: "Create a brief", tag: "Briefs", response: envelope(BriefSchema) },
+  meta: { operationId: "createBrief", summary: "Create a brief", tag: "Briefs", response: envelope(BriefSchema), status: 201, extraResponses: { "200": "Duplicate — the existing brief is returned unchanged" } },
 }, createBriefHandler);
 
 export const OPTIONS = options;

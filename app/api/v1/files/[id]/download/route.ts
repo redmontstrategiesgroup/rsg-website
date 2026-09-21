@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const GET = api("GET", {
   auth: "client",
   scopes: ["files:read"],
-  meta: { operationId: "downloadFile", summary: "Download a file", tag: "Files", response: envelope(DownloadSchema) },
+  meta: { operationId: "downloadFile", summary: "Download a file", tag: "Files", response: envelope(DownloadSchema), status: 302 },
 }, downloadFile);
 
 export const OPTIONS = options;

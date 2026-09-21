@@ -9,7 +9,7 @@ export const POST = api("POST", {
   auth: "any",
   scopes: ["webhooks:manage"],
   idempotent: true,
-  meta: { operationId: "testWebhook", summary: "Send a ping to the endpoint", tag: "Webhooks", response: envelope(QueuedSchema) },
+  meta: { operationId: "testWebhook", summary: "Send a ping to the endpoint", tag: "Webhooks", response: envelope(QueuedSchema), status: 202 },
 }, testWebhook);
 
 export const OPTIONS = options;

@@ -10,7 +10,7 @@ export const POST = api("POST", {
   scopes: ["tickets:write"],
   idempotent: true,
   body: messageBody,
-  meta: { operationId: "addTicketMessage", summary: "Add a ticket message", tag: "Tickets", response: envelope(MessageSchema) },
+  meta: { operationId: "addTicketMessage", summary: "Add a ticket message", tag: "Tickets", response: envelope(MessageSchema), status: 201 },
 }, addTicketMessage);
 
 export const OPTIONS = options;

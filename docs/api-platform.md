@@ -152,6 +152,9 @@ events; a client endpoint only ever receives events about its own client,
 an admin endpoint receives everything it subscribes to (with `client_id` in
 `data` for client events).
 
+Delivery never follows redirects: a `3xx` from the endpoint is dead-lettered
+rather than re-POSTed to a host the URL check never saw.
+
 Rules for the URL: `https:` only in production (`http:` is accepted outside
 it); no `localhost`, `.local`, `.internal`, loopback, RFC1918, link-local
 (incl. the cloud metadata address), CGNAT or IPv6 ULA/link-local literals;
@@ -159,6 +162,20 @@ no credentials; ≤ 2048 chars. The check is DNS-free — a public hostname
 that resolves to a private address at delivery time is not caught.
 `WEBHOOK_URL_ALLOW_PRIVATE=1` lifts only the host block, only outside
 production, for local delivery tests.
+
+### Fan-out
+
+One domain event produces one delivery row per eligible endpoint, all sharing
+the same event `id`. Per-endpoint dedupe is the `(endpoint_id, event_id)`
+unique index. Migration `20260921140000_webhook_deliveries_fanout.sql` drops
+the older **global** unique index on `idempotency_key`; until it is applied, a
+second endpoint subscribed to the same event silently gets nothing (its
+insert collides and is skipped as a dedupe). Apply it before enabling the
+platform in an environment with more than one endpoint.
+
+`createWebhook` and `rotateWebhookSecret` are idempotent but their response
+body (the `whsec_` secret) is never stored in `api_idempotency`; replaying
+the same `Idempotency-Key` returns 409 `conflict`.
 
 ### Payload envelope
 
