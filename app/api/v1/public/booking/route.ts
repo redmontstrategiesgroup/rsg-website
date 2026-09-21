@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { BookingCreatedSchema, envelope } from "@/lib/apiv1/response-schemas";
 import { api, options } from "@/lib/apiv1/runtime";
 import { createBody, createBookingHandler } from "@/lib/apiv1/resources/public-booking";
 
@@ -10,7 +10,7 @@ export const POST = api("POST", {
   idempotent: true,
   rateLimit: { limit: 10, windowMs: 3_600_000 },
   body: createBody,
-  meta: { operationId: "createBooking", summary: "Create a booking", tag: "Public Booking", response: z.any() },
+  meta: { operationId: "createBooking", summary: "Create a booking", tag: "Public Booking", response: envelope(BookingCreatedSchema) },
 }, createBookingHandler);
 
 export const OPTIONS = options;

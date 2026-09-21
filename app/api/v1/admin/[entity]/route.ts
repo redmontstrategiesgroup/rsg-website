@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EntitySchema, envelope, listEnvelope } from "@/lib/apiv1/response-schemas";
 import { api, options } from "@/lib/apiv1/runtime";
 import { createEntity, entityQuery, listEntities } from "@/lib/apiv1/resources/admin-entities";
 
@@ -9,7 +10,7 @@ export const GET = api("GET", {
   auth: "admin",
   scopes: ["dashboard:read"],
   query: entityQuery,
-  meta: { operationId: "listEntities", summary: "List dashboard entity records", tag: "Admin Entities", response: z.any() },
+  meta: { operationId: "listEntities", summary: "List dashboard entity records", tag: "Admin Entities", response: listEnvelope(EntitySchema) },
 }, listEntities);
 
 export const POST = api("POST", {
@@ -20,7 +21,7 @@ export const POST = api("POST", {
   // since the pipeline resolves `body` before path params are known to the handler), so the
   // route only checks the body is a JSON object; createEntity() does the real validation.
   body: z.record(z.string(), z.unknown()),
-  meta: { operationId: "createEntity", summary: "Create a dashboard entity record", tag: "Admin Entities", response: z.any() },
+  meta: { operationId: "createEntity", summary: "Create a dashboard entity record", tag: "Admin Entities", response: envelope(EntitySchema) },
 }, createEntity);
 
 export const OPTIONS = options;

@@ -24,6 +24,15 @@ export const createBody = z.object({
       utm_campaign: z.string().max(200).optional(),
     })
     .optional(),
+}).meta({
+  example: {
+    name: "Dana Whitfield",
+    email: "dana@northshoredental.com",
+    company: "Northshore Dental",
+    phone: "+1 555 010 0199",
+    message: "We need help getting more new-patient bookings.",
+    attribution: { page_url: "https://example.com/pricing", utm_source: "partner" },
+  },
 });
 
 export const submitLead: ApiHandler<z.infer<typeof createBody>, undefined> = async ({ body }) => {

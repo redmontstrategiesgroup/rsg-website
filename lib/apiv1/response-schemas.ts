@@ -417,3 +417,5 @@ export const WebhookEventSchema = z.object({ type: z.string(), description: z.st
 
 export const DeletedSchema = z.object({ id: uuid, deleted: z.literal(true) });
 export const QueuedSchema = z.object({ queued: z.number().int() });
+/** Raw CSV body (`text/csv`), not the JSON envelope. Pair with `meta.contentType: "text/csv"`. */
+export const CsvSchema = z.string().describe("CSV document");

@@ -68,4 +68,17 @@ export const createBody = bookingBodySchema.extend({
   // on the way in like the cookie session route gets), so the public create
   // endpoint verifies a Turnstile token itself before minting one.
   turnstile_token: z.string().max(4000).optional(),
+}).meta({
+  example: {
+    appointmentTypeId: "6f1c2a4e-9d3b-4c7a-8e21-5b0f9a3d1c44",
+    startsAt: "2026-10-02T15:00:00.000Z",
+    meetingFormat: "google_meet",
+    visitorTimezone: "America/New_York",
+    intake: {
+      contact: { fullName: "Dana Whitfield", businessName: "Northshore Dental", email: "dana@northshoredental.com", phone: "+1 555 010 0199", preferredContact: "email" },
+      answers: { problem: "We need more new-patient bookings." },
+      consent: true,
+    },
+    turnstile_token: "<turnstile token>",
+  },
 });

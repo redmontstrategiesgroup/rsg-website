@@ -31,8 +31,10 @@ export const createBody = z.object({
   category: z.enum(CATEGORY).default("bug"),
   priority: z.enum(["low", "normal", "high", "urgent", "critical"]).default("normal"),
   project_id: z.string().uuid().optional(),
-});
-export const messageBody = z.object({ body: z.string().min(1).max(20_000) });
+}).meta({ example: { subject: "Checkout page returns a 500", body: "Since 9am every order fails at the payment step. Screenshot attached in the portal.", category: "bug", priority: "high" } });
+export const messageBody = z
+  .object({ body: z.string().min(1).max(20_000) })
+  .meta({ example: { body: "Confirmed — the fix is live on our side. Can you re-test?" } });
 
 async function ownedTicket(id: string, clientId: string) {
   const t = await getTicket(id);

@@ -42,7 +42,7 @@ export const createBody = z.object({
   industry: z.string().max(80).default(""),
   message: z.string().max(4000).default(""),
   source: z.string().max(60).default("api"),
-});
+}).meta({ example: { name: "Dana Whitfield", email: "dana@northshoredental.com", company: "Northshore Dental", industry: "dental", message: "Referred by Lakeside Ortho.", source: "referral" } });
 
 export const patchBody = z
   .object({
@@ -51,7 +51,8 @@ export const patchBody = z
     owner: z.string().max(200).optional(),
     archived_at: z.iso.datetime().nullable().optional(),
   })
-  .refine((b) => Object.keys(b).length > 0, "Empty patch.");
+  .refine((b) => Object.keys(b).length > 0, "Empty patch.")
+  .meta({ example: { status: "contacted", owner: "Sam", notes: "Left voicemail; follow up Thursday." } });
 
 export const LEAD_CSV_COLUMNS = [
   { key: "id", header: "id" },

@@ -9,6 +9,8 @@ export type OperationMeta = {
   summary: string;
   tag: string;
   response: ZodType;
+  /** Response media type when the handler returns a raw non-JSON body (e.g. `text/csv`). Defaults to `application/json`. */
+  contentType?: string;
 };
 
 export type ApiConfig<B = unknown, Q = unknown> = {

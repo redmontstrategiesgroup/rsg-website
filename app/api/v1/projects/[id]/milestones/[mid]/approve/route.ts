@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { MilestoneSchema, envelope } from "@/lib/apiv1/response-schemas";
 import { api, options } from "@/lib/apiv1/runtime";
 import { approveMilestoneHandler, noteBody } from "@/lib/apiv1/resources/projects";
 
@@ -10,6 +10,6 @@ export const POST = api("POST", {
   scopes: ["projects:write"],
   idempotent: true,
   body: noteBody,
-  meta: { operationId: "approveMilestone", summary: "Approve a milestone", tag: "Projects", response: z.any() },
+  meta: { operationId: "approveMilestone", summary: "Approve a milestone", tag: "Projects", response: envelope(MilestoneSchema) },
 }, approveMilestoneHandler);
 export const OPTIONS = options;

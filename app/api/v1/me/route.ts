@@ -1,20 +1,14 @@
-import { z } from "zod";
+import { MeSchema, envelope } from "@/lib/apiv1/response-schemas";
 import { api, options } from "@/lib/apiv1/runtime";
 import { ApiError } from "@/lib/apiv1/errors";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const response = z.object({
-  principal: z.enum(["client", "admin"]),
-  key: z.object({ id: z.string(), name: z.string(), scopes: z.array(z.string()) }),
-  client: z.object({ id: z.string(), company: z.string(), name: z.string(), email: z.string(), status: z.string() }).optional(),
-  admin: z.object({ id: z.string(), email: z.string(), role: z.string() }).optional(),
-});
 
 export const GET = api("GET", {
   auth: "none",
-  meta: { operationId: "getMe", summary: "Identify the calling key", tag: "Account", response },
+  meta: { operationId: "getMe", summary: "Identify the calling key", tag: "Account", response: envelope(MeSchema) },
 }, async ({ principal }) => {
   if (!principal) throw new ApiError(401, "unauthenticated", "Missing API key.");
   const key = { id: principal.keyId, name: principal.keyName, scopes: principal.scopes };

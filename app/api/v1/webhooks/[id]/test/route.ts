@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { QueuedSchema, envelope } from "@/lib/apiv1/response-schemas";
 import { api, options } from "@/lib/apiv1/runtime";
 import { testWebhook } from "@/lib/apiv1/resources/webhooks";
 
@@ -9,7 +9,7 @@ export const POST = api("POST", {
   auth: "any",
   scopes: ["webhooks:manage"],
   idempotent: true,
-  meta: { operationId: "testWebhook", summary: "Send a ping to the endpoint", tag: "Webhooks", response: z.any() },
+  meta: { operationId: "testWebhook", summary: "Send a ping to the endpoint", tag: "Webhooks", response: envelope(QueuedSchema) },
 }, testWebhook);
 
 export const OPTIONS = options;

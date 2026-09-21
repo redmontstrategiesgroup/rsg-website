@@ -67,7 +67,7 @@ export const createBody = z.object({
   url: z.string().max(2048),
   events: z.array(z.string()).min(1).max(30),
   description: z.string().max(200).optional(),
-});
+}).meta({ example: { url: "https://hooks.example.com/rsg", events: ["ticket.created", "ticket.updated"], description: "Ticket sync" } });
 
 export const patchBody = z
   .object({
@@ -76,7 +76,8 @@ export const patchBody = z
     description: z.string().max(200).nullable().optional(),
     enabled: z.boolean().optional(),
   })
-  .refine((b) => Object.keys(b).length > 0, "Empty patch.");
+  .refine((b) => Object.keys(b).length > 0, "Empty patch.")
+  .meta({ example: { enabled: false } });
 
 export const deliveriesQuery = z.object({
   status: z.enum(["pending", "sending", "delivered", "failed", "dead"]).optional(),

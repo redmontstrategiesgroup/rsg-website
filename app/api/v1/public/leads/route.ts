@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { LeadAcceptedSchema, envelope } from "@/lib/apiv1/response-schemas";
 import { api, options } from "@/lib/apiv1/runtime";
 import { createBody, submitLead } from "@/lib/apiv1/resources/public-leads";
 
@@ -10,7 +10,7 @@ export const POST = api("POST", {
   idempotent: true,
   rateLimit: { limit: 5, windowMs: 3_600_000 },
   body: createBody,
-  meta: { operationId: "submitLead", summary: "Submit a lead", tag: "Public Leads", response: z.any() },
+  meta: { operationId: "submitLead", summary: "Submit a lead", tag: "Public Leads", response: envelope(LeadAcceptedSchema) },
 }, submitLead);
 
 export const OPTIONS = options;

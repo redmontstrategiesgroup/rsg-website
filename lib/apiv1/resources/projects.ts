@@ -25,12 +25,16 @@ export const listQuery = z.object({
   limit: z.string().optional(),
   cursor: z.string().optional(),
 });
-export const noteBody = z.object({ note: z.string().max(2000).optional() });
-export const changesBody = z.object({ note: z.string().min(1).max(2000) });
-export const decideBody = z.object({
-  decision: z.enum(["approved", "changes_requested"]),
-  note: z.string().max(2000).optional(),
-});
+export const noteBody = z.object({ note: z.string().max(2000).optional() }).meta({ example: { note: "Looks great — approved." } });
+export const changesBody = z
+  .object({ note: z.string().min(1).max(2000) })
+  .meta({ example: { note: "The hero copy still references last year's pricing." } });
+export const decideBody = z
+  .object({
+    decision: z.enum(["approved", "changes_requested"]),
+    note: z.string().max(2000).optional(),
+  })
+  .meta({ example: { decision: "approved", note: "Ship it." } });
 
 export const listProjects: ApiHandler<undefined, z.infer<typeof listQuery>> = async ({ principal, query, request }) => {
   const c = clientOf(principal);

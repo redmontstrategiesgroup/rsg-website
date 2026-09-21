@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { BriefSchema, envelope, listEnvelope } from "@/lib/apiv1/response-schemas";
 import { api, options } from "@/lib/apiv1/runtime";
 import { createBody, createBriefHandler, listBriefs, listQuery } from "@/lib/apiv1/resources/briefs";
 
@@ -9,7 +9,7 @@ export const GET = api("GET", {
   auth: "client",
   scopes: ["briefs:read"],
   query: listQuery,
-  meta: { operationId: "listBriefs", summary: "List briefs", tag: "Briefs", response: z.any() },
+  meta: { operationId: "listBriefs", summary: "List briefs", tag: "Briefs", response: listEnvelope(BriefSchema) },
 }, listBriefs);
 
 export const POST = api("POST", {
@@ -17,7 +17,7 @@ export const POST = api("POST", {
   scopes: ["briefs:write"],
   idempotent: true,
   body: createBody,
-  meta: { operationId: "createBrief", summary: "Create a brief", tag: "Briefs", response: z.any() },
+  meta: { operationId: "createBrief", summary: "Create a brief", tag: "Briefs", response: envelope(BriefSchema) },
 }, createBriefHandler);
 
 export const OPTIONS = options;

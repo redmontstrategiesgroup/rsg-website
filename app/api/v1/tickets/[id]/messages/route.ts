@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { MessageSchema, envelope } from "@/lib/apiv1/response-schemas";
 import { api, options } from "@/lib/apiv1/runtime";
 import { addTicketMessage, messageBody } from "@/lib/apiv1/resources/tickets";
 
@@ -10,7 +10,7 @@ export const POST = api("POST", {
   scopes: ["tickets:write"],
   idempotent: true,
   body: messageBody,
-  meta: { operationId: "addTicketMessage", summary: "Add a ticket message", tag: "Tickets", response: z.any() },
+  meta: { operationId: "addTicketMessage", summary: "Add a ticket message", tag: "Tickets", response: envelope(MessageSchema) },
 }, addTicketMessage);
 
 export const OPTIONS = options;
