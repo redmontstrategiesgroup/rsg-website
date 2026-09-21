@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-test-module-mocks --test tests/*.test.ts",
-    "audit:responsive": "node scripts/audit-responsive.mjs"
+    "audit:responsive": "node scripts/audit-responsive.mjs",
+    "gen:v1-index": "node scripts/gen-v1-index.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.1",
