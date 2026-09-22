@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import {
   isAdminContext,
   rateLimitAdminMutator,
@@ -8,8 +9,15 @@ import { updateClient } from "@/lib/store";
 import { toPublic } from "@/lib/seed";
 import { Validator, toStr, isEmail, LIMITS } from "@/lib/validate";
 import type { ClientPatch } from "@/lib/types";
+import { writeAuditEvent } from "@/lib/audit";
+import { clientIp } from "@/lib/security";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { requireSupabase } from "@/lib/lifecycle/core";
+import { setClientStatus } from "@/lib/lifecycle/paged-admin";
 
 export const runtime = "nodejs";
+
+const StatusSchema = z.enum(["active", "paused", "former"]);
 
 export async function PATCH(
   request: Request,
@@ -79,6 +87,16 @@ export async function PATCH(
     }
   }
 
+  let status: z.infer<typeof StatusSchema> | undefined;
+  if (body.status !== undefined) {
+    const parsedStatus = StatusSchema.safeParse(body.status);
+    if (!parsedStatus.success) {
+      v.errors.status = "Invalid client status.";
+    } else {
+      status = parsedStatus.data;
+    }
+  }
+
   if (!v.valid) {
     return NextResponse.json(
       { error: "Please correct the highlighted fields.", fields: v.errors },
@@ -86,10 +104,33 @@ export async function PATCH(
     );
   }
 
+  if (status !== undefined) {
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json({ error: "Supabase required" }, { status: 503 });
+    }
+    // Confirm the Supabase clients row exists FIRST: if the id isn't found
+    // there, bail out before touching the local store, so a status patch on
+    // an unknown id never leaves other fields mutated with a 404 response.
+    const changed = await setClientStatus(requireSupabase(), id, status);
+    if (!changed) {
+      return NextResponse.json({ error: "Client not found." }, { status: 404 });
+    }
+    await writeAuditEvent({
+      actorType: "admin",
+      actorId: ctx.admin.id,
+      actorEmail: ctx.admin.email,
+      action: "client.status",
+      entityType: "client",
+      entityId: id,
+      metadata: { status },
+      ip: clientIp(request),
+    });
+  }
+
   const updated = await updateClient(id, patch);
   if (!updated) {
     return NextResponse.json({ error: "Client not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ client: toPublic(updated) });
+  return NextResponse.json({ client: { ...toPublic(updated), ...(status !== undefined ? { status } : {}) } });
 }

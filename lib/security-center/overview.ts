@@ -108,7 +108,7 @@ async function getBackupStatus(): Promise<BackupStatus> {
   }
 
   return {
-    value: "Managed by Supabase — not verified from this console",
+    value: "Managed by Supabase, not verified from this console",
     detail:
       "Automated database backups are handled by Supabase for this project. Set SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF to display verified backup status here.",
     status: "review_recommended",
@@ -232,7 +232,7 @@ export async function buildSecurityOverview(): Promise<SecurityOverview> {
       value: failedLogins7d === null ? "Unavailable" : String(failedLogins7d),
       detail:
         failedLogins7d === null
-          ? "Audit store not connected — configure Supabase to track authentication events."
+          ? "Audit store not connected: configure Supabase to track authentication events."
           : "Counted from real authentication audit events.",
       status:
         failedLogins7d === null
@@ -361,8 +361,8 @@ export async function buildSecurityOverview(): Promise<SecurityOverview> {
       value: process.env.NODE_ENV ?? "development",
       status: "secure",
       detail: isProd
-        ? "Production mode — file-store writes and dev fallbacks are disabled."
-        : "Development mode — local file store may substitute for Supabase.",
+        ? "Production mode: file-store writes and dev fallbacks are disabled."
+        : "Development mode: local file store may substitute for Supabase.",
     },
     {
       key: "database",

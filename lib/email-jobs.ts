@@ -15,7 +15,8 @@ import {
 } from "@/lib/integration-log";
 
 export type EmailJobPayload = {
-  to: string;
+  /** One address, or several when a notification fans out to the team. */
+  to: string | string[];
   from: string;
   replyTo?: string;
   subject: string;
@@ -25,8 +26,8 @@ export type EmailJobPayload = {
    * The correlation id of the request that enqueued this job. Carried INSIDE
    * the payload on purpose: this is the boundary where correlation ids are
    * normally lost, leaving the request half of an incident traceable and the
-   * delivery half orphaned. Every send attempt for this job — including all
-   * retries, hours later — logs under this id.
+   * delivery half orphaned. Every send attempt for this job, including all
+   * retries, hours later, logs under this id.
    */
   correlationId?: string;
 };
@@ -93,7 +94,7 @@ export async function processEmailJobs(limit = 20): Promise<{
     const attempts = (job.attempts as number) + 1;
     const payload = job.payload as EmailJobPayload;
     const max = (job.max_attempts as number) || 5;
-    // Resume under the enqueuing request's id — same id across every attempt,
+    // Resume under the enqueuing request's id, same id across every attempt,
     // so all of them group into one story during a triage.
     const correlationId = ensureCorrelationId(payload.correlationId);
 
@@ -158,7 +159,7 @@ export async function processEmailJobs(limit = 20): Promise<{
           attempt: attempts,
           errorClass: integration?.errorClass ?? "our_bug",
           errorMessage: permanent
-            ? `Not retried — ${integration?.errorClass ?? "unknown"} is permanent. ${message}`
+            ? `Not retried: ${integration?.errorClass ?? "unknown"} is permanent. ${message}`
             : message,
         });
       }

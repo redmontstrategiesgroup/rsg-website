@@ -1,13 +1,15 @@
 /**
- * Client Lifecycle Platform — invoices, payments, and Stripe checkout.
+ * Client Lifecycle Platform: invoices, payments, and Stripe checkout.
  *
  * Stripe is integrated over raw REST (no SDK): checkout sessions are created
  * with a form-encoded POST, and webhooks are verified with the v1 signature
  * scheme (HMAC-SHA256 over "t.rawBody"). No card data ever touches this
- * module — Stripe hosts the payment page; we only store session/intent ids.
+ * module: Stripe hosts the payment page; we only store session/intent ids.
  */
 
 import { links, newToken, nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toInvoiceDto } from "@/lib/apiv1/serializers";
 import type {
   Invoice,
   InvoiceKind,
@@ -94,7 +96,9 @@ export async function createInvoice(input: {
     .single();
 
   if (error) throw new Error(`Failed to create invoice: ${error.message}`);
-  return data as Invoice;
+  const invoice = data as Invoice;
+  await emitEvent("invoice.created", toInvoiceDto(invoice), { entityId: invoice.id, version: invoice.updated_at, clientId: invoice.client_id });
+  return invoice;
 }
 
 export async function getInvoice(id: string): Promise<Invoice | null> {
@@ -483,7 +487,7 @@ export async function markInvoiceReminded(id: string): Promise<Invoice> {
 }
 
 // ---------------------------------------------------------------------------
-// Stripe — checkout sessions (raw REST, form-encoded)
+// Stripe: checkout sessions (raw REST, form-encoded)
 // ---------------------------------------------------------------------------
 
 export function stripeEnabled(): boolean {
@@ -589,10 +593,10 @@ export async function createStripeCheckout(
 }
 
 // ---------------------------------------------------------------------------
-// Stripe — event handling
+// Stripe: event handling
 // ---------------------------------------------------------------------------
 // (Webhook signature verification lives in the live route via the Stripe SDK's
-//  constructEvent — see app/api/stripe/webhook/route.ts. A hand-rolled verifier
+//  constructEvent: see app/api/stripe/webhook/route.ts. A hand-rolled verifier
 //  formerly here was dead code and was removed. audit L5)
 
 function asString(value: unknown): string | null {
@@ -618,7 +622,7 @@ async function findInvoiceByColumn(
 /**
  * Processes a verified Stripe event. Idempotent: replayed events hit the
  * unique (provider, provider_ref) index and are treated as already handled.
- * Only ids are ever logged — never payloads.
+ * Only ids are ever logged, never payloads.
  */
 export async function handleStripeEvent(
   event: unknown
@@ -698,7 +702,7 @@ async function handleCheckoutCompleted(
 
   if (paymentError) {
     if (isUniqueViolation(paymentError)) {
-      // Replayed webhook — this payment was already recorded.
+      // Replayed webhook: this payment was already recorded.
       return { handled: true, invoiceId: invoice.id, outcome: "paid" };
     }
     throw new Error(
@@ -712,6 +716,11 @@ async function handleCheckoutCompleted(
     stripe_checkout_session_id:
       invoice.stripe_checkout_session_id ?? sessionId,
   });
+
+  const paid = await getInvoice(invoice.id);
+  if (paid && paid.status === "paid") {
+    await emitEvent("invoice.paid", toInvoiceDto(paid), { entityId: paid.id, version: paid.updated_at, clientId: paid.client_id });
+  }
 
   return { handled: true, invoiceId: invoice.id, outcome: "paid" };
 }

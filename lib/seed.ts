@@ -1,12 +1,12 @@
 import type { ClientRecord, ClientPublic } from "./types";
 
 /* ======================================================================
- * DEVELOPMENT-ONLY DEMO DATA — never reaches production.
+ * DEVELOPMENT-ONLY DEMO DATA, never reaches production.
  *
  * `SEED_CLIENTS` / `DEMO_PASSWORD` are consumed ONLY by store.ts's
  * fileClients(), which loads them exclusively when isDemoDataEnabled()
  * (dev + NEXT_PUBLIC_ENABLE_DEMO_DATA=true). In production these are never
- * read — real client accounts live in Supabase. Do not import these
+ * read: real client accounts live in Supabase. Do not import these
  * elsewhere. `toPublic` below is real, shared functionality.
  * ==================================================================== */
 export const DEMO_PASSWORD = "redmont2026";
@@ -116,7 +116,7 @@ export const SEED_CLIENTS: ClientRecord[] = [
       },
     ],
     activity: [
-      { kind: "booking", text: "New consult booked — Botox, Thu 2:00 PM", time: "6m ago" },
+      { kind: "booking", text: "New consult booked: Botox, Thu 2:00 PM", time: "6m ago" },
       { kind: "lead", text: "Instagram DM captured & qualified (hot)", time: "22m ago" },
       { kind: "system", text: "AI Front Desk handled a missed call in 24s", time: "41m ago" },
       { kind: "report", text: "Weekly performance report generated", time: "3h ago" },
@@ -127,7 +127,7 @@ export const SEED_CLIENTS: ClientRecord[] = [
       { name: "June performance report", type: "PDF report", date: "Jul 01", status: "Ready" },
       { name: "Reactivation sequence v3", type: "Automation", date: "Jun 26", status: "Ready" },
       { name: "Q3 growth roadmap", type: "Strategy doc", date: "Jul 12", status: "In review" },
-      { name: "Landing page — filler promo", type: "Web page", date: "Jul 15", status: "Scheduled" },
+      { name: "Landing page: filler promo", type: "Web page", date: "Jul 15", status: "Scheduled" },
     ],
     invoices: [
       { id: "RSG-1042", amount: 997, date: "Jul 01", status: "Paid" },
@@ -136,10 +136,10 @@ export const SEED_CLIENTS: ClientRecord[] = [
     ],
   },
   {
-    id: "apex-dental",
+    id: "apex-wellness",
     name: "Marcus Hale",
-    email: "client@apexdental.com",
-    company: "Apex Dental Collective",
+    email: "client@apexwellness.com",
+    company: "Apex Wellness Collective",
     plan: "Custom AI Build",
     since: "Nov 2025",
     strategist: "Redmont Strategies Group",
@@ -188,7 +188,7 @@ export const SEED_CLIENTS: ClientRecord[] = [
         uptime: 99.99,
       },
       {
-        name: "Insurance Pre-Check Bot",
+        name: "Insurance Precheck Bot",
         category: "Automation",
         status: "live",
         description:
@@ -240,7 +240,7 @@ export const SEED_CLIENTS: ClientRecord[] = [
     ],
     activity: [
       { kind: "system", text: "Intake agent resolved 214 messages autonomously", time: "12m ago" },
-      { kind: "booking", text: "Cleaning booked at Apex — Midtown", time: "34m ago" },
+      { kind: "booking", text: "Cleaning booked at Apex: Midtown", time: "34m ago" },
       { kind: "report", text: "Location P&L snapshot refreshed", time: "2h ago" },
       { kind: "system", text: "RAG knowledge base re-indexed (v14)", time: "6h ago" },
       { kind: "message", text: "Strategist note: voice pilot kickoff Thu", time: "1d ago" },
@@ -260,6 +260,6 @@ export const SEED_CLIENTS: ClientRecord[] = [
 
 /** Strip secrets before returning a client to the browser. */
 export function toPublic(record: ClientRecord): ClientPublic {
-  const { passwordHash: _passwordHash, ...pub } = record;
+  const { passwordHash: _passwordHash, leadId: _leadId, ...pub } = record;
   return pub;
 }

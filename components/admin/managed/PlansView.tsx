@@ -316,7 +316,7 @@ export function PlansView({
               className={inputClass}
               value={custom.name}
               onChange={(e) => setCustom((c) => ({ ...c, name: e.target.value }))}
-              placeholder="Optimize — Acme custom"
+              placeholder="Optimize: Acme custom"
             />
           </Field>
           <Field label="Monthly price ($, blank = custom)">

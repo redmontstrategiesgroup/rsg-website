@@ -101,7 +101,7 @@ export async function submitConnectLead(
   if (data.elapsedMs < 1200) {
     return {
       ok: false,
-      error: "That was quick — please review your details and submit again.",
+      error: "That was quick: please review your details and submit again.",
     };
   }
   if (!data.consent) {

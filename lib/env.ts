@@ -66,7 +66,7 @@ export function getEnv(): ServerEnv {
     }
     if (env.NEXT_PUBLIC_ENABLE_DEMO_DATA === "true") {
       console.warn(
-        "[env] NEXT_PUBLIC_ENABLE_DEMO_DATA=true in production — disable for live traffic."
+        "[env] NEXT_PUBLIC_ENABLE_DEMO_DATA=true in production: disable for live traffic."
       );
     }
   }
@@ -89,4 +89,9 @@ export function requireSupabaseInProduction(): void {
       "[env] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required in production."
     );
   }
+}
+
+/** Public API (/api/v1) is dark until this is "true" in the environment. */
+export function apiPlatformEnabled(): boolean {
+  return process.env.API_PLATFORM_ENABLED === "true";
 }

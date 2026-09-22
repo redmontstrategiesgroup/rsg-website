@@ -20,6 +20,14 @@ describe("security permissions", () => {
     assert.equal(can("approve_ai_actions", "security_reviewer"), false);
   });
 
+  it("security_reviewer can see bookings but not edit or cancel them, or manage leads/clients", () => {
+    assert.equal(can("view_appointments", "security_reviewer"), true);
+    assert.equal(can("edit_appointments", "security_reviewer"), false);
+    assert.equal(can("cancel_appointments", "security_reviewer"), false);
+    assert.equal(can("manage_leads", "security_reviewer"), false);
+    assert.equal(can("manage_clients", "security_reviewer"), false);
+  });
+
   it("low-trust roles cannot reach the Security Center", () => {
     for (const role of ["viewer", "contractor", "consultant", "sales"] as const) {
       assert.equal(can("view_security", role), false, `${role} should not view security`);

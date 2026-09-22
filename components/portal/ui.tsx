@@ -508,6 +508,7 @@ export function Button({
   disabled,
   busy,
   className = "",
+  "aria-label": ariaLabel,
 }: {
   children: ReactNode;
   onClick?: () => void;
@@ -516,6 +517,7 @@ export function Button({
   disabled?: boolean;
   busy?: boolean;
   className?: string;
+  "aria-label"?: string;
 }) {
   const styles =
     variant === "primary"
@@ -528,6 +530,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled || busy}
+      aria-label={ariaLabel}
       className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50 ${styles} ${className}`}
     >
       {busy && (

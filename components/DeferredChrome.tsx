@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
  * Floating chrome that nobody needs on first paint.
  *
  * The chat panel opens on a tap and the email prompt waits 14 seconds, yet
- * both were in the initial bundle — and both pull in framer-motion, which is
+ * both were in the initial bundle, and both pull in framer-motion, which is
  * the single largest dependency on the marketing site. Loading them on demand
  * keeps that weight off the critical path, which matters most on the 4G phone
  * connections this site is being tuned for.

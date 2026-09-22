@@ -1,4 +1,6 @@
 import { newToken, nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toProposalDto } from "@/lib/apiv1/serializers-admin";
 import type {
   PaymentScheduleEntry,
   Proposal,
@@ -14,7 +16,7 @@ import {
 } from "@/lib/lifecycle/proposal-templates";
 
 /**
- * Proposals — data access, tracking, and approval workflow.
+ * Proposals: data access, tracking, and approval workflow.
  * Templates/copy live in proposal-templates.ts.
  */
 
@@ -59,7 +61,7 @@ export async function createProposal(input: {
       lead_id: input.leadId ?? null,
       client_id: input.clientId ?? null,
       token: newToken(),
-      title: input.title?.trim() || `${template.title} — ${input.businessName}`,
+      title: input.title?.trim() || `${template.title}: ${input.businessName}`,
       status: "draft" satisfies ProposalStatus,
       total_cents: input.totalCents,
       deposit_cents: input.depositCents,
@@ -142,7 +144,7 @@ export async function getProposal(id: string): Promise<{
   return { proposal: data as Proposal, ...related };
 }
 
-/** Public token lookup — lazily expires overdue sent/viewed proposals. */
+/** Public token lookup: lazily expires overdue sent/viewed proposals. */
 export async function getProposalByToken(token: string): Promise<{
   proposal: Proposal;
   options: ProposalOption[];
@@ -501,6 +503,7 @@ export async function requestRevision(
     body: input.note,
   });
   await recordProposalEvent(proposalId, "revision_requested", { actor: "client" });
+  await emitEvent("proposal.declined", toProposalDto(proposal), { entityId: proposal.id, version: proposal.updated_at, clientId: proposal.client_id });
   return proposal;
 }
 
@@ -529,6 +532,7 @@ export async function approveProposal(
     ip: input.ip,
     metadata: { name: input.name.trim() },
   });
+  await emitEvent("proposal.accepted", toProposalDto(proposal), { entityId: proposal.id, version: proposal.updated_at, clientId: proposal.client_id });
   return proposal;
 }
 

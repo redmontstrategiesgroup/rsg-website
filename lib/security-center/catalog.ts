@@ -1,7 +1,7 @@
 /**
  * Security Center shared catalog: retention categories, the AI/security test
  * checklist, platform vendor defaults, security packages, and the internal
- * project security workflow. Pure data — safe for client & server imports.
+ * project security workflow. Pure data: safe for client & server imports.
  */
 
 import type { SecurityPackageId } from "./types";
@@ -175,7 +175,7 @@ export const SECURITY_TEST_CATALOG: SecurityTestDef[] = [
 ];
 
 /* ------------------------- Platform vendor defaults --------------------- */
-/** The real third-party services this platform runs on — used by the
+/** The real third-party services this platform runs on, used by the
  *  "Document platform vendors" action in the vendor registry. */
 
 export type VendorDefault = {
@@ -218,7 +218,7 @@ export const PLATFORM_VENDOR_DEFAULTS: VendorDefault[] = [
     environment: "production",
     hostingRegion: "Configurable region",
     accessLevel: "REST token held server-side only.",
-    removalProcedure: "Remove env vars — the system falls back to in-process limits; rotate token.",
+    removalProcedure: "Remove env vars: the system falls back to in-process limits; rotate token.",
   },
   {
     name: "Resend",

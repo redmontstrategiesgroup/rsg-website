@@ -209,7 +209,7 @@ export function MaintenanceView({
                     </td>
                     <td className="px-4 py-3 text-white/60">{l.category}</td>
                     <td className="px-4 py-3 text-white/60">{l.hoursSpent}</td>
-                    <td className="px-4 py-3 text-white/60">{l.performedBy || "—"}</td>
+                    <td className="px-4 py-3 text-white/60">{l.performedBy || "-"}</td>
                     <td className="px-4 py-3 text-white/60">
                       {l.visibleToClient ? "Yes" : "No"}
                     </td>

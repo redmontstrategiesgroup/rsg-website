@@ -1,6 +1,6 @@
 /**
  * Public site contact facts. The phone number is the ONLY physical-contact
- * detail that is public — no street address and no business hours are ever
+ * detail that is public, no street address and no business hours are ever
  * published (site copy, footer, or structured data).
  */
 

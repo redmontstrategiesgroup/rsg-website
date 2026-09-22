@@ -89,7 +89,7 @@ export function ApprovalsView({
           <div>
             <p className="text-white/70">No AI actions are waiting for approval.</p>
             <p className="mt-1 text-xs text-white/40">
-              When an AI feature drafts a high-risk action — {HIGH_RISK_EXAMPLES.slice(0, 4).join(", ")}, and more —
+              When an AI feature drafts a high-risk action, {HIGH_RISK_EXAMPLES.slice(0, 4).join(", ")}, and more;
               it lands here for a human decision before anything happens.
             </p>
           </div>
@@ -138,7 +138,7 @@ export function ApprovalsView({
                   </ul>
                   <p className={`${labelClass} mt-3`}>Records affected</p>
                   <p className="mt-1 text-sm text-white/60">
-                    {a.recordsAffected.join(", ") || "—"}
+                    {a.recordsAffected.join(", ") || "-"}
                   </p>
                 </div>
               </div>
@@ -218,7 +218,7 @@ export function ApprovalsView({
                       </span>
                     </td>
                     <td className="px-4 py-3 text-white/60">{APPROVAL_STATUS_LABELS[a.status]}</td>
-                    <td className="px-4 py-3 text-white/55">{a.decidedBy ?? "—"}</td>
+                    <td className="px-4 py-3 text-white/55">{a.decidedBy ?? "-"}</td>
                     <td className="px-4 py-3 text-white/50">{formatDate(a.decidedAt)}</td>
                     <td className="px-4 py-3 text-right">
                       {canApprove && a.status === "approved" && (

@@ -21,12 +21,12 @@ export function StartFlow() {
       <div className="animate-fade-up border border-white/10 bg-white/[0.02] px-6 py-10 text-center sm:px-10">
         <p className="label justify-center">Received</p>
         <h2 className="display mt-4 text-2xl sm:text-3xl">
-          {isAssessment ? "You're a strong fit." : "Thank you — we have what we need."}
+          {isAssessment ? "You're a strong fit." : "Thank you: we have what we need."}
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-white/55">
           {isAssessment
-            ? "Based on what you shared, the next step is your Business Systems Assessment — about 10–15 minutes, saved as you go. It gives our team a precise picture of how your business runs before we ever get on a call. A link is also in your inbox."
-            : "The most useful next step is a short consultation — a practical conversation about where you are and what would genuinely help. No preparation needed, and you'll leave with clear direction either way."}
+            ? "Based on what you shared, the next step is your Business Systems Assessment; about 10–15 minutes, saved as you go. It gives our team a precise picture of how your business runs before we ever get on a call. A link is also in your inbox."
+            : "The most useful next step is a short consultation; a practical conversation about where you are and what would genuinely help. No preparation needed, and you'll leave with clear direction either way."}
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a href={outcome.url} className="btn-primary">

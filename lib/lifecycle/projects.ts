@@ -1,5 +1,5 @@
 /**
- * Client Lifecycle Platform — projects, milestones, tasks, progress.
+ * Client Lifecycle Platform: projects, milestones, tasks, progress.
  *
  * Server-only data access for the delivery phase of the client journey:
  * project creation from the standard phase template, milestone workflow
@@ -8,6 +8,8 @@
  */
 
 import { requireSupabase, nowIso } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toMilestoneDto, toProjectDto, toTaskDto } from "@/lib/apiv1/serializers";
 import {
   MILESTONE_DONE_STATUSES,
   type Milestone,
@@ -41,7 +43,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Discovery",
     description:
-      "We learn how your business runs today — your goals, your customers, and the day-to-day work your new system needs to support.",
+      "We learn how your business runs today; your goals, your customers, and the day-to-day work your new system needs to support.",
     owner_party: "joint",
     approval_required: false,
     deliverables: [
@@ -77,7 +79,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Design",
     description:
-      "We design what you and your customers will actually see and use — built around your brand and how people really work.",
+      "We design what you and your customers will actually see and use, built around your brand and how people really work.",
     owner_party: "rsg",
     approval_required: true,
     client_action:
@@ -114,7 +116,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Testing",
     description:
-      "We test everything thoroughly — every form, workflow, and device — and fix issues before you ever see them.",
+      "We test everything thoroughly (every form, workflow, and device) and fix issues before you ever see them.",
     owner_party: "rsg",
     approval_required: false,
     deliverables: [
@@ -140,7 +142,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Training",
     description:
-      "We teach your team how to run the system day to day, with materials you can revisit any time — no one is left guessing.",
+      "We teach your team how to run the system day to day, with materials you can revisit any time; no one is left guessing.",
     owner_party: "joint",
     approval_required: false,
     deliverables: [
@@ -176,7 +178,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Ongoing Support",
     description:
-      "You're never on your own — support, updates, and regular strategy reviews keep your system improving over time.",
+      "You're never on your own, support, updates, and regular strategy reviews keep your system improving over time.",
     owner_party: "joint",
     approval_required: false,
     deliverables: [
@@ -204,14 +206,14 @@ export const DEFAULT_ONBOARDING_TASKS: {
   {
     title: "Confirm website and hosting access",
     description:
-      "Confirm you can reach your current website, domain, and hosting accounts. Credentials are exchanged through a secure channel we'll set up together — never send passwords in messages.",
+      "Confirm you can reach your current website, domain, and hosting accounts. Credentials are exchanged through a secure channel we'll set up together; never send passwords in messages.",
     kind: "access",
     assignee_party: "client",
   },
   {
     title: "List the tools you currently use",
     description:
-      "Tell us the software your business runs on today — scheduling, invoicing, email, spreadsheets, anything. This shapes what we connect and what we replace.",
+      "Tell us the software your business runs on today, scheduling, invoicing, email, spreadsheets, anything. This shapes what we connect and what we replace.",
     kind: "onboarding",
     assignee_party: "client",
   },
@@ -590,7 +592,9 @@ export async function updateProject(
     .select()
     .single();
   if (error) throw new Error(`Failed to update project ${id}: ${error.message}`);
-  return data as Project;
+  const project = data as Project;
+  await emitEvent("project.updated", toProjectDto(project), { entityId: project.id, version: project.updated_at, clientId: project.client_id });
+  return project;
 }
 
 // ---------------------------------------------------------------------------
@@ -655,6 +659,9 @@ export async function updateMilestone(
     ? await bumpNextMilestone(milestone.project_id, milestone.sort_order)
     : await fetchMilestones(milestone.project_id);
   const project = await recomputeProject(milestone.project_id, milestones);
+  if (becameDone) {
+    await emitEvent("milestone.completed", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
+  }
   return { milestone, project };
 }
 
@@ -669,7 +676,7 @@ export async function approveMilestone(
   }
   if (existing.status !== "under_review") {
     throw new Error(
-      `Milestone ${id} cannot be approved from status "${existing.status}" — it must be under review.`
+      `Milestone ${id} cannot be approved from status "${existing.status}": it must be under review.`
     );
   }
 
@@ -690,6 +697,7 @@ export async function approveMilestone(
 
   const milestones = await bumpNextMilestone(milestone.project_id, milestone.sort_order);
   const project = await recomputeProject(milestone.project_id, milestones);
+  await emitEvent("milestone.approved", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
   return { milestone, project };
 }
 
@@ -717,6 +725,7 @@ export async function requestMilestoneChanges(
   }
   const milestone = data as Milestone;
   const project = await recomputeProject(milestone.project_id);
+  await emitEvent("milestone.changes_requested", toMilestoneDto(milestone), { entityId: milestone.id, version: milestone.updated_at, clientId: project.client_id });
   return { milestone, project };
 }
 
@@ -885,7 +894,12 @@ export async function updateTask(
     .select()
     .single();
   if (error) throw new Error(`Failed to update task ${id}: ${error.message}`);
-  return data as ProjectTask;
+  const task = data as ProjectTask;
+  if (patch.status === "done" && existing.status !== "done") {
+    const project = await getProject(task.project_id);
+    await emitEvent("task.completed", toTaskDto(task), { entityId: task.id, version: task.updated_at, clientId: project?.client_id ?? null });
+  }
+  return task;
 }
 
 /** Client-assigned tasks still needing attention (open / in progress / waiting). */

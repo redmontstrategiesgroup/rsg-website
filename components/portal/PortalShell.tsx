@@ -13,6 +13,7 @@ import {
   Map,
   Receipt,
   Users,
+  KeyRound,
   Menu,
   X,
   LogOut,
@@ -49,7 +50,17 @@ const NAV: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/portal/roadmap", label: "Roadmap", icon: Map },
   { href: "/portal/billing", label: "Billing", icon: Receipt },
   { href: "/portal/team", label: "Team", icon: Users },
+  ...(process.env.NEXT_PUBLIC_API_PLATFORM_ENABLED === "true"
+    ? [{ href: "/portal/developers", label: "Developers", icon: KeyRound }]
+    : []),
 ];
+
+/** Nav entries hidden from the `member` role. */
+const MEMBER_HIDDEN_HREFS = new Set([
+  "/portal/billing",
+  "/portal/team",
+  "/portal/developers",
+]);
 
 export function PortalShell({
   company,
@@ -72,7 +83,7 @@ export function PortalShell({
   }, [pathname]);
 
   const visibleNav = NAV.filter((item) => {
-    if ((item.href === "/portal/billing" || item.href === "/portal/team") && role === "member") {
+    if (MEMBER_HIDDEN_HREFS.has(item.href) && role === "member") {
       return false;
     }
     return true;

@@ -1,6 +1,6 @@
 /**
  * Client-side fetch helpers. Every state-changing request must echo the
- * `rsg_csrf` cookie in the `x-csrf-token` header — the middleware rejects
+ * `rsg_csrf` cookie in the `x-csrf-token` header: the middleware rejects
  * mutating API calls without it (double-submit CSRF protection).
  */
 

@@ -9,7 +9,7 @@ import { trackEvent } from "@/lib/events";
 import type { IndustryVertical } from "@/lib/industries/types";
 
 /**
- * Entry point to the vertical's own interactive demo — what the simulated
+ * Entry point to the vertical's own interactive demo, what the simulated
  * system contains, what a visitor can run, and the honesty banner. Links out
  * to the full DemoOS at /demos/[slug]; nothing here touches real data.
  */

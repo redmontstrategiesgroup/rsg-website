@@ -78,6 +78,8 @@ const PUBLIC_ROUTES = [
   "/servicearea",
   "/privacy",
   "/terms",
+  // Needs API_PLATFORM_ENABLED=true on the target server; 404s otherwise.
+  "/developers",
   // Live but absent from the sitemap:
   "/start",
   "/thankyou",
@@ -96,6 +98,7 @@ const PORTAL_ROUTES = [
   "/portal/roadmap",
   "/portal/billing",
   "/portal/team",
+  "/portal/developers",
 ];
 
 const ADMIN_ROUTES = ["/admin", "/dashboard"];

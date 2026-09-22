@@ -16,7 +16,7 @@
  * Usage:
  *   --hours N        window to export, counted back from now (default 24)
  *   --provider NAME  restrict to one provider
- *   --failures-only  drop successes — usually what you want mid-incident
+ *   --failures-only  drop successes, usually what you want mid-incident
  *   --limit N        row cap (default 50000)
  */
 
@@ -35,7 +35,7 @@ function loadEnvLocal() {
       process.env[key] = rawValue.trim().replace(/^["']|["']$/g, "");
     }
   } catch {
-    // No .env.local — rely on the ambient environment.
+    // No .env.local: rely on the ambient environment.
   }
 }
 
@@ -96,5 +96,5 @@ for (const row of data ?? []) {
 // Row count on stderr so it does not pollute the NDJSON on stdout.
 console.error(
   `Exported ${data?.length ?? 0} run(s) since ${since}` +
-    (data?.length === limit ? ` — HIT THE ${limit} ROW LIMIT, window truncated` : "")
+    (data?.length === limit ? `: HIT THE ${limit} ROW LIMIT, window truncated` : "")
 );

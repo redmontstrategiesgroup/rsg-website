@@ -12,6 +12,8 @@ import {
   isSessionLive,
 } from "@/lib/store";
 import { newToken, nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { escapeLikePattern } from "@/lib/validate";
 import type { ClientUser, ClientUserRole } from "@/lib/lifecycle/types";
 
 /**
@@ -20,7 +22,7 @@ import type { ClientUser, ClientUserRole } from "@/lib/lifecycle/types";
  * separation, and provisions clients/teams during portal activation.
  *
  * Every portal API must obtain a PortalContext and scope EVERY query by
- * context.client.id — this module is the single choke point for that rule.
+ * context.client.id: this module is the single choke point for that rule.
  */
 
 export type PortalRole = ClientUserRole;
@@ -177,7 +179,7 @@ export async function authenticatePortalUser(
   const normalized = email.trim().toLowerCase();
 
   // Legacy client account first (pre-lifecycle logins). On mismatch we still
-  // fall through to client_users — newly provisioned clients hold an unusable
+  // fall through to client_users: newly provisioned clients hold an unusable
   // random password on the clients row and sign in through their owner seat.
   const client = await findClientByEmail(normalized);
   if (client?.passwordHash && verifyPassword(password, client.passwordHash)) {
@@ -196,7 +198,7 @@ export async function authenticatePortalUser(
     const { data } = await sb
       .from("client_users")
       .select("*")
-      .ilike("email", normalized)
+      .ilike("email", escapeLikePattern(normalized))
       .eq("active", true)
       .not("password_hash", "is", null)
       .limit(1)
@@ -280,7 +282,7 @@ export async function createTeamInvite(input: {
   const { data: existing } = await sb
     .from("client_users")
     .select("id")
-    .ilike("email", email)
+    .ilike("email", escapeLikePattern(email))
     .limit(1)
     .maybeSingle();
   if (existing) {
@@ -391,7 +393,7 @@ export async function updateTeamMember(
 
 /**
  * Deactivate (soft removal). Note: portal session records are keyed by the
- * parent client, so an existing signed cookie survives until expiry — but
+ * parent client, so an existing signed cookie survives until expiry; but
  * resolvePortalContext filters on active=true, so access ends immediately.
  */
 export async function removeTeamMember(id: string): Promise<void> {
@@ -440,6 +442,11 @@ export async function provisionClientForOpportunity(input: {
     email,
     password: unusablePassword,
   });
+  await emitEvent(
+    "client.activated",
+    { id: record.id, company: record.company, name: record.name, email: record.email, status: "onboarding" },
+    { entityId: record.id, version: "activated" },
+  );
 
   await sb
     .from("clients")
@@ -455,7 +462,7 @@ export async function provisionClientForOpportunity(input: {
     .eq("id", record.id);
 
   // Owner seat in client_users so the set-password invite flow works. The
-  // login email differs from none — same email as the client row is fine
+  // login email differs from none, same email as the client row is fine
   // because authenticatePortalUser checks clients first only when a password
   // hash matches; this owner seat is the practical login path.
   const inviteToken = newToken();

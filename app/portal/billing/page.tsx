@@ -26,7 +26,7 @@ export default async function BillingPage() {
   const ctx = await requirePortalPage();
   if (!canViewBilling(ctx.user.role)) redirect("/portal");
 
-  // Tolerate a not-yet-migrated database — render calm empty states.
+  // Tolerate a not-yet-migrated database: render calm empty states.
   const [invoices, payments] = await Promise.all([
     listInvoices({ clientId: ctx.client.id, limit: 100 }).catch(() => []),
     listPaymentsForClient(ctx.client.id).catch(() => []),
@@ -43,7 +43,7 @@ export default async function BillingPage() {
       <PageHeader
         eyebrow="Billing"
         title="Invoices & payments"
-        description="Every invoice, payment, and receipt in one place. Card details never touch our systems — payments run through Stripe's secure checkout."
+        description="Every invoice, payment, and receipt in one place. Card details never touch our systems, payments run through Stripe's secure checkout."
       />
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -92,7 +92,7 @@ export default async function BillingPage() {
                       <td className="px-4 py-3 text-white/55">
                         {invoice.due_at
                           ? new Date(invoice.due_at).toLocaleDateString("en-US", { dateStyle: "medium" })
-                          : "—"}
+                          : "-"}
                       </td>
                       <td className="px-5 py-3 text-right">
                         {["open", "processing"].includes(invoice.status) && (

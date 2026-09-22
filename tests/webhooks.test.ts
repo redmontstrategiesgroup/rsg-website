@@ -6,39 +6,10 @@
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import path from "node:path";
 import { createHmac } from "node:crypto";
-import { pathToFileURL, fileURLToPath } from "node:url";
-import * as nodeModule from "node:module";
 
 // outbox.ts imports "@/lib/..." aliases; register a resolve hook for node --test.
-type ResolveHook = (
-  specifier: string,
-  context: unknown,
-  nextResolve: (specifier: string, context?: unknown) => unknown,
-) => unknown;
-const { registerHooks } = nodeModule as unknown as {
-  registerHooks: (hooks: { resolve: ResolveHook }) => void;
-};
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    let spec = specifier;
-    if (spec.startsWith("@/")) spec = pathToFileURL(path.join(repoRoot, spec.slice(2))).href;
-    try {
-      return nextResolve(spec, context);
-    } catch (err) {
-      for (const suffix of [".ts", ".tsx", "/index.ts"]) {
-        try {
-          return nextResolve(`${spec}${suffix}`, context);
-        } catch {
-          /* try the next candidate */
-        }
-      }
-      throw err;
-    }
-  },
-});
+import "./_alias-hook.ts";
 
 const { signPayload, verifySignature, signingMaterial } = await import("../lib/webhooks/sign.ts");
 const { backoffMs, isRetryableStatus } = await import("../lib/webhooks/outbox.ts");
@@ -46,10 +17,10 @@ const { backoffMs, isRetryableStatus } = await import("../lib/webhooks/outbox.ts
 const SECRET = "test-secret-do-not-use";
 
 describe("webhook signing", () => {
-  it("signs `${timestamp}.${body}` — the exact scheme the receivers verify", () => {
+  it("signs `${timestamp}.${body}`: the exact scheme the receivers verify", () => {
     // Independently recomputed here. If this assertion is ever "fixed" by
     // changing the expectation, the per-app registry-sync edge functions stop
-    // accepting our deliveries — they implement this same construction.
+    // accepting our deliveries: they implement this same construction.
     const body = JSON.stringify({ hello: "world" });
     const ts = 1_700_000_000_000;
     const { signature } = signPayload(SECRET, body, ts);
@@ -163,8 +134,14 @@ describe("webhook signing", () => {
 });
 
 describe("webhook retry classification", () => {
-  it("does not retry 4xx — repeating a rejected request unchanged cannot succeed", () => {
+  it("does not retry 4xx: repeating a rejected request unchanged cannot succeed", () => {
     for (const status of [400, 401, 403, 404, 422]) {
+      assert.equal(isRetryableStatus(status), false, `${status} should not retry`);
+    }
+  });
+
+  it("does not retry 3xx: redirects are never followed, so the target can never be reached", () => {
+    for (const status of [301, 302, 307, 308]) {
       assert.equal(isRetryableStatus(status), false, `${status} should not retry`);
     }
   });

@@ -3,10 +3,11 @@ import { authorizeCron } from "@/lib/cron-auth";
 import { processDueJobs } from "@/lib/scheduling/reminders";
 import { deliverPendingWebhooks } from "@/lib/scheduling/webhooks";
 import { emitTombstones } from "@/lib/webhooks/registry-sync";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { processEmailJobs, runLeadRetention } from "@/lib/email-jobs";
 import { runLifecycleCron } from "@/lib/lifecycle/orchestrate";
 import { writeAuditEvent } from "@/lib/audit";
+import { cleanupApiTables } from "@/lib/apiv1/cleanup";
 import {
   correlationFromRequest,
   recordInboundEvent,
@@ -49,8 +50,8 @@ export async function POST(request: Request) {
 
 async function runCron() {
   // Heartbeat. Everything below runs ONLY from this cron, so if it stops
-  // firing — a removed vercel.json entry, a rotated CRON_SECRET, a suspended
-  // project — the email queue stops draining and reminders stop sending with
+  // firing: a removed vercel.json entry, a rotated CRON_SECRET, a suspended
+  // project: the email queue stops draining and reminders stop sending with
   // no error anywhere. This touch is what makes that visible: the health
   // endpoint alerts when it goes stale (expected every 300s).
   //
@@ -64,20 +65,27 @@ async function runCron() {
 
   const jobs = await processDueJobs(50);
   const webhooks = await deliverPendingWebhooks(20);
-  // Client deletions must reach the per-app registry mirrors promptly — a
+  // Client deletions must reach the per-app registry mirrors promptly, a
   // client deleted here but still live in five app databases is a data-retention
   // problem, not a sync latency one. Cheap: normally selects zero rows.
   const tombstones = await emitTombstones();
   const emails = await processEmailJobs(20);
   const retained = await runLeadRetention(730);
   // Lifecycle sweeps (reminders, expirations, delayed automations) never
-  // throw — failures are reported in the counts.
+  // throw: failures are reported in the counts.
   const lifecycle = await runLifecycleCron();
+  // API platform retention: expired idempotency keys (24h) and old request
+  // log rows (30d). Never throws the cron: a failure here is reported in
+  // the summary, not fatal to reminders/webhooks/email above.
+  const sb = getSupabase();
+  const apiCleanup = sb
+    ? await cleanupApiTables(sb).catch((e) => ({ error: String(e) }))
+    : { error: "Supabase unavailable" };
 
   await writeAuditEvent({
     actorType: "cron",
     action: "cron.scheduling",
-    metadata: { jobs, webhooks, tombstones, emails, retained, lifecycle },
+    metadata: { jobs, webhooks, tombstones, emails, retained, lifecycle, apiCleanup },
   });
 
   return NextResponse.json({
@@ -88,6 +96,7 @@ async function runCron() {
     emails,
     retained,
     lifecycle,
+    apiCleanup,
     at: new Date().toISOString(),
   });
 }

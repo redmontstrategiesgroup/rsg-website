@@ -226,7 +226,7 @@ export async function listPlans(options?: {
         return data.map((r) => rowToPlan(r as Record<string, unknown>));
       }
     } catch (err) {
-      console.warn("[managed-services] listPlans failed — using defaults.", err);
+      console.warn("[managed-services] listPlans failed: using defaults.", err);
     }
   }
 
@@ -354,7 +354,7 @@ export async function upsertPlan(
       if (error) throw error;
       return plan;
     } catch (err) {
-      console.warn("[managed-services] upsertPlan failed — using file store.", err);
+      console.warn("[managed-services] upsertPlan failed: using file store.", err);
     }
   }
 
@@ -680,7 +680,7 @@ export async function createSubscription(
       return sub;
     } catch (err) {
       console.warn(
-        "[managed-services] createSubscription failed — using file store.",
+        "[managed-services] createSubscription failed: using file store.",
         err
       );
     }
@@ -787,7 +787,7 @@ export async function recordSubscriptionEvent(input: {
       return event;
     } catch (err) {
       // Unique violation on stripe_event_id means the event was already
-      // processed — callers treat null as "skip".
+      // processed: callers treat null as "skip".
       if (event.stripeEventId) {
         const e = err as { code?: string; message?: string };
         if (
@@ -797,7 +797,7 @@ export async function recordSubscriptionEvent(input: {
           console.warn("[managed-services] event insert rejected (replay).", err);
           return null;
         }
-        // Any other storage failure must NOT look like a replay — rethrow so
+        // Any other storage failure must NOT look like a replay, rethrow so
         // the webhook returns 500 and Stripe retries (nothing was claimed).
         throw err;
       }
@@ -2031,7 +2031,7 @@ export function computeUpgradeRecommendations(input: {
       targetPlanKey: "optimize",
       headline: "You're requesting regular changes",
       reason:
-        "You've submitted several change requests recently. Optimize includes monthly system changes, funnel improvements, and analytics reporting — usually more economical than per-request work.",
+        "You've submitted several change requests recently. Optimize includes monthly system changes, funnel improvements, and analytics reporting; usually more economical than per-request work.",
     });
   }
 
@@ -2061,14 +2061,14 @@ export function computeUpgradeRecommendations(input: {
         ? "You've used all included hours this period"
         : "You're approaching your included hours",
       reason:
-        "A higher plan includes more monthly service hours at a lower effective rate — worth reviewing against your recent usage.",
+        "A higher plan includes more monthly service hours at a lower effective rate, worth reviewing against your recent usage.",
     });
   }
 
   if (technicalIssues.length >= 3) {
     recs.push({
       targetPlanKey: (tier >= 3 ? "managed_infrastructure" : "optimize") as StandardPlanKey,
-      headline: "Recurring technical issues — let's do a systems review",
+      headline: "Recurring technical issues: let's do a systems review",
       reason:
         "Several technical issues in a short window usually points to an underlying cause. We'd recommend a systems review to fix the root problem rather than the symptoms.",
     });

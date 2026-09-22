@@ -52,7 +52,7 @@ fallback when Supabase is unconfigured.
 ## Stripe
 
 Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (see `.env.example`).
-Without them everything still works on manual/invoiced billing — online
+Without them everything still works on manual/invoiced billing, online
 payment buttons are hidden.
 
 - Checkout: subscription mode with inline `price_data` (product per plan via
@@ -68,7 +68,7 @@ payment buttons are hidden.
   smart retries handle re-charging), `customer.subscription.updated/deleted`.
 - Upgrades are prorated in place; downgrades take effect at renewal via
   request. **Business-critical plans (Managed Infrastructure) can never be
-  self-serve downgraded or cancelled** — the portal requires an acknowledged
+  self-serve downgraded or cancelled**: the portal requires an acknowledged
   request and the server enforces it.
 
 ## Auditability

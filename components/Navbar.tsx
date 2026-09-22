@@ -105,7 +105,7 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* 44px square — the minimum comfortable touch target, up from 40. */}
+        {/* 44px square: the minimum comfortable touch target, up from 40. */}
         <button
           ref={toggleRef}
           type="button"

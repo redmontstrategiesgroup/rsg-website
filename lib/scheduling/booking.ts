@@ -20,7 +20,7 @@ import {
   outlookCalendarUrl,
   office365CalendarUrl,
 } from "./ics";
-import type { MeetingFormat } from "./types";
+import type { BookingStatus, MeetingFormat } from "./types";
 
 export async function createBooking(input: {
   sessionId: string;
@@ -163,7 +163,7 @@ export async function createBooking(input: {
 
   if (insertError) {
     // Concurrent duplicate submit (double-click): the other request already
-    // created this booking — return it instead of failing.
+    // created this booking: return it instead of failing.
     if (
       input.idempotencyKey &&
       /bookings_idempotency_uidx/i.test(insertError.message)
@@ -260,7 +260,7 @@ export async function createBooking(input: {
   const ics = buildBookingIcsAttachment({
     uid: icalUid,
     sequence: 0,
-    title: `${type.name} — Redmont Strategies Group`,
+    title: `${type.name}: Redmont Strategies Group`,
     description: type.public_description || type.name,
     location: input.meetingFormat,
     startsAt: startsISO,
@@ -345,6 +345,71 @@ export async function getBookingByManageToken(token: string) {
   return booking;
 }
 
+/** Client-portal-safe summary of a booking: no lead PII beyond what the
+ * booking itself carries. */
+export type PortalBookingSummary = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  status: BookingStatus;
+  meeting_format: MeetingFormat;
+  manage_token: string;
+  appointment_type_name: string | null;
+  team_member_name: string | null;
+};
+
+type PortalBookingRow = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  status: BookingStatus;
+  meeting_format: MeetingFormat;
+  manage_token: string;
+  appointment_types: { name: string } | { name: string }[] | null;
+  team_members: { name: string } | { name: string }[] | null;
+};
+
+/** Pure row → summary mapping, unit-testable without Supabase. Supabase
+ * returns the joined side as an object for a to-one FK, but normalizes to an
+ * array in some query shapes, so both are accepted. */
+export function toPortalBookingSummary(row: PortalBookingRow): PortalBookingSummary {
+  const type = Array.isArray(row.appointment_types) ? row.appointment_types[0] : row.appointment_types;
+  const member = Array.isArray(row.team_members) ? row.team_members[0] : row.team_members;
+  return {
+    id: row.id,
+    starts_at: row.starts_at,
+    ends_at: row.ends_at,
+    status: row.status,
+    meeting_format: row.meeting_format,
+    manage_token: row.manage_token,
+    appointment_type_name: type?.name ?? null,
+    team_member_name: member?.name ?? null,
+  };
+}
+
+/**
+ * The client portal's own consultation, resolved through clients.lead_id
+ * (set by provisionClientForOpportunity when the portal account was
+ * created). Most recent booking on that lead wins, so a reschedule still
+ * shows the current appointment.
+ */
+export async function getBookingForLead(
+  leadId: string
+): Promise<PortalBookingSummary | null> {
+  const sb = requireSupabase();
+  const { data } = await sb
+    .from("bookings")
+    .select(
+      "id, starts_at, ends_at, status, meeting_format, manage_token, appointment_types(name), team_members(name)"
+    )
+    .eq("lead_id", leadId)
+    .eq("is_test", false)
+    .order("starts_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ? toPortalBookingSummary(data as unknown as PortalBookingRow) : null;
+}
+
 export async function rescheduleBooking(input: {
   manageToken: string;
   startsAt: string;
@@ -385,7 +450,7 @@ export async function rescheduleBooking(input: {
     startsAt: startsISO,
     endsAt: endsISO,
   });
-  // Current booking occupies its own slot — check excluding self
+  // Current booking occupies its own slot, check excluding self
   const sbCheck = requireSupabase();
   const { data: conflicts } = await sbCheck
     .from("bookings")
@@ -480,7 +545,7 @@ export async function rescheduleBooking(input: {
   const ics = buildBookingIcsAttachment({
     uid: booking.ical_uid,
     sequence: (booking.ical_sequence ?? 0) + 1,
-    title: `${type.name} — Redmont Strategies Group`,
+    title: `${type.name}: Redmont Strategies Group`,
     description: type.public_description || type.name,
     startsAt: startsISO,
     endsAt: endsISO,
@@ -590,7 +655,7 @@ export async function cancelBooking(input: {
     const ics = buildBookingIcsAttachment({
       uid: booking.ical_uid,
       sequence: (booking.ical_sequence ?? 0) + 1,
-      title: `${type.name} — Redmont Strategies Group`,
+      title: `${type.name}: Redmont Strategies Group`,
       description: "Cancelled",
       startsAt: booking.starts_at,
       endsAt: booking.ends_at,
@@ -616,7 +681,7 @@ export async function cancelBooking(input: {
   await enqueueWebhook(
     "booking.cancelled",
     { bookingId: booking.id },
-    // Cancellation is terminal — it happens at most once per booking.
+    // Cancellation is terminal: it happens at most once per booking.
     { eventId: `booking.cancelled:${booking.id}` }
   );
 
@@ -629,7 +694,7 @@ export function calendarLinksForBooking(booking: {
   meeting_format?: string;
   appointment_types?: { name?: string; public_description?: string } | null;
 }) {
-  const title = `${booking.appointment_types?.name ?? "Consultation"} — Redmont Strategies Group`;
+  const title = `${booking.appointment_types?.name ?? "Consultation"}, Redmont Strategies Group`;
   const description =
     booking.appointment_types?.public_description ??
     "Redmont Strategies Group consultation";

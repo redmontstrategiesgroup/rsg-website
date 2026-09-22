@@ -1,14 +1,16 @@
 /**
- * Client Lifecycle Platform — secure files.
+ * Client Lifecycle Platform: secure files.
  *
  * Metadata rows in `files` / `file_versions`; binary content in the private
  * Supabase Storage bucket (FILES_BUCKET). Content is only ever reachable
- * through short-lived signed URLs — the bucket is never public.
+ * through short-lived signed URLs: the bucket is never public.
  *
  * Server-only. Tables owned here: files, file_versions.
  */
 
 import { randomUUID } from "node:crypto";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toFileDto } from "@/lib/apiv1/serializers";
 import { FILES_BUCKET, nowIso, requireSupabase } from "@/lib/lifecycle/core";
 import type { FileCategory, FileVersion, StoredFile } from "@/lib/lifecycle/types";
 
@@ -141,7 +143,7 @@ export function validateUpload(input: {
 // ---------------------------------------------------------------------------
 
 /**
- * SECURITY: this module must never accept, store, or log credentials —
+ * SECURITY: this module must never accept, store, or log credentials;
  * no passwords, API keys, tokens, or card data, whether as dedicated fields,
  * in `description`, or inside uploaded documents we generate. If access
  * details ever need to change hands, that happens through a human process
@@ -217,7 +219,9 @@ export async function createFileRecord(input: {
   if (error || !data) {
     throw new Error(`createFileRecord: ${error?.message || "insert returned no row"}`);
   }
-  return { file: data as StoredFile, uploadUrl: signed.signedUrl, uploadToken: signed.token };
+  const file = data as StoredFile;
+  await emitEvent("file.uploaded", toFileDto(file), { entityId: file.id, version: file.created_at, clientId: file.client_id });
+  return { file, uploadUrl: signed.signedUrl, uploadToken: signed.token };
 }
 
 export async function addFileVersion(

@@ -7,18 +7,10 @@ import {
 import { getSupabase } from "@/lib/supabase";
 import { z } from "zod";
 import { writeAuditEvent } from "@/lib/audit";
-
-const updates = {
-  briefs: { table: "briefs", schema: z.object({ is_read: z.boolean().optional(), is_pinned: z.boolean().optional(), is_archived: z.boolean().optional(), status: z.enum(["draft","published","archived"]).optional() }).strict() },
-  actions: { table: "action_items", schema: z.object({ status: z.enum(["new","reviewing","planned","in_progress","blocked","completed","dismissed"]).optional(), priority: z.enum(["critical","high","medium","low"]).optional(), due_date: z.iso.date().nullable().optional(), deferred_until: z.iso.date().nullable().optional(), dismissal_reason: z.string().max(2_000).nullable().optional(), requires_review: z.boolean().optional(), approved_at: z.iso.datetime().nullable().optional(), completed_at: z.iso.datetime().nullable().optional() }).strict() },
-  opportunities: { table: "opportunities", schema: z.object({ stage: z.enum(["discovered","reviewing","validating","approved","building","launched","paused","rejected"]).optional(), requires_review: z.boolean().optional(), approved_at: z.iso.datetime().nullable().optional() }).strict() },
-  risks: { table: "risks", schema: z.object({ status: z.enum(["active","monitoring","mitigated","accepted","closed"]).optional(), last_reviewed_at: z.iso.datetime().nullable().optional() }).strict() },
-  ideas: { table: "ideas", schema: z.object({ status: z.enum(["captured","reviewing","validated","building","shipped","dismissed"]).optional() }).strict() },
-  notifications: { table: "notifications", schema: z.object({ is_read: z.boolean() }).strict() },
-} as const;
+import { ENTITY_PATCH as updates } from "@/lib/dashboard/entity-schemas";
 
 export async function PATCH(request: Request, context: { params: Promise<{ entity: string; id: string }> }) {
-  // Elevated permission required — see POST handler note on dashboard writes.
+  // Elevated permission required: see POST handler note on dashboard writes.
   const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;
   const limited = await rateLimitAdminMutator(request, ctx.admin.id);

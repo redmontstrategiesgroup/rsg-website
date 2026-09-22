@@ -1,5 +1,5 @@
 /**
- * integration-log tests: the two pieces with real logic behind them —
+ * integration-log tests: the two pieces with real logic behind them,
  * error classification and redaction.
  *
  * Both are load-bearing in ways that fail quietly if wrong. A misclassified
@@ -63,7 +63,7 @@ const {
   IntegrationError,
 } = await import("../lib/integration-log.ts");
 
-describe("classifyError — status codes", () => {
+describe("classifyError: status codes", () => {
   it("separates the two 401 cases, which need different responses", () => {
     assert.equal(classifyError({ status: 401 }), "auth_expired");
     assert.equal(
@@ -87,7 +87,7 @@ describe("classifyError — status codes", () => {
   });
 });
 
-describe("classifyError — network failures", () => {
+describe("classifyError: network failures", () => {
   it("classifies errors that never carry a status", () => {
     assert.equal(
       classifyError({ name: "APIConnectionTimeoutError" }),
@@ -99,7 +99,7 @@ describe("classifyError — network failures", () => {
   });
 });
 
-describe("classifyError — Stripe error types", () => {
+describe("classifyError: Stripe error types", () => {
   it("uses Stripe's type when no status is present", () => {
     assert.equal(
       classifyError({ type: "StripeAuthenticationError" }),
@@ -114,7 +114,7 @@ describe("classifyError — Stripe error types", () => {
   });
 });
 
-describe("classifyError — the unknown case", () => {
+describe("classifyError: the unknown case", () => {
   it("falls back to our_bug rather than blaming the provider", () => {
     // Filing an unrecognized failure under "provider problem" is how a real
     // regression sits unowned for a week.
@@ -161,7 +161,7 @@ describe("redact", () => {
   it("masks the local part of email addresses", () => {
     const out = redact("could not deliver to jane.doe@example.com");
     assert.ok(!out.includes("jane.doe"), out);
-    // The domain survives — "the whole domain is bouncing" is a real diagnosis.
+    // The domain survives: "the whole domain is bouncing" is a real diagnosis.
     assert.ok(out.includes("@example.com"), out);
   });
 

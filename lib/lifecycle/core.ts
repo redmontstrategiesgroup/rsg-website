@@ -51,7 +51,7 @@ export const links = {
   portal: () => `${siteUrl()}/portal`,
   assessment: (token: string) => `${siteUrl()}/assessment/${token}`,
   questionnaire: (token: string) => `${siteUrl()}/prepare/${token}`,
-  // /proposals/... — /proposal/[token] belongs to the managed-services system.
+  // /proposals/..., /proposal/[token] belongs to the managed-services system.
   proposal: (token: string) => `${siteUrl()}/proposals/${token}`,
   contract: (token: string) => `${siteUrl()}/agreement/${token}`,
   pay: (token: string) => `${siteUrl()}/pay/${token}`,

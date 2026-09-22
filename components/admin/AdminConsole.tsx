@@ -28,6 +28,7 @@ import {
   ShieldAlert,
   Wrench,
   Route,
+  KeyRound,
 } from "lucide-react";
 import type { AdminRole, ClientPublic, Lead, LeadStatus, Subscriber } from "@/lib/types";
 import { LEAD_STATUSES } from "@/lib/types";
@@ -42,6 +43,7 @@ import { SecurityCenterPanel } from "@/components/admin/SecurityCenterPanel";
 import { IndustriesAdminPanel } from "@/components/admin/IndustriesAdminPanel";
 import { ManagedServicesAdminPanel } from "@/components/admin/ManagedServicesAdminPanel";
 import { LifecycleAdminPanel } from "@/components/admin/LifecycleAdminPanel";
+import { ApiKeysAdminPanel } from "@/components/admin/ApiKeysAdminPanel";
 import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Tab =
@@ -55,7 +57,8 @@ type Tab =
   | "managed"
   | "scheduling"
   | "private-ai"
-  | "security";
+  | "security"
+  | "api-keys";
 
 export type AdminCaps = {
   clients: boolean;
@@ -66,6 +69,7 @@ export type AdminCaps = {
   privateAi: boolean;
   brief: boolean;
   security: boolean;
+  apiKeys: boolean;
 };
 
 export function AdminConsole({
@@ -103,6 +107,7 @@ export function AdminConsole({
     caps.clients && ("managed" as Tab),
     caps.privateAi && ("private-ai" as Tab),
     caps.security && ("security" as Tab),
+    caps.apiKeys && ("api-keys" as Tab),
     caps.brief && ("brief" as Tab),
   ].filter(Boolean) as Tab[];
   const [tab, setTab] = useState<Tab>(availableTabs[0] ?? "security");
@@ -296,6 +301,13 @@ export function AdminConsole({
                 badge: 0,
               },
               {
+                id: "api-keys" as Tab,
+                label: "API keys",
+                icon: KeyRound,
+                count: null,
+                badge: 0,
+              },
+              {
                 id: "brief" as Tab,
                 label: "Audit Brief",
                 icon: FileSearch,
@@ -424,6 +436,8 @@ export function AdminConsole({
               mfaEnabled={mfaEnabled}
               mfaSetupRequired={mfaSetupRequired}
             />
+          ) : tab === "api-keys" && caps.apiKeys ? (
+            <ApiKeysAdminPanel />
           ) : tab === "brief" && caps.brief ? (
             <BriefPanel />
           ) : (
@@ -1170,6 +1184,7 @@ function LeadsTable({
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [sourceFilter, setSourceFilter] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("");
+  const [leadQuery, setLeadQuery] = useState("");
 
   async function refresh() {
     setRefreshing(true);
@@ -1245,6 +1260,14 @@ function LeadsTable({
     l.demo?.slug === "realestate";
   const visible = leads.filter((l) => {
     if (sourceFilter && (l.source ?? "website_contact_form") !== sourceFilter) return false;
+    if (
+      leadQuery &&
+      ![l.name, l.company, l.email].some((v) =>
+        v?.toLowerCase().includes(leadQuery.toLowerCase())
+      )
+    ) {
+      return false;
+    }
     switch (segmentFilter) {
       case "real-estate":
         return isRealEstate(l);
@@ -1271,6 +1294,15 @@ function LeadsTable({
           {visible.length} shown · {leads.length} total
         </p>
         <div className="flex flex-wrap items-center gap-2">
+          <label className="sr-only" htmlFor="lead-search">Search leads</label>
+          <input
+            id="lead-search"
+            type="search"
+            placeholder="Search name, company, email…"
+            value={leadQuery}
+            onChange={(e) => setLeadQuery(e.target.value)}
+            className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm text-white/70 placeholder:text-white/30 focus:border-crimson/60 focus:outline-none"
+          />
           <label className="sr-only" htmlFor="lead-source-filter">Filter by source</label>
           <select
             id="lead-source-filter"
@@ -1309,6 +1341,13 @@ function LeadsTable({
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
             Refresh
           </button>
+          <a
+            href="/api/admin/leads/export"
+            download
+            className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm text-white/70 hover:text-white"
+          >
+            Export CSV
+          </a>
         </div>
       </div>
 

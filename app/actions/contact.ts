@@ -64,7 +64,7 @@ const ContactSchema = z.object({
   utm_campaign: text(200).optional().default(""),
   utm_content: text(200).optional().default(""),
   utm_term: text(200).optional().default(""),
-  /** Honeypot — hidden field, humans never fill it. */
+  /** Honeypot: hidden field, humans never fill it. */
   company_site: z.string().max(300).optional().default(""),
   /** Time from form mount to submit (bot heuristic). Required from the client. */
   elapsedMs: z.number().finite().min(0).max(3_600_000),
@@ -86,7 +86,7 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
     );
     return false;
   }
-  if (!secret) return true; // Turnstile not configured — skip
+  if (!secret) return true; // Turnstile not configured, skip
   if (!token) return false;
   try {
     const res = await fetch(
@@ -128,16 +128,16 @@ async function autoReply(lead: Lead): Promise<void> {
         .replace(/>/g, "&gt;")},</p>
       <p style="margin: 0 0 16px;">
         Thank you for reaching out to Redmont Strategies Group. We've received
-        your details and will review your business — your website, lead flow,
-        and where you told us things are breaking down — before we respond.
+        your details and will review your business, your website, lead flow,
+        and where you told us things are breaking down, before we respond.
       </p>
       <p style="margin: 0 0 16px;">
         You can expect to hear from us shortly. If you're ready to talk now,
         you can complete our consultation intake and book a strategy call:
       </p>
       <p style="margin: 0 0 24px;"><a href="${bookingUrl}" style="display: inline-block; background: #b3243a; color: #ffffff; text-decoration: none; padding: 12px 24px; font-size: 14px;">Book a strategy call</a></p>
-      <p style="margin: 0; color: #555;">— Redmont Strategies Group<br/>
-      <span style="font-size: 12px; color: #999;">Business Consulting &amp; AI Strategy</span></p>
+      <p style="margin: 0; color: #555;">, Redmont Strategies Group<br/>
+      <span style="font-size: 12px; color: #999;">Business Consulting &amp; AI Implementation</span></p>
     </div>`;
 
   const textBody = [
@@ -149,7 +149,7 @@ async function autoReply(lead: Lead): Promise<void> {
       ? `Ready to talk now? Book a strategy call: ${bookingUrl}`
       : "If anything changes in the meantime, just reply to this email.",
     "",
-    "— Redmont Strategies Group",
+    "Redmont Strategies Group",
   ].join("\n");
 
   try {
@@ -161,7 +161,7 @@ async function autoReply(lead: Lead): Promise<void> {
           from:
             process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>",
           to: lead.email,
-          subject: "Your request was received — Redmont Strategies Group",
+          subject: "Your request was received: Redmont Strategies Group",
           html,
           text: textBody,
         });
@@ -175,7 +175,7 @@ async function autoReply(lead: Lead): Promise<void> {
       }
     );
   } catch {
-    // Non-fatal — the lead is already captured; only the courtesy auto-reply
+    // Non-fatal: the lead is already captured; only the courtesy auto-reply
     // failed. Recorded by callProvider against the Resend connection.
   }
 }
@@ -215,7 +215,7 @@ export async function submitContactForm(raw: unknown): Promise<ContactResult> {
   if (data.elapsedMs < 1500) {
     return {
       ok: false,
-      error: "That was quick — please review your details and submit again.",
+      error: "That was quick: please review your details and submit again.",
     };
   }
 
@@ -265,7 +265,7 @@ export async function submitContactForm(raw: unknown): Promise<ContactResult> {
     };
   }
 
-  // Confirmation to the lead — best-effort, after the lead is secured.
+  // Confirmation to the lead: best-effort, after the lead is secured.
   // Skip auto-reply on near-duplicate submits to avoid inbox spam.
   if (!duplicate) {
     await autoReply(lead);

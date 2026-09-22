@@ -3,7 +3,7 @@
 import { Children, useState, type ReactNode } from "react";
 
 /**
- * Progressive disclosure for long enumerated lists — phones only.
+ * Progressive disclosure for long enumerated lists, phones only.
  *
  * The vertical pages run to nearly fifty phone screens, most of it lists of
  * ten-plus cards. This shows the first few and puts the rest behind one tap,
@@ -14,7 +14,7 @@ import { Children, useState, type ReactNode } from "react";
  *  - **Nothing leaves the DOM.** The overflow is wrapped in a node that is
  *    `hidden` when collapsed and `display: contents` otherwise, so every item
  *    is still in the server-rendered HTML for crawlers, and `contents` keeps
- *    the children as direct grid/flex items of the real container — the
+ *    the children as direct grid/flex items of the real container, the
  *    wrapper never disturbs the layout.
  *  - **Desktop is untouched.** From `sm` up the wrapper is always `contents`
  *    and the button is `hidden`, so wide screens render exactly as before.

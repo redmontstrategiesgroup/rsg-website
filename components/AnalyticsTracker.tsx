@@ -19,7 +19,7 @@ export function AnalyticsTracker() {
   const lastTracked = useRef<string | null>(null);
 
   useEffect(() => {
-    // Remember campaign attribution regardless of cookie consent — it's
+    // Remember campaign attribution regardless of cookie consent, it's
     // session-scoped and only ever submitted with the contact form.
     captureUtm();
 

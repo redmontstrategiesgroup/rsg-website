@@ -1,8 +1,8 @@
 /**
- * Client Lifecycle Platform — support ticketing.
+ * Client Lifecycle Platform: support ticketing.
  *
  * Server-only data access for tickets and sla_policies. Ticket threads are
- * message rows owned by the workspace module (workspace.addMessage) — this
+ * message rows owned by the workspace module (workspace.addMessage), this
  * module never touches the messages table.
  *
  * SLA rule: a response target is stamped onto a ticket only when the policy
@@ -10,6 +10,8 @@
  */
 
 import { requireSupabase, nowIso } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toTicketDto } from "@/lib/apiv1/serializers";
 import type {
   SlaPolicy,
   Ticket,
@@ -18,7 +20,7 @@ import type {
   TicketStatus,
 } from "@/lib/lifecycle/types";
 
-/** Most severe first — used to order policy lists and admin queues. */
+/** Most severe first: used to order policy lists and admin queues. */
 const PRIORITY_SEVERITY: TicketPriority[] = [
   "critical",
   "urgent",
@@ -72,7 +74,7 @@ export async function updateSlaPolicy(
   return data as SlaPolicy;
 }
 
-/** Response target for a priority — only when that policy is enabled. */
+/** Response target for a priority, only when that policy is enabled. */
 async function targetResponseMinutesFor(
   priority: TicketPriority,
 ): Promise<number | null> {
@@ -129,7 +131,9 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     .select("*")
     .single();
   if (error) throw new Error(`Failed to create ticket: ${error.message}`);
-  return data as Ticket;
+  const ticket = data as Ticket;
+  await emitEvent("ticket.created", toTicketDto(ticket), { entityId: ticket.id, version: ticket.updated_at, clientId: ticket.client_id });
+  return ticket;
 }
 
 export async function getTicket(id: string): Promise<Ticket | null> {
@@ -286,7 +290,9 @@ export async function resolveTicket(
     .select("*")
     .single();
   if (error) throw new Error(`Failed to resolve ticket ${id}: ${error.message}`);
-  return data as Ticket;
+  const ticket = data as Ticket;
+  await emitEvent("ticket.resolved", toTicketDto(ticket), { entityId: ticket.id, version: ticket.updated_at, clientId: ticket.client_id });
+  return ticket;
 }
 
 /** Client confirms a resolved ticket is actually fixed: resolved → closed. */
@@ -341,7 +347,7 @@ export async function reopenTicket(id: string): Promise<Ticket> {
 // ---------------------------------------------------------------------------
 
 /**
- * Tickets with no activity inside the window — feeds the inactivity nudge
+ * Tickets with no activity inside the window; feeds the inactivity nudge
  * automation. Defaults to tickets waiting on the client.
  */
 export async function findInactiveTickets(opts: {

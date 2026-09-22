@@ -7,6 +7,7 @@ import {
   withCorrelation,
   type ErrorClass,
 } from "@/lib/integration-log";
+import { AUTO_DISABLE_AFTER } from "./endpoints";
 import { SIGNATURE_HEADER, TIMESTAMP_HEADER, signPayload } from "./sign";
 
 /**
@@ -43,7 +44,7 @@ export type EnqueueInput = {
    * Stable identity for the DOMAIN event, e.g. `booking.created:${bookingId}`.
    * Two enqueues with the same eventId for the same endpoint collapse into one
    * row, and the receiver dedupes on it. Omitting it means duplicates cannot be
-   * detected on either side — only do that for events with genuinely no
+   * detected on either side, only do that for events with genuinely no
    * identity.
    */
   eventId?: string;
@@ -52,6 +53,13 @@ export type EnqueueInput = {
   kind?: "client" | "registry";
   /** Restrict to specific endpoints; defaults to all enabled ones that subscribe. */
   endpointIds?: string[];
+  /**
+   * The caller already resolved which endpoints subscribe (lib/webhooks/emit
+   * does owner + audience + subscription filtering in JS). Skip the per-endpoint
+   * subscription check so a `ping` can reach an endpoint that does not list it.
+   * Only meaningful together with `endpointIds`.
+   */
+  skipSubscriptionFilter?: boolean;
 };
 
 type ClaimedRow = {
@@ -79,7 +87,7 @@ type ClaimedRow = {
  *
  * Jitter is not decoration. Without it, every delivery that failed during the
  * same outage retries at the same instant on the next tick and re-creates the
- * spike that caused the outage — the classic thundering herd. Full jitter
+ * spike that caused the outage: the classic thundering herd. Full jitter
  * (random over the whole window, not window ± a bit) spreads them properly.
  *
  * attempt 1 → up to 2s, 2 → 4s, 3 → 8s … 8 → capped at 1h.
@@ -99,7 +107,7 @@ export function backoffMs(attempt: number, retryAfterSeconds?: number | null): n
  * Is this HTTP status worth retrying?
  *
  * The old deliverer retried every non-2xx identically, so a 400 caused by a
- * malformed payload was re-sent five times and could never succeed — burning
+ * malformed payload was re-sent five times and could never succeed, burning
  * the retry budget while telling us nothing. 4xx means "your request is wrong";
  * repeating it unchanged is not a strategy. 408 and 429 are the exceptions:
  * they are about timing, not correctness.
@@ -107,6 +115,9 @@ export function backoffMs(attempt: number, retryAfterSeconds?: number | null): n
 export function isRetryableStatus(status: number): boolean {
   if (status === 408 || status === 429) return true;
   if (status >= 400 && status < 500) return false;
+  // Redirects are never followed (see the fetch below): a 3xx is the endpoint
+  // asking us to POST somewhere the URL check never saw, so it is permanent.
+  if (status >= 300 && status < 400) return false;
   return true; // 5xx and anything unexpected
 }
 
@@ -127,7 +138,7 @@ function errorClassForStatus(status: number | null): ErrorClass {
  * Queue an event for every endpoint that subscribes to it.
  *
  * Never throws: a webhook that cannot be queued must not fail the booking that
- * produced it. It is logged loudly instead — an event that vanishes silently at
+ * produced it. It is logged loudly instead, an event that vanishes silently at
  * enqueue is invisible to every downstream check, because nothing downstream
  * knows it should have existed.
  */
@@ -147,6 +158,7 @@ export async function enqueue(input: EnqueueInput): Promise<{ queued: number }> 
     for (const ep of endpoints) {
       const subscribed = (ep.events as string[]) ?? [];
       if (
+        !input.skipSubscriptionFilter &&
         subscribed.length &&
         !subscribed.includes(input.eventType) &&
         !subscribed.includes("*")
@@ -186,7 +198,7 @@ export async function enqueue(input: EnqueueInput): Promise<{ queued: number }> 
       if (error) {
         // 23505 = unique violation on (endpoint_id, event_id): this domain event
         // is already queued for this endpoint. That is the dedupe working, not a
-        // failure — a double-fired enqueue is exactly what it is there for.
+        // failure: a double-fired enqueue is exactly what it is there for.
         if (error.code === "23505") continue;
         console.error("[outbox] enqueue failed", {
           eventType: input.eventType,
@@ -210,6 +222,45 @@ export async function enqueue(input: EnqueueInput): Promise<{ queued: number }> 
 }
 
 // ---------------------------------------------------------------------------
+// Endpoint health (owned endpoints only)
+// ---------------------------------------------------------------------------
+
+/**
+ * Consecutive dead letters disable an endpoint after AUTO_DISABLE_AFTER so a
+ * dead receiver stops burning retries. Read-modify-write rather than an RPC:
+ * two deliverers racing can undercount by one, which only delays the disable
+ * by a single event. Registry-sync endpoints are never touched.
+ */
+async function bumpFailureCount(sb: ReturnType<typeof requireSupabase>, row: ClaimedRow): Promise<void> {
+  if (row.kind !== "client") return;
+  try {
+    const { data } = await sb
+      .from("webhook_endpoints")
+      .select("failure_count")
+      .eq("id", row.endpoint_id)
+      .maybeSingle();
+    const next = Number((data as { failure_count?: number } | null)?.failure_count ?? 0) + 1;
+    const update: Record<string, unknown> = { failure_count: next };
+    if (next >= AUTO_DISABLE_AFTER) {
+      update.enabled = false;
+      update.disabled_at = new Date().toISOString();
+    }
+    await sb.from("webhook_endpoints").update(update).eq("id", row.endpoint_id);
+  } catch (err) {
+    console.error("[outbox] failure_count bump failed", { endpointId: row.endpoint_id, error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+async function resetFailureCount(sb: ReturnType<typeof requireSupabase>, row: ClaimedRow): Promise<void> {
+  if (row.kind !== "client") return;
+  try {
+    await sb.from("webhook_endpoints").update({ failure_count: 0 }).eq("id", row.endpoint_id).gt("failure_count", 0);
+  } catch (err) {
+    console.error("[outbox] failure_count reset failed", { endpointId: row.endpoint_id, error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Deliver
 // ---------------------------------------------------------------------------
 
@@ -223,7 +274,7 @@ export type DeliveryResult = {
 /**
  * Claim a batch and attempt each one.
  *
- * The claim is what makes concurrent runs safe — see claim_webhook_deliveries()
+ * The claim is what makes concurrent runs safe, see claim_webhook_deliveries()
  * in the migration. Two cron ticks overlapping used to mean the same event was
  * POSTed twice.
  */
@@ -279,6 +330,10 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
   try {
     const res = await fetch(row.url, {
       method: "POST",
+      // The registered URL passed checkWebhookUrl(); a redirect target did not.
+      // Following one would let a public host bounce the signed POST to a
+      // private/metadata address from inside the deployment.
+      redirect: "manual",
       headers: {
         "Content-Type": "application/json",
         [SIGNATURE_HEADER]: signature,
@@ -286,7 +341,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
         [CORRELATION_HEADER]: row.correlation_id ?? "",
         "X-RSG-Event": row.event_type,
         "X-RSG-Sequence": String(row.sequence ?? ""),
-        // The receiver's dedupe key. Stable across every retry of this event —
+        // The receiver's dedupe key. Stable across every retry of this event;
         // that is the entire contract that makes at-least-once tolerable.
         "Idempotency-Key": row.idempotency_key,
       },
@@ -308,6 +363,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
           last_error: null,
         })
         .eq("id", row.id);
+      await resetFailureCount(sb, row);
       return "delivered";
     }
 
@@ -333,7 +389,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
         attempts: attempt,
         response_status: status,
         last_error: permanent
-          ? `${errorMessage} (permanent — not retried)`
+          ? `${errorMessage} (permanent, not retried)`
           : `${errorMessage} (attempts exhausted)`,
         dead_lettered_at: new Date().toISOString(),
         claimed_at: null,
@@ -343,6 +399,8 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
 
     // Surface it. A dead letter nobody is told about is a lost event with
     // extra steps.
+    await bumpFailureCount(sb, row);
+
     await recordDeadLettered({
       provider: "internal",
       operation: `webhook.${row.kind}.${row.event_type}`,
@@ -383,7 +441,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
  * there was no path back, so fixing a broken endpoint still left every event it
  * missed permanently undelivered.
  *
- * Resets attempts to 0 — a replay is a deliberate human decision after the
+ * Resets attempts to 0: a replay is a deliberate human decision after the
  * cause was addressed, so it deserves a fresh budget rather than one attempt
  * against an already-exhausted counter.
  */
@@ -434,7 +492,7 @@ export async function replayDeadLetters(filter: {
  *
  * `oldestPendingAgeSeconds` is the number that matters. A growing queue with
  * everything nominally "pending" is what a stopped cron looks like, and counts
- * alone will not show it — the count looks fine right up until it does not.
+ * alone will not show it: the count looks fine right up until it does not.
  */
 export async function outboxHealth(): Promise<{
   pending: number;

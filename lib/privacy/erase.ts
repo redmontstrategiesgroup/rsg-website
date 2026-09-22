@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 /**
  * Data-subject export and erasure (GDPR/CCPA DSAR support).
  *
- * The app writes a person's PII across several tables — not just `leads`. A
+ * The app writes a person's PII across several tables, not just `leads`. A
  * DSAR that only touched leads left bookings, newsletter subscription, and any
  * portal client account behind. These helpers cover every table the app writes
  * for a data subject, keyed by their email.
@@ -35,7 +35,7 @@ async function deleteWhere(
       .eq(column, value)
       .select("id");
     if (error) {
-      // Missing/unmigrated table or permission issue — skip, don't abort.
+      // Missing/unmigrated table or permission issue: skip, don't abort.
       return { table, deleted: 0, status: "skipped", detail: error.message };
     }
     return { table, deleted: data?.length ?? 0, status: "ok" };
@@ -140,7 +140,7 @@ export async function exportDataSubject(
  *
  * Always erases the marketing/intake footprint: leads (+ their bookings) and
  * newsletter subscription. The portal client ACCOUNT is only erased when
- * `includeClientAccount` is explicitly true — deleting a live client account
+ * `includeClientAccount` is explicitly true: deleting a live client account
  * (and its cascade of sessions, subscriptions, roadmaps, service records) is
  * destructive and must be a conscious choice, not a side effect of clearing a
  * stray lead. Deleting the `clients` row cascades to its FK-CASCADE children;
@@ -182,7 +182,7 @@ export async function eraseDataSubject(
   // 2. Newsletter subscription.
   outcomes.push(await deleteWhere(sb, "subscribers", "email", email));
 
-  // 3. Portal account — explicit opt-in only.
+  // 3. Portal account: explicit opt-in only.
   const clientAccountPresent = await clientAccountExists(sb, email);
   if (opts.includeClientAccount) {
     // client_users first (lifecycle schema, guarded), then the clients row

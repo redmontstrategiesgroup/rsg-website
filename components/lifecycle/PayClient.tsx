@@ -44,7 +44,7 @@ export function PayClient({
   return (
     <div className="mx-auto max-w-xl space-y-5">
       {paid && (
-        <Banner tone="success" title="Payment received — thank you.">
+        <Banner tone="success" title="Payment received: thank you.">
           A receipt is in your inbox
           {invoice.kind === "deposit" &&
             ", and your client portal welcome email follows shortly with your first steps"}
@@ -53,7 +53,7 @@ export function PayClient({
       )}
       {!paid && justPaid && (
         <Banner tone="info" title="Payment processing.">
-          Your payment is being confirmed — this page updates automatically
+          Your payment is being confirmed: this page updates automatically
           once the confirmation lands (usually under a minute). Your receipt
           arrives by email.
         </Banner>
@@ -127,13 +127,13 @@ export function PayClient({
               <Banner tone="info" title="Bank transfer / other arrangements">
                 Online card payment isn&rsquo;t enabled for this invoice. Reply
                 to the invoice email and we&rsquo;ll provide bank-transfer
-                details or another arrangement — your project timeline is
+                details or another arrangement: your project timeline is
                 unaffected.
               </Banner>
             )}
             {processing && (
               <p className="mt-3 text-center text-xs text-white/45">
-                A previous payment attempt is still confirming — if you already
+                A previous payment attempt is still confirming, if you already
                 paid, no further action is needed.
               </p>
             )}
@@ -155,7 +155,7 @@ export function PayClient({
       </div>
 
       <p className="text-center text-[0.65rem] text-white/30">
-        Questions about this invoice? Reply to the email it arrived in — a
+        Questions about this invoice? Reply to the email it arrived in, a
         person answers, quickly.
       </p>
     </div>

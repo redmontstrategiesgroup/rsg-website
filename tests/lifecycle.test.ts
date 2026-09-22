@@ -129,7 +129,7 @@ describe("assessment", () => {
         .join(" ")
         .toLowerCase(),
     ).join(" | ");
-    // Spot-check the pillars of the spec — presence, leads, money, data/AI.
+    // Spot-check the pillars of the spec, presence, leads, money, data/AI.
     for (const term of ["presence", "customer", "quot", "paid", "data", "ai"]) {
       assert.ok(allText.includes(term), `assessment should cover "${term}"`);
     }

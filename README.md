@@ -1,6 +1,6 @@
 # Redmont Strategies Group
 
-The firm's website, client portal, and internal operations console — one Next.js application serving three audiences: public visitors, engaged clients, and staff.
+The firm's website, client portal, and internal operations console; one Next.js application serving three audiences: public visitors, engaged clients, and staff.
 
 Full documentation: **[docs/project-ebook.md](docs/project-ebook.md)**
 
@@ -24,7 +24,7 @@ Generate a session secret and put it in `AUTH_SECRET`:
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` so you can sign into the console. Everything else can stay empty — the app runs without Supabase, Stripe, Anthropic, or Resend, and each feature degrades with an honest "not configured" path rather than failing.
+Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` so you can sign into the console. Everything else can stay empty; the app runs without Supabase, Stripe, Anthropic, or Resend, and each feature degrades with an honest "not configured" path rather than failing.
 
 ```bash
 npm run dev
@@ -47,20 +47,20 @@ CI runs lint, typecheck, test, and build on every push and pull request.
 
 ## Database
 
-Migrations are in `supabase/migrations/`, applied in filename order via the Supabase CLI or dashboard. Apply them to a fresh project before pointing the app at it. Migration files record intent — confirm parity with the live database rather than assuming it.
+Migrations are in `supabase/migrations/`, applied in filename order via the Supabase CLI or dashboard. Apply them to a fresh project before pointing the app at it. Migration files record intent; confirm parity with the live database rather than assuming it.
 
 ## Environment
 
 `.env.example` documents every variable. Two are non-negotiable in production:
 
-- `AUTH_SECRET` — signs session cookies. The app refuses to start without it.
-- `NEXT_PUBLIC_ENABLE_DEMO_DATA` — must be `false`. It seeds sample portal accounts.
+- `AUTH_SECRET`: signs session cookies. The app refuses to start without it.
+- `NEXT_PUBLIC_ENABLE_DEMO_DATA`: must be `false`. It seeds sample portal accounts.
 
 The full table, with development and production behavior for each variable, is in [section 10 of the ebook](docs/project-ebook.md#10-environment-configuration).
 
 ## Deployment
 
-Vercel. `vercel.json` declares two cron jobs (`/api/cron/scheduling` every 5 minutes, `/api/cron/registry` daily), both requiring `CRON_SECRET`. Apply migrations before deploying code that depends on them — a rollback does not reverse them.
+Vercel. `vercel.json` declares two cron jobs (`/api/cron/scheduling` every 5 minutes, `/api/cron/registry` daily), both requiring `CRON_SECRET`. Apply migrations before deploying code that depends on them; a rollback does not reverse them.
 
 See [section 12](docs/project-ebook.md#12-deployment) for the full procedure and post-deployment verification.
 

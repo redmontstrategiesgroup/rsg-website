@@ -72,9 +72,9 @@ export function resultPill(result: string): string {
 }
 
 export function formatDate(iso?: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleString("en-US", {
     timeZone: "America/New_York",
     month: "short",
@@ -86,9 +86,9 @@ export function formatDate(iso?: string | null): string {
 }
 
 export function formatDay(iso?: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-US", {
     timeZone: "America/New_York",
     month: "short",

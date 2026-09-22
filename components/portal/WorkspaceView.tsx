@@ -138,7 +138,7 @@ export function WorkspaceView({
         headers: { "content-type": file.type || "application/octet-stream" },
         body: file,
       });
-      if (!put.ok) throw new Error("Upload failed — please try again.");
+      if (!put.ok) throw new Error("Upload failed: please try again.");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed.");
@@ -220,7 +220,7 @@ export function WorkspaceView({
                 title={requests.length === 0 ? "No requests yet" : "Nothing matches"}
                 description={
                   requests.length === 0
-                    ? "Questions, content, revisions, new ideas — send anything here and it gets tracked to resolution."
+                    ? "Questions, content, revisions, new ideas; send anything here and it gets tracked to resolution."
                     : "Try a different search or filter."
                 }
                 action={
@@ -272,7 +272,7 @@ export function WorkspaceView({
                         <p className="mt-3 border border-amber-400/20 bg-amber-400/[0.05] px-3 py-2 text-xs leading-relaxed text-amber-200/80">
                           This kind of request can change project scope. If it
                           does, we&rsquo;ll bring you a clear change order with
-                          pricing before any work begins — nothing is ever
+                          pricing before any work begins: nothing is ever
                           added silently.
                         </p>
                       )}
@@ -339,7 +339,7 @@ export function WorkspaceView({
             {files.length === 0 ? (
               <EmptyState
                 title="No files yet"
-                description="Brand assets, documents, deliverables — everything shared in either direction is versioned and kept here."
+                description="Brand assets, documents, deliverables; everything shared in either direction is versioned and kept here."
               />
             ) : (
               <ul className="divide-y divide-white/[0.06]">
@@ -410,7 +410,7 @@ export function WorkspaceView({
           {SCOPE_SENSITIVE.includes(category) && (
             <p className="border border-amber-400/20 bg-amber-400/[0.05] px-3 py-2 text-xs leading-relaxed text-amber-200/80">
               New features and scope changes may require a formal change order
-              with adjusted pricing — we&rsquo;ll always confirm with you first.
+              with adjusted pricing: we&rsquo;ll always confirm with you first.
             </p>
           )}
           {category === "access_credentials" && (
@@ -471,9 +471,9 @@ export function WorkspaceView({
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                 >
-                  <option value="low">Low — whenever convenient</option>
+                  <option value="low">Low: whenever convenient</option>
                   <option value="normal">Normal</option>
-                  <option value="high">High — this is blocking us</option>
+                  <option value="high">High: this is blocking us</option>
                   <option value="urgent">Urgent</option>
                 </select>
               )}

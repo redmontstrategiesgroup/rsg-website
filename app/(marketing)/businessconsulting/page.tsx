@@ -54,7 +54,7 @@ const content: LocalPageContent = {
     },
     {
       q: "Do you only work with certain industries?",
-      a: "We focus on service businesses: med spas, gyms, dental and wellness offices, contractors, home service companies, and other appointment or job based operations.",
+      a: "We focus on service businesses: med spas, gyms, wellness and therapy practices, contractors, home service companies, and other appointment or job based operations.",
     },
     {
       q: "How do we start?",

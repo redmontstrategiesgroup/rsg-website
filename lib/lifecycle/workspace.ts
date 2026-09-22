@@ -1,5 +1,5 @@
 /**
- * Client Lifecycle Platform — project workspace.
+ * Client Lifecycle Platform: project workspace.
  *
  * Requests (client change/work requests), unified message threads
  * (project / request / ticket), and client approvals.
@@ -9,6 +9,8 @@
  */
 
 import { nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { emitEvent } from "@/lib/webhooks/emit";
+import { toApprovalDto, toMessageDto } from "@/lib/apiv1/serializers";
 import {
   CHANGE_ORDER_CATEGORIES,
   type Approval,
@@ -19,15 +21,11 @@ import {
   type RequestPriority,
   type RequestStatus,
 } from "@/lib/lifecycle/types";
+import { escapeLikePattern } from "@/lib/validate";
 
 const MAX_MESSAGE_LENGTH = 10000;
 const DEFAULT_LIST_LIMIT = 100;
 const DEFAULT_SEARCH_LIMIT = 50;
-
-/** Escape LIKE/ILIKE wildcards in user-supplied search terms. */
-function escapeLikeTerm(term: string): string {
-  return term.replace(/[\\%_]/g, (ch) => `\\${ch}`);
-}
 
 // ---------------------------------------------------------------------------
 // Requests
@@ -206,7 +204,7 @@ export async function addMessage(input: {
   const internal = input.authorType === "admin" && Boolean(input.internal);
 
   // Workflow transitions (e.g. request status changes on reply) are
-  // intentionally left to callers — this function only inserts the message.
+  // intentionally left to callers: this function only inserts the message.
   const { data, error } = await sb
     .from("messages")
     .insert({
@@ -228,7 +226,11 @@ export async function addMessage(input: {
   if (error || !data) {
     throw new Error(`addMessage: ${error?.message || "insert returned no row"}`);
   }
-  return data as Message;
+  const message = data as Message;
+  if (message.ticket_id && !message.internal) {
+    await emitEvent("ticket.replied", { ...toMessageDto(message), ticket_id: message.ticket_id }, { entityId: message.id, version: message.created_at, clientId: message.client_id });
+  }
+  return message;
 }
 
 export type MessageScope =
@@ -275,7 +277,7 @@ export async function searchMessages(
     .from("messages")
     .select("*")
     .eq("client_id", clientId)
-    .ilike("body", `%${escapeLikeTerm(term)}%`)
+    .ilike("body", `%${escapeLikePattern(term)}%`)
     .order("created_at", { ascending: false })
     .limit(opts.limit ?? DEFAULT_SEARCH_LIMIT);
   if (!opts.includeInternal) query = query.eq("internal", false);
@@ -322,7 +324,9 @@ export async function createApproval(input: {
   if (error || !data) {
     throw new Error(`createApproval: ${error?.message || "insert returned no row"}`);
   }
-  return data as Approval;
+  const approval = data as Approval;
+  await emitEvent("approval.requested", toApprovalDto(approval), { entityId: approval.id, version: approval.updated_at, clientId: approval.client_id });
+  return approval;
 }
 
 export async function listApprovalsForClient(
@@ -368,7 +372,9 @@ export async function decideApproval(
     .maybeSingle();
   if (error) throw new Error(`decideApproval: ${error.message}`);
   if (!data) throw new Error("decideApproval: approval not found or already decided.");
-  return data as Approval;
+  const approval = data as Approval;
+  await emitEvent("approval.decided", toApprovalDto(approval), { entityId: approval.id, version: approval.updated_at, clientId: approval.client_id });
+  return approval;
 }
 
 export async function cancelApproval(id: string): Promise<Approval> {

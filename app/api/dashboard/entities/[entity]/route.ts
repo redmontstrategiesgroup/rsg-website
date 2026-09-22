@@ -5,19 +5,12 @@ import {
   requireAdmin,
 } from "@/lib/admin-auth";
 import { getSupabase } from "@/lib/supabase";
-import { z } from "zod";
 import { writeAuditEvent } from "@/lib/audit";
-
-const schemas = {
-  actions: { table: "action_items", schema: z.object({ title: z.string().min(1).max(240), description: z.string().max(20_000).optional(), priority: z.enum(["critical","high","medium","low"]).default("medium"), status: z.enum(["new","reviewing","planned","in_progress","blocked","completed","dismissed"]).default("new"), due_date: z.iso.date().optional(), requires_review: z.boolean().default(false) }) },
-  opportunities: { table: "opportunities", schema: z.object({ name: z.string().min(1).max(240), description: z.string().max(20_000).optional(), opportunity_type: z.string().max(100).default("operational_improvement"), stage: z.enum(["discovered","reviewing","validating","approved","building","launched","paused","rejected"]).default("discovered"), horizon: z.enum(["immediate","near_term","long_term","experimental"]).default("near_term"), recommended_next_step: z.string().max(10_000).optional(), requires_review: z.boolean().default(false) }) },
-  risks: { table: "risks", schema: z.object({ title: z.string().min(1).max(240), description: z.string().max(20_000).optional(), severity: z.enum(["critical","high","medium","low"]).default("medium"), status: z.enum(["active","monitoring","mitigated","accepted","closed"]).default("monitoring"), mitigation: z.string().max(10_000).optional() }) },
-  ideas: { table: "ideas", schema: z.object({ title: z.string().min(1).max(240), description: z.string().max(20_000).optional(), idea_type: z.string().max(100).default("service"), status: z.enum(["captured","reviewing","validated","building","shipped","dismissed"]).default("captured"), next_step: z.string().max(10_000).optional() }) },
-} as const;
+import { ENTITY_CREATE as schemas } from "@/lib/dashboard/entity-schemas";
 
 export async function POST(request: Request, context: { params: Promise<{ entity: string }> }) {
   // Dashboard writes (create/approve/dismiss records) require an elevated
-  // permission — not just any authenticated admin — so viewer/consultant/
+  // permission, not just any authenticated admin, so viewer/consultant/
   // contractor roles can't mutate executive-intelligence records.
   const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;

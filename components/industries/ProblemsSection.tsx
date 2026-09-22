@@ -5,7 +5,7 @@ import type { IndustryVertical } from "@/lib/industries/types";
 /**
  * Operational problems, rendered differently per vertical so no two pages
  * share a layout: "ticket" cards for home services, a front-desk ledger for
- * dental, and a tile wall for retail.
+ * health & wellness, and a tile wall for real estate.
  */
 export function ProblemsSection({
   vertical,
@@ -19,23 +19,23 @@ export function ProblemsSection({
   const { problems, problemsIntro } = vertical;
 
   return (
-    <section id="problems" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
-      <div className="container-px section-y">
+    <section id="problems" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900 section-y-sm">
+      <div className="container-px">
         <div className="max-w-3xl">
           <Reveal y={12}>
             <p className="label">Where it breaks</p>
           </Reveal>
           <Reveal y={12} delay={0.08}>
-            <h2 className="display mt-6 text-[1.9rem] leading-[1.1] sm:text-[2.5rem]">{heading}</h2>
+            <h2 className="display mt-3 text-[1.9rem] leading-[1.05] sm:text-[2.5rem]">{heading}</h2>
           </Reveal>
           <Reveal y={12} delay={0.14}>
-            <p className="mt-6 text-[0.98rem] leading-relaxed text-white/55">{problemsIntro}</p>
+            <p className="mt-3 text-[0.98rem] leading-[1.6] text-white/55">{problemsIntro}</p>
           </Reveal>
         </div>
 
         {variant === "tickets" && (
           <MobileReveal
-            className="mt-10 grid gap-5 sm:mt-16 sm:grid-cols-2 lg:grid-cols-3"
+            className="mt-6 grid gap-4 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3"
             label={`Show all ${problems.length} problems`}
           >
             {problems.map((p, i) => (
@@ -59,12 +59,12 @@ export function ProblemsSection({
 
         {variant === "ledger" && (
           <MobileReveal
-            className="mt-10 border-t border-white/[0.08] sm:mt-16"
+            className="mt-6 border-t border-white/[0.08] sm:mt-10"
             label={`Show all ${problems.length} problems`}
           >
             {problems.map((p, i) => (
               <Reveal key={p.id} y={10} delay={Math.min(i * 0.03, 0.2)}>
-                <article className="grid gap-3 border-b border-white/[0.08] py-7 sm:grid-cols-12 sm:gap-8">
+                <article className="grid gap-3 border-b border-white/[0.08] py-6 sm:grid-cols-12 sm:gap-8">
                   <div className="sm:col-span-4 lg:col-span-3">
                     <div className="flex items-baseline gap-3">
                       <span className="font-mono text-[0.72rem] sm:text-[0.62rem] text-crimson-light/70">
@@ -91,7 +91,7 @@ export function ProblemsSection({
 
         {variant === "tiles" && (
           <MobileReveal
-            className="mt-10 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] sm:mt-16 sm:grid-cols-2 lg:grid-cols-4"
+            className="mt-6 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] sm:mt-10 sm:grid-cols-2 lg:grid-cols-4"
             label={`Show all ${problems.length} problems`}
           >
             {problems.map((p, i) => (
