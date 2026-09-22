@@ -91,6 +91,7 @@ export function ActivityFeed({
         return (
           <Spotlight
             as="li"
+            pill="inline"
             id={item.id}
             fresh={state.fresh}
             kind="record"
@@ -214,6 +215,7 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                       {upcoming.map((e) => (
                         <Spotlight
                           as="li"
+                          pill="inline"
                           id={e.id}
                           fresh={state.fresh}
                           kind="calendar"
@@ -249,6 +251,7 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                       {openTasks.map((t) => (
                         <Spotlight
                           as="li"
+                          pill="inline"
                           id={t.id}
                           fresh={state.fresh}
                           kind="task"
@@ -282,6 +285,7 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                       {recent.map((r) => (
                         <Spotlight
                           as="li"
+                          pill="inline"
                           id={r.id}
                           fresh={state.fresh}
                           kind="recovery"
@@ -404,6 +408,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
             {open.map((t) => (
               <Spotlight
                 as="li"
+                pill="inline"
                 id={t.id}
                 fresh={state.fresh}
                 kind="task"
@@ -456,6 +461,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
             {done.map((t) => (
               <Spotlight
                 as="li"
+                pill="inline"
                 id={t.id}
                 fresh={state.fresh}
                 kind="task"
@@ -658,6 +664,9 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
                 {events.map((e) => (
                   <Spotlight
                     as="li"
+                    /* Block chip: the corner the floating pill wants is the
+                       status pill's, so it is placed alongside it below. */
+                    pill={false}
                     id={e.id}
                     fresh={state.fresh}
                     kind="calendar"
@@ -680,7 +689,10 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
                           {e.withWhom ? ` · ${e.withWhom}` : ""}
                         </p>
                       </div>
-                      {e.status && <AppointmentStatusPill status={e.status} />}
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        {isFresh(state.fresh[e.id]) && <FreshPill inline />}
+                        {e.status && <AppointmentStatusPill status={e.status} />}
+                      </div>
                     </div>
                     {e.status !== "completed" && e.status !== "canceled" && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -849,6 +861,7 @@ export function ReviewsView({ state }: ViewProps) {
             {state.reviews.map((r) => (
               <Spotlight
                 as="li"
+                pill="inline"
                 id={r.id}
                 fresh={state.fresh}
                 kind="record"

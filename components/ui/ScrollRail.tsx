@@ -60,6 +60,12 @@ const SNAP: Record<NonNullable<Props["snap"]>, string> = {
 };
 
 const FADE = 28; // px of edge fade
+/*
+  The prev/next buttons sit on the rail's edge, so when they are shown the
+  fade has to be at least as wide as one of them — otherwise the button lands
+  on fully-opaque content and reads as an overlay stuck on top of a card.
+*/
+const FADE_WITH_ARROWS = 44;
 
 /**
  * Horizontal scroll container with the three things every hand-rolled rail
@@ -160,9 +166,10 @@ export function ScrollRail({
     [keyboardTabs, onKeyDown]
   );
 
+  const fade = arrows ? FADE_WITH_ARROWS : FADE;
   const mask =
     edges.left || edges.right
-      ? `linear-gradient(to right, ${edges.left ? "transparent" : "black"} 0, black ${FADE}px, black calc(100% - ${FADE}px), ${
+      ? `linear-gradient(to right, ${edges.left ? "transparent" : "black"} 0, black ${fade}px, black calc(100% - ${fade}px), ${
           edges.right ? "transparent" : "black"
         } 100%)`
       : undefined;

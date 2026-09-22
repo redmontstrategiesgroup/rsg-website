@@ -325,6 +325,18 @@ html[data-reveal="on"] [data-reveal][data-reveal-in] {
   pointer-events: none;
   animation: demo-spotlight-pill 6s ease-out forwards;
 }
+/*
+  For rows that already own their top-right corner — a pipeline card's
+  hot/warm badge, a calendar chip's status pill. The marker sits in flow
+  beside what it would otherwise cover, placed either by Spotlight's
+  `pill="inline"` or by the caller rendering <FreshPill inline /> itself.
+*/
+.demo-spotlight__pill--inline {
+  position: static;
+  flex-shrink: 0;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.3rem;
+}
 @keyframes demo-spotlight-pill {
   0%, 70% { opacity: 1; }
   100% { opacity: 0; }

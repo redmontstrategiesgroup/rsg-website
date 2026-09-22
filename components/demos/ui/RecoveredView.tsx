@@ -65,6 +65,7 @@ export function RecoveredView({ state, config, track, openRequest }: ViewProps) 
             {ledger.map((r) => (
               <Spotlight
                 as="li"
+                pill="inline"
                 id={r.id}
                 fresh={state.fresh}
                 kind="recovery"

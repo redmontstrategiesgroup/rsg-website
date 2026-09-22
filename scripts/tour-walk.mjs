@@ -19,7 +19,65 @@ const VIEWPORTS = [
   { width: 390, height: 844 },
   { width: 1280, height: 900 },
 ];
-const STEP_SETTLE_MS = 1600; // > effects × 500 ms stagger for the longest step
+const STEP_SETTLE_MS = 1600; // > effects x 500 ms stagger for the longest step
+
+/**
+ * Layout faults that a "the caption is visible" check sails past but a
+ * visitor sees immediately. Each one shipped at least once, so each is
+ * asserted here rather than left to a screenshot nobody opens.
+ */
+async function layoutFaults(page) {
+  return page.evaluate(() => {
+    const faults = [];
+
+    // The caption is sticky inside the demo pane. Any gap means it is being
+    // held below the scrollport and the board scrolls up into the band.
+    const cap = document.querySelector("[data-tour-caption]");
+    const pane = document.querySelector("[data-demo-pane]");
+    if (cap && pane) {
+      const gap = Math.round(cap.getBoundingClientRect().top - pane.getBoundingClientRect().top);
+      if (gap > 2) faults.push(`tour caption sits ${gap}px below the pane top`);
+    }
+
+    // The "Just now" pill floats in a card's top-right corner, which is also
+    // where hot/warm badges live. Callers opt out and place it in flow.
+    for (const pill of document.querySelectorAll(".demo-spotlight__pill")) {
+      const card = pill.closest(".demo-spotlight");
+      if (!card) continue;
+      const p = pill.getBoundingClientRect();
+      for (const el of card.querySelectorAll("span,button,select")) {
+        if (el === pill || pill.contains(el) || el.contains(pill)) continue;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) continue;
+        if (p.left < r.right - 1 && p.right > r.left + 1 && p.top < r.bottom - 1 && p.bottom > r.top + 1) {
+          faults.push(`"Just now" pill covers "${el.textContent.trim().slice(0, 24)}"`);
+        }
+      }
+    }
+
+    // A <select> clamped by max-width renders its label past its own border
+    // unless it is told to ellipsize.
+    for (const sel of document.querySelectorAll("select")) {
+      if (sel.scrollWidth > sel.clientWidth + 1 && getComputedStyle(sel).textOverflow !== "ellipsis") {
+        faults.push(`select #${sel.id || "?"} overflows its box`);
+      }
+    }
+
+    // A rail's prev/next button overlays the rail's edge, so the edge fade has
+    // to be at least as wide as the button or it lands on opaque content.
+    for (const btn of document.querySelectorAll('button[aria-label="Scroll right"],button[aria-label="Scroll left"]')) {
+      const rail = btn.parentElement?.firstElementChild;
+      if (!rail) continue;
+      const mask = getComputedStyle(rail).maskImage || "";
+      const stops = [...mask.matchAll(/(?:black|rgb\(0, 0, 0\)) (\d+)px/g)].map((m) => +m[1]);
+      const fade = stops.length ? Math.max(...stops) : 0;
+      const w = Math.round(btn.getBoundingClientRect().width);
+      if (fade < w) faults.push(`${btn.getAttribute("aria-label")} button (${w}px) sits on a ${fade}px fade`);
+    }
+
+    return [...new Set(faults)];
+  });
+}
 
 mkdirSync(".tour-shots", { recursive: true });
 const browser = await chromium.launch();
@@ -51,6 +109,7 @@ for (const vp of VIEWPORTS) {
       }
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
       if (overflow) problems.push("horizontal page overflow");
+      problems.push(...(await layoutFaults(page)));
       await page.screenshot({ path: `.tour-shots/${slug}-${vp.width}-${String(step).padStart(2, "0")}.png`, fullPage: false });
       const title = await caption.locator("p").nth(1).textContent().catch(() => "?");
       if (problems.length) { failures += 1; console.log(`FAIL ${slug} @${vp.width} step ${step} "${title}": ${problems.join("; ")}`); }

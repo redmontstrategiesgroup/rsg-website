@@ -875,17 +875,24 @@ export function DemoOS({
           */}
           <div
             data-demo-pane=""
-            className={`min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain p-4 [touch-action:pan-y] sm:p-5 ${
+            className={`min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain [touch-action:pan-y] ${
               fill ? "min-h-0 flex-1" : "h-[32rem] lg:h-[38rem] lg:flex-1"
             }`}
             onPointerDown={onPanePointerDown}
             onPointerUp={onPanePointerUp}
             onPointerCancel={onPanePointerCancel}
           >
+            {/*
+              The pane itself is unpadded so the sticky caption can sit flush
+              against the scrollport: a sticky box is clamped to its containing
+              block, so padding here would hold it that far down the pane and
+              leave a band the board scrolls up into. The view carries the
+              padding instead.
+            */}
             {caption && !mobilePreview && (
               <TourCaption {...caption} accent={accent} onChip={(t) => goToTab(t)} />
             )}
-            {view}
+            <div className="p-4 sm:p-5">{view}</div>
           </div>
         </div>
 

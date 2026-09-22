@@ -626,6 +626,7 @@ export function PipelineView(props: ViewProps) {
                         fresh={state.fresh}
                         kind="record"
                         key={lead.id}
+                        pill={false}
                         draggable
                         onDragStart={(e) => {
                           setDragId(lead.id);
@@ -641,18 +642,21 @@ export function PipelineView(props: ViewProps) {
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex min-w-0 items-center gap-1.5">
                             <GripVertical size={11} className="shrink-0 text-white/20" aria-hidden />
                             <p className="text-xs font-medium text-white/85">{lead.name}</p>
                           </div>
-                          {lead.temp && <TempBadge temp={lead.temp} />}
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            {isFresh(state.fresh[lead.id]) && <FreshPill inline />}
+                            {lead.temp && <TempBadge temp={lead.temp} />}
+                          </div>
                         </div>
                         <p className="mt-1 text-[0.66rem] text-white/50">{lead.service}</p>
                         <div className="mt-2 flex items-center justify-between gap-2">
                           <span className="truncate text-[0.62rem] tabular-nums text-white/40">
                             {lead.value ? `$${lead.value.toLocaleString()}` : lead.source}
                           </span>
-                          <div className="flex items-center gap-1">
+                          <div className="flex min-w-0 items-center gap-1">
                             <label className="sr-only" htmlFor={`move-${lead.id}`}>
                               Move {lead.name} to stage
                             </label>
@@ -660,7 +664,7 @@ export function PipelineView(props: ViewProps) {
                               id={`move-${lead.id}`}
                               value={lead.stageId}
                               onChange={(e) => move(lead, e.target.value)}
-                              className="max-w-[6.5rem] rounded border border-white/10 bg-base-900 px-1 py-0.5 text-[0.6rem] text-white/55 focus:border-crimson/60 focus:outline-none"
+                              className="min-w-0 max-w-[6.5rem] truncate rounded border border-white/10 bg-base-900 px-1 py-0.5 text-[0.6rem] text-white/55 focus:border-crimson/60 focus:outline-none"
                             >
                               {state.stages.map((s) => (
                                 <option key={s.id} value={s.id}>{s.label}</option>

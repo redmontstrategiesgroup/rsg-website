@@ -101,6 +101,7 @@ export function BoundariesView({ state, config, track, openRequest }: ViewProps)
               return (
                 <Spotlight
                   as="li"
+                  pill="inline"
                   id={e.id}
                   fresh={state.fresh}
                   kind="boundary"

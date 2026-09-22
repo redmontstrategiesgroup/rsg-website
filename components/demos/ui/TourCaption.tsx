@@ -51,10 +51,16 @@ export function TourCaption({ eyebrow, title, detail, chips, accent, onChip, con
   controls?: { playing: boolean; canPrev: boolean; canNext: boolean; onPrev: () => void; onNext: () => void; onToggle: () => void };
 }) {
   const accentText = accent === "#b3243a" ? "#d94b5e" : accent;
+  /*
+    Sticks to the top of the demo pane, which is its own scroll container. It
+    is a direct, unpadded child of that pane on purpose: a sticky box cannot
+    leave its containing block, so pane padding would hold the caption that
+    far down and leave a band the board scrolls up into behind it.
+  */
   return (
     <div
       data-tour-caption
-      className="sticky top-16 z-20 sm:top-20 -mx-4 -mt-4 mb-4 border-b px-4 py-3 backdrop-blur sm:-mx-5 sm:-mt-5 sm:px-5"
+      className="sticky top-0 z-20 border-b px-4 py-3 backdrop-blur sm:px-5"
       style={{ borderColor: `${accent}66`, backgroundColor: `color-mix(in srgb, ${accent} 10%, #0b0b0f)` }}
       aria-live="polite"
     >
