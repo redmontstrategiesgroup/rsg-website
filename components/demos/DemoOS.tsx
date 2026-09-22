@@ -20,6 +20,8 @@ import {
   ListVideo,
   Loader2,
   LifeBuoy,
+  Maximize2,
+  Minimize2,
   Monitor,
   Play,
   RotateCcw,
@@ -46,6 +48,7 @@ import type { Effect, FreshKind, IndustryConfig, NavId, Scenario } from "./types
 import { SampleDataTag } from "./ui/primitives";
 import { chipsForEffects, KIND_COLOR, TourCaption } from "./ui/TourCaption";
 import { ScrollRail } from "@/components/ui/ScrollRail";
+import { adjacentSection, swipeDirection } from "./sectionNav";
 import { IconButton } from "@/components/ui/IconButton";
 import { Popover } from "@/components/ui/Popover";
 import { ConfirmDialog, Modal } from "./ui/Modal";
@@ -117,6 +120,8 @@ export function DemoOS({
   const pending = useRef<{ t: ReturnType<typeof setTimeout>; fn: () => void }[]>([]);
   const tourSnapshot = useRef<DemoState | null>(null);
   const windowRef = useRef<HTMLDivElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
 
   /* ---------------------------------------------- session lifecycle */
   useEffect(() => {
@@ -303,6 +308,7 @@ export function DemoOS({
         setPlaying(false);
         setScenarioMenu(false);
         setSimMenu(false);
+        setFullscreen(false);
         track("previewed the mobile experience");
       } else {
         const stored = loadSession(config.slug);
@@ -351,6 +357,80 @@ export function DemoOS({
     [track],
   );
 
+  /* ---------------------------------------------- section prev / next */
+  const navIds = useMemo(() => nav.map((n) => n.id), [nav]);
+  const prevSection = adjacentSection(navIds, tab, -1);
+  const nextSection = adjacentSection(navIds, tab, 1);
+  const stepSection = useCallback(
+    (dir: 1 | -1) => {
+      const next = adjacentSection(navIds, tab, dir);
+      if (next) setTabTracked(next);
+    },
+    [navIds, tab, setTabTracked],
+  );
+
+  /*
+    Swipe between sections on touch. A drag that begins inside something
+    that scrolls sideways (a table, a card rail) belongs to that element, so
+    it is left alone; vertical drags never qualify (see swipeDirection).
+  */
+  const onPanePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse") return;
+    let node = e.target as HTMLElement | null;
+    while (node && node !== e.currentTarget) {
+      const ox = getComputedStyle(node).overflowX;
+      if ((ox === "auto" || ox === "scroll") && node.scrollWidth > node.clientWidth + 1) return;
+      node = node.parentElement;
+    }
+    swipeStart.current = { x: e.clientX, y: e.clientY };
+  }, []);
+  const onPanePointerUp = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const start = swipeStart.current;
+      swipeStart.current = null;
+      if (!start) return;
+      const dir = swipeDirection(e.clientX - start.x, e.clientY - start.y);
+      if (dir) stepSection(dir);
+    },
+    [stepSection],
+  );
+  const onPanePointerCancel = useCallback(() => {
+    swipeStart.current = null;
+  }, []);
+
+  /* Left / Right arrows move sections unless a field owns the keystroke. */
+  const onWindowKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const t = e.target as HTMLElement;
+      if (t.closest('input,textarea,select,[contenteditable],[role="tablist"],[role="listbox"]')) return;
+      e.preventDefault();
+      stepSection(e.key === "ArrowRight" ? 1 : -1);
+    },
+    [stepSection],
+  );
+
+  /*
+    Fullscreen is a fixed overlay rather than the Fullscreen API: the demo's
+    dialogs portal to <body>, which the native API would hide. Page scroll
+    is locked while open; Escape closes it only when no dialog is up, so the
+    dialog's own Escape still wins.
+  */
+  useEffect(() => {
+    if (!fullscreen) return;
+    const saved = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || document.querySelector(".dialog-backdrop")) return;
+      setFullscreen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = saved;
+    };
+  }, [fullscreen]);
+
   const viewProps = useMemo(
     () => ({ state, config, dispatch, track, openRequest }),
     [state, config, track, openRequest],
@@ -392,6 +472,8 @@ export function DemoOS({
   }, [tab, viewProps]);
 
   const mobilePreview = !embedded && device === "mobile";
+  /* The window fills its container when fullscreen or inside the preview iframe. */
+  const fill = fullscreen || embedded;
 
   const scenarioDef = runningScenario ? config.scenarios.find((s) => s.id === runningScenario.id) : undefined;
   const scenarioStep = scenarioDef && runningScenario && runningScenario.step > 0 ? scenarioDef.steps[runningScenario.step - 1] : undefined;
@@ -649,14 +731,24 @@ export function DemoOS({
 
       {/* ------------------------------------------------ OS window */}
       {!mobilePreview && (
-      <div ref={windowRef} className="relative overflow-clip rounded-xl border border-white/10 bg-base-900 shadow-lift scroll-mt-24">
+      <div
+        ref={windowRef}
+        onKeyDown={onWindowKeyDown}
+        className={`flex flex-col overflow-clip bg-base-900 scroll-mt-24 ${
+          fullscreen
+            ? "fixed inset-0 z-[60]"
+            : embedded
+              ? "relative h-[calc(100dvh-1rem)] rounded-xl border border-white/10"
+              : "relative rounded-xl border border-white/10 shadow-lift"
+        }`}
+      >
         {/* Window chrome */}
         <div className="flex items-center gap-3 border-b border-white/[0.08] bg-base-800/60 px-4 py-3">
           <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: accent }} aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-medium text-white/85">
               {state.settings.businessName}
-              <span className="ml-2 hidden text-white/35 sm:inline">
+              <span className="ml-2 hidden text-white/35 lg:inline">
                 · {config.osName}
                 {state.settings.primaryService ? ` · ${state.settings.primaryService}` : ""}
               </span>
@@ -711,9 +803,37 @@ export function DemoOS({
                 )}
             </Popover>
           </div>
+          <div className="hidden items-center sm:flex" role="group" aria-label="Section navigation">
+            <IconButton
+              onClick={() => stepSection(-1)}
+              disabled={!prevSection}
+              className="rounded border border-white/10 text-white/55 hover:text-white disabled:cursor-default disabled:opacity-30 disabled:hover:text-white/55 lg:min-h-7 lg:min-w-7"
+              aria-label="Previous section"
+            >
+              <ChevronLeft size={14} aria-hidden />
+            </IconButton>
+            <IconButton
+              onClick={() => stepSection(1)}
+              disabled={!nextSection}
+              className="ml-1 rounded border border-white/10 text-white/55 hover:text-white disabled:cursor-default disabled:opacity-30 disabled:hover:text-white/55 lg:min-h-7 lg:min-w-7"
+              aria-label="Next section"
+            >
+              <ChevronRight size={14} aria-hidden />
+            </IconButton>
+          </div>
+          {!embedded && (
+          <IconButton
+            onClick={() => setFullscreen((v) => !v)}
+            className="rounded border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
+            aria-label={fullscreen ? "Exit full screen" : "Full screen"}
+            aria-pressed={fullscreen}
+          >
+            {fullscreen ? <Minimize2 size={13} aria-hidden /> : <Maximize2 size={13} aria-hidden />}
+          </IconButton>
+          )}
         </div>
 
-        <div className="flex min-h-[32rem] flex-col lg:flex-row">
+        <div className={`flex flex-col lg:flex-row ${fill ? "min-h-0 flex-1" : ""}`}>
           {/* Nav */}
           <nav aria-label={`${config.osName} sections`} className="border-b border-white/[0.08] lg:w-48 lg:shrink-0 lg:border-b-0 lg:border-r">
             <ScrollRail
@@ -746,8 +866,22 @@ export function DemoOS({
             </ScrollRail>
           </nav>
 
-          {/* Main content */}
-          <div className="min-w-0 flex-1 p-4 sm:p-5">
+          {/*
+            Main content. A fixed height keeps the window the same size on
+            every section (each view used to set its own, so switching tabs
+            made the page jump); anything taller scrolls inside the pane.
+            `touch-action: pan-y` leaves vertical scrolling to the browser and
+            hands horizontal drags to the swipe handlers.
+          */}
+          <div
+            data-demo-pane=""
+            className={`min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain p-4 [touch-action:pan-y] sm:p-5 ${
+              fill ? "min-h-0 flex-1" : "h-[32rem] lg:h-[38rem] lg:flex-1"
+            }`}
+            onPointerDown={onPanePointerDown}
+            onPointerUp={onPanePointerUp}
+            onPointerCancel={onPanePointerCancel}
+          >
             {caption && !mobilePreview && (
               <TourCaption {...caption} accent={accent} onChip={(t) => goToTab(t)} />
             )}
@@ -759,6 +893,7 @@ export function DemoOS({
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] bg-base-800/40 px-4 py-2">
           <p className="flex items-center gap-1.5 text-[0.62rem] text-white/40">
             <ShieldCheck size={11} className="shrink-0 text-emerald-400/60" aria-hidden />
+            <span className="sm:hidden">Swipe sideways to change section. </span>
             Demo environment, no real messages, appointments, or payments will be sent.
           </p>
           <button
