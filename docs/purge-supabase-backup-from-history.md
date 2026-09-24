@@ -20,8 +20,8 @@ commits only; the blobs remain reachable in history.
 
 | Item | Count | Table |
 |---|---|---|
-| `jeffythecheffy101@gmail.com` + `+17812040623` | 1 record | `public.leads`, `public.booking_sessions` |
-| `test@gmail.com` | 1 | `public.leads` |
+| `<lead-email>` + `<lead-phone>` | 1 record | `public.leads`, `public.booking_sessions` |
+| `<test-email>` | 1 | `public.leads` |
 | `josephpoday@gmail.com` | 8 | various |
 
 Everything else is `.example` / `.internal` demo rows and reserved `+1555555xxxx`
@@ -147,7 +147,10 @@ for b in eb6bf412e5624bbaef4717194b7b872336ce6f94 \
 done
 
 # 3. the PII strings are gone from history — expect no output
-git grep -I -l -e jeffythecheffy101 -e 17812040623 $(git rev-list --all) 2>/dev/null
+#    Set these from the live `public.leads` row before running; do not commit the values.
+LEAD_EMAIL_LOCALPART=...   # local-part of <lead-email>
+LEAD_PHONE_DIGITS=...      # <lead-phone>, digits only, no leading +
+git grep -I -l -e "$LEAD_EMAIL_LOCALPART" -e "$LEAD_PHONE_DIGITS" $(git rev-list --all) 2>/dev/null
 
 # 4. the tree at HEAD is otherwise unchanged — expect no output
 git diff --stat HEAD -- . ":!supabase/backup-2026-07-27"
