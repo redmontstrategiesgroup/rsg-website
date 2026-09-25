@@ -46,9 +46,9 @@ export function TestsView({
         <div className="max-w-2xl">
           <p className={labelClass}>Security & AI abuse testing</p>
           <p className="mt-1 text-xs leading-relaxed text-white/45">
-            The internal checklist for AI-enabled projects — prompt injection,
+            The internal checklist for AI-enabled projects, prompt injection,
             sensitive-info disclosure, permission bypass, data leakage, excessive
-            agency, and more — plus platform tests like backup restoration and
+            agency, and more; plus platform tests like backup restoration and
             access control. Each records expected vs. actual behavior, severity,
             evidence, and retest status.
           </p>
@@ -113,7 +113,7 @@ export function TestsView({
                         {t.severity}
                       </span>
                     ) : (
-                      <span className="text-white/30">—</span>
+                      <span className="text-white/30">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3.5 text-white/55">{t.retestStatus}</td>

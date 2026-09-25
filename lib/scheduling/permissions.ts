@@ -127,6 +127,11 @@ const ROLE_PERMISSIONS: Record<SchedulingRole, SchedulingPermission[]> = {
     "view_security",
     "view_audit",
     "view_analytics",
+    // Read-only visibility into the Scheduling tab, so a security review can
+    // see what's actually booked without gaining edit/cancel rights over it
+    // (those stay behind edit_appointments/cancel_appointments, which this
+    // role deliberately does not have).
+    "view_appointments",
     "manage_incidents",
     "manage_vendors",
     "manage_retention",

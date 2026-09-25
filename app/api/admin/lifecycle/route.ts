@@ -223,11 +223,11 @@ async function clientContactFor(clientId: string | null, leadId: string | null) 
 }
 
 // ---------------------------------------------------------------------------
-// GET — sections
+// GET: sections
 // ---------------------------------------------------------------------------
 
 export async function GET(request: Request) {
-  // Client OS lifecycle — gate on manage_clients (consistent with the sibling
+  // Client OS lifecycle: gate on manage_clients (consistent with the sibling
   // proposals/industries admin routes) so RBAC + forced-MFA apply. (audit L2)
   const ctx = await requireAdmin("manage_clients");
   if (!isAdminContext(ctx)) return ctx;
@@ -454,7 +454,7 @@ export async function GET(request: Request) {
 }
 
 // ---------------------------------------------------------------------------
-// POST — actions
+// POST: actions
 // ---------------------------------------------------------------------------
 
 const actionSchema = z

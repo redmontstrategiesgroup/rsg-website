@@ -160,7 +160,7 @@ export function ChoiceChips({
                 onChange(active ? "" : o);
               }
             }}
-            className={`min-h-[40px] border px-3.5 py-2 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+            className={`min-h-11 border px-3.5 py-2 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
               active
                 ? "border-crimson/70 bg-crimson/10 text-white"
                 : "border-white/15 text-white/70 hover:border-white/35"
@@ -174,7 +174,7 @@ export function ChoiceChips({
   );
 }
 
-/** Collapsible optional section (native disclosure — keyboard friendly). */
+/** Collapsible optional section (native disclosure: keyboard friendly). */
 export function Expandable({
   label,
   children,

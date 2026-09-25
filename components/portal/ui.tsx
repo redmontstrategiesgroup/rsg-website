@@ -1,11 +1,13 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Dialog } from "@/components/ui/Dialog";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 /**
  * Shared presentational primitives for the client portal and the public
  * lifecycle pages (proposal / agreement / pay / assessment / prepare).
- * Visual language: dark corporate luxury — near-black surfaces, hairline
+ * Visual language: dark corporate luxury: near-black surfaces, hairline
  * white borders, deep ruby accents, mono eyebrows. Matches components/booking/ui.tsx.
  */
 
@@ -425,16 +427,22 @@ export function TabBar<T extends string>({
   onSelect: (id: T) => void;
 }) {
   return (
-    <div className="no-scrollbar flex gap-1 overflow-x-auto border-b border-white/10" role="tablist">
+    <ScrollRail
+      role="tablist"
+      activeKey={active}
+      keyboardTabs
+      className="flex gap-1 border-b border-white/10"
+    >
       {tabs.map((t) => {
         const isActive = t.id === active;
         return (
           <button
             key={t.id}
+            type="button"
             role="tab"
             aria-selected={isActive}
             onClick={() => onSelect(t.id)}
-            className={`relative whitespace-nowrap px-4 py-3 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+            className={`relative shrink-0 whitespace-nowrap px-4 py-3 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
               isActive ? "text-white" : "text-white/45 hover:text-white/75"
             }`}
           >
@@ -450,11 +458,10 @@ export function TabBar<T extends string>({
           </button>
         );
       })}
-    </div>
+    </ScrollRail>
   );
 }
 
-/** Accessible confirm/detail dialog (no portal dep; fixed overlay). */
 export function Modal({
   open,
   onClose,
@@ -471,40 +478,24 @@ export function Modal({
   wide?: boolean;
 }) {
   if (!open) return null;
+  // Shared <Dialog>: scroll lock, focus trap, Escape, backdrop tap, dvh
+  // clamp and a 44px close. The old panel had a bare 14px "✕", no Escape
+  // handler and max-h-[85vh], which overshot a landscape phone.
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-base/80 backdrop-blur-sm sm:items-center"
-      onClick={onClose}
-      role="presentation"
+    <Dialog
+      title={title}
+      onClose={onClose}
+      size={wide ? "lg" : "md"}
+      zIndexClassName="z-50"
+      panelClassName="bg-base-900"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(e) => e.stopPropagation()}
-        className={`max-h-[85vh] w-full overflow-y-auto border border-white/10 bg-base-900 shadow-lift sm:rounded-xl ${
-          wide ? "sm:max-w-2xl" : "sm:max-w-lg"
-        }`}
-      >
-        <header className="flex items-center justify-between gap-4 border-b border-white/10 px-6 py-4">
-          <h3 className="font-display text-base font-medium text-white">{title}</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="text-white/40 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60"
-          >
-            ✕
-          </button>
-        </header>
-        <div className="px-6 py-5">{children}</div>
-        {footer && (
-          <footer className="flex justify-end gap-3 border-t border-white/10 px-6 py-4">
-            {footer}
-          </footer>
-        )}
-      </div>
-    </div>
+      {children}
+      {footer && (
+        <div className="-mx-5 -mb-4 mt-5 flex flex-wrap justify-end gap-3 border-t border-white/10 px-5 py-4">
+          {footer}
+        </div>
+      )}
+    </Dialog>
   );
 }
 
@@ -537,7 +528,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled || busy}
-      className={`inline-flex min-h-[38px] items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50 ${styles} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50 ${styles} ${className}`}
     >
       {busy && (
         <span
@@ -550,20 +541,87 @@ export function Button({
   );
 }
 
-/** Info tooltip for plain-language explanations of technical terms. */
+/**
+ * Info tooltip for plain-language explanations of technical terms.
+ *
+ * Hover and focus reveal it on desktop; on touch there is no hover and a
+ * tapped <button> does not reliably hold focus on iOS, so a tap toggles it
+ * explicitly. The panel flips to whichever edge keeps it inside the viewport
+ * (a 224px box centred on a trigger near the screen edge used to be clipped).
+ */
 export function InfoTip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  const [align, setAlign] = useState<"center" | "left" | "right">("center");
+  const wrapRef = useRef<HTMLSpanElement>(null);
+  const tipRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  // Measure once visible and flip if the centred panel would leave the viewport.
+  const place = () => {
+    const tip = tipRef.current;
+    const wrap = wrapRef.current;
+    if (!tip || !wrap) return;
+    const anchor = wrap.getBoundingClientRect();
+    const width = tip.offsetWidth;
+    const pad = 12;
+    const centredLeft = anchor.left + anchor.width / 2 - width / 2;
+    if (centredLeft < pad) setAlign("left");
+    else if (centredLeft + width > window.innerWidth - pad) setAlign("right");
+    else setAlign("center");
+  };
+
+  const pos =
+    align === "left"
+      ? "left-0"
+      : align === "right"
+        ? "right-0"
+        : "left-1/2 -translate-x-1/2";
+
   return (
-    <span className="group relative inline-flex align-middle">
+    <span
+      ref={wrapRef}
+      className="group relative inline-flex align-middle"
+      onMouseEnter={place}
+    >
       <button
         type="button"
         aria-label={`What does this mean? ${text}`}
-        className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/25 font-mono text-[0.55rem] text-white/50 transition hover:border-white/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60"
+        aria-expanded={open}
+        onClick={() => {
+          place();
+          setOpen((v) => !v);
+        }}
+        onFocus={place}
+        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full text-white/50 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60"
       >
-        ?
+        <span
+          aria-hidden="true"
+          className="flex h-4 w-4 items-center justify-center rounded-full border border-white/25 font-mono text-[0.55rem] transition group-hover:border-white/50"
+        >
+          ?
+        </span>
       </button>
       <span
+        ref={tipRef}
         role="tooltip"
-        className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 w-56 -translate-x-1/2 border border-white/15 bg-base-800 px-3 py-2 text-left text-[0.7rem] font-normal normal-case leading-relaxed tracking-normal text-white/75 opacity-0 shadow-lift transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+        className={`pointer-events-none absolute bottom-full z-30 mb-2 w-56 max-w-[calc(100vw-1.5rem)] border border-white/15 bg-base-800 px-3 py-2 text-left text-[0.7rem] font-normal normal-case leading-relaxed tracking-normal text-white/75 shadow-lift transition-opacity ${pos} ${
+          open ? "opacity-100" : "opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+        }`}
       >
         {text}
       </span>

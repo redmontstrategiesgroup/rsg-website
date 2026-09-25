@@ -57,7 +57,7 @@ export default async function PortalReportPage({
   const data: ServiceReportData = report.data ?? {};
   const period = [formatDate(report.periodStart), formatDate(report.periodEnd)]
     .filter(Boolean)
-    .join(" — ");
+    .join(" - ");
 
   const stats: { label: string; value: string }[] = [];
   if (data.uptimePct != null) stats.push({ label: "Uptime", value: `${data.uptimePct}%` });
@@ -69,7 +69,7 @@ export default async function PortalReportPage({
     stats.push({ label: "Issues resolved", value: String(data.issuesResolved) });
 
   return (
-    <main className="report-page min-h-screen bg-base pb-20 pt-10 print:bg-white print:pb-0 print:pt-0">
+    <main className="report-page min-h-dvh bg-base pb-20 pt-10 print:bg-white print:pb-0 print:pt-0">
       {/* Print stylesheet: clean black-on-white document, controls hidden. */}
       <style>{`
         @media print {

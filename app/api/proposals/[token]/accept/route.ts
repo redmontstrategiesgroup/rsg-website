@@ -1,7 +1,7 @@
 /**
  * Public proposal acceptance endpoint.
  *
- * All amounts are resolved server-side from the proposal and plan rows —
+ * All amounts are resolved server-side from the proposal and plan rows;
  * the request body only carries identity, scope selection, plan choice
  * (validated against the proposal's own plan list), and billing frequency.
  */
@@ -115,7 +115,7 @@ export async function POST(request: Request, ctx: Ctx) {
     );
   }
 
-  // Plan resolution — economics come from the proposal/plan rows only.
+  // Plan resolution: economics come from the proposal/plan rows only.
   let chosenPlanId: string | null = null;
   let plan: Awaited<ReturnType<typeof getPlanById>> = null;
   let frequency: "monthly" | "annual" = proposal.billingFrequency;
@@ -162,7 +162,7 @@ export async function POST(request: Request, ctx: Ctx) {
   }
 
   // Atomically claim the acceptance BEFORE creating subscriptions or
-  // checkout sessions — a concurrent duplicate submission gets a 409 here
+  // checkout sessions: a concurrent duplicate submission gets a 409 here
   // instead of a second subscription and a second Stripe checkout.
   const accepted = await recordProposalAcceptance({
     proposal,
@@ -241,14 +241,14 @@ export async function POST(request: Request, ctx: Ctx) {
             }
           }
         } catch (err) {
-          // Keep the acceptance — admin follows up on billing manually.
+          // Keep the acceptance: admin follows up on billing manually.
           checkoutFailed = true;
           console.error("[proposals] Stripe checkout creation failed.", err);
         }
       }
     }
   }
-  // Lead proposals (no clientId) create no subscription — admin follows up.
+  // Lead proposals (no clientId) create no subscription, admin follows up.
 
   let depositUrl: string | undefined;
   const depositCents = proposal.implementation.depositCents ?? 0;
@@ -258,7 +258,7 @@ export async function POST(request: Request, ctx: Ctx) {
       const deposit = await createOneTimeCheckout({
         customerEmail: email,
         amountCents: depositCents,
-        description: `${proposal.title} — implementation deposit`,
+        description: `${proposal.title}: implementation deposit`,
         metadata: { rsg_proposal_id: proposal.id, kind: "implementation_deposit" },
         successUrl: `${site}/proposal/${token}?deposit=paid`,
         cancelUrl: `${site}/proposal/${token}`,
@@ -272,7 +272,7 @@ export async function POST(request: Request, ctx: Ctx) {
   const rows: [string, string][] = [
     ["Proposal", proposal.title],
     ["Accepted by", `${name} (${email})`],
-    ["Prepared for", proposal.preparedFor || "—"],
+    ["Prepared for", proposal.preparedFor || "-"],
     ["Kind", proposal.kind.replaceAll("_", " ")],
     [
       "Scope accepted",
@@ -281,7 +281,7 @@ export async function POST(request: Request, ctx: Ctx) {
         acceptPlan ? "monthly plan" : null,
       ]
         .filter(Boolean)
-        .join(" + ") || "—",
+        .join(" + ") || "-",
     ],
     ...(acceptImplementation
       ? ([
@@ -289,9 +289,9 @@ export async function POST(request: Request, ctx: Ctx) {
             "One-time cost",
             proposal.implementation.costCents != null
               ? formatCents(proposal.implementation.costCents)
-              : "—",
+              : "-",
           ],
-          ["Deposit", depositCents > 0 ? formatCents(depositCents) : "—"],
+          ["Deposit", depositCents > 0 ? formatCents(depositCents) : "-"],
         ] as [string, string][])
       : []),
     ...(acceptPlan && plan
@@ -302,18 +302,18 @@ export async function POST(request: Request, ctx: Ctx) {
             "Recurring amount",
             recurringAmount != null
               ? `${formatCents(recurringAmount)} / ${frequency === "annual" ? "year" : "month"}`
-              : "Custom pricing — set up billing manually",
+              : "Custom pricing: set up billing manually",
           ],
           ["Setup fee", formatCents(setupFee)],
-          ["Subscription created", sub ? sub.id : "No — lead proposal, follow up to onboard"],
+          ["Subscription created", sub ? sub.id : "No: lead proposal, follow up to onboard"],
           [
             "Next step",
             checkoutUrl
               ? "Client sent to Stripe checkout"
               : checkoutFailed
-                ? "Stripe checkout FAILED — set up billing manually"
+                ? "Stripe checkout FAILED: set up billing manually"
                 : sub
-                  ? "No online checkout — set up billing manually"
+                  ? "No online checkout: set up billing manually"
                   : "Create the client account, then set up their subscription",
           ],
         ] as [string, string][])

@@ -5,7 +5,8 @@ import { QUALIFICATION_ESTIMATED_MINUTES } from "@/lib/lifecycle/qualification-c
 export const metadata: Metadata = {
   title: "Start Here | Redmont Strategies Group",
   description:
-    "Tell us about your business in a few minutes and get a clear, personalized next step — an assessment or a consultation with Redmont Strategies Group.",
+    "Tell us about your business in a few minutes and get a clear, personalized next step, an assessment or a consultation with Redmont Strategies Group.",
+  alternates: { canonical: "/start" },
 };
 
 export default function StartPage() {
@@ -19,7 +20,7 @@ export default function StartPage() {
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/55">
             About {QUALIFICATION_ESTIMATED_MINUTES} minutes, in plain English.
-            You&rsquo;ll get a clear next step — not a sales pitch.
+            You&rsquo;ll get a clear next step, not a sales pitch.
           </p>
           <div className="mt-8 sm:mt-12">
             <StartFlow />

@@ -66,7 +66,7 @@ export function CookieConsent() {
     <div
       role="region"
       aria-label="Cookie notice"
-      className="fixed inset-x-3 bottom-20 z-40 border border-white/15 bg-base-900 p-5 shadow-lift sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[min(380px,calc(100%-6.5rem))] sm:p-6"
+      className="bottom-safe-20 fixed inset-x-3 z-40 border border-white/15 bg-base-900 p-5 shadow-lift sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[min(380px,calc(100%-6.5rem))] sm:p-6"
     >
       <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.22em] text-white/40">
         Cookies
@@ -76,7 +76,7 @@ export function CookieConsent() {
         site and to improve it. See the{" "}
         <Link
           href="/privacy"
-          className="text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white/60"
+          className="-my-3 inline-block py-3 text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white/60 lg:my-0 lg:py-0"
         >
           privacy policy
         </Link>

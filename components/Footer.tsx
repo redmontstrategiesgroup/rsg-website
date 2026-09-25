@@ -23,10 +23,6 @@ const SERVICE_LINKS = [
     href: "/systemsaudit",
   },
   {
-    label: "Business Consulting",
-    href: "/businessconsulting",
-  },
-  {
     label: "AI Strategy & Implementation",
     href: "/aistrategy",
   },
@@ -55,12 +51,12 @@ const INDUSTRY_LINKS = [
     href: "/industries/homeservices",
   },
   {
-    label: "Dental & Specialty Healthcare",
-    href: "/industries/dentalpractices",
+    label: "Health & Wellness",
+    href: "/industries/healthwellness",
   },
   {
-    label: "Retail & Multi-Location",
-    href: "/industries/retail",
+    label: "Real Estate & Brokerages",
+    href: "/industries/realestate",
   },
 ];
 
@@ -91,18 +87,18 @@ export function Footer() {
               className="h-16 w-auto"
             />
             <p className="mt-8 max-w-sm text-sm leading-relaxed text-white/50">
-              A business consulting and strategy firm serving Plymouth County
-              and the South Shore of Massachusetts. We help service and retail
-              businesses fix operations, lead flow, and follow-up.
+              An AI transformation firm serving Plymouth County and the South
+              Shore of Massachusetts. We help service, wellness, and real estate businesses
+              improve operations, lead flow, follow-up, and implementation.
             </p>
-            {/* Tapping to call is a primary mobile action — give it a real target. */}
+            {/* Tapping to call is a primary mobile action; give it a real target. */}
             <a
               href={`tel:${PHONE_TEL}`}
               className="mt-6 inline-flex min-h-11 items-center text-sm text-white/55 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 sm:mt-8 lg:min-h-0"
             >
               {PHONE_DISPLAY}
             </a>
-            <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+            <ul className="link-list mt-6 flex flex-wrap gap-x-5 gap-y-0 lg:gap-y-2">
               {SOCIAL_LINKS.map((link) => (
                 <li key={link.label}>
                   <a
@@ -126,7 +122,7 @@ export function Footer() {
             <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Services
             </p>
-            <ul className="mt-6 space-y-3">
+            <ul className="link-list mt-6 space-y-0 lg:space-y-3">
               {SERVICE_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -144,7 +140,7 @@ export function Footer() {
             <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Industries
             </p>
-            <ul className="mt-6 space-y-3">
+            <ul className="link-list mt-6 space-y-0 lg:space-y-3">
               {INDUSTRY_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -162,7 +158,7 @@ export function Footer() {
             <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Company
             </p>
-            <ul className="mt-6 space-y-3">
+            <ul className="link-list mt-6 space-y-0 lg:space-y-3">
               {COMPANY_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
@@ -179,7 +175,7 @@ export function Footer() {
 
         <div className="mt-20 border-t border-white/10 pt-8">
           <p className="text-xs text-white/35">
-            &copy; 2026 Redmont Strategies Group. All rights reserved.
+            &copy; {new Date().getFullYear()} Redmont Strategies Group. All rights reserved.
           </p>
         </div>
       </div>

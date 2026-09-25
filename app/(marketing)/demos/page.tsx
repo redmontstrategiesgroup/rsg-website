@@ -9,7 +9,7 @@ import { BuilderShowcase } from "@/components/demos/BuilderShowcase";
 
 const TITLE = "Industry Operating System Demos | Redmont Strategies Group";
 const DESCRIPTION =
-  "Explore interactive operating system demos built for retail stores, med spas, contractors, gyms, and dental offices — real workflows, pipelines, follow-up sequences, and dashboards.";
+  "Explore interactive operating system demos for health and wellness practices, contractors, and real estate teams: real workflows, pipelines, follow-up, and dashboards.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -58,7 +58,7 @@ export default function DemosPage() {
             <Reveal delay={0.1} className="lg:col-span-6 lg:col-start-7">
               <p className="text-sm leading-relaxed text-white/55 sm:text-base">
                 These demos map customer journeys, lead stages, follow-up
-                sequences, and admin workflows for each industry — not generic
+                sequences, and admin workflows for each industry; not generic
                 automation screenshots.
               </p>
             </Reveal>
@@ -70,7 +70,7 @@ export default function DemosPage() {
         <Reveal>
           <span className="label">The demo systems</span>
           <h2 className="display mt-4 text-2xl sm:text-3xl">
-            Five industries. Five operating systems.
+            Three industries. Three operating systems.
           </h2>
         </Reveal>
         <div className="mt-10">

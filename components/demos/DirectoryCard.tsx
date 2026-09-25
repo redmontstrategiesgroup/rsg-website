@@ -64,7 +64,7 @@ export function MiniPreview({
             return (
               <div
                 key={s.id}
-                className="flex-1 rounded border border-white/[0.07] bg-white/[0.015] px-1.5 py-1"
+                className="min-w-0 flex-1 rounded border border-white/[0.07] bg-white/[0.015] px-1.5 py-1"
               >
                 <p className="truncate text-[0.48rem] uppercase tracking-wider text-white/35">
                   {s.label}
@@ -107,7 +107,7 @@ export function DirectoryCard({
       {/*
         min-w-0 on both columns is load-bearing: grid items default to
         min-width:auto, so the dense miniature below refused to shrink under
-        its min-content and stretched the whole track past the viewport —
+        its min-content and stretched the whole track past the viewport,
         which is what pushed the page 104px wide on a 320px phone.
       */}
       <div className={`min-w-0 lg:col-span-5 ${index % 2 === 1 ? "lg:order-2 lg:col-start-8" : ""}`}>
@@ -132,18 +132,10 @@ export function DirectoryCard({
             Launch Demo
             <ArrowRight size={14} className="ml-2" aria-hidden />
           </TrackedLink>
-          <TrackedLink
-            href={`/demos/${config.slug}#breakdown`}
-            event="demo_launch_click"
-            eventProps={{ demo: config.slug, location: "directory_breakdown" }}
-            className="link-underline inline-flex min-h-11 items-center lg:min-h-0"
-          >
-            View System Breakdown
-          </TrackedLink>
         </div>
       </div>
       <div className={`min-w-0 overflow-hidden ${index % 2 === 1 ? "lg:order-1 lg:col-span-6 lg:col-start-1" : "lg:col-span-6 lg:col-start-7"}`}>
-        {/* Illustrative miniature of the running system — a picture made of
+        {/* Illustrative miniature of the running system, a picture made of
             DOM, so it is hidden from assistive tech rather than read out as
             a stream of stray numbers. */}
         <div className="transition-transform duration-300 group-hover:-translate-y-1" aria-hidden>

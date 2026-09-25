@@ -1,5 +1,5 @@
 /**
- * Client Lifecycle Platform — automation engine + in-app notifications.
+ * Client Lifecycle Platform: automation engine + in-app notifications.
  *
  * Every lifecycle side effect (emails, in-app notices) flows through
  * fireAutomation(): it honors the admin-configurable automation_settings
@@ -7,7 +7,7 @@
  * unique dedupe_key index as the duplicate-notification guard. Delayed runs
  * stay `pending` and are drained by processDueAutomationRuns() (cron/route).
  *
- * fireAutomation NEVER throws — a notification failure must not break the
+ * fireAutomation NEVER throws: a notification failure must not break the
  * business action that triggered it.
  */
 
@@ -25,7 +25,7 @@ import {
 } from "@/lib/scheduling/notifications";
 
 // ---------------------------------------------------------------------------
-// Registry — one entry per id seeded into automation_settings (migration §18),
+// Registry, one entry per id seeded into automation_settings (migration §18),
 // mapped to the lc_* notification_templates seeded in migration §19.
 // ---------------------------------------------------------------------------
 
@@ -456,7 +456,7 @@ export async function updateAutomationSetting(
 
 export type FireAutomationInput = {
   key: string;
-  /** Globally unique per logical event — the duplicate-notification guard. */
+  /** Globally unique per logical event: the duplicate-notification guard. */
   dedupeKey: string;
   entityType: string;
   entityId: string;

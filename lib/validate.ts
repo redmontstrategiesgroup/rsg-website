@@ -26,6 +26,24 @@ export function isEmail(v: string): boolean {
   return v.length <= LIMITS.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
+/**
+ * Escape every PostgREST/Postgres LIKE-pattern metacharacter in an untrusted
+ * value, so it matches literally instead of acting as a wildcard.
+ *
+ * This matters for values that are validated but not wildcard-free: `isEmail`
+ * accepts `%`, `_` and `*` (none are whitespace or `@`), so an unescaped
+ * `.ilike("email", input)` lets `%@%.com` match an arbitrary account row.
+ *
+ * `%` and `_` are SQL LIKE wildcards. `*` is escaped too because PostgREST
+ * rewrites `*` to `%` in like/ilike patterns before Postgres ever sees them,
+ * so an unescaped `*` is a wildcard on this stack even though plain SQL would
+ * treat it literally. Backslash is escaped first (single pass) since it is the
+ * escape character itself.
+ */
+export function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_*]/g, (ch) => `\\${ch}`);
+}
+
 export type FieldErrors = Record<string, string>;
 
 /** Accumulates per-field validation errors. */
@@ -39,7 +57,7 @@ export class Validator {
     return s.slice(0, max);
   }
 
-  /** Optional string — trimmed and capped, never errors. */
+  /** Optional string: trimmed and capped, never errors. */
   optionalString(value: unknown, max: number): string {
     return toStr(value).slice(0, max);
   }

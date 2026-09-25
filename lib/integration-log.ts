@@ -1,5 +1,5 @@
 /**
- * Integration observability — one structured event per outbound provider call.
+ * Integration observability, one structured event per outbound provider call.
  *
  * Every triage answers one question first: is this the PROVIDER, this one
  * CONNECTION, or OUR CODE? The three have completely different responses, and
@@ -14,21 +14,21 @@
  *   outcome         success | retrying | failed | dead_lettered | skipped
  *
  * Two sinks, on purpose:
- *   integration_runs        append-only call log — what you cluster and slice
- *   integration_connections per-connection health — what you ALERT from
+ *   integration_runs        append-only call log: what you cluster and slice
+ *   integration_connections per-connection health: what you ALERT from
  *
  * Instrumentation must never break the call it instruments. Every persistence
  * failure here is swallowed (and reported to Sentry); the provider result is
  * returned or the provider error rethrown unchanged in shape.
  *
- * Server-only. Uses node:async_hooks — do not import from middleware or any
+ * Server-only. Uses node:async_hooks: do not import from middleware or any
  * edge-runtime module.
  */
 
 import { AsyncLocalStorage } from "node:async_hooks";
 import { randomUUID } from "node:crypto";
-import { getSupabase } from "@/lib/supabase";
-import { captureException } from "@/lib/observability";
+import { getSupabase } from "./supabase.ts";
+import { captureException } from "./observability.ts";
 
 // ---------------------------------------------------------------------------
 // Taxonomy
@@ -40,14 +40,14 @@ export type Provider =
   | "anthropic"
   | "supabase"
   | "twilio"
-  // Not a third party — our own scheduled work. A cron that stopped firing
+  // Not a third party: our own scheduled work. A cron that stopped firing
   // takes the email queue, reminders, and lifecycle jobs down with it and
   // reports nothing, so it needs the same staleness alerting as a provider.
   | "internal";
 
 /**
  * OUR classification, not the provider's. Provider strings change without
- * notice and differ per endpoint, which makes them useless for grouping —
+ * notice and differ per endpoint, which makes them useless for grouping;
  * this closed set is what makes a dashboard readable and an alert meaningful.
  */
 export type ErrorClass =
@@ -74,7 +74,7 @@ const REAUTH_CLASSES: ReadonlySet<ErrorClass> = new Set([
   "auth_revoked",
 ]);
 
-/** Error classes worth retrying — the failure is transient, not a bad request. */
+/** Error classes worth retrying: the failure is transient, not a bad request. */
 const RETRYABLE_CLASSES: ReadonlySet<ErrorClass> = new Set([
   "rate_limited",
   "provider_unavailable",
@@ -94,7 +94,7 @@ export function needsReauth(cls: ErrorClass): boolean {
 //
 // Generated at the entry point and propagated through every hop. An id that
 // stops at the queue boundary is the reason a triage takes an afternoon
-// instead of ten minutes — see carryCorrelationId() in lib/email-jobs.ts for
+// instead of ten minutes: see carryCorrelationId() in lib/email-jobs.ts for
 // the enqueue side.
 // ---------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ export const CORRELATION_HEADER = "x-correlation-id";
 
 const correlationStore = new AsyncLocalStorage<string>();
 
-/** Sanitize an inbound id — it arrives from a header and is echoed into logs. */
+/** Sanitize an inbound id: it arrives from a header and is echoed into logs. */
 function cleanCorrelationId(raw: string | null | undefined): string | null {
   if (!raw) return null;
   const trimmed = raw.trim().slice(0, 64);
@@ -120,8 +120,8 @@ export function currentCorrelationId(): string | undefined {
 }
 
 /**
- * Run `fn` with `id` as the ambient correlation id. Everything downstream —
- * nested provider calls, retries, awaited helpers — inherits it without having
+ * Run `fn` with `id` as the ambient correlation id. Everything downstream,
+ * nested provider calls, retries, awaited helpers, inherits it without having
  * to thread a parameter through every signature.
  */
 export function withCorrelation<T>(id: string, fn: () => T): T {
@@ -143,7 +143,7 @@ export function correlationFromRequest(request: Request): string {
  *
  * Step 3 is what stops the trail dying at the route boundary. Middleware mints
  * the id and forwards it on the request headers, but that only reaches a
- * provider call if the route wrapped itself in withCorrelation — and 59 route
+ * provider call if the route wrapped itself in withCorrelation, and 59 route
  * handlers will not all remember to. Reading the header here makes propagation
  * automatic: a browser error report quoting x-correlation-id joins to the
  * provider call without any per-route code.
@@ -159,7 +159,7 @@ async function resolveCorrelationId(explicit?: string | null): Promise<string> {
     const inbound = cleanCorrelationId((await headers()).get(CORRELATION_HEADER));
     if (inbound) return inbound;
   } catch {
-    /* not in a request scope — fall through to a fresh id */
+    /* not in a request scope: fall through to a fresh id */
   }
   return randomUUID();
 }
@@ -167,7 +167,7 @@ async function resolveCorrelationId(explicit?: string | null): Promise<string> {
 // ---------------------------------------------------------------------------
 // Redaction
 //
-// Structural, at the logger — not by remembering at each call site. A
+// Structural, at the logger; not by remembering at each call site. A
 // credential in a log is a credential that must be rotated, and the log
 // aggregator has a longer retention than the incident.
 // ---------------------------------------------------------------------------
@@ -236,7 +236,7 @@ export function statusCodeOf(err: unknown): number | null {
  * either a successful response or a thrown error:
  *
  *   requestID     Anthropic errors (APIError)
- *   _request_id   Anthropic SUCCESSFUL responses — non-enumerable, so it does
+ *   _request_id   Anthropic SUCCESSFUL responses: non-enumerable, so it does
  *                 not survive a spread or JSON round-trip; it has to be read
  *                 directly off the object, which is why this runs on the raw
  *                 provider result rather than a copy of it
@@ -318,7 +318,7 @@ export function classifyError(err: unknown): ErrorClass {
   }
   if (type === "StripeAPIError") return "provider_unavailable";
 
-  // Nothing matched — most likely our own bug, and worth surfacing as one
+  // Nothing matched: most likely our own bug, and worth surfacing as one
   // rather than quietly filing it under "provider problem".
   return "our_bug";
 }
@@ -356,7 +356,7 @@ export class IntegrationError extends Error {
 
   /**
    * What a user or admin should see. Never show the provider's raw error to a
-   * user — classify it, log the original.
+   * user: classify it, log the original.
    */
   get userMessage(): string {
     switch (this.errorClass) {
@@ -364,7 +364,7 @@ export class IntegrationError extends Error {
       case "auth_revoked":
         return `The ${this.provider} connection needs to be re-authorized.`;
       case "rate_limited":
-        return `${this.provider} is rate limiting us — this will retry shortly.`;
+        return `${this.provider} is rate limiting us: this will retry shortly.`;
       case "provider_unavailable":
       case "timeout":
         return `${this.provider} is not responding right now. This will retry automatically.`;
@@ -404,7 +404,7 @@ const UUID_RE =
 
 /**
  * tenant_id is a foreign key to clients(id). A caller passing anything that is
- * not a client uuid — a slug, an app name, a stale id from Stripe metadata —
+ * not a client uuid (a slug, an app name, a stale id from Stripe metadata), 
  * would fail the INSERT and lose the ENTIRE log row, silently, exactly when it
  * is most needed. Drop the attribution instead and keep the record.
  */
@@ -414,7 +414,7 @@ function tenantColumn(tenantId: string | null): string | null {
 
 /**
  * Emit the structured line to stdout regardless of whether the database write
- * lands. Vercel retains these, so a Supabase outage does not blind the triage —
+ * lands. Vercel retains these, so a Supabase outage does not blind the triage;
  * which matters precisely because a Supabase outage is when you need it most.
  */
 function emitStructuredLog(record: RunRecord): void {
@@ -473,7 +473,7 @@ async function persist(record: RunRecord): Promise<void> {
     if (error) throw error;
   } catch (err) {
     captureException(err, {
-      note: "integration_runs insert failed — call log lost for this attempt",
+      note: "integration_runs insert failed: call log lost for this attempt",
       provider: record.provider,
       operation: record.operation,
     });
@@ -481,11 +481,11 @@ async function persist(record: RunRecord): Promise<void> {
 
   // A `skipped` call (feature unconfigured, nothing to send) says nothing about
   // the connection's health, so it must not reset a failure streak or refresh
-  // last_success_at — that would mask a genuinely broken connection.
+  // last_success_at: that would mask a genuinely broken connection.
   if (record.outcome === "skipped" || record.outcome === "retrying") return;
 
   try {
-    // A success always resets the counter to zero, so it needs no read — one
+    // A success always resets the counter to zero, so it needs no read; one
     // round trip instead of two. Only a failure has to read the prior count to
     // increment it. Successes dominate, so this halves the write cost of
     // instrumentation on the common path.
@@ -533,7 +533,7 @@ async function persist(record: RunRecord): Promise<void> {
     if (error) throw error;
   } catch (err) {
     captureException(err, {
-      note: "integration_connections upsert failed — health state is stale",
+      note: "integration_connections upsert failed: health state is stale",
       provider: record.provider,
     });
   }
@@ -542,12 +542,12 @@ async function persist(record: RunRecord): Promise<void> {
 /**
  * Hand the write to the platform's post-response hook so instrumentation never
  * sits in the user's latency path. Outside a request scope (cron, scripts,
- * tests) `after` throws, and we await instead — correct either way.
+ * tests) `after` throws, and we await instead, correct either way.
  */
 async function flush(record: RunRecord): Promise<void> {
   emitStructuredLog(record);
   // Start the write exactly once. Calling persist() inside the try would run it
-  // again in the catch — every call logged twice outside a request scope.
+  // again in the catch: every call logged twice outside a request scope.
   const pending = persist(record);
   try {
     const { after } = await import("next/server");
@@ -571,7 +571,7 @@ export type CallSpec = {
   tenantId?: string | null;
   /** 1-based. Same correlation id across attempts groups them together. */
   attempt?: number;
-  /** Overrides the ambient id — pass when resuming a queued job. */
+  /** Overrides the ambient id: pass when resuming a queued job. */
   correlationId?: string;
   /**
    * Set when the caller will retry this attempt itself. Records `retrying`
@@ -637,7 +637,7 @@ export async function callProvider<T>(
       outcome: spec.willRetry ? "retrying" : "failed",
     });
 
-    // `our_bug` is the class that should wake someone up — the others are
+    // `our_bug` is the class that should wake someone up, the others are
     // expected operational states with defined responses.
     if (errorClass === "our_bug") {
       captureException(err, {
@@ -661,7 +661,7 @@ export async function callProvider<T>(
 
 /**
  * Record a call we deliberately did not make (provider unconfigured, nothing
- * to send). Kept out of the health rollup — see persist() — but present in the
+ * to send). Kept out of the health rollup, see persist(), but present in the
  * call log so "why did nothing happen" has an answer.
  */
 export async function recordSkipped(
@@ -746,7 +746,7 @@ export async function recordInboundEvent(input: {
 /**
  * Declare how often a connection is EXPECTED to be exercised, so staleness
  * alerting has a baseline. Without this a connection is "on demand" and is
- * never reported stale — a connection nobody called is not a broken one.
+ * never reported stale: a connection nobody called is not a broken one.
  */
 export async function setExpectedInterval(
   provider: Provider,

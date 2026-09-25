@@ -41,6 +41,7 @@ import { AuditView } from "@/components/admin/security/AuditView";
 import { UsersRolesView } from "@/components/admin/security/UsersRolesView";
 import { PoliciesView } from "@/components/admin/security/PoliciesView";
 import { MfaSetup } from "@/components/admin/security/MfaSetup";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 export type SecurityCapabilities = {
   manageIncidents: boolean;
@@ -151,7 +152,7 @@ export function SecurityCenterPanel({
         await load();
         return true;
       } catch {
-        setError("Network error — please try again.");
+        setError("Network error: please try again.");
         return false;
       } finally {
         setBusy(false);
@@ -193,7 +194,7 @@ export function SecurityCenterPanel({
           <h2 className="display text-xl text-white">RSG Security Center</h2>
           <p className="mt-2 max-w-2xl text-sm text-white/55">
             The RSG Secure Systems Standard, operationalized: identity, data,
-            AI approvals, vendors, retention, incidents, and testing — backed by
+            AI approvals, vendors, retention, incidents, and testing, backed by
             real system data.
           </p>
         </div>
@@ -227,13 +228,16 @@ export function SecurityCenterPanel({
       )}
 
       {/* Sub-nav */}
-      <div className="flex gap-1 overflow-x-auto border-b border-white/10 pb-px">
+      <ScrollRail role="tablist" activeKey={section} keyboardTabs className="flex gap-1 border-b border-white/10 pb-px">
         {SECTIONS.map((s) => {
           const active = section === s.id;
           const Icon = s.icon;
           return (
             <button
               key={s.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
               onClick={() => setSection(s.id)}
               className={`relative inline-flex shrink-0 items-center gap-2 rounded-t-lg px-3.5 py-2.5 text-sm transition-colors ${
                 active
@@ -246,7 +250,7 @@ export function SecurityCenterPanel({
             </button>
           );
         })}
-      </div>
+      </ScrollRail>
 
       <div>
         {section === "overview" && <OverviewView overview={data.overview} />}
@@ -455,7 +459,7 @@ function BackupsView({ overview }: { overview: SecurityOverview }) {
             "What is backed up (database, uploaded files, configuration).",
             "How often backups run and how long they are retained.",
             "How a restoration would be performed and who is responsible.",
-            "Recovery testing — restore a backup into an isolated environment and verify integrity (logged in Security Tests).",
+            "Recovery testing: restore a backup into an isolated environment and verify integrity (logged in Security Tests).",
           ].map((t) => (
             <li key={t} className="flex gap-2">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-crimson-light" />

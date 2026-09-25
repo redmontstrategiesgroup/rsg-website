@@ -1,5 +1,5 @@
 /**
- * Client Lifecycle Platform — projects, milestones, tasks, progress.
+ * Client Lifecycle Platform: projects, milestones, tasks, progress.
  *
  * Server-only data access for the delivery phase of the client journey:
  * project creation from the standard phase template, milestone workflow
@@ -41,7 +41,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Discovery",
     description:
-      "We learn how your business runs today — your goals, your customers, and the day-to-day work your new system needs to support.",
+      "We learn how your business runs today; your goals, your customers, and the day-to-day work your new system needs to support.",
     owner_party: "joint",
     approval_required: false,
     deliverables: [
@@ -77,7 +77,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Design",
     description:
-      "We design what you and your customers will actually see and use — built around your brand and how people really work.",
+      "We design what you and your customers will actually see and use, built around your brand and how people really work.",
     owner_party: "rsg",
     approval_required: true,
     client_action:
@@ -114,7 +114,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Testing",
     description:
-      "We test everything thoroughly — every form, workflow, and device — and fix issues before you ever see them.",
+      "We test everything thoroughly (every form, workflow, and device) and fix issues before you ever see them.",
     owner_party: "rsg",
     approval_required: false,
     deliverables: [
@@ -140,7 +140,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Training",
     description:
-      "We teach your team how to run the system day to day, with materials you can revisit any time — no one is left guessing.",
+      "We teach your team how to run the system day to day, with materials you can revisit any time; no one is left guessing.",
     owner_party: "joint",
     approval_required: false,
     deliverables: [
@@ -176,7 +176,7 @@ export const PROJECT_PHASE_TEMPLATE: PhaseTemplate[] = [
   {
     name: "Ongoing Support",
     description:
-      "You're never on your own — support, updates, and regular strategy reviews keep your system improving over time.",
+      "You're never on your own, support, updates, and regular strategy reviews keep your system improving over time.",
     owner_party: "joint",
     approval_required: false,
     deliverables: [
@@ -204,14 +204,14 @@ export const DEFAULT_ONBOARDING_TASKS: {
   {
     title: "Confirm website and hosting access",
     description:
-      "Confirm you can reach your current website, domain, and hosting accounts. Credentials are exchanged through a secure channel we'll set up together — never send passwords in messages.",
+      "Confirm you can reach your current website, domain, and hosting accounts. Credentials are exchanged through a secure channel we'll set up together; never send passwords in messages.",
     kind: "access",
     assignee_party: "client",
   },
   {
     title: "List the tools you currently use",
     description:
-      "Tell us the software your business runs on today — scheduling, invoicing, email, spreadsheets, anything. This shapes what we connect and what we replace.",
+      "Tell us the software your business runs on today, scheduling, invoicing, email, spreadsheets, anything. This shapes what we connect and what we replace.",
     kind: "onboarding",
     assignee_party: "client",
   },
@@ -669,7 +669,7 @@ export async function approveMilestone(
   }
   if (existing.status !== "under_review") {
     throw new Error(
-      `Milestone ${id} cannot be approved from status "${existing.status}" — it must be under review.`
+      `Milestone ${id} cannot be approved from status "${existing.status}": it must be under review.`
     );
   }
 

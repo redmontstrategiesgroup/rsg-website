@@ -320,7 +320,7 @@ export function RequestsView({
               <ul className="mt-2 space-y-1.5 text-xs text-white/45">
                 {selected.activity.slice(0, 12).map((a, i) => (
                   <li key={`${a.at}-${i}`}>
-                    {fmtDateTime(a.at)} — {a.text}
+                    {fmtDateTime(a.at)}: {a.text}
                     {a.by ? ` (${a.by})` : ""}
                   </li>
                 ))}

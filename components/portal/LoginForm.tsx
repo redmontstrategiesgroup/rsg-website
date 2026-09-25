@@ -43,8 +43,8 @@ export function LoginForm() {
   }
 
   return (
-    <div className="relative grid min-h-screen lg:grid-cols-2">
-      {/* Left — brand / story */}
+    <div className="relative grid min-h-dvh lg:grid-cols-2">
+      {/* Left: brand / story */}
       <div className="relative hidden overflow-hidden border-r border-white/10 lg:block">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-grid opacity-40" />
@@ -86,12 +86,12 @@ export function LoginForm() {
             </ul>
           </div>
           <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/25">
-            RSG · Secured session · Business Consulting & AI Strategy
+            RSG · Secured session · Business Consulting & AI Implementation
           </p>
         </div>
       </div>
 
-      {/* Right — form */}
+      {/* Right: form */}
       <div className="relative flex items-center justify-center p-6 sm:p-10">
         <div className="pointer-events-none absolute inset-0 lg:hidden">
           <div className="absolute inset-0 bg-grid opacity-30" />

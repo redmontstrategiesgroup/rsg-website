@@ -4,12 +4,12 @@ import { requirePortalContext, type PortalContext } from "@/lib/lifecycle/access
 import { isSupabaseConfigured } from "@/lib/supabase";
 
 /**
- * App-mount context — the single auth + tenant-scoping entry point every mounted
- * app (Observatory, Forge, NEXUS, ...) uses, so no app re-implements the rule.
+ * App-mount context: the single auth + tenant-scoping entry point every mounted
+ * app (Forge, NEXUS, ...) uses, so no app re-implements the rule.
  *
  * The tenant is the signed-in portal client: `clientId` is what EVERY app query
  * and every ai_usage row must be scoped by. Never trust a client_id from the
- * request body — always take it from here.
+ * request body, always take it from here.
  *
  *   API route:  const auth = await requireAppApi();
  *               if (!isAppContext(auth)) return auth;   // 401/503 already shaped

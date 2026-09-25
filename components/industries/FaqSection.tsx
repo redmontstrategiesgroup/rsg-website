@@ -2,7 +2,7 @@ import { Plus } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import type { IndustryVertical } from "@/lib/industries/types";
 
-/** Vertical FAQs — the same content feeds the FAQPage JSON-LD. */
+/** Vertical FAQs: the same content feeds the FAQPage JSON-LD. */
 export function FaqSection({ vertical }: { vertical: IndustryVertical }) {
   return (
     <section id="faq" className="scroll-mt-24">

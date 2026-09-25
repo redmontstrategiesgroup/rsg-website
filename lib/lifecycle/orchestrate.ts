@@ -57,7 +57,7 @@ import { updateLeadStatus } from "@/lib/scheduling/leads";
  * Cross-stage orchestration. Each on* handler is called at the mutation site
  * (API route or admin action) and:
  *   1. advances the sales opportunity (the journey spine),
- *   2. fires the right automations (dedupe-keyed — safe to call twice),
+ *   2. fires the right automations (dedupe-keyed: safe to call twice),
  *   3. writes portal-visible activity.
  * Nothing here throws for notification failures; the primary mutation always
  * wins and side effects degrade to logged errors.
@@ -220,8 +220,8 @@ export async function onQualificationSubmitted(input: {
       : "Book your consultation"
     : "Book a conversation when the time is right";
   const nextStepLine = input.qualified
-    ? "Based on what you shared, the next step is a short Business Systems Assessment — it gives our team a clear picture before we talk."
-    : "We work with a limited number of businesses at a time. The most useful next step is a short conversation about where you are today — no commitment, and you'll leave with practical direction either way.";
+    ? "Based on what you shared, the next step is a short Business Systems Assessment; it gives our team a clear picture before we talk."
+    : "We work with a limited number of businesses at a time. The most useful next step is a short conversation about where you are today, no commitment, and you'll leave with practical direction either way.";
 
   await fireAutomation({
     key: "qualification_confirmation",
@@ -242,7 +242,7 @@ export async function onQualificationSubmitted(input: {
     inApp: {
       audience: "admin",
       title: `New qualification: ${input.lead.businessName}`,
-      body: input.qualified ? "Qualified — assessment invited." : "Routed to alternative path.",
+      body: input.qualified ? "Qualified: assessment invited." : "Routed to alternative path.",
       href: links.admin("pipeline"),
     },
   });
@@ -292,7 +292,7 @@ export async function notifyLeadAssigned(input: {
         full_name: input.fullName,
         email: input.email,
         service_category: categoryLabel(input.serviceCategory),
-        score: String(input.score ?? "—"),
+        score: String(input.score ?? "-"),
         admin_url: links.admin("pipeline"),
       },
     },
@@ -340,15 +340,15 @@ export async function onAssessmentSubmitted(
         full_name: lead?.name ?? assessment.email,
         business_name: lead?.businessName ?? assessment.email,
         email: assessment.email,
-        score: String(assessment.score ?? "—"),
+        score: String(assessment.score ?? "-"),
         recommended_category: categoryLabel(assessment.recommended_service_category),
         admin_url: links.admin("assessments"),
       },
     },
     inApp: {
       audience: "admin",
-      title: `Assessment completed — ${lead?.businessName ?? assessment.email}`,
-      body: `Score ${assessment.score ?? "—"} · ${categoryLabel(assessment.recommended_service_category)}`,
+      title: `Assessment completed: ${lead?.businessName ?? assessment.email}`,
+      body: `Score ${assessment.score ?? "-"} · ${categoryLabel(assessment.recommended_service_category)}`,
       href: links.admin("assessments"),
     },
   });
@@ -431,7 +431,7 @@ export async function onQuestionnaireSubmitted(
     },
     inApp: {
       audience: "admin",
-      title: `Prep brief ready — ${contact.businessName || contact.name || "prospect"}`,
+      title: `Prep brief ready: ${contact.businessName || contact.name || "prospect"}`,
       href: links.admin("questionnaires"),
     },
   });
@@ -582,7 +582,7 @@ export async function onContractExecuted(
         first_name: firstNameOf(signer.name),
         contract_title: contract.title,
         contract_url: links.contract(contract.token),
-        next_step_line: "your project deposit — the secure payment link is on its way.",
+        next_step_line: "your project deposit: the secure payment link is on its way.",
       },
       leadId: contract.lead_id ?? undefined,
     });
@@ -626,7 +626,7 @@ export async function onContractExecuted(
         opportunityId: contract.opportunity_id ?? undefined,
         contractId: contract.id,
         kind: "deposit",
-        description: `Project deposit — ${loaded.proposal.title}`,
+        description: `Project deposit: ${loaded.proposal.title}`,
         lineItems: [
           {
             label: "Project deposit",
@@ -690,7 +690,7 @@ export async function onInvoicePaid(
         description: invoice.description || `Invoice ${formatInvoiceNumber(invoice.number)}`,
         next_step_line:
           invoice.kind === "deposit"
-            ? "Your client portal is being activated — a welcome email with your first steps follows shortly."
+            ? "Your client portal is being activated, a welcome email with your first steps follows shortly."
             : "A record of this payment is available in your client portal.",
       },
     },
@@ -753,7 +753,7 @@ export async function onInvoicePaid(
       clientId,
       opportunityId: opportunity?.id ?? null,
       contractId: invoice.contract_id ?? null,
-      name: proposal?.title ?? `${opportunity?.name ?? payer.name} — Systems Project`,
+      name: proposal?.title ?? `${opportunity?.name ?? payer.name}: Systems Project`,
       summary: proposal
         ? `Engagement created from approved proposal "${proposal.title}".`
         : "",
@@ -769,7 +769,7 @@ export async function onInvoicePaid(
     });
   }
 
-  // 4. Welcome email — with a set-password link for brand-new accounts.
+  // 4. Welcome email, with a set-password link for brand-new accounts.
   const portalLine = provision.ownerInvite
     ? links.invite(provision.ownerInvite.token)
     : links.portal();
@@ -784,12 +784,12 @@ export async function onInvoicePaid(
         first_name: firstNameOf(payer.name),
         portal_url: portalLine,
         next_step_line:
-          "a short onboarding checklist — brand assets, access confirmations, and your kickoff scheduling.",
+          "a short onboarding checklist: brand assets, access confirmations, and your kickoff scheduling.",
       },
     },
     inApp: {
       audience: "admin",
-      title: `Deposit paid — ${opportunity?.name ?? payer.name}`,
+      title: `Deposit paid: ${opportunity?.name ?? payer.name}`,
       body: "Portal activated and project created.",
       href: links.admin("clients"),
     },
@@ -798,7 +798,7 @@ export async function onInvoicePaid(
   await logClientActivity({
     clientId,
     actorType: "system",
-    action: `Deposit received (${formatCents(invoice.total_cents)}) — portal activated`,
+    action: `Deposit received (${formatCents(invoice.total_cents)}): portal activated`,
     entityType: "invoice",
     entityId: invoice.id,
   });
@@ -839,7 +839,7 @@ export async function onPaymentFailed(
     },
     inApp: {
       audience: "admin",
-      title: `Payment failed — ${formatInvoiceNumber(invoice.number)}`,
+      title: `Payment failed: ${formatInvoiceNumber(invoice.number)}`,
       body: reason,
       href: links.admin("billing"),
     },
@@ -920,7 +920,7 @@ export async function onMilestoneStatusChanged(input: {
       inApp: {
         audience: "client",
         clientId: client.id,
-        title: `${milestone.name} — ${statusLabel}`,
+        title: `${milestone.name}: ${statusLabel}`,
         href: "/portal/project",
       },
     });
@@ -1322,7 +1322,7 @@ export async function runLifecycleCron(): Promise<SweepCounts> {
             first_name: firstNameOf(contact.name),
             ticket_number: String(ticket.number),
             subject: ticket.subject,
-            note: "This ticket is waiting on a reply from your side — it will stay open, and any details you can add help us resolve it faster.",
+            note: "This ticket is waiting on a reply from your side; it will stay open, and any details you can add help us resolve it faster.",
             portal_url: `${links.portal()}/support`,
           },
         },
@@ -1375,7 +1375,7 @@ async function proposalRecipientEmail(
   );
 }
 
-/** Who pays this invoice — client contact first, then the opportunity's lead. */
+/** Who pays this invoice: client contact first, then the opportunity's lead. */
 export async function invoiceContact(
   invoice: Invoice,
 ): Promise<{ name: string; email: string } | null> {

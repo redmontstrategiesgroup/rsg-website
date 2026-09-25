@@ -1,10 +1,10 @@
-import { DEMO_SCHEMA_VERSION, type DemoState } from "./engine";
+import { DEMO_SCHEMA_VERSION, type DemoState } from "./engine.ts";
 
 /**
  * Per-visitor demo session persistence.
  *
  * Sessions live entirely in the visitor's own browser (localStorage), so:
- *  - every visitor is isolated by construction — no shared server state;
+ *  - every visitor is isolated by construction, no shared server state;
  *  - demo records can never mix with production data;
  *  - state survives page navigation and reloads;
  *  - sessions expire automatically and can be reset at any time.
@@ -20,6 +20,11 @@ type StoredSession = {
 
 function key(slug: string): string {
   return `rsg-demo:${slug}`;
+}
+
+/** Session as persisted: no toasts, no spotlight state. */
+export function serializeSession(state: DemoState): DemoState {
+  return { ...state, toasts: [], fresh: {} };
 }
 
 export function loadSession(slug: string): DemoState | null {
@@ -39,7 +44,7 @@ export function loadSession(slug: string): DemoState | null {
       return null;
     }
     // Sessions are re-hydrated without transient UI state.
-    return { ...stored.state, toasts: [] };
+    return { ...stored.state, toasts: [], fresh: {} };
   } catch {
     return null;
   }
@@ -51,11 +56,11 @@ export function saveSession(slug: string, state: DemoState): void {
     const stored: StoredSession = {
       schema: DEMO_SCHEMA_VERSION,
       savedAt: Date.now(),
-      state: { ...state, toasts: [] },
+      state: serializeSession(state),
     };
     window.localStorage.setItem(key(slug), JSON.stringify(stored));
   } catch {
-    // Storage may be full or blocked (private mode) — the demo still works
+    // Storage may be full or blocked (private mode), the demo still works
     // in-memory; persistence is best-effort.
   }
 }
@@ -71,7 +76,7 @@ export function clearSession(slug: string): void {
 
 /**
  * Writes a visitor-reviewable draft into the contact form (same mechanism the
- * form itself uses for drafts) so demo context arrives visibly and editably —
+ * form itself uses for drafts) so demo context arrives visibly and editably,
  * never silently transmitted.
  */
 export function writeContactDraft(fields: Record<string, string>): void {

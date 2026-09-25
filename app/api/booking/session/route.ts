@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Only allow isTest from admin-authenticated callers — ignore from public
+    // Only allow isTest from admin-authenticated callers, ignore from public
     const session = await createBookingSession({
       attribution: body.attribution,
       timezone: body.timezone,
@@ -124,7 +124,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Session not found or expired." }, { status: 404 });
   }
 
-  // Public-safe projection — no internal scores unless test
+  // Public-safe projection, no internal scores unless test
   return NextResponse.json({
     token: session.token,
     step: session.step,

@@ -2,7 +2,7 @@ import type { AnalyticsPoint } from "../types";
 
 /**
  * Lightweight inline-SVG charts for the demo analytics views.
- * No chart library — keeps the demos fast and the bundle small.
+ * No chart library: keeps the demos fast and the bundle small.
  */
 
 export function BarChart({
@@ -28,7 +28,7 @@ export function BarChart({
           const isAccent = accentLast && i === points.length - 1;
           return (
             <div key={p.label} className="group flex flex-1 flex-col items-center gap-2">
-              <span className="text-[0.6rem] tabular-nums text-white/40 opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="text-[0.6rem] tabular-nums text-white/40 transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100">
                 {p.value}
               </span>
               <div

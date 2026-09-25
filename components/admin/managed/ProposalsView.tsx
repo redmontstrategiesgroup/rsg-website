@@ -293,7 +293,7 @@ export function ProposalsView({
   async function sendProposal(p?: Proposal) {
     const id = p?.id ?? draft?.id;
     if (!id) {
-      // Unsaved draft — save & send in one call.
+      // Unsaved draft: save & send in one call.
       await save("sent");
       return;
     }
@@ -359,7 +359,7 @@ export function ProposalsView({
                       ? clientLabel(clients, p.clientId)
                       : p.leadId
                         ? `Lead ${p.leadId.slice(0, 8)}…`
-                        : "—"}
+                        : "-"}
                   </td>
                   <td className="px-4 py-3 text-xs text-white/55">
                     {p.kind.replaceAll("_", " ")}
@@ -370,7 +370,7 @@ export function ProposalsView({
                   <td className="px-4 py-3 text-white/70">
                     {p.monthlyPriceCents != null
                       ? `${formatCents(p.monthlyPriceCents)}/mo`
-                      : "—"}
+                      : "-"}
                   </td>
                   <td className="px-4 py-3 text-xs text-white/50">
                     {fmtDate(p.sentAt)} · {fmtDate(p.viewedAt)} ·{" "}
@@ -415,7 +415,7 @@ export function ProposalsView({
       {shareUrl ? (
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-emerald-400/25 bg-emerald-400/[0.06] px-4 py-3 text-sm">
           <span className="text-emerald-200">Share link:</span>
-          <code className="max-w-full overflow-x-auto text-xs text-white/80">
+          <code className="min-w-0 max-w-full break-all text-xs text-white/80">
             {shareUrl}
           </code>
           <button
@@ -603,7 +603,7 @@ export function ProposalsView({
                       .filter((p) => p.active)
                       .map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name} — {formatMonthlyPrice(p)}
+                          {p.name}: {formatMonthlyPrice(p)}
                         </option>
                       ))}
                   </select>

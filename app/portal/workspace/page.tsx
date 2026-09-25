@@ -19,14 +19,14 @@ export const metadata: Metadata = {
 export default async function WorkspacePage() {
   const ctx = await requirePortalPage();
 
-  // Tolerate a not-yet-migrated database — render calm empty states.
+  // Tolerate a not-yet-migrated database: render calm empty states.
   const [requests, files, projects] = await Promise.all([
     listRequestsForClient(ctx.client.id, { limit: 100 }).catch(() => []),
     listFilesFor({ clientId: ctx.client.id }, { limit: 100 }).catch(() => []),
     listProjectsForClient(ctx.client.id).catch(() => []),
   ]);
 
-  // Threads for open requests (client-visible messages only — internal
+  // Threads for open requests (client-visible messages only, internal
   // notes are filtered at the query layer, never in the browser).
   const threads: Record<string, Message[]> = {};
   await Promise.all(
@@ -43,7 +43,7 @@ export default async function WorkspacePage() {
       <PageHeader
         eyebrow="Workspace"
         title="Requests, messages & files"
-        description="One organized place for everything — no more digging through email threads or text messages."
+        description="One organized place for everything, no more digging through email threads or text messages."
       />
       <WorkspaceView
         requests={requests}

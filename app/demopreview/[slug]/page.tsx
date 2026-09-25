@@ -31,7 +31,7 @@ export default async function DemoPreviewPage({
   if (!config) notFound();
 
   return (
-    <main className="min-h-screen bg-base p-2">
+    <main className="min-h-dvh bg-base p-2">
       <DemoOS config={config} embedded />
     </main>
   );

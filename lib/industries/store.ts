@@ -2,7 +2,7 @@
  * Industry vertical storage (server-only).
  *
  * Authored defaults live in lib/industries/content/*. Admin edits are stored
- * as full-object overrides — Supabase when configured, JSON file fallback in
+ * as full-object overrides: Supabase when configured, JSON file fallback in
  * dev (same pattern as lib/connect.ts). Reads always section-merge the
  * override over the authored default so schema additions never leave a page
  * half-empty.
@@ -89,7 +89,7 @@ async function readOverridesFromSupabase(): Promise<Map<string, unknown> | null>
     }
     return map;
   } catch (err) {
-    console.warn("[industries] Supabase read failed — using file/defaults.", err);
+    console.warn("[industries] Supabase read failed: using file/defaults.", err);
     return null;
   }
 }

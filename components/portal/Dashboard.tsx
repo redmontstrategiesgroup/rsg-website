@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LogOut,
   Activity,
   Boxes,
   FolderKanban,
@@ -17,7 +16,6 @@ import {
   Zap,
   BarChart3,
   Clock,
-  Download,
   ChevronRight,
   ShieldCheck,
 } from "lucide-react";
@@ -26,14 +24,16 @@ import type {
   PortalSystem,
   SystemStatus,
   ActivityKind,
+  PortalInvoice,
 } from "@/lib/types";
 // Type-only import: keeps the server-only store (node:fs) out of the bundle.
 import type { PortalManagedData } from "@/lib/managed-services/portal-data";
+import type { PortalBookingSummary } from "@/lib/scheduling/booking";
 import { formatMetricValue } from "@/lib/format";
 import { CountUp } from "@/components/CountUp";
-import { Logo } from "@/components/Logo";
 import { PlanServices } from "@/components/portal/PlanServices";
-import { postJson } from "@/lib/api";
+import { PortalShell } from "@/components/portal/PortalShell";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Tab = "overview" | "plan" | "systems" | "projects" | "billing";
 
@@ -63,13 +63,14 @@ const ACTIVITY_ICON: Record<ActivityKind, typeof Activity> = {
 export function Dashboard({
   client,
   managed,
+  booking,
 }: {
   client: ClientPublic;
   managed?: PortalManagedData | null;
+  booking?: PortalBookingSummary | null;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("overview");
-  const [loggingOut, setLoggingOut] = useState(false);
 
   const liveCount = useMemo(
     () => client.systems.filter((s) => s.status === "live").length,
@@ -78,7 +79,7 @@ export function Dashboard({
 
   // Session keepalive: while the portal is open, ping /api/auth/me so the
   // sliding session cookie keeps renewing. A 401 means the session was
-  // revoked or expired — bounce to the login screen.
+  // revoked or expired: bounce to the login screen.
   useEffect(() => {
     const id = setInterval(
       () => {
@@ -96,50 +97,9 @@ export function Dashboard({
     return () => clearInterval(id);
   }, [router]);
 
-  async function logout() {
-    setLoggingOut(true);
-    await postJson("/api/auth/logout");
-    router.push("/login");
-    router.refresh();
-  }
-
   return (
-    <div className="min-h-screen bg-base">
-      {/* Ambient background */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-grid opacity-[0.35]" />
-        <div className="absolute left-1/2 top-[-10%] h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-crimson/[0.08] blur-[130px]" />
-      </div>
-
-      {/* Top bar */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-base/70 backdrop-blur-xl">
-        <div className="container-px flex h-20 items-center justify-between gap-4">
-          <Link href="/" aria-label="Redmont Strategies Group home">
-            <Logo />
-          </Link>
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-medium text-white">{client.name}</p>
-              <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
-                {client.company}
-              </p>
-            </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 bg-crimson/15 font-display text-sm font-semibold text-crimson-light">
-              {initials(client.name)}
-            </div>
-            <button
-              onClick={logout}
-              disabled={loggingOut}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
-            >
-              <LogOut size={15} />
-              <span className="hidden sm:inline">{loggingOut ? "…" : "Sign out"}</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container-px py-10 sm:py-12">
+    <PortalShell company={client.company} userName={client.name} role="owner">
+      <div>
         {/* Welcome */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
@@ -169,13 +129,22 @@ export function Dashboard({
         </motion.div>
 
         {/* Tabs */}
-        <div className="no-scrollbar mt-9 flex gap-2 overflow-x-auto border-b border-white/10 pb-px">
+        <ScrollRail
+          role="tablist"
+          aria-label="Portal sections"
+          activeKey={tab}
+          keyboardTabs
+          className="mt-9 flex gap-2 border-b border-white/10 pb-px"
+        >
           {TABS.map((t) => {
             const active = tab === t.id;
             const Icon = t.icon;
             return (
               <button
                 key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
                 onClick={() => setTab(t.id)}
                 className={`relative inline-flex shrink-0 items-center gap-2 rounded-t-lg px-4 py-3 text-sm transition-colors ${
                   active ? "text-white" : "text-white/50 hover:text-white/80"
@@ -192,7 +161,7 @@ export function Dashboard({
               </button>
             );
           })}
-        </div>
+        </ScrollRail>
 
         {/* Panels */}
         <div className="mt-8">
@@ -204,7 +173,7 @@ export function Dashboard({
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
-              {tab === "overview" && <Overview client={client} />}
+              {tab === "overview" && <Overview client={client} booking={booking} />}
               {tab === "plan" && (
                 <PlanServices client={client} data={managed ?? null} />
               )}
@@ -214,18 +183,25 @@ export function Dashboard({
             </motion.div>
           </AnimatePresence>
         </div>
-      </main>
-    </div>
+      </div>
+    </PortalShell>
   );
 }
 
 /* ------------------------------- Overview ------------------------------ */
 
-function Overview({ client }: { client: ClientPublic }) {
+function Overview({
+  client,
+  booking,
+}: {
+  client: ClientPublic;
+  booking?: PortalBookingSummary | null;
+}) {
   const isEmpty =
     client.metrics.length === 0 &&
     client.systems.length === 0 &&
-    client.activity.length === 0;
+    client.activity.length === 0 &&
+    !booking;
 
   if (isEmpty) {
     return (
@@ -238,6 +214,8 @@ function Overview({ client }: { client: ClientPublic }) {
 
   return (
     <div className="space-y-8">
+      {booking && <ConsultationCard booking={booking} />}
+
       {/* KPI grid */}
       {client.metrics.length > 0 && (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -343,6 +321,80 @@ function Overview({ client }: { client: ClientPublic }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/* --------------------------- Consultation card -------------------------- */
+
+const BOOKING_STATUS_STYLES: Record<
+  PortalBookingSummary["status"],
+  { text: string; label: string }
+> = {
+  confirmed: { text: "text-emerald-300", label: "Confirmed" },
+  rescheduled: { text: "text-amber-300", label: "Rescheduled" },
+  cancelled: { text: "text-white/40", label: "Cancelled" },
+  completed: { text: "text-white/50", label: "Completed" },
+  no_show: { text: "text-crimson-light", label: "No-show" },
+};
+
+function formatBookingTime(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
+
+function ConsultationCard({ booking }: { booking: PortalBookingSummary }) {
+  const st = BOOKING_STATUS_STYLES[booking.status] ?? BOOKING_STATUS_STYLES.confirmed;
+  const upcoming =
+    (booking.status === "confirmed" || booking.status === "rescheduled") &&
+    new Date(booking.starts_at).getTime() > Date.now();
+  const manageable = booking.status !== "cancelled" && booking.status !== "completed";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="card flex flex-col items-start justify-between gap-4 p-5 sm:flex-row sm:items-center"
+    >
+      <div className="flex items-center gap-3.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-crimson/15 text-crimson-light">
+          <CalendarCheck size={16} />
+        </span>
+        <div>
+          <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+            {upcoming ? "Upcoming consultation" : "Your consultation"}
+          </p>
+          <p className="mt-1 text-sm font-medium text-white">
+            {formatBookingTime(booking.starts_at)}
+            {booking.appointment_type_name ? ` · ${booking.appointment_type_name}` : ""}
+          </p>
+          {booking.team_member_name && (
+            <p className="mt-0.5 text-[0.78rem] text-white/45">
+              with {booking.team_member_name}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-3 self-stretch sm:self-auto">
+        <span className={`font-mono text-[0.58rem] uppercase tracking-label ${st.text}`}>
+          {st.label}
+        </span>
+        {manageable && (
+          <Link
+            href={`/booking/manage/${booking.manage_token}`}
+            className="btn-ghost px-3.5 py-2 text-xs"
+          >
+            Manage
+            <ChevronRight size={13} />
+          </Link>
+        )}
+      </div>
+    </motion.div>
   );
 }
 
@@ -571,48 +623,54 @@ function Billing({ client }: { client: ClientPublic }) {
             configured for your account.
           </p>
         ) : (
-        <div className="mt-5 overflow-hidden rounded-xl border border-white/10">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
-                <th className="px-4 py-3 font-normal">Invoice</th>
-                <th className="px-4 py-3 font-normal">Date</th>
-                <th className="px-4 py-3 font-normal">Amount</th>
-                <th className="px-4 py-3 font-normal">Status</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {client.invoices.map((inv) => (
-                <tr key={inv.id} className="border-b border-white/[0.06] last:border-0">
-                  <td className="px-4 py-3.5 font-mono text-white/80">{inv.id}</td>
-                  <td className="px-4 py-3.5 text-white/60">{inv.date}</td>
-                  <td className="px-4 py-3.5 text-white/80">
-                    ${inv.amount.toLocaleString("en-US")}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span
-                      className={`rounded-full px-2.5 py-1 font-mono text-[0.52rem] uppercase tracking-label ${
-                        inv.status === "Paid"
-                          ? "bg-emerald-400/10 text-emerald-300"
-                          : inv.status === "Due"
-                          ? "bg-crimson/15 text-crimson-light"
-                          : "bg-white/[0.06] text-white/50"
-                      }`}
-                    >
-                      {inv.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <button className="inline-flex items-center gap-1 font-mono text-[0.56rem] uppercase tracking-label text-white/40 transition-colors hover:text-white">
-                      <Download size={12} />
-                      PDF
-                    </button>
-                  </td>
+        <div className="mt-5">
+          {/* Phones: one card per invoice. The 5-column table below needs
+              ~560px and its wrapper was overflow-hidden, so the last column
+              was simply cut off on a 375px screen. */}
+          <ul className="space-y-2 md:hidden">
+            {client.invoices.map((inv) => (
+              <li
+                key={inv.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-mono text-xs text-white/80">{inv.id}</p>
+                  <p className="mt-0.5 text-xs text-white/50">{inv.date}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-sm text-white/85">${inv.amount.toLocaleString("en-US")}</p>
+                  <InvoiceStatus status={inv.status} className="mt-1" />
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="hidden overflow-hidden rounded-xl border border-white/10 md:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                  <th className="px-4 py-3 font-normal">Invoice</th>
+                  <th className="px-4 py-3 font-normal">Date</th>
+                  <th className="px-4 py-3 font-normal">Amount</th>
+                  <th className="px-4 py-3 font-normal">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {client.invoices.map((inv) => (
+                  <tr key={inv.id} className="border-b border-white/[0.06] last:border-0">
+                    <td className="px-4 py-3.5 font-mono text-white/80">{inv.id}</td>
+                    <td className="px-4 py-3.5 text-white/60">{inv.date}</td>
+                    <td className="px-4 py-3.5 text-white/80">
+                      ${inv.amount.toLocaleString("en-US")}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <InvoiceStatus status={inv.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
         )}
       </div>
@@ -646,18 +704,31 @@ function EmptyState({
 /* -------------------------------- helpers ------------------------------ */
 
 /** First name, skipping an honorific like "Dr." / "Mr." */
+function InvoiceStatus({
+  status,
+  className = "",
+}: {
+  status: PortalInvoice["status"];
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-block rounded-full px-2.5 py-1 font-mono text-[0.52rem] uppercase tracking-label ${
+        status === "Paid"
+          ? "bg-emerald-400/10 text-emerald-300"
+          : status === "Due"
+            ? "bg-crimson/15 text-crimson-light"
+            : "bg-white/[0.06] text-white/50"
+      } ${className}`}
+    >
+      {status}
+    </span>
+  );
+}
+
 function firstName(name: string): string {
   const parts = name.split(" ").filter(Boolean);
   const titles = new Set(["dr.", "dr", "mr.", "mr", "mrs.", "mrs", "ms.", "ms", "prof.", "prof"]);
   const first = titles.has(parts[0]?.toLowerCase()) ? parts[1] : parts[0];
   return first ?? name;
-}
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 }

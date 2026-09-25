@@ -219,7 +219,7 @@ export function BookingManageClient({
             <li>· We review what you shared before the call so we start prepared.</li>
             <li>· We talk through your goals and where your business is today.</li>
             <li>· We identify the strongest opportunities for growth, efficiency, or automation.</li>
-            <li>· You leave with practical recommended next steps — no obligation.</li>
+            <li>· You leave with practical recommended next steps, no obligation.</li>
           </ul>
         </div>
       )}
@@ -287,7 +287,7 @@ export function BookingManageClient({
       {mode === "reschedule" && (
         <div className="space-y-4 border border-white/10 p-5">
           <p className="text-sm text-white/60">Choose a new time</p>
-          <div className="max-h-64 space-y-2 overflow-y-auto">
+          <div className="max-h-64 space-y-2 overflow-y-auto overscroll-contain">
             {slots.map((s) => (
               <button
                 key={s.start}

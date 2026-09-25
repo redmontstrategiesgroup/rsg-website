@@ -32,3 +32,23 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Responsive audit raw output (the .txt summary is committed as evidence)
+audit-out/*.json
+
+# Tour walker screenshots (debugging aid, not committed evidence)
+/.tour-shots/
+
+# Claude Code worktrees
+.claude/worktrees/
+
+# Captured build logs (regenerate with `npm run build`)
+/build_output.txt
+
+# Responsive-audit screenshots (debugging aid; the .txt summaries are the evidence)
+audit-out/*.png
+
+# 2026-07-27 logical backup of the retired Supabase project xnhbrfbuvssxpciikhws.
+# data.sql carries real contact rows (emails, a phone number), so it must not be
+# pushed. Kept on disk for restores; the live project is dyajmgddsiqcnlehqbhl.
+/supabase/backup-2026-07-27/

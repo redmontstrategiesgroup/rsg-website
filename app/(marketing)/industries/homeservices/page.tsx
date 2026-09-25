@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
 import { getVertical } from "@/lib/industries/store";
+import { VERTICAL_ROUTES } from "@/lib/industries/types";
 import { VerticalHero } from "@/components/industries/VerticalHero";
 import { DispatchBoardVisual } from "@/components/industries/visuals";
 import { ProblemsSection } from "@/components/industries/ProblemsSection";
@@ -13,10 +14,10 @@ import { IntegrationsSection } from "@/components/industries/IntegrationsSection
 import { ComplianceSection } from "@/components/industries/ComplianceSection";
 import { AssessmentForm } from "@/components/industries/AssessmentForm";
 import { FaqSection } from "@/components/industries/FaqSection";
-import { VerticalCtaBand } from "@/components/industries/VerticalCtaBand";
 import { VerticalJsonLd } from "@/components/industries/VerticalJsonLd";
 
 const SLUG = "home-services" as const;
+const ROUTE = VERTICAL_ROUTES[SLUG];
 
 /** Admin edits show up within 5 minutes without a redeploy. */
 export const revalidate = 300;
@@ -26,11 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: v.seo.title,
     description: v.seo.description,
-    alternates: { canonical: `/industries/${SLUG}` },
+    alternates: { canonical: ROUTE },
     openGraph: {
       title: v.seo.title,
       description: v.seo.description,
-      url: `/industries/${SLUG}`,
+      url: ROUTE,
       images: ["/og.png"],
     },
     robots: v.status === "published" ? undefined : { index: false, follow: false },
@@ -48,7 +49,7 @@ export default async function HomeServicesPage() {
       <ProblemsSection
         vertical={vertical}
         variant="tickets"
-        heading="Ten places a service business quietly loses jobs."
+        heading="Five places a service business quietly loses jobs."
       />
       <WorkflowMap vertical={vertical} variant="pipeline" />
       <SystemsGrid vertical={vertical} />
@@ -58,7 +59,6 @@ export default async function HomeServicesPage() {
       <ComplianceSection vertical={vertical} />
       <AssessmentForm vertical={vertical} />
       <FaqSection vertical={vertical} />
-      <VerticalCtaBand vertical={vertical} />
     </PageShell>
   );
 }

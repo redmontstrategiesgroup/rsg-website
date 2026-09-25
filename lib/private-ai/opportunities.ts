@@ -122,7 +122,7 @@ export async function listPrivateAiOpportunities(): Promise<PrivateAiOpportunity
       if (error) throw error;
       if (data?.length) return data.map((r) => rowToOpportunity(r as Record<string, unknown>));
     } catch (err) {
-      console.warn("[private-ai] list failed — using file store.", err);
+      console.warn("[private-ai] list failed: using file store.", err);
     }
   }
   const rows = await readFileStore();
@@ -147,8 +147,8 @@ export async function createPrivateAiOpportunity(
     `Business type: ${input.config.businessType}`,
     `System: ${input.config.systemType}`,
     `Deployment: ${input.config.deployment}`,
-    `Data sources: ${input.config.dataSources.join(", ") || "—"}`,
-    `Privacy controls: ${input.config.privacyControls.join(", ") || "—"}`,
+    `Data sources: ${input.config.dataSources.join(", ") || "-"}`,
+    `Privacy controls: ${input.config.privacyControls.join(", ") || "-"}`,
   ].join("\n");
 
   const leadResult = await processLead({
@@ -158,7 +158,7 @@ export async function createPrivateAiOpportunity(
     phone: input.phone,
     website: "",
     industry: input.industry || input.config.businessType,
-    problem: `Custom Private AI inquiry — ${input.config.systemType.replaceAll("_", " ")} (${input.config.deployment.replaceAll("_", " ")})`,
+    problem: `Custom Private AI inquiry: ${input.config.systemType.replaceAll("_", " ")} (${input.config.deployment.replaceAll("_", " ")})`,
     improve: input.privacyConcerns || "Design a private AI system around our workflows and data.",
     submittedAt: now,
     timeline: input.timeline,
@@ -267,7 +267,7 @@ export async function createPrivateAiOpportunity(
       if (error) throw error;
       return { opportunity, leadId: opportunity.leadId };
     } catch (err) {
-      console.warn("[private-ai] Supabase insert failed — using file store.", err);
+      console.warn("[private-ai] Supabase insert failed: using file store.", err);
     }
   }
 
@@ -340,7 +340,7 @@ export async function updatePrivateAiOpportunity(
       if (error) throw error;
       return next;
     } catch (err) {
-      console.warn("[private-ai] update failed — using file store.", err);
+      console.warn("[private-ai] update failed: using file store.", err);
     }
   }
 

@@ -8,7 +8,7 @@ Two kinds of destination use it, differing only in payload and endpoint:
 | `client` | a subscriber's URL in `webhook_endpoints` | `enqueueWebhook()` from booking / qualification / reminders |
 | `registry` | a per-app Supabase project's `registry-sync` function | `lib/webhooks/registry-sync.ts` |
 
-Inbound webhooks we *receive* (Stripe) are separate — see
+Inbound webhooks we *receive* (Stripe) are separate, see
 `app/api/stripe/webhook/route.ts`, which is already replay-guarded by
 `claimStripeEvent(event.id)` before any processing.
 
@@ -48,7 +48,7 @@ Three rules that are not optional:
 - **Sign the raw bytes.** Re-serialising parsed JSON changes key order and
   whitespace, and the signature stops matching.
 - **Reject a timestamp more than 5 minutes old.** The timestamp is inside the
-  signed material specifically so it cannot be rewritten — a signature with no
+  signed material specifically so it cannot be rewritten, a signature with no
   freshness check is valid forever, which is what makes captured requests
   replayable.
 - **Compare in constant time.** `==` leaks how many leading characters matched.
@@ -65,7 +65,7 @@ same domain event, so:
 > Record the key before you act on the event. If you have seen it, return 200 and
 > do nothing.
 
-Returning 200 for a duplicate is correct — it is not an error, and treating it as
+Returning 200 for a duplicate is correct; it is not an error, and treating it as
 one makes us retry something you already processed.
 
 ### Ordering
@@ -73,7 +73,7 @@ one makes us retry something you already processed.
 `X-RSG-Sequence` is monotonic **per endpoint**. Events are attempted in sequence
 order, but a failed event backs off while later ones proceed, so arrival order
 can still differ from production order. There is deliberately no head-of-line
-blocking — one poisoned event must not freeze your entire stream.
+blocking, one poisoned event must not freeze your entire stream.
 
 Use the sequence to *detect* a gap or a reorder. Do not assume it never happens.
 
@@ -83,7 +83,7 @@ Use the sequence to *detect* a gap or a reorder. Do not assume it never happens.
 |---|---|
 | `2xx` | mark delivered, done |
 | `408`, `429` | retry with backoff (`Retry-After` honoured, capped at 1h) |
-| other `4xx` | **give up immediately** — dead-letter it |
+| other `4xx` | **give up immediately**: dead-letter it |
 | `5xx`, timeout, connection error | retry with backoff |
 
 A `4xx` means the request is wrong; repeating it unchanged cannot succeed. If you
@@ -107,7 +107,7 @@ import { replayDeadLetters } from "@/lib/webhooks/outbox";
 await replayDeadLetters({ endpointId: "…", since: new Date("2026-07-01") });
 ```
 
-Replay resets the attempt counter — it is a deliberate decision made after the
+Replay resets the attempt counter: it is a deliberate decision made after the
 cause was addressed, so it gets a fresh budget rather than one attempt against an
 exhausted one.
 
@@ -125,9 +125,9 @@ than only in this table.
 
 ### Delivery is driven by cron
 
-- `/api/cron/scheduling` every 5 minutes — claims and delivers a batch, releases
+- `/api/cron/scheduling` every 5 minutes: claims and delivers a batch, releases
   claims orphaned by workers that died mid-flight, and drains client tombstones.
-- `/api/cron/registry` daily at 03:17 — reconciles the client registry.
+- `/api/cron/registry` daily at 03:17: reconciles the client registry.
 
 If the cron stops firing, nothing delivers and nothing errors. That is why the
 scheduling route records a heartbeat *before* doing any work.
@@ -140,14 +140,14 @@ The website is the source of truth for who a client is; each app project keeps a
 read-only mirror. See `docs/per-app-supabase.md` §2 for the topology.
 
 - **Version, not timestamp.** `clients.registry_version` is bumped by a trigger
-  only when `name` or `status` changes — not on every dashboard refresh. The
+  only when `name` or `status` changes, not on every dashboard refresh. The
   receiver applies an event only if `version` is greater than what it holds, so
   out-of-order delivery settles correctly with no coordination.
 - **Deletion is an event.** Clients are hard-deleted, so an `AFTER DELETE`
   trigger writes `client_registry_tombstones`. Without it a deleted client would
   simply stop being mentioned and live on in five app databases forever.
 - **Push plus reconcile.** Push handles latency; the nightly sweep handles what
-  was dropped while an app project was paused. Do not rely on push alone — a
+  was dropped while an app project was paused. Do not rely on push alone, a
   paused project errors for days, by which time every delivery for it has
   dead-lettered and nothing else would retry them.
 
@@ -166,5 +166,5 @@ await registerAppDestination({
 ```
 
 The secret must match that project's `REGISTRY_SYNC_SECRET` and must be
-**distinct per app** — one shared secret across five projects means one leak
+**distinct per app**, one shared secret across five projects means one leak
 compromises all five.

@@ -77,7 +77,7 @@ export function AgreementClient({
       if (data.signatures) setSignatures(data.signatures);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Signing failed — please try again.");
+      setError(e instanceof Error ? e.message : "Signing failed: please try again.");
     } finally {
       setBusy(false);
     }
@@ -96,7 +96,7 @@ export function AgreementClient({
         )}
         {status === "signed" && contract.requires_countersign && (
           <div className="mb-8 print:hidden">
-            <Banner tone="info" title="Signed — awaiting countersignature.">
+            <Banner tone="info" title="Signed: awaiting countersignature.">
               Redmont countersigns within one business day. You&rsquo;ll receive
               your completed copy by email automatically.
             </Banner>

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Check, ShieldCheck, Workflow, Inbox, Users } from "lucide-react";
 import { Reveal, RevealGroup } from "@/components/Reveal";
 import { TrackedLink } from "@/components/TrackedLink";
 import { BuildSystemCta } from "./BuildSystemCta";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import type { IndustryConfig } from "./types";
 
 /* ------------------------------------------------------------------ */
@@ -16,7 +16,7 @@ export function DemoPageHeader({ config }: { config: IndustryConfig }) {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/demos"
-            className="text-[0.75rem] sm:text-[0.68rem] font-medium uppercase tracking-[0.2em] text-white/40 transition-colors hover:text-white"
+            className="inline-flex min-h-11 items-center text-[0.75rem] font-medium uppercase tracking-[0.2em] text-white/40 transition-colors hover:text-white sm:text-[0.68rem] lg:min-h-0"
           >
             Demo Systems
           </Link>
@@ -54,10 +54,9 @@ export function AutomationFlow({
   flow: IndustryConfig["builderFlow"];
 }) {
   return (
-    <div className="min-w-0 max-w-full overflow-x-auto pb-3 no-scrollbar">
-      <ol className="flex min-w-max items-stretch gap-0 px-1 py-2">
+    <ScrollRail as="ol" arrows className="flex items-stretch gap-0 px-1 py-2 pb-3">
         {flow.steps.map((step, i) => (
-          <li key={step.label} className="flex items-center">
+          <li key={step.label} className="flex shrink-0 items-center">
             <div
               className={`relative w-40 shrink-0 rounded-lg border px-3.5 py-3 ${
                 i === 0
@@ -80,113 +79,7 @@ export function AutomationFlow({
             )}
           </li>
         ))}
-      </ol>
-    </div>
-  );
-}
-
-export function BuilderSection({ config }: { config: IndustryConfig }) {
-  return (
-    <section className="container-px py-10 sm:py-20">
-      <Reveal>
-        <span className="label">Automation builder</span>
-        <h2 className="display mt-4 text-2xl sm:text-3xl">
-          Under the hood: {config.builderFlow.title}
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55">
-          Every workflow in this demo is a sequence your team can see, edit, pause, and approve —
-          not a black box.
-        </p>
-      </Reveal>
-      <Reveal delay={0.1} className="mt-8">
-        <div className="rounded-xl border border-white/10 bg-base-900/60 p-4 sm:p-6">
-          <AutomationFlow flow={config.builderFlow} />
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* System breakdown                                                    */
-/* ------------------------------------------------------------------ */
-
-export function SystemBreakdown({ config }: { config: IndustryConfig }) {
-  const cols = [
-    {
-      icon: Inbox,
-      title: "What enters the system",
-      items: config.breakdown.inputs,
-    },
-    {
-      icon: Workflow,
-      title: "What the system does",
-      items: config.breakdown.systemDoes,
-    },
-    {
-      icon: Users,
-      title: "What your team still controls",
-      items: config.breakdown.teamControls,
-    },
-  ];
-  return (
-    <section className="border-y border-white/[0.07] bg-base-900/40">
-      <div className="container-px py-10 sm:py-20">
-        <Reveal>
-          <span className="label">System breakdown</span>
-          <h2 className="display mt-4 max-w-2xl text-2xl sm:text-3xl">
-            Automation does the chasing. Your team does the judging.
-          </h2>
-        </Reveal>
-        <div className="section-grid mt-10">
-          {cols.map((col, i) => {
-            const Icon = col.icon;
-            return (
-              <Reveal key={col.title} delay={i * 0.08} className="lg:col-span-4">
-                <div className="h-full border-t border-white/15 pt-6">
-                  <div className="flex items-center gap-2.5">
-                    <Icon size={15} className="text-crimson-light" aria-hidden />
-                    <h3 className="text-sm font-medium text-white">{col.title}</h3>
-                  </div>
-                  <ul className="mt-5 space-y-2.5">
-                    {col.items.map((item) => (
-                      <li key={item} className="flex items-start gap-2.5 text-sm text-white/55">
-                        <Check size={13} className="mt-0.5 shrink-0 text-white/30" aria-hidden />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
-            );
-          })}
-        </div>
-
-        <Reveal className="mt-9 sm:mt-14">
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck size={15} className="text-crimson-light" aria-hidden />
-            <h3 className="text-sm font-medium text-white">Potential integrations</h3>
-          </div>
-          <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/45">
-            Configured per engagement around the tools you already run — shown here as options, not
-            live connections.
-          </p>
-          <ul className="mt-5 flex flex-wrap gap-2">
-            {config.breakdown.integrations.map((integration) => (
-              <li
-                key={integration}
-                className="rounded border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/60"
-              >
-                {integration}
-                <span className="ml-2 text-[0.7rem] sm:text-[0.58rem] uppercase tracking-wider text-white/30">
-                  Configurable
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Reveal>
-      </div>
-    </section>
+    </ScrollRail>
   );
 }
 
@@ -198,7 +91,7 @@ const IMPLEMENTATION_STEPS = [
   {
     n: "01",
     title: "Diagnose the current operation",
-    body: "We map how leads, customers, and admin work actually move through your business today — and where revenue leaks out.",
+    body: "We map how leads, customers, and admin work actually move through your business today; and where revenue leaks out.",
   },
   {
     n: "02",
@@ -214,7 +107,7 @@ const IMPLEMENTATION_STEPS = [
 
 /**
  * The single conversion block on a demo page. When an industry `cta` is
- * provided, its headline/button become the one ask — no stacked banners.
+ * provided, its headline/button become the one ask; no stacked banners.
  */
 export function ConversionSection({
   demoSlug,

@@ -189,7 +189,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
             Prefer to call?{" "}
             <a
               href={`tel:${PHONE_TEL}`}
-              className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+              className="inline-flex min-h-11 items-center align-middle text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white lg:min-h-0"
             >
               {PHONE_DISPLAY}
             </a>
@@ -391,7 +391,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
                 Or call{" "}
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+                  className="inline-flex min-h-11 items-center align-middle text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white lg:min-h-0"
                 >
                   {PHONE_DISPLAY}
                 </a>
@@ -406,7 +406,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
             <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Related
             </p>
-            <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3">
+            <ul className="link-list mt-5 flex flex-wrap gap-x-8 gap-y-0 lg:gap-y-3">
               {c.related.map((link) => (
                 <li key={link.href}>
                   <Link

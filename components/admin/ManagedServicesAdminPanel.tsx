@@ -26,6 +26,7 @@ import { MaintenanceView } from "@/components/admin/managed/MaintenanceView";
 import { ReportsView } from "@/components/admin/managed/ReportsView";
 import { RoadmapsView } from "@/components/admin/managed/RoadmapsView";
 import { ProposalsView } from "@/components/admin/managed/ProposalsView";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type SubTab =
   | "overview"
@@ -126,7 +127,7 @@ export function ManagedServicesAdminPanel() {
         const j = (await res.json().catch(() => ({}))) as Record<string, unknown>;
         if (!res.ok || j.ok === false) {
           setError(
-            typeof j.error === "string" ? j.error : "Action failed — nothing saved."
+            typeof j.error === "string" ? j.error : "Action failed: nothing saved."
           );
           return null;
         }
@@ -134,7 +135,7 @@ export function ManagedServicesAdminPanel() {
         await load();
         return j;
       } catch {
-        setError("Network error — action not saved.");
+        setError("Network error: action not saved.");
         return null;
       } finally {
         setBusy(false);
@@ -161,11 +162,13 @@ export function ManagedServicesAdminPanel() {
         </button>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto border-b border-white/10 pb-px">
+      <ScrollRail role="tablist" activeKey={sub} keyboardTabs className="flex gap-1 border-b border-white/10 pb-px">
         {SUBS.map((s) => (
           <button
             key={s.id}
             type="button"
+            role="tab"
+            aria-selected={sub === s.id}
             onClick={() => setSub(s.id)}
             className={`shrink-0 px-3 py-2 text-xs transition-colors ${
               sub === s.id
@@ -176,7 +179,7 @@ export function ManagedServicesAdminPanel() {
             {s.label}
           </button>
         ))}
-      </div>
+      </ScrollRail>
 
       {message ? (
         <div

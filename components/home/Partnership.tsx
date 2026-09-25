@@ -7,7 +7,7 @@ const PARTNERSHIP_LINE =
 const VALUE_POINTS = [
   {
     title: "Managed hosting & security",
-    body: "Hosting, backups, updates, and security monitoring handled continuously — so the systems behind your business stay fast, protected, and reliable.",
+    body: "Hosting, backups, updates, and security monitoring handled continuously; so the systems behind your business stay fast, protected, and reliable.",
   },
   {
     title: "Continuous improvement",
@@ -15,7 +15,7 @@ const VALUE_POINTS = [
   },
   {
     title: "Strategic system development",
-    body: "New automations, AI improvements, and integrations built as your business grows — with a roadmap you approve.",
+    body: "New automations, AI improvements, and integrations built as your business grows; with a roadmap you approve.",
   },
 ];
 

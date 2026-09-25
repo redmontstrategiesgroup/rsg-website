@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Calendar, Clock, Loader2, AlertCircle } from "lucide-react";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import Link from "next/link";
 import { postJson, patchJson, getCsrfToken } from "@/lib/api";
 import { Turnstile } from "@/components/Turnstile";
@@ -408,7 +409,7 @@ export function BookingFunnel({
       if (saved.notes) setNotes(saved.notes);
       if (saved.step && saved.serviceId) setStep(saved.step);
     } catch {
-      /* corrupted storage — start fresh */
+      /* corrupted storage: start fresh */
     }
   }, []);
 
@@ -570,7 +571,7 @@ export function BookingFunnel({
 
   async function continueFromCategory() {
     if (!serviceId || !config) {
-      setErrors({ service: "Choose the option closest to what you need — “I’m not sure yet” is fine." });
+      setErrors({ service: "Choose the option closest to what you need; “I’m not sure yet” is fine." });
       track("validation_error", { step: "1" });
       return;
     }
@@ -626,7 +627,7 @@ export function BookingFunnel({
   }
 
   async function submitBooking() {
-    // Ref guard runs synchronously — a double-click can land before React
+    // Ref guard runs synchronously: a double-click can land before React
     // re-renders the disabled state.
     if (submittingRef.current || completedRef.current) return;
     if (!validateDetails()) return;
@@ -671,7 +672,7 @@ export function BookingFunnel({
           setSelectedSlot(null);
           setStep(2);
           setFormError(
-            "That time was just booked by someone else. Please pick another time — everything else you entered is saved."
+            "That time was just booked by someone else. Please pick another time; everything else you entered is saved."
           );
           void loadSlots(timezone);
           return;
@@ -696,7 +697,7 @@ export function BookingFunnel({
       }
       router.push(data.confirmedUrl || `/booking/confirmed?token=${data.manageToken}`);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Something went wrong. Your details are saved — please try again.");
+      setFormError(err instanceof Error ? err.message : "Something went wrong. Your details are saved, please try again.");
     } finally {
       submittingRef.current = false;
       setBusy(false);
@@ -772,7 +773,7 @@ export function BookingFunnel({
             What would you like help with?
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/55">
-            Pick whatever is closest. You don’t need to know the right service —
+            Pick whatever is closest. You don’t need to know the right service,
             that’s our job.
           </p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -835,12 +836,12 @@ export function BookingFunnel({
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-white/55">
             {appointmentType
-              ? `${appointmentType.name} — ${appointmentType.durationMinutes} minutes, free.`
+              ? `${appointmentType.name}: ${appointmentType.durationMinutes} minutes, free.`
               : "Free consultation."}
           </p>
 
           <div className="mt-8 space-y-7">
-            <Field label="Your time zone" hint="Detected automatically — change it if it’s wrong. All times below are shown in this time zone.">
+            <Field label="Your time zone" hint="Detected automatically: change it if it’s wrong. All times below are shown in this time zone.">
               {(props) => (
                 <TimezoneSelect
                   id={props.id}
@@ -873,10 +874,11 @@ export function BookingFunnel({
                   <p className="mb-3 flex items-center gap-2 text-sm text-white/60">
                     <Calendar className="h-4 w-4" aria-hidden="true" /> Pick a day
                   </p>
-                  <div
+                  <ScrollRail
                     role="group"
                     aria-label="Available days"
-                    className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-2"
+                    activeKey={selectedDay}
+                    className="-mx-1 flex gap-2 px-1 pb-2 scroll-px-1"
                   >
                     {availableDays.map((day) => {
                       const first = slotsByDay.get(day)![0];
@@ -887,6 +889,7 @@ export function BookingFunnel({
                           key={day}
                           type="button"
                           aria-pressed={active}
+                          data-active={active ? "true" : undefined}
                           onClick={() => {
                             setSelectedDay(day);
                             setSelectedSlot(null);
@@ -898,7 +901,7 @@ export function BookingFunnel({
                               : "border-white/10 bg-white/[0.02] hover:border-white/30"
                           }`}
                         >
-                          <span className="block text-[0.65rem] uppercase tracking-wider text-white/45">
+                          <span className="block text-[0.7rem] uppercase tracking-wider text-white/45 sm:text-[0.65rem]">
                             {weekday}
                           </span>
                           <span className="mt-1 block text-sm font-medium text-white">
@@ -907,7 +910,7 @@ export function BookingFunnel({
                         </button>
                       );
                     })}
-                  </div>
+                  </ScrollRail>
                 </div>
 
                 <div>
@@ -944,7 +947,7 @@ export function BookingFunnel({
                   </div>
                   {!daySlots.length && (
                     <p className="mt-2 text-sm text-white/40">
-                      No times left on this day — pick another day above.
+                      No times left on this day, pick another day above.
                     </p>
                   )}
                 </div>
@@ -1088,7 +1091,7 @@ export function BookingFunnel({
                   <input
                     {...props}
                     className={inputClass()}
-                    placeholder="e.g. Contractor, retail store, dental office, gym"
+                    placeholder="e.g. Real estate team, contractor, med spa, gym"
                     value={contact.industry}
                     onChange={(e) =>
                       setContact((c) => ({ ...c, industry: e.target.value }))

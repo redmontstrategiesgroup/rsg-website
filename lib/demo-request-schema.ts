@@ -13,8 +13,13 @@ const clean = (max: number) =>
     .max(max)
     .transform((s) => s.replace(control, "").trim());
 
-/** Slugs of demos that may submit a request (kept in sync with DEMO_CONFIGS). */
-export const DEMO_REQUEST_SLUGS = ["medspa", "contractors", "gyms", "dental", "retail"] as const;
+/**
+ * Slugs of live demos. This is the single source of truth: the demo registry
+ * (components/demos/data/index.ts) is type-checked against it and the sitemap
+ * derives from it, so adding or retiring a demo happens here first.
+ */
+export const DEMO_REQUEST_SLUGS = ["healthwellness", "contractors", "realestate"] as const;
+export type DemoSlug = (typeof DEMO_REQUEST_SLUGS)[number];
 
 export const demoRequestSchema = z.object({
   name: clean(160).pipe(z.string().min(2, "Please enter your name.")),
@@ -30,7 +35,7 @@ export const demoRequestSchema = z.object({
   notes: clean(2000).optional(),
   /** Services the visitor selected in the form (preselected from usage). */
   services: z.array(clean(80)).max(16).default([]),
-  /** Industry-specific qualification answers (e.g. retail business type, locations). */
+  /** Industry-specific qualification answers (e.g. brokerage type, agent count). */
   extras: z.record(z.string().max(60), clean(160)).optional(),
   demoSlug: z.enum(DEMO_REQUEST_SLUGS),
   /** Feature areas the visitor actually touched during the demo session. */
@@ -41,7 +46,7 @@ export const demoRequestSchema = z.object({
   /** "Biggest operational problem" from the demo's personalization. */
   problem: clean(2000).optional(),
   pageUrl: clean(400).optional(),
-  /** Honeypot — humans never see this field; any value means bot. */
+  /** Honeypot: humans never see this field; any value means bot. */
   hp: z.string().max(200).optional(),
 });
 

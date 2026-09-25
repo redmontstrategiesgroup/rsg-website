@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { postJson } from "@/lib/api";
 import { INTEGRATION_PLACEHOLDERS } from "@/lib/scheduling/integrations/types";
+import { ScrollRail } from "@/components/ui/ScrollRail";
+import { Dialog } from "@/components/ui/Dialog";
 
 type SubTab =
   | "dashboard"
@@ -137,11 +139,13 @@ export function SchedulingAdminPanel() {
         </div>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto border-b border-white/10 pb-px">
+      <ScrollRail role="tablist" activeKey={sub} keyboardTabs className="flex gap-1 border-b border-white/10 pb-px">
         {SUBS.map((s) => (
           <button
             key={s.id}
             type="button"
+            role="tab"
+            aria-selected={sub === s.id}
             onClick={() => setSub(s.id)}
             className={`shrink-0 px-3 py-2 text-xs ${
               sub === s.id ? "border-b border-crimson text-white" : "text-white/45"
@@ -150,7 +154,7 @@ export function SchedulingAdminPanel() {
             {s.label}
           </button>
         ))}
-      </div>
+      </ScrollRail>
 
       {message && (
         <div className="border border-white/15 bg-white/[0.03] px-4 py-2 text-sm text-white/70">
@@ -174,7 +178,7 @@ export function SchedulingAdminPanel() {
                   value={String(dashboard.pendingReview ?? 0)}
                 />
                 <Stat
-                  label="Qualified — not booked"
+                  label="Qualified, not booked"
                   value={String(dashboard.qualifiedNotBooked ?? 0)}
                 />
                 <Stat
@@ -193,11 +197,11 @@ export function SchedulingAdminPanel() {
                 <Stat label="Avg score" value={String(dashboard.avgScore ?? 0)} />
                 <Stat
                   label="Popular type"
-                  value={String(dashboard.popularType ?? "—")}
+                  value={String(dashboard.popularType ?? "-")}
                 />
                 <Stat
                   label="Top service"
-                  value={String(dashboard.popularService ?? "—")}
+                  value={String(dashboard.popularService ?? "-")}
                 />
               </div>
 
@@ -219,7 +223,7 @@ export function SchedulingAdminPanel() {
                             className="flex justify-between gap-3 border-b border-white/5 pb-2"
                           >
                             <span>
-                              {row.leads?.name || "—"}
+                              {row.leads?.name || "-"}
                               <span className="block text-xs text-white/40">
                                 {row.appointment_types?.name} ·{" "}
                                 {row.leads?.business_name}
@@ -301,7 +305,7 @@ export function SchedulingAdminPanel() {
                       />
                       <div>
                         <p className="text-white">
-                          {row.appointment_types?.name} — {row.leads?.name}
+                          {row.appointment_types?.name}: {row.leads?.name}
                         </p>
                         <p className="text-xs text-white/40">
                           {row.leads?.business_name} · {row.status}
@@ -353,7 +357,7 @@ export function SchedulingAdminPanel() {
                       };
                     };
                     const category =
-                      row.services?.name || row.leads?.service_requested || "—";
+                      row.services?.name || row.leads?.service_requested || "-";
                     const notSure = row.services?.slug === "not-sure";
                     return (
                       <tr key={row.id} className="border-b border-white/5">
@@ -883,7 +887,7 @@ export function SchedulingAdminPanel() {
             <div className="space-y-4">
               <p className="text-sm text-white/55">
                 Signed webhook deliveries for automation tools. No fake
-                integrations — endpoints you add here receive real events.
+                integrations: endpoints you add here receive real events.
               </p>
               <ul className="space-y-2 text-sm">
                 {((config.webhooks as unknown[]) || []).map((w) => {
@@ -1029,7 +1033,7 @@ export function SchedulingAdminPanel() {
                             })
                           }
                         >
-                          <option value="">—</option>
+                          <option value="">-</option>
                           {row.options.map((o) => (
                             <option key={o} value={o}>
                               {o}
@@ -1080,19 +1084,13 @@ export function SchedulingAdminPanel() {
       )}
 
       {selectedBooking && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center">
-          <div className="max-h-[85vh] w-full max-w-lg overflow-y-auto border border-white/15 bg-base p-6">
-            <div className="flex items-center justify-between">
-              <h3 className="display text-lg">Appointment detail</h3>
-              <button
-                type="button"
-                className="text-white/50"
-                onClick={() => setSelectedBooking(null)}
-              >
-                Close
-              </button>
-            </div>
-            <pre className="mt-4 overflow-x-auto text-xs text-white/55">
+        <Dialog
+          title="Appointment detail"
+          onClose={() => setSelectedBooking(null)}
+          zIndexClassName="z-50"
+          panelClassName="bg-base"
+        >
+            <pre className="overflow-x-auto overscroll-x-contain rounded-lg border border-white/10 bg-black/40 p-3 text-xs leading-5 text-white/55">
               {JSON.stringify(selectedBooking, null, 2)}
             </pre>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -1120,8 +1118,7 @@ export function SchedulingAdminPanel() {
                 Cancel booking
               </button>
             </div>
-          </div>
-        </div>
+        </Dialog>
       )}
     </div>
   );

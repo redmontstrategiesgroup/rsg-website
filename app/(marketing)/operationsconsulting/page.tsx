@@ -26,11 +26,11 @@ const content: LocalPageContent = {
     "Workflow and process mapping",
     "Bottleneck review across scheduling, quoting, and follow-up",
     "Standard procedures for the repeatable parts of the work",
-    "Staff task routing and daily opening and closing checklists for retail teams",
+    "Lead routing and daily opening and closing checklists for agent teams",
     "Role and handoff definitions so work moves without the owner",
-    "Supplier follow-up reminders so reorders stop depending on memory",
+    "Vendor follow-up reminders so photography and inspections stop depending on memory",
     "Simple reporting you can check weekly",
-    "Promotion scheduling and multi-location reporting for retail operators",
+    "Showing coordination and multi-office reporting for brokerage operators",
     "Tooling and automation only where it removes real work",
   ],
   whoHeading: "Who this is for",
@@ -38,7 +38,7 @@ const content: LocalPageContent = {
     "Owners who have become the bottleneck in their own business",
     "Service businesses where quotes and scheduling wait on one person",
     "Teams that check with the owner before finishing routine work",
-    "Retail stores and ecommerce brands where daily tasks depend on the owner",
+    "Brokerages and agent teams where daily coordination depends on the owner",
     "Businesses preparing to add staff without adding chaos",
   ],
   serviceArea:
@@ -83,12 +83,8 @@ const content: LocalPageContent = {
       href: "/crmsystems",
     },
     {
-      label: "Retail & Multi-Location Systems",
-      href: "/industries/retail",
-    },
-    {
-      label: "Interactive Retail Demo",
-      href: "/demos/retail",
+      label: "Real Estate & Brokerage Systems",
+      href: "/industries/realestate",
     },
   ],
   schema: {

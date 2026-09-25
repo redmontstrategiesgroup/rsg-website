@@ -7,7 +7,7 @@ import {
 } from "@/lib/lifecycle/assessment-content";
 
 /**
- * Business Systems Assessment — data access.
+ * Business Systems Assessment: data access.
  * Content, scoring, and summary generation live in assessment-content.ts.
  */
 
@@ -169,7 +169,7 @@ export async function saveAssessmentAnswers(
 
 /**
  * Finalize: compute score + recommendation + summary from the saved answers
- * and mark the assessment submitted. Idempotent — resubmitting recomputes.
+ * and mark the assessment submitted. Idempotent, resubmitting recomputes.
  */
 export async function submitAssessment(assessmentId: string): Promise<Assessment> {
   const sb = requireSupabase();

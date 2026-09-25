@@ -6,7 +6,7 @@
 **Repository:** `redmontstrategiesgroup/rsg-website`
 **Generated:** 2026-07-28
 
-A single Next.js application that serves three audiences from one codebase: the public marketing site that generates leads, the authenticated client portal where engaged clients track their work, and the internal admin console the firm runs its own operations from. It handles the whole lifecycle — a stranger arriving from search, through qualification and booking, proposal and payment, to an active client with a project, a support queue, and a monthly subscription.
+A single Next.js application that serves three audiences from one codebase: the public marketing site that generates leads, the authenticated client portal where engaged clients track their work, and the internal admin console the firm runs its own operations from. It handles the whole lifecycle, a stranger arriving from search, through qualification and booking, proposal and payment, to an active client with a project, a support queue, and a monthly subscription.
 
 ---
 
@@ -41,13 +41,13 @@ A single Next.js application that serves three audiences from one codebase: the 
 
 Redmont Strategies Group (RSG) is a business consulting and strategy firm serving Plymouth County and the South Shore of Massachusetts. This application is the firm's entire digital operation:
 
-- **Public site** — explains the firm's services, industry specializations, and process; captures and qualifies leads.
-- **Client portal** — a private area where an engaged client sees their project, roadmap, reports, training material, support threads, team, and billing.
-- **Admin console** — where staff manage leads, clients, proposals, scheduling, billing, security records, and content.
+- **Public site**: explains the firm's services, industry specializations, and process; captures and qualifies leads.
+- **Client portal**: a private area where an engaged client sees their project, roadmap, reports, training material, support threads, team, and billing.
+- **Admin console**: where staff manage leads, clients, proposals, scheduling, billing, security records, and content.
 
 ### The primary problem
 
-Small and mid-sized service businesses lose money in the gap between marketing and operations: leads arrive and go stale, follow-up is manual, and nobody can see what happened. The firm sells systems that close that gap — and this application is both the shop window for that offer and a working demonstration of it, because the firm runs its own funnel on it.
+Small and mid-sized service businesses lose money in the gap between marketing and operations: leads arrive and go stale, follow-up is manual, and nobody can see what happened. The firm sells systems that close that gap; and this application is both the shop window for that offer and a working demonstration of it, because the firm runs its own funnel on it.
 
 ### User types
 
@@ -77,9 +77,9 @@ Small and mid-sized service businesses lose money in the gap between marketing a
 
 **Notable components.**
 
-- **ROI calculator** (`components/industries/RoiCalculator.tsx`) — per-vertical estimator. Inputs, assumption rates, and the disclaimer are all admin-editable configuration, not hardcoded numbers; the arithmetic lives in `lib/industries/roi.ts`. Results render alongside the vertical's disclaimer, and the content schema *requires* a disclaimer to be present (`lib/industries/completeness.ts`).
-- **Interactive demos** (`/demos`) — full simulated operating systems for home services, dental, gyms, and retail. Every demo surface carries a `SampleDataTag` reading "Interactive demonstration using sample data", and the demo shell states plainly that everything is sample data in an isolated session. The underlying businesses are fictional by design (`components/demos/types.ts`).
-- **Chat widget** — site assistant backed by Anthropic. Degrades to a "not configured" notice when no API key is present, and to the contact form when the daily ceiling is reached.
+- **ROI calculator** (`components/industries/RoiCalculator.tsx`), per-vertical estimator. Inputs, assumption rates, and the disclaimer are all admin-editable configuration, not hardcoded numbers; the arithmetic lives in `lib/industries/roi.ts`. Results render alongside the vertical's disclaimer, and the content schema *requires* a disclaimer to be present (`lib/industries/completeness.ts`).
+- **Interactive demos** (`/demos`): full simulated operating systems for health & wellness, home services, and gyms. Every demo surface carries a `SampleDataTag` reading "Interactive demonstration using sample data", and the demo shell states plainly that everything is sample data in an isolated session. The underlying businesses are fictional by design (`components/demos/types.ts`).
+- **Chat widget**: site assistant backed by Anthropic. Degrades to a "not configured" notice when no API key is present, and to the contact form when the daily ceiling is reached.
 
 **Limitations.** The demos do not connect to any real system; they are a product illustration. The ROI calculator produces estimates from user-supplied inputs and stated assumptions, not measured client results.
 
@@ -89,7 +89,7 @@ Small and mid-sized service businesses lose money in the gap between marketing a
 
 **Flow.** Contact form (`components/ContactForm.tsx`) or booking funnel → server action / API route → validation → lead record → optional Resend notification → optional Turnstile verification. Lead scoring lives in `lib/lead-score.ts`; the pipeline in `lib/leads.ts`.
 
-**Error behavior.** If Resend is unconfigured, the lead is still stored and no email is sent — capture never depends on delivery.
+**Error behavior.** If Resend is unconfigured, the lead is still stored and no email is sent, capture never depends on delivery.
 
 ### 2.3 Scheduling and booking
 
@@ -189,7 +189,7 @@ sequenceDiagram
 
 1. Client signs in; a session row is created and the cookie is signed.
 2. Each request re-checks that the session is still live (revocation checkpoint) and renews it (sliding expiration).
-3. The client reads their project, roadmap, reports, training, and support threads — all scoped to their `client_id`.
+3. The client reads their project, roadmap, reports, training, and support threads, all scoped to their `client_id`.
 4. They can raise service requests, approve a roadmap, or request a plan change.
 
 **Error recovery.** A revoked session clears the cookie and returns 401 within the keepalive window (10 minutes). Unconfigured Stripe degrades billing actions rather than crashing the page.
@@ -250,9 +250,9 @@ Every request receives a correlation id, propagated through `lib/integration-log
 
 Authorization is enforced in three independent places, deliberately:
 
-1. **Edge middleware** — gates `/admin` and `/dashboard` page loads by verifying the cookie's HMAC signature, role, and expiry.
-2. **Route handlers** — `requireAdmin(permission)`, `requireAppApi()`, or an explicit session check, per request.
-3. **Data layer** — every tenant query filters on `client_id`; a defense-in-depth RLS migration is applied on top.
+1. **Edge middleware**: gates `/admin` and `/dashboard` page loads by verifying the cookie's HMAC signature, role, and expiry.
+2. **Route handlers**: `requireAdmin(permission)`, `requireAppApi()`, or an explicit session check, per request.
+3. **Data layer**: every tenant query filters on `client_id`; a defense-in-depth RLS migration is applied on top.
 
 The middleware is a convenience gate, not the security boundary. Removing it would not grant access, because handlers verify independently.
 
@@ -268,7 +268,7 @@ flowchart LR
     RE --> M[Record usage in ai_usage]
 ```
 
-The API key never reaches the browser. The cap is checked before the call and usage recorded after. When Supabase is configured but the usage read fails, the cap check **fails closed** — a metering outage must not silently uncap a shared key.
+The API key never reaches the browser. The cap is checked before the call and usage recorded after. When Supabase is configured but the usage read fails, the cap check **fails closed**; a metering outage must not silently uncap a shared key.
 
 ---
 
@@ -317,7 +317,7 @@ Erasure is handled by `lib/privacy/erase.ts` and exposed through the admin DSAR 
 
 ### Sensitive fields
 
-Integration secrets are column-restricted (migration `20260712212528`). Session identifiers support revocation. Admin MFA secrets live alongside admin records. None of these are exposed through public serializers — `lib/seed.ts`'s `toPublic()` is the boundary that decides what a client record looks like over the wire.
+Integration secrets are column-restricted (migration `20260712212528`). Session identifiers support revocation. Admin MFA secrets live alongside admin records. None of these are exposed through public serializers, `lib/seed.ts`'s `toPublic()` is the boundary that decides what a client record looks like over the wire.
 
 ### Migration discipline
 
@@ -331,12 +331,12 @@ Migrations are ordered and additive. The two most recent tighten posture rather 
 
 ### Methods
 
-- **Clients** — email and password, salted and hashed (`randomBytes` salt, `lib/auth.ts`).
-- **Admins** — email and password against `public.admins`; a bootstrap owner from `ADMIN_EMAIL` / `ADMIN_PASSWORD` when no rows exist. TOTP second factor per `lib/totp.ts`, enforced per role.
+- **Clients**: email and password, salted and hashed (`randomBytes` salt, `lib/auth.ts`).
+- **Admins**: email and password against `public.admins`; a bootstrap owner from `ADMIN_EMAIL` / `ADMIN_PASSWORD` when no rows exist. TOTP second factor per `lib/totp.ts`, enforced per role.
 
 ### Session model
 
-Sessions are HMAC-SHA256 signed cookies carrying a payload and a `sid`. The `sid` maps to a session row, which makes revocation possible — signing alone cannot be revoked. Sessions renew on activity (sliding expiration) and are re-validated on each authenticated request.
+Sessions are HMAC-SHA256 signed cookies carrying a payload and a `sid`. The `sid` maps to a session row, which makes revocation possible, signing alone cannot be revoked. Sessions renew on activity (sliding expiration) and are re-validated on each authenticated request.
 
 `AUTH_SECRET` is **required in production**; `lib/auth.ts` throws without it. In local development a per-process random secret is generated so nobody is locked out.
 
@@ -354,7 +354,7 @@ Ten roles, twenty-nine permissions (`lib/scheduling/permissions.ts`):
 | `sales` | Appointments, qualification and override, analytics, leads, proposals |
 | `employee` | Appointments, qualification, analytics, leads |
 | `contractor` | View appointments and qualification only |
-| `security_reviewer` | Security Center, audit log, analytics — no client or billing access |
+| `security_reviewer` | Security Center, audit log, analytics; no client or billing access |
 | `viewer` | View appointments and analytics only |
 
 Permissions are checked per operation, not per page. `SCHEDULING_ACTION_PERMISSION` maps each POST action to the permission it requires.
@@ -382,11 +382,11 @@ Every protected endpoint was probed without credentials against a running server
 
 ### Error conventions
 
-- `400` — validation failure, with field-level messages where the form needs them.
-- `401` — no or invalid session.
-- `403` — authenticated but lacking the permission, or rate-limited mutation.
-- `409` — conflict (for example, a client email already in use).
-- `500` — server or storage failure. Returned deliberately to webhooks so the provider retries.
+- `400`: validation failure, with field-level messages where the form needs them.
+- `401`, no or invalid session.
+- `403`: authenticated but lacking the permission, or rate-limited mutation.
+- `409`: conflict (for example, a client email already in use).
+- `500`: server or storage failure. Returned deliberately to webhooks so the provider retries.
 
 ---
 
@@ -440,7 +440,7 @@ Stripe, Upstash, and Sentry variables follow each provider's standard names and 
 ### Prerequisites
 
 - Node.js 20 (matches CI)
-- npm (the repository uses `package-lock.json` — do not introduce a second package manager)
+- npm (the repository uses `package-lock.json`: do not introduce a second package manager)
 
 ### Setup
 
@@ -455,7 +455,7 @@ Generate a session secret:
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-Put it in `AUTH_SECRET`, set `ADMIN_EMAIL` and `ADMIN_PASSWORD`, and leave the rest empty to start — the app runs without Supabase, Stripe, Anthropic, or Resend, degrading each feature honestly.
+Put it in `AUTH_SECRET`, set `ADMIN_EMAIL` and `ADMIN_PASSWORD`, and leave the rest empty to start; the app runs without Supabase, Stripe, Anthropic, or Resend, degrading each feature honestly.
 
 ### Commands
 
@@ -485,9 +485,9 @@ Migrations live in `supabase/migrations/` and apply in filename order via the Su
 
 ### Common setup errors
 
-- **App throws on start in production mode** — `AUTH_SECRET` is unset. Required, no fallback.
-- **Admin login always fails** — no `public.admins` rows and no `ADMIN_EMAIL`/`ADMIN_PASSWORD`. This fails closed by design.
-- **`ENOENT: routes-manifest.json` / `Cannot find module './NNNN.js'`** — two Next processes are sharing `.next`. Run only one dev server or build per checkout at a time.
+- **App throws on start in production mode**: `AUTH_SECRET` is unset. Required, no fallback.
+- **Admin login always fails**, no `public.admins` rows and no `ADMIN_EMAIL`/`ADMIN_PASSWORD`. This fails closed by design.
+- **`ENOENT: routes-manifest.json` / `Cannot find module './NNNN.js'`**, two Next processes are sharing `.next`. Run only one dev server or build per checkout at a time.
 
 ---
 
@@ -503,7 +503,7 @@ Migrations live in `supabase/migrations/` and apply in filename order via the Su
 2. Set every production environment variable in Vercel, including `AUTH_SECRET` and `CRON_SECRET`.
 3. Apply outstanding migrations to the production Supabase project **before** the deployment that depends on them.
 4. Point the Stripe webhook at `/api/stripe/webhook` and set the signing secret.
-5. Configure the domain and confirm `NEXT_PUBLIC_SITE_URL` matches it — canonicals, sitemap, and robots derive from it.
+5. Configure the domain and confirm `NEXT_PUBLIC_SITE_URL` matches it: canonicals, sitemap, and robots derive from it.
 
 **Post-deployment verification.**
 
@@ -512,7 +512,7 @@ Migrations live in `supabase/migrations/` and apply in filename order via the Su
 - A test lead reaches storage and triggers the notification email.
 - A Stripe test event is accepted; a tampered one is rejected.
 
-**Rollback.** Vercel's previous deployment can be promoted immediately. Database migrations are **not** automatically reversed — a rollback across a schema change requires a considered forward fix, not a redeploy.
+**Rollback.** Vercel's previous deployment can be promoted immediately. Database migrations are **not** automatically reversed; a rollback across a schema change requires a considered forward fix, not a redeploy.
 
 ---
 
@@ -522,22 +522,22 @@ This section describes the controls that are implemented. It is not a claim that
 
 ### Trust boundaries
 
-The browser is untrusted. The service-role Supabase key, the Anthropic key, and all provider secrets exist only on the server. Tokenized links are bearer credentials — possession is access — and are generated with `randomBytes`.
+The browser is untrusted. The service-role Supabase key, the Anthropic key, and all provider secrets exist only on the server. Tokenized links are bearer credentials, possession is access, and are generated with `randomBytes`.
 
 ### Implemented controls
 
-- **Session integrity** — HMAC-SHA256 signed cookies; signature verified at the edge in constant time and again in handlers.
-- **Revocation** — sessions carry a `sid` backed by a row, re-checked per request.
-- **Authorization** — role and permission checked per operation, independently of the page gate.
-- **Tenant isolation** — every tenant query filters on `client_id`; RLS applied as a second layer.
-- **Input validation** — Zod schemas and a shared `Validator` with explicit length limits.
-- **MFA** — TOTP, enforceable per role.
-- **Rate limiting** — public endpoints and admin mutators, Upstash-backed with a local fallback.
-- **Webhook security** — Stripe signature verification plus replay guard on event id; pricing never taken from the webhook.
-- **AI safety** — key held server-side; per-tenant monthly token cap that fails closed on a metering read error; usage recorded per call.
-- **Logging hygiene** — Sentry configured with `sendDefaultPii: false` on client, server, and edge; Session Replay masks all text and blocks media. Audit write failures log at error level so an empty trail is distinguishable from an uneventful one.
-- **Bot mitigation** — Turnstile on public forms when configured.
-- **Fail-closed defaults** — no admin credentials means no admin login.
+- **Session integrity**: HMAC-SHA256 signed cookies; signature verified at the edge in constant time and again in handlers.
+- **Revocation**: sessions carry a `sid` backed by a row, re-checked per request.
+- **Authorization**: role and permission checked per operation, independently of the page gate.
+- **Tenant isolation**: every tenant query filters on `client_id`; RLS applied as a second layer.
+- **Input validation**: Zod schemas and a shared `Validator` with explicit length limits.
+- **MFA**: TOTP, enforceable per role.
+- **Rate limiting**: public endpoints and admin mutators, Upstash-backed with a local fallback.
+- **Webhook security**: Stripe signature verification plus replay guard on event id; pricing never taken from the webhook.
+- **AI safety**: key held server-side; per-tenant monthly token cap that fails closed on a metering read error; usage recorded per call.
+- **Logging hygiene**: Sentry configured with `sendDefaultPii: false` on client, server, and edge; Session Replay masks all text and blocks media. Audit write failures log at error level so an empty trail is distinguishable from an uneventful one.
+- **Bot mitigation**: Turnstile on public forms when configured.
+- **Fail-closed defaults**, no admin credentials means no admin login.
 
 ### Credentials
 
@@ -559,7 +559,7 @@ Temporary client passwords generated in the console use `crypto.getRandomValues`
 | Lead and booking flow | `lead-pipeline.test.ts`, `booking-intake.test.ts`, `scheduling-qualification.test.ts`, `demo-request.test.ts` |
 | Lifecycle and services | `lifecycle.test.ts`, `managed-services.test.ts` |
 | Privacy | `privacy-erase.test.ts` |
-| Other | `brief-schema.test.ts`, `connect-page.test.ts`, `integration-log.test.ts`, `retail-demo.test.ts` |
+| Other | `brief-schema.test.ts`, `connect-page.test.ts`, `integration-log.test.ts`, `realestate-demo.test.ts`, `realestate-vertical.test.ts` |
 
 The webhook suite is a good example of the standard: it verifies the exact signing scheme receivers use, rejects stale timestamps, replays, tampered bodies, and wrong secrets, and asserts that a wrong-length signature does not throw.
 
@@ -595,7 +595,7 @@ There is no browser-level end-to-end suite and no automated accessibility assert
 
 **Integration triage.** `docs/integration-triage.md` documents the procedure; `scripts/export-integration-runs.mjs` exports run history.
 
-**Backups.** Supabase's own backup schedule is the backstop. Verify the retention setting on the production project and confirm a restore has actually been tested — an untested backup is a hypothesis.
+**Backups.** Supabase's own backup schedule is the backstop. Verify the retention setting on the production project and confirm a restore has actually been tested; an untested backup is a hypothesis.
 
 **Data retention.** The Security Center holds retention rules; `lib/privacy/erase.ts` implements erasure. DSAR requests are handled through the admin route.
 
@@ -624,19 +624,19 @@ There is no browser-level end-to-end suite and no automated accessibility assert
 
 ## 17. Release Checklist
 
-- [ ] **Environment** — every required variable set in Vercel; `NEXT_PUBLIC_ENABLE_DEMO_DATA` is false
-- [ ] **Database** — all 26 migrations applied to production; `ai_usage` and `audit_events` confirmed present
-- [ ] **Security** — `AUTH_SECRET` unique and long; MFA enforced for privileged roles; bootstrap admin credentials rotated or removed in favour of DB admins
-- [ ] **Tests** — `npm test` green
-- [ ] **Build** — `npm run lint && npm run typecheck && npm run build` green
-- [ ] **Monitoring** — Sentry DSN set; a test error observed
-- [ ] **Backups** — Supabase retention confirmed and a restore tested
-- [ ] **Integrations** — Stripe webhook registered and verified; Resend domain verified; Turnstile keys set; `CRON_SECRET` set
-- [ ] **Domain** — DNS live and `NEXT_PUBLIC_SITE_URL` matches
-- [ ] **Legal pages** — privacy and terms reviewed and current
-- [ ] **Accessibility** — skip link reachable; keyboard path through the primary funnel walked
-- [ ] **Responsive** — funnel and portal checked at small viewport
-- [ ] **Core workflows** — the manual checklist in section 14 completed
+- [ ] **Environment**: every required variable set in Vercel; `NEXT_PUBLIC_ENABLE_DEMO_DATA` is false
+- [ ] **Database**: all 26 migrations applied to production; `ai_usage` and `audit_events` confirmed present
+- [ ] **Security**: `AUTH_SECRET` unique and long; MFA enforced for privileged roles; bootstrap admin credentials rotated or removed in favour of DB admins
+- [ ] **Tests**: `npm test` green
+- [ ] **Build**: `npm run lint && npm run typecheck && npm run build` green
+- [ ] **Monitoring**: Sentry DSN set; a test error observed
+- [ ] **Backups**: Supabase retention confirmed and a restore tested
+- [ ] **Integrations**: Stripe webhook registered and verified; Resend domain verified; Turnstile keys set; `CRON_SECRET` set
+- [ ] **Domain**: DNS live and `NEXT_PUBLIC_SITE_URL` matches
+- [ ] **Legal pages**: privacy and terms reviewed and current
+- [ ] **Accessibility**: skip link reachable; keyboard path through the primary funnel walked
+- [ ] **Responsive**: funnel and portal checked at small viewport
+- [ ] **Core workflows**: the manual checklist in section 14 completed
 
 ---
 
@@ -646,7 +646,7 @@ There is no browser-level end-to-end suite and no automated accessibility assert
 - No automated accessibility assertions in CI. This pass added the missing bypass block and verified reduced-motion handling, but colour-contrast and screen-reader behaviour have not been machine-verified.
 - Interactive demos are illustrations driven by fictional sample data. They demonstrate the product concept; they do not connect to a live system.
 - ROI calculator output is an estimate derived from user inputs and stated assumptions, not from measured client outcomes.
-- Stripe webhook replay guard claims the event id before processing. A retry after a *partial* failure is treated as a duplicate and skipped — a deliberate trade-off, with the admin email and event log as the reconciliation path.
+- Stripe webhook replay guard claims the event id before processing. A retry after a *partial* failure is treated as a duplicate and skipped, a deliberate trade-off, with the admin email and event log as the reconciliation path.
 - The repository's migration list reflects intent; parity with the live database must be confirmed operationally, not assumed.
 - Session revocation for open tabs takes effect within the 10-minute keepalive window, not instantly.
 
@@ -662,7 +662,7 @@ There is no browser-level end-to-end suite and no automated accessibility assert
 | **Bootstrap owner** | The environment-configured admin used when no database admin rows exist |
 | **Observatory** | The simulation and decision-support app mounted inside the portal |
 | **Connect** | The QR-linked landing surface (`/r/connect`) used from physical cards |
-| **DSAR** | Data Subject Access Request — the export or erasure path for personal data |
+| **DSAR** | Data Subject Access Request, the export or erasure path for personal data |
 | **Managed services** | The recurring subscription product: plans, roadmaps, reports, support |
 | **Correlation id** | A per-request identifier threaded through logs to trace one request end to end |
 | **Fail closed** | Denying access when a check cannot be completed, rather than allowing it |
@@ -681,7 +681,7 @@ Production refinement pass, 2026-07-28.
 | Audit write failures raised from `console.warn` to `console.error` with action and actor, so an unmigrated `audit_events` table is visible rather than silent | Observability |
 | `sendDefaultPii: false` set on all three Sentry runtimes; Session Replay masking pinned | Privacy |
 | Client portal password generator moved from `Math.random()` to `crypto.getRandomValues` over an unambiguous alphabet. The generated value is the client's real credential | Security |
-| Added a skip-to-content link with a focusable target across the marketing site (WCAG 2.4.1, Level A) — previously absent | Accessibility |
+| Added a skip-to-content link with a focusable target across the marketing site (WCAG 2.4.1, Level A), previously absent | Accessibility |
 | Added `docs/project-ebook.md` and a root `README.md` | Documentation |
 
 Verification performed during the pass: lint, typecheck, 157 tests, and a production build all green; every protected API endpoint probed unauthenticated and confirmed to fail closed; a forged admin cookie confirmed rejected at both the edge and the API; all public marketing pages confirmed rendering with the skip link present.

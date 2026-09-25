@@ -197,7 +197,7 @@ export function SubscriptionsView({
                 .filter((p) => p.active)
                 .map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} — {formatMonthlyPrice(p)}
+                    {p.name}: {formatMonthlyPrice(p)}
                     {p.clientId ? " (custom)" : ""}
                   </option>
                 ))}
@@ -335,7 +335,7 @@ export function SubscriptionsView({
                   )}
                 </td>
                 <td className="px-4 py-3 text-white/60">
-                  {s.accountManager || "—"}
+                  {s.accountManager || "-"}
                 </td>
               </tr>
             ))}
@@ -357,13 +357,13 @@ export function SubscriptionsView({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm text-white/85">
-                {clientLabel(clients, selected.clientId)} —{" "}
+                {clientLabel(clients, selected.clientId)}, {" "}
                 {selected.planName ?? "plan"}
               </p>
               <p className="mt-1 text-xs text-white/40">
                 Started {fmtDate(selected.startedAt)} · Commitment ends{" "}
                 {fmtDate(selected.commitmentEndsAt)} · Payment method{" "}
-                {selected.paymentMethodSummary || "—"}
+                {selected.paymentMethodSummary || "-"}
               </p>
             </div>
             <button

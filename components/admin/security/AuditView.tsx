@@ -140,8 +140,8 @@ export function AuditView() {
         </div>
       ) : rows.length === 0 ? (
         <div className="card p-6 text-sm text-white/50">
-          No audit events match. Real events are recorded as admins act — sign in,
-          change records, decide AI approvals — and appear here.
+          No audit events match. Real events are recorded as admins act, sign in,
+          change records, decide AI approvals; and appear here.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-white/10">
@@ -161,14 +161,14 @@ export function AuditView() {
                 <tr key={r.id ?? i} className="border-b border-white/[0.06] last:border-0">
                   <td className="whitespace-nowrap px-4 py-3 text-white/60">{formatDate(r.created_at)}</td>
                   <td className="px-4 py-3">
-                    <span className="text-white/80">{r.actor_email ?? r.actor_id ?? "—"}</span>
+                    <span className="text-white/80">{r.actor_email ?? r.actor_id ?? "-"}</span>
                     <span className="ml-2 font-mono text-[0.56rem] uppercase tracking-label text-white/35">
                       {r.actor_type}
                     </span>
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-white/70">{r.action}</td>
                   <td className="px-4 py-3 text-white/55">
-                    {r.entity_type ? `${r.entity_type}${r.entity_id ? ` · ${String(r.entity_id).slice(0, 8)}` : ""}` : "—"}
+                    {r.entity_type ? `${r.entity_type}${r.entity_id ? ` · ${String(r.entity_id).slice(0, 8)}` : ""}` : "-"}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -209,12 +209,12 @@ export function AuditView() {
             <dl className="mt-4 space-y-2 text-sm">
               {[
                 ["Time", formatDate(detail.created_at)],
-                ["Actor", detail.actor_email ?? detail.actor_id ?? "—"],
-                ["Actor type", detail.actor_type ?? "—"],
-                ["Action", detail.action ?? "—"],
-                ["Entity", detail.entity_type ?? "—"],
-                ["Entity id", detail.entity_id ?? "—"],
-                ["IP", detail.ip ?? "—"],
+                ["Actor", detail.actor_email ?? detail.actor_id ?? "-"],
+                ["Actor type", detail.actor_type ?? "-"],
+                ["Action", detail.action ?? "-"],
+                ["Entity", detail.entity_type ?? "-"],
+                ["Entity id", detail.entity_id ?? "-"],
+                ["IP", detail.ip ?? "-"],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 border-b border-white/[0.06] pb-2">
                   <dt className="text-white/40">{k}</dt>

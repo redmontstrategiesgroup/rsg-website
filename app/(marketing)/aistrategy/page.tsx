@@ -38,7 +38,7 @@ const content: LocalPageContent = {
     "Businesses that bought AI tools nobody actually uses",
   ],
   serviceArea:
-    "RSG builds AI strategies for service businesses across Plymouth County and the South Shore of Massachusetts.",
+    "RSG implements AI for service businesses across Plymouth County and the South Shore of Massachusetts.",
   faqs: [
     {
       q: "Do I need to understand AI to work with RSG?",
@@ -86,20 +86,20 @@ const content: LocalPageContent = {
   schema: {
     serviceName: "AI Strategy & Implementation",
     serviceDescription:
-      "AI strategy and implementation consulting for service businesses in Plymouth County and the South Shore of Massachusetts, covering lead follow-up, missed call response, intake, and administrative automation.",
-    serviceType: "AI strategy consulting",
+      "AI implementation for service businesses in Plymouth County and the South Shore of Massachusetts, covering lead follow-up, missed call response, intake, and administrative automation.",
+    serviceType: "AI implementation consulting",
   },
 };
 
 export const metadata: Metadata = {
   title: "AI Strategy & Implementation in Plymouth County, MA | RSG",
   description:
-    "Practical AI strategy and implementation for service businesses on the South Shore. RSG finds where AI genuinely helps, then builds it into daily operations.",
+    "Practical AI implementation for service businesses on the South Shore. RSG finds where AI genuinely helps, then builds it into daily operations.",
   alternates: { canonical: `/${content.slug}` },
   openGraph: {
     title: "AI Strategy & Implementation in Plymouth County, MA | RSG",
     description:
-      "Practical AI strategy and implementation for service businesses on the South Shore. RSG finds where AI genuinely helps, then builds it into daily operations.",
+      "Practical AI implementation for service businesses on the South Shore. RSG finds where AI genuinely helps, then builds it into daily operations.",
     url: `/${content.slug}`,
     images: ["/og.png"],
   },

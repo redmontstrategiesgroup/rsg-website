@@ -11,16 +11,17 @@ import {
 import {
   AlertTriangle,
   ArrowRight,
-  Award,
   Bell,
   Bot,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   FileText,
-  Package,
   ListVideo,
   Loader2,
+  LifeBuoy,
+  Maximize2,
+  Minimize2,
   Monitor,
   Play,
   RotateCcw,
@@ -43,8 +44,13 @@ import {
 } from "lucide-react";
 import { demoReducer, initialDemoState, type DemoState } from "./engine";
 import { clearSession, loadSession, saveSession } from "./storage";
-import type { Effect, IndustryConfig, NavId, Scenario } from "./types";
+import type { Effect, FreshKind, IndustryConfig, NavId, Scenario } from "./types";
 import { SampleDataTag } from "./ui/primitives";
+import { chipsForEffects, KIND_COLOR, TourCaption } from "./ui/TourCaption";
+import { ScrollRail } from "@/components/ui/ScrollRail";
+import { adjacentSection, swipeDirection } from "./sectionNav";
+import { IconButton } from "@/components/ui/IconButton";
+import { Popover } from "@/components/ui/Popover";
 import { ConfirmDialog, Modal } from "./ui/Modal";
 import { trackEvent } from "@/lib/events";
 import {
@@ -61,8 +67,8 @@ import { AutomationsView } from "./ui/AutomationsView";
 import { SettingsView } from "./ui/SettingsView";
 import { QuotesView } from "./ui/QuotesView";
 import { ReceptionistView } from "./ui/ReceptionistView";
-import { LoyaltyView } from "./ui/LoyaltyView";
-import { InventoryView } from "./ui/InventoryView";
+import { BoundariesView } from "./ui/BoundariesView";
+import { RecoveredView } from "./ui/RecoveredView";
 import { RequestSystemDialog } from "./RequestSystemDialog";
 import { SmallButton } from "./ui/fields";
 
@@ -73,14 +79,14 @@ const NAV_ICONS: Record<NavId, LucideIcon> = {
   conversations: MessageSquare,
   receptionist: Bot,
   quotes: FileText,
-  loyalty: Award,
-  inventory: Package,
   automations: Zap,
   tasks: CheckSquare,
   calendar: CalendarDays,
   reviews: Star,
   campaigns: Megaphone,
   analytics: BarChart3,
+  boundaries: ShieldCheck,
+  recovered: LifeBuoy,
   settings: Settings,
 };
 
@@ -111,8 +117,11 @@ export function DemoOS({
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [frameKey, setFrameKey] = useState(0);
   const [request, setRequest] = useState<{ feature?: string; source: string } | null>(null);
-  const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const pending = useRef<{ t: ReturnType<typeof setTimeout>; fn: () => void }[]>([]);
   const tourSnapshot = useRef<DemoState | null>(null);
+  const windowRef = useRef<HTMLDivElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
 
   /* ---------------------------------------------- session lifecycle */
   useEffect(() => {
@@ -130,14 +139,21 @@ export function DemoOS({
   const track = useCallback((key: string) => dispatch({ type: "explored", key }), []);
 
   const schedule = useCallback((fn: () => void, ms: number) => {
-    const t = setTimeout(fn, ms);
-    timeouts.current.push(t);
-    return t;
+    const entry = { t: setTimeout(() => { pending.current = pending.current.filter((p) => p !== entry); fn(); }, ms), fn };
+    pending.current.push(entry);
+    return entry.t;
+  }, []);
+
+  /** Run everything still queued, in order, right now. Keeps manual Next deterministic. */
+  const flushPending = useCallback(() => {
+    const queued = pending.current;
+    pending.current = [];
+    for (const p of queued) { clearTimeout(p.t); p.fn(); }
   }, []);
 
   const clearTimers = useCallback(() => {
-    timeouts.current.forEach(clearTimeout);
-    timeouts.current = [];
+    pending.current.forEach((p) => clearTimeout(p.t));
+    pending.current = [];
   }, []);
 
   useEffect(() => clearTimers, [clearTimers]);
@@ -167,16 +183,32 @@ export function DemoOS({
   const stepIndex = state.stepIndex;
   const tourDone = stepIndex >= steps.length - 1;
 
+  const [pulse, setPulse] = useState<{ tab: NavId; kind: FreshKind; key: number } | null>(null);
+  const goToTab = useCallback((id: NavId, kind: FreshKind = "record") => {
+    setTab(id);
+    setPulse({ tab: id, kind, key: Date.now() });
+  }, []);
+
+  /**
+   * The OS window scrolls into view only when the visitor (or autoplay)
+   * advances the tour or runs a scenario, never when a persisted step is
+   * restored on hydration. Each request bumps a counter the effect keys on.
+   */
+  const [scrollRequest, setScrollRequest] = useState(0);
+  const requestScroll = useCallback(() => setScrollRequest((n) => n + 1), []);
+
   const runStep = useCallback(
     (index: number) => {
+      flushPending();
       const step = steps[index];
       if (!step) return;
       if (index === 0 && stepIndex === -1) tourSnapshot.current = state;
       dispatch({ type: "set-step", index });
-      if (step.tab) setTab(step.tab);
+      requestScroll();
+      if (step.tab) goToTab(step.tab, chipsForEffects(step.effects, config, state.stages)[0]?.kind);
       applyEffectsStaggered(step.effects);
     },
-    [steps, applyEffectsStaggered, state, stepIndex],
+    [steps, applyEffectsStaggered, state, stepIndex, flushPending, goToTab, config, requestScroll],
   );
 
   const nextStep = useCallback(() => {
@@ -190,14 +222,17 @@ export function DemoOS({
     setPlaying(false);
     const target = stepIndex - 1;
     let rebuilt = tourSnapshot.current;
+    // Earlier steps replay with `at: 0` so their fresh entries are already
+    // expired; only the target step's records stay spotlit.
     for (let i = 0; i <= target; i++) {
-      rebuilt = demoReducer(rebuilt, { type: "effects", effects: steps[i].effects });
+      rebuilt = demoReducer(rebuilt, { type: "effects", effects: steps[i].effects, at: i === target ? Date.now() : 0 });
     }
     rebuilt = { ...rebuilt, stepIndex: target, toasts: [] };
     dispatch({ type: "reset", state: rebuilt });
+    requestScroll();
     const stepTab = target >= 0 ? steps[target].tab : undefined;
-    if (stepTab) setTab(stepTab);
-  }, [stepIndex, steps, clearTimers]);
+    if (stepTab) goToTab(stepTab, chipsForEffects(steps[target].effects, config, rebuilt.stages)[0]?.kind);
+  }, [stepIndex, steps, clearTimers, goToTab, config, requestScroll]);
 
   useEffect(() => {
     if (!playing) return;
@@ -212,16 +247,17 @@ export function DemoOS({
   /* ---------------------------------------------- quick scenarios */
   const runScenario = useCallback(
     (scenario: Scenario) => {
-      clearTimers();
+      flushPending();
       setScenarioMenu(false);
       setPlaying(false);
       dispatch({ type: "scenario-ran", id: scenario.id });
       track(`ran the "${scenario.label}" scenario`);
       setRunningScenario({ id: scenario.id, step: 0, total: scenario.steps.length });
+      requestScroll();
       scenario.steps.forEach((step, i) => {
         schedule(() => {
           setRunningScenario({ id: scenario.id, step: i + 1, total: scenario.steps.length });
-          if (step.tab) setTab(step.tab);
+          if (step.tab) goToTab(step.tab, chipsForEffects(step.effects, config, state.stages)[0]?.kind);
           applyEffectsStaggered(step.effects);
           if (i === scenario.steps.length - 1) {
             schedule(() => setRunningScenario(null), 2500);
@@ -229,7 +265,7 @@ export function DemoOS({
         }, i * QUICK_SCENARIO_STEP_MS);
       });
     },
-    [applyEffectsStaggered, clearTimers, schedule, track],
+    [applyEffectsStaggered, flushPending, schedule, track, goToTab, config, state.stages, requestScroll],
   );
 
   /** Replay = deterministic: restore fresh data first, then run the scenario. */
@@ -272,6 +308,7 @@ export function DemoOS({
         setPlaying(false);
         setScenarioMenu(false);
         setSimMenu(false);
+        setFullscreen(false);
         track("previewed the mobile experience");
       } else {
         const stored = loadSession(config.slug);
@@ -286,11 +323,11 @@ export function DemoOS({
   const runSimAction = useCallback(
     (action: NonNullable<IndustryConfig["simActions"]>[number]) => {
       setSimMenu(false);
-      if (action.tab) setTab(action.tab);
+      if (action.tab) goToTab(action.tab, chipsForEffects(action.effects, config, state.stages)[0]?.kind);
       applyEffectsStaggered(action.effects);
       track(`simulated: ${action.label.toLowerCase()}`);
     },
-    [applyEffectsStaggered, track],
+    [applyEffectsStaggered, track, goToTab, config, state.stages],
   );
 
   /* ---------------------------------------------- request-system dialog */
@@ -320,6 +357,80 @@ export function DemoOS({
     [track],
   );
 
+  /* ---------------------------------------------- section prev / next */
+  const navIds = useMemo(() => nav.map((n) => n.id), [nav]);
+  const prevSection = adjacentSection(navIds, tab, -1);
+  const nextSection = adjacentSection(navIds, tab, 1);
+  const stepSection = useCallback(
+    (dir: 1 | -1) => {
+      const next = adjacentSection(navIds, tab, dir);
+      if (next) setTabTracked(next);
+    },
+    [navIds, tab, setTabTracked],
+  );
+
+  /*
+    Swipe between sections on touch. A drag that begins inside something
+    that scrolls sideways (a table, a card rail) belongs to that element, so
+    it is left alone; vertical drags never qualify (see swipeDirection).
+  */
+  const onPanePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse") return;
+    let node = e.target as HTMLElement | null;
+    while (node && node !== e.currentTarget) {
+      const ox = getComputedStyle(node).overflowX;
+      if ((ox === "auto" || ox === "scroll") && node.scrollWidth > node.clientWidth + 1) return;
+      node = node.parentElement;
+    }
+    swipeStart.current = { x: e.clientX, y: e.clientY };
+  }, []);
+  const onPanePointerUp = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const start = swipeStart.current;
+      swipeStart.current = null;
+      if (!start) return;
+      const dir = swipeDirection(e.clientX - start.x, e.clientY - start.y);
+      if (dir) stepSection(dir);
+    },
+    [stepSection],
+  );
+  const onPanePointerCancel = useCallback(() => {
+    swipeStart.current = null;
+  }, []);
+
+  /* Left / Right arrows move sections unless a field owns the keystroke. */
+  const onWindowKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const t = e.target as HTMLElement;
+      if (t.closest('input,textarea,select,[contenteditable],[role="tablist"],[role="listbox"]')) return;
+      e.preventDefault();
+      stepSection(e.key === "ArrowRight" ? 1 : -1);
+    },
+    [stepSection],
+  );
+
+  /*
+    Fullscreen is a fixed overlay rather than the Fullscreen API: the demo's
+    dialogs portal to <body>, which the native API would hide. Page scroll
+    is locked while open; Escape closes it only when no dialog is up, so the
+    dialog's own Escape still wins.
+  */
+  useEffect(() => {
+    if (!fullscreen) return;
+    const saved = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || document.querySelector(".dialog-backdrop")) return;
+      setFullscreen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = saved;
+    };
+  }, [fullscreen]);
+
   const viewProps = useMemo(
     () => ({ state, config, dispatch, track, openRequest }),
     [state, config, track, openRequest],
@@ -339,10 +450,6 @@ export function DemoOS({
         return <ReceptionistView {...viewProps} />;
       case "quotes":
         return <QuotesView {...viewProps} />;
-      case "loyalty":
-        return <LoyaltyView {...viewProps} />;
-      case "inventory":
-        return <InventoryView {...viewProps} />;
       case "automations":
         return <AutomationsView {...viewProps} />;
       case "tasks":
@@ -355,12 +462,37 @@ export function DemoOS({
         return <CampaignsView {...viewProps} />;
       case "analytics":
         return <AnalyticsView {...viewProps} />;
+      case "boundaries":
+        return <BoundariesView {...viewProps} />;
+      case "recovered":
+        return <RecoveredView {...viewProps} />;
       case "settings":
         return <SettingsView {...viewProps} />;
     }
   }, [tab, viewProps]);
 
   const mobilePreview = !embedded && device === "mobile";
+  /* The window fills its container when fullscreen or inside the preview iframe. */
+  const fill = fullscreen || embedded;
+
+  const scenarioDef = runningScenario ? config.scenarios.find((s) => s.id === runningScenario.id) : undefined;
+  const scenarioStep = scenarioDef && runningScenario && runningScenario.step > 0 ? scenarioDef.steps[runningScenario.step - 1] : undefined;
+  const caption = scenarioStep
+    ? { eyebrow: `Scenario · step ${runningScenario!.step} of ${runningScenario!.total}`, title: scenarioStep.title, detail: scenarioStep.detail, chips: chipsForEffects(scenarioStep.effects, config, state.stages), controls: undefined }
+    : currentStep
+      ? { eyebrow: `Guided tour · step ${stepIndex + 1} of ${steps.length}`, title: currentStep.title, detail: currentStep.detail, chips: chipsForEffects(currentStep.effects, config, state.stages), controls: { playing, canPrev: stepIndex > 0, canNext: !tourDone, onPrev: prevStep, onNext: nextStep, onToggle: () => setPlaying((p) => !p) } }
+      : null;
+
+  useEffect(() => {
+    if (scrollRequest === 0) return;
+    const el = windowRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    if (top < 0 || top > window.innerHeight * 0.5) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      el.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+    }
+  }, [scrollRequest]);
 
   return (
     <div id={embedded ? undefined : "demo-os"} className="scroll-mt-24" style={{ ["--demo-accent" as string]: accent }}>
@@ -383,7 +515,7 @@ export function DemoOS({
             </p>
             <p className="mt-1 text-xs leading-relaxed text-white/50">
               {mobilePreview
-                ? "Mobile preview — the same live session, rendered the way your team would see it on a phone. Switch back to desktop for the guided tour."
+                ? "Mobile preview: the same live session, rendered the way your team would see it on a phone. Switch back to desktop for the guided tour."
                 : runningScenario
                   ? config.scenarios.find((s) => s.id === runningScenario.id)?.description
                   : currentStep
@@ -454,8 +586,7 @@ export function DemoOS({
                   <Wand2 size={13} className="mr-1.5" aria-hidden />
                   Simulate
                 </button>
-                {simMenu && (
-                  <div className="absolute right-0 top-11 z-40 w-72 rounded-lg border border-white/10 bg-base-800 shadow-lift">
+                <Popover open={simMenu} onClose={() => setSimMenu(false)} className="w-72" label="One-click simulations">
                     <p className="border-b border-white/[0.08] px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
                       One-click simulations
                     </p>
@@ -474,8 +605,7 @@ export function DemoOS({
                         </li>
                       ))}
                     </ul>
-                  </div>
-                )}
+                </Popover>
               </div>
             )}
             {config.scenarios.length > 0 && (
@@ -493,12 +623,11 @@ export function DemoOS({
                 <ListVideo size={13} className="mr-1.5" aria-hidden />
                 Scenarios
               </button>
-              {scenarioMenu && (
-                <div className="absolute right-0 top-11 z-40 w-80 rounded-lg border border-white/10 bg-base-800 shadow-lift">
+              <Popover open={scenarioMenu} onClose={() => setScenarioMenu(false)} className="w-80" label="Launch a scenario">
                   <p className="border-b border-white/[0.08] px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
                     Launch a scenario
                   </p>
-                  <ul className="max-h-72 overflow-y-auto no-scrollbar">
+                  <ul className="max-h-72 overflow-y-auto overscroll-contain">
                     {config.scenarios.map((sc) => {
                       const runs = state.scenarioRuns[sc.id] ?? 0;
                       return (
@@ -527,11 +656,10 @@ export function DemoOS({
                       );
                     })}
                   </ul>
-                </div>
-              )}
+              </Popover>
             </div>
             )}
-            {/* Desktop/mobile preview toggle — only meaningful on large screens */}
+            {/* Desktop/mobile preview toggle, only meaningful on large screens */}
             <div
               className="hidden items-center rounded border border-white/15 lg:inline-flex"
               role="group"
@@ -603,14 +731,24 @@ export function DemoOS({
 
       {/* ------------------------------------------------ OS window */}
       {!mobilePreview && (
-      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-base-900 shadow-lift">
+      <div
+        ref={windowRef}
+        onKeyDown={onWindowKeyDown}
+        className={`flex flex-col overflow-clip bg-base-900 scroll-mt-24 ${
+          fullscreen
+            ? "fixed inset-0 z-[60]"
+            : embedded
+              ? "relative h-[calc(100dvh-1rem)] rounded-xl border border-white/10"
+              : "relative rounded-xl border border-white/10 shadow-lift"
+        }`}
+      >
         {/* Window chrome */}
         <div className="flex items-center gap-3 border-b border-white/[0.08] bg-base-800/60 px-4 py-3">
           <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: accent }} aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-medium text-white/85">
               {state.settings.businessName}
-              <span className="ml-2 hidden text-white/35 sm:inline">
+              <span className="ml-2 hidden text-white/35 lg:inline">
                 · {config.osName}
                 {state.settings.primaryService ? ` · ${state.settings.primaryService}` : ""}
               </span>
@@ -620,10 +758,9 @@ export function DemoOS({
             {role.label} view
           </span>
           <div className="relative">
-            <button
-              type="button"
+            <IconButton
               onClick={() => setBellOpen((v) => !v)}
-              className="relative inline-flex h-7 w-7 items-center justify-center rounded border border-white/10 text-white/55 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+              className="relative rounded border border-white/10 text-white/55 hover:text-white focus-visible:ring-crimson lg:min-h-7 lg:min-w-7"
               aria-label={`Staff notifications (${unread})`}
               aria-expanded={bellOpen}
             >
@@ -633,9 +770,8 @@ export function DemoOS({
                   {unread}
                 </span>
               )}
-            </button>
-            {bellOpen && (
-              <div className="absolute right-0 top-9 z-30 w-72 rounded-lg border border-white/10 bg-base-800 shadow-lift">
+            </IconButton>
+            <Popover open={bellOpen} onClose={() => setBellOpen(false)} className="w-72" offsetClassName="top-full mt-1" label="Staff notifications">
                 <div className="flex items-center justify-between border-b border-white/[0.08] px-3 py-2.5">
                   <span className="text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/45">
                     Staff notifications
@@ -649,7 +785,7 @@ export function DemoOS({
                 {state.notifications.length === 0 ? (
                   <p className="px-3 py-6 text-center text-xs text-white/35">No notifications yet. Run a scenario.</p>
                 ) : (
-                  <ul className="max-h-64 divide-y divide-white/[0.06] overflow-y-auto no-scrollbar">
+                  <ul className="max-h-64 divide-y divide-white/[0.06] overflow-y-auto overscroll-contain">
                     {state.notifications.map((n) => (
                       <li key={n.id} className="flex items-start gap-2.5 px-3 py-2.5">
                         {n.tone === "alert" ? (
@@ -665,28 +801,61 @@ export function DemoOS({
                     ))}
                   </ul>
                 )}
-              </div>
-            )}
+            </Popover>
           </div>
+          <div className="hidden items-center sm:flex" role="group" aria-label="Section navigation">
+            <IconButton
+              onClick={() => stepSection(-1)}
+              disabled={!prevSection}
+              className="rounded border border-white/10 text-white/55 hover:text-white disabled:cursor-default disabled:opacity-30 disabled:hover:text-white/55 lg:min-h-7 lg:min-w-7"
+              aria-label="Previous section"
+            >
+              <ChevronLeft size={14} aria-hidden />
+            </IconButton>
+            <IconButton
+              onClick={() => stepSection(1)}
+              disabled={!nextSection}
+              className="ml-1 rounded border border-white/10 text-white/55 hover:text-white disabled:cursor-default disabled:opacity-30 disabled:hover:text-white/55 lg:min-h-7 lg:min-w-7"
+              aria-label="Next section"
+            >
+              <ChevronRight size={14} aria-hidden />
+            </IconButton>
+          </div>
+          {!embedded && (
+          <IconButton
+            onClick={() => setFullscreen((v) => !v)}
+            className="rounded border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
+            aria-label={fullscreen ? "Exit full screen" : "Full screen"}
+            aria-pressed={fullscreen}
+          >
+            {fullscreen ? <Minimize2 size={13} aria-hidden /> : <Maximize2 size={13} aria-hidden />}
+          </IconButton>
+          )}
         </div>
 
-        <div className="flex min-h-[32rem] flex-col lg:flex-row">
+        <div className={`flex flex-col lg:flex-row ${fill ? "min-h-0 flex-1" : ""}`}>
           {/* Nav */}
           <nav aria-label={`${config.osName} sections`} className="border-b border-white/[0.08] lg:w-48 lg:shrink-0 lg:border-b-0 lg:border-r">
-            <ul className="flex overflow-x-auto no-scrollbar lg:block lg:py-3">
+            <ScrollRail
+              as="ul"
+              activeKey={tab}
+              hideScrollbar
+              className="flex lg:block lg:overflow-visible lg:py-3"
+            >
               {nav.map((item) => {
                 const Icon = NAV_ICONS[item.id];
                 const active = tab === item.id;
                 return (
                   <li key={item.id} className="shrink-0">
                     <button
+                      key={pulse?.tab === item.id ? pulse.key : item.id}
                       type="button"
                       onClick={() => setTabTracked(item.id)}
                       aria-current={active ? "page" : undefined}
                       className={`flex w-full items-center gap-2.5 whitespace-nowrap border-b-2 px-4 py-3 text-xs transition-colors focus:outline-none focus-visible:bg-white/[0.06] lg:border-b-0 lg:border-l-2 lg:py-2.5 ${
                         active ? "bg-white/[0.04] text-white" : "border-transparent text-white/50 hover:text-white/85"
-                      }`}
-                      style={active ? { borderColor: accent } : undefined}
+                      } ${pulse?.tab === item.id ? "demo-nav-pulse" : ""}`}
+                      style={{ ...(active ? { borderColor: accent } : {}), ["--spot" as string]: pulse?.tab === item.id ? KIND_COLOR[pulse.kind] : undefined }}
                     >
                       <Icon size={14} style={active ? { color: accent === "#b3243a" ? "#d94b5e" : accent } : undefined} className={active ? "" : "text-white/35"} aria-hidden />
                       {item.label}
@@ -694,18 +863,45 @@ export function DemoOS({
                   </li>
                 );
               })}
-            </ul>
+            </ScrollRail>
           </nav>
 
-          {/* Main content */}
-          <div className="min-w-0 flex-1 p-4 sm:p-5">{view}</div>
+          {/*
+            Main content. A fixed height keeps the window the same size on
+            every section (each view used to set its own, so switching tabs
+            made the page jump); anything taller scrolls inside the pane.
+            `touch-action: pan-y` leaves vertical scrolling to the browser and
+            hands horizontal drags to the swipe handlers.
+          */}
+          <div
+            data-demo-pane=""
+            className={`min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain [touch-action:pan-y] ${
+              fill ? "min-h-0 flex-1" : "h-[32rem] lg:h-[38rem] lg:flex-1"
+            }`}
+            onPointerDown={onPanePointerDown}
+            onPointerUp={onPanePointerUp}
+            onPointerCancel={onPanePointerCancel}
+          >
+            {/*
+              The pane itself is unpadded so the sticky caption can sit flush
+              against the scrollport: a sticky box is clamped to its containing
+              block, so padding here would hold it that far down the pane and
+              leave a band the board scrolls up into. The view carries the
+              padding instead.
+            */}
+            {caption && !mobilePreview && (
+              <TourCaption {...caption} accent={accent} onChip={(t) => goToTab(t)} />
+            )}
+            <div className="p-4 sm:p-5">{view}</div>
+          </div>
         </div>
 
         {/* Persistent demo-environment indicator */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] bg-base-800/40 px-4 py-2">
           <p className="flex items-center gap-1.5 text-[0.62rem] text-white/40">
             <ShieldCheck size={11} className="shrink-0 text-emerald-400/60" aria-hidden />
-            Demo environment — no real messages, appointments, or payments will be sent.
+            <span className="sm:hidden">Swipe sideways to change section. </span>
+            Demo environment, no real messages, appointments, or payments will be sent.
           </p>
           <button
             type="button"
@@ -734,9 +930,9 @@ export function DemoOS({
                 <p className="text-xs font-medium text-white/90">{toast.title}</p>
                 {toast.body && <p className="mt-0.5 text-[0.66rem] leading-snug text-white/55">{toast.body}</p>}
               </div>
-              <button type="button" onClick={() => dispatch({ type: "dismiss-toast", id: toast.id })} className="shrink-0 text-white/35 transition-colors hover:text-white" aria-label="Dismiss notification">
-                <X size={12} />
-              </button>
+              <IconButton onClick={() => dispatch({ type: "dismiss-toast", id: toast.id })} className="-my-2 -mr-2 text-white/35 hover:text-white" aria-label="Dismiss notification">
+                <X size={14} />
+              </IconButton>
             </div>
           ))}
         </div>
@@ -757,7 +953,7 @@ export function DemoOS({
           <p className="text-sm leading-relaxed text-white/65">
             You can edit records, move {config.terminology.records.toLowerCase()} through the
             pipeline, reply in conversations, trigger workflows, change business settings, and reset
-            the demo at any time. Everything is sample data in an isolated session — no real
+            the demo at any time. Everything is sample data in an isolated session, no real
             messages, appointments, or payments are ever sent.
           </p>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">

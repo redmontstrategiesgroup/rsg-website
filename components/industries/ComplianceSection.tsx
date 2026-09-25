@@ -4,7 +4,7 @@ import type { IndustryVertical } from "@/lib/industries/types";
 
 /**
  * Industry-specific compliance and risk practices. Describes safeguards RSG
- * designs around — never certification claims, never legal/medical advice
+ * designs around, never certification claims, never legal/medical advice
  * (the disclaimer is part of the vertical's content and always rendered).
  */
 export function ComplianceSection({
@@ -12,7 +12,7 @@ export function ComplianceSection({
   emphasized = false,
 }: {
   vertical: IndustryVertical;
-  /** Dental gets the elevated treatment — compliance before systems. */
+  /** Health-adjacent verticals can elevate this: compliance before systems. */
   emphasized?: boolean;
 }) {
   const { title, intro, disclaimer, items } = vertical.compliance;

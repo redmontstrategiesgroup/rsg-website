@@ -114,7 +114,7 @@ export function PoliciesView({
           <p className={labelClass}>Security packages</p>
         </div>
         <p className="mt-1 max-w-2xl text-xs text-white/45">
-          Package structure shown on the website. Starting prices are optional —
+          Package structure shown on the website. Starting prices are optional;
           leave blank to show no price. RSG does not display fabricated pricing.
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -137,7 +137,7 @@ export function PoliciesView({
                 <input
                   value={prices[pkg.id] ?? ""}
                   onChange={(e) => setPrices((p) => ({ ...p, [pkg.id]: e.target.value }))}
-                  placeholder='Starting price (e.g. "Starting at $1,800") — optional'
+                  placeholder='Starting price (e.g. "Starting at $1,800"), optional'
                   className={`${inputClass} mt-3`}
                 />
               ) : (

@@ -27,6 +27,7 @@ import {
   type SalesOpportunity,
 } from "@/lib/lifecycle/types";
 import { formatInvoiceNumber } from "@/lib/lifecycle/billing-shared";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Section =
   | "overview"
@@ -108,7 +109,7 @@ async function run(action: string, payload: AnyRecord): Promise<AnyRecord> {
 }
 
 function fmtDate(value: string | null | undefined, withTime = false): string {
-  if (!value) return "—";
+  if (!value) return "-";
   return new Date(value).toLocaleString("en-US", {
     dateStyle: "medium",
     ...(withTime ? { timeStyle: "short" as const } : {}),
@@ -207,17 +208,18 @@ export function LifecycleAdminPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="no-scrollbar flex gap-1 overflow-x-auto border-b border-white/10" role="tablist">
+      <ScrollRail role="tablist" activeKey={section} keyboardTabs className="flex gap-1 border-b border-white/10">
         {SECTIONS.map((s) => (
           <button
             key={s.id}
+            type="button"
             role="tab"
             aria-selected={section === s.id}
             onClick={() => {
               setSection(s.id);
               setClientId(null);
             }}
-            className={`relative whitespace-nowrap px-3.5 py-2.5 text-sm transition ${
+            className={`relative shrink-0 whitespace-nowrap px-3.5 py-2.5 text-sm transition ${
               section === s.id ? "text-white" : "text-white/45 hover:text-white/75"
             }`}
           >
@@ -227,7 +229,7 @@ export function LifecycleAdminPanel() {
             )}
           </button>
         ))}
-      </div>
+      </ScrollRail>
 
       {clientId ? (
         <ClientRecord clientId={clientId} onBack={() => setClientId(null)} />
@@ -290,7 +292,7 @@ function Overview({ onOpenClient }: { onOpenClient: (id: string) => void }) {
       <SectionCard title="Most recent opportunities" padded={false}>
         <Table
           headers={["Business", "Stage", "Next action", "Party", "Due", "Value"]}
-          empty="No opportunities yet — they appear when prospects qualify."
+          empty="No opportunities yet: they appear when prospects qualify."
           rows={(data.opportunities as SalesOpportunity[]).map((o) => [
             <button
               key="n"
@@ -300,10 +302,10 @@ function Overview({ onOpenClient }: { onOpenClient: (id: string) => void }) {
               {o.name}
             </button>,
             <StatusPill key="s" status={o.stage} label={OPPORTUNITY_STAGE_LABELS[o.stage]} />,
-            <span key="a" className="text-white/60">{o.next_action ?? "—"}</span>,
+            <span key="a" className="text-white/60">{o.next_action ?? "-"}</span>,
             o.next_action_party,
             fmtDate(o.next_action_due),
-            o.value_cents != null ? formatCents(o.value_cents) : "—",
+            o.value_cents != null ? formatCents(o.value_cents) : "-",
           ])}
         />
       </SectionCard>
@@ -330,7 +332,7 @@ function Pipeline() {
             return [
               <span key="n" className="text-white/85">{o.name}</span>,
               <span key="c" className="text-xs text-white/50">
-                {lead ? `${lead.name} · ${lead.email}` : "—"}
+                {lead ? `${lead.name} · ${lead.email}` : "-"}
               </span>,
               <select
                 key="stage"
@@ -352,7 +354,7 @@ function Pipeline() {
                 ))}
               </select>,
               <span key="na" className="text-xs text-white/55">
-                {o.next_action ?? "—"}
+                {o.next_action ?? "-"}
                 {o.next_action_due ? ` · due ${fmtDate(o.next_action_due)}` : ""}
               </span>,
               <Act
@@ -377,8 +379,8 @@ function Pipeline() {
             rows={(data.assessments as AnyRecord[]).map((a) => [
               <span key="e" className="text-xs text-white/70">{a.email}</span>,
               <StatusPill key="s" status={a.status} />,
-              a.score ?? "—",
-              <span key="r" className="text-xs">{a.recommended_service_category ?? "—"}</span>,
+              a.score ?? "-",
+              <span key="r" className="text-xs">{a.recommended_service_category ?? "-"}</span>,
               fmtDate(a.submitted_at),
               a.status === "submitted" ? (
                 <Act
@@ -421,7 +423,7 @@ function Pipeline() {
       <Modal
         open={notesFor !== null}
         onClose={() => setNotesFor(null)}
-        title={`Consultation notes — ${notesFor?.name ?? ""}`}
+        title={`Consultation notes: ${notesFor?.name ?? ""}`}
         wide
         footer={
           <Button
@@ -477,7 +479,7 @@ function Proposals() {
       <SectionCard padded={false}>
         <Table
           headers={["Title", "Status", "Total", "Viewed", "Expires", "Actions"]}
-          empty="No proposals yet — create one from a qualified opportunity."
+          empty="No proposals yet: create one from a qualified opportunity."
           rows={(data.proposals as AnyRecord[]).map((p) => [
             <div key="t">
               <span className="text-white/85">{p.title}</span>
@@ -487,7 +489,7 @@ function Proposals() {
             formatCents(p.total_cents),
             p.first_viewed_at
               ? `${fmtDate(p.first_viewed_at)} · ${Math.round((p.total_view_seconds ?? 0) / 60)}m viewed`
-              : "—",
+              : "-",
             fmtDate(p.expires_at),
             <div key="a" className="flex flex-wrap gap-3">
               {p.status === "draft" && (
@@ -557,7 +559,7 @@ function Proposals() {
       >
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Opportunity ID" hint="From the Pipeline tab — links everything together." optional>
+            <Field label="Opportunity ID" hint="From the Pipeline tab: links everything together." optional>
               {(props) => (
                 <input {...props} className={inputClass(false)} value={form.opportunityId}
                   onChange={(e) => setForm({ ...form, opportunityId: e.target.value })} />
@@ -621,7 +623,7 @@ function Contracts() {
     <SectionCard padded={false} title="Agreements">
       <Table
         headers={["Title", "Kind", "Status", "Sent", "Completed", "Actions"]}
-        empty='No agreements yet — approve a proposal, then "Create agreement".'
+        empty='No agreements yet: approve a proposal, then "Create agreement".'
         rows={(data.contracts as AnyRecord[]).map((c) => [
           <span key="t" className="text-white/85">{c.title}</span>,
           c.kind,
@@ -759,7 +761,7 @@ function Billing() {
       <Modal
         open={payFor !== null}
         onClose={() => setPayFor(null)}
-        title={`Record payment — ${payFor ? formatInvoiceNumber(payFor.number) : ""}`}
+        title={`Record payment: ${payFor ? formatInvoiceNumber(payFor.number) : ""}`}
         footer={
           <Button
             onClick={async () => {
@@ -784,7 +786,7 @@ function Billing() {
       >
         <p className="mb-4 text-xs leading-relaxed text-white/50">
           For bank transfers, checks, or other offline payments. Record the
-          amount and a reference — never card numbers. If this completes a
+          amount and a reference, never card numbers. If this completes a
           deposit, portal activation and project creation run automatically.
         </p>
         <Field label="Amount received ($)">
@@ -838,24 +840,24 @@ function ClientRecord({ clientId, onBack }: { clientId: string; onBack: () => vo
     {
       title: "Opportunities",
       rows: data.opportunities,
-      render: (o) => `${o.name} — ${o.stage}`,
+      render: (o) => `${o.name}: ${o.stage}`,
     },
-    { title: "Proposals", rows: data.proposals, render: (p) => `${p.title} — ${p.status}` },
-    { title: "Contracts", rows: data.contracts, render: (c) => `${c.title} — ${c.status}` },
+    { title: "Proposals", rows: data.proposals, render: (p) => `${p.title}: ${p.status}` },
+    { title: "Contracts", rows: data.contracts, render: (c) => `${c.title}: ${c.status}` },
     {
       title: "Invoices",
       rows: data.invoices,
-      render: (i) => `${formatInvoiceNumber(i.number)} ${i.description} — ${i.status}`,
+      render: (i) => `${formatInvoiceNumber(i.number)} ${i.description}: ${i.status}`,
     },
-    { title: "Projects", rows: data.projects, render: (p) => `${p.name} — ${p.status} (${p.progress}%)` },
-    { title: "Requests", rows: data.requests, render: (r) => `#${r.number} ${r.title} — ${r.status}` },
-    { title: "Tickets", rows: data.tickets, render: (t) => `#${t.number} ${t.subject} — ${t.status}` },
-    { title: "Reports", rows: data.reports, render: (r) => `${r.period_month} — ${r.status}` },
-    { title: "Renewals", rows: data.renewals, render: (r) => `${r.name} — ${r.renews_on} (${r.status})` },
+    { title: "Projects", rows: data.projects, render: (p) => `${p.name}: ${p.status} (${p.progress}%)` },
+    { title: "Requests", rows: data.requests, render: (r) => `#${r.number} ${r.title}: ${r.status}` },
+    { title: "Tickets", rows: data.tickets, render: (t) => `#${t.number} ${t.subject}: ${t.status}` },
+    { title: "Reports", rows: data.reports, render: (r) => `${r.period_month}: ${r.status}` },
+    { title: "Renewals", rows: data.renewals, render: (r) => `${r.name}: ${r.renews_on} (${r.status})` },
     {
       title: "Expansion roadmap",
       rows: data.expansion,
-      render: (e) => `${e.title} — ${e.status}`,
+      render: (e) => `${e.title}: ${e.status}`,
     },
   ];
   return (
@@ -993,7 +995,7 @@ function ProjectDetail({ id, onBack }: { id: string; onBack: () => void }) {
               ? m.approved_at
                 ? `Approved by ${m.approved_by ?? "client"}`
                 : "Client approval required"
-              : "—",
+              : "-",
           ])}
         />
       </SectionCard>
@@ -1255,7 +1257,7 @@ function Training() {
           rows={items.map((t) => [
             <span key="t" className="text-white/85">{t.title}</span>,
             t.kind,
-            t.system_tag || "—",
+            t.system_tag || "-",
             t.difficulty,
             t.published ? "Yes" : "No",
             <div key="a" className="flex gap-3">
@@ -1271,7 +1273,7 @@ function Training() {
                   if (clientId) {
                     const required = window.confirm("Mark as REQUIRED training?");
                     await run("assign_training", { trainingItemId: t.id, clientId, required });
-                    window.alert("Assigned — the client was notified.");
+                    window.alert("Assigned: the client was notified.");
                   }
                 }}
                 onDone={() => {}}
@@ -1344,7 +1346,7 @@ function Reports() {
       <Modal
         open={editing !== null}
         onClose={() => setEditing(null)}
-        title={`Edit report — ${editing?.period_month ?? ""}`}
+        title={`Edit report: ${editing?.period_month ?? ""}`}
         wide
         footer={
           <Button
@@ -1401,7 +1403,7 @@ function Growth() {
               const result = await run("suggest_expansion", { clientId });
               const suggestions = (result.suggestions ?? []) as AnyRecord[];
               if (suggestions.length === 0) {
-                window.alert("No data-backed suggestions yet — that's honest, not broken.");
+                window.alert("No data-backed suggestions yet: that's honest, not broken.");
                 return;
               }
               for (const s of suggestions) {
@@ -1420,7 +1422,7 @@ function Growth() {
         <Button
           onClick={async () => {
             const clientId = window.prompt("Client ID:");
-            const name = clientId && window.prompt("Renewal name (e.g. Care Plan — Annual):");
+            const name = clientId && window.prompt("Renewal name (e.g. Care Plan: Annual):");
             const renewsOn = name && window.prompt("Renews on (YYYY-MM-DD):");
             if (clientId && name && renewsOn) {
               try {
@@ -1444,7 +1446,7 @@ function Growth() {
             r.kind,
             fmtDate(r.renews_on),
             <StatusPill key="s" status={r.status} />,
-            r.value_cents != null ? formatCents(r.value_cents) : "—",
+            r.value_cents != null ? formatCents(r.value_cents) : "-",
           ])}
         />
       </SectionCard>
@@ -1466,7 +1468,7 @@ function Automations() {
               <span className="text-white/85">{s.label ?? s.id}</span>
               <p className="mt-0.5 text-[0.65rem] text-white/40">{s.description ?? ""}</p>
             </div>,
-            <span key="t" className="text-xs text-white/55">{s.trigger ?? "—"}</span>,
+            <span key="t" className="text-xs text-white/55">{s.trigger ?? "-"}</span>,
             <select
               key="c"
               className={`${inputClass(false)} !w-auto !px-2 !py-1.5 text-xs`}

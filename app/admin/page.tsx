@@ -20,7 +20,7 @@ export default async function AdminPage() {
   if (!ctx) redirect("/admin/login");
 
   const role = ctx.role;
-  // Capability flags — mirror the server-side permission gates on the API
+  // Capability flags: mirror the server-side permission gates on the API
   // routes so the console never server-renders data a role can't manage.
   const caps = {
     clients: can("manage_clients", role),
@@ -37,7 +37,7 @@ export default async function AdminPage() {
   const [clients, leads, subscribers, pageViews] = await Promise.all([
     caps.clients ? getClients() : Promise.resolve([]),
     caps.leads ? getLeads() : Promise.resolve([]),
-    caps.leads ? getSubscribers() : Promise.resolve([]),
+    caps.leads ? getSubscribers({ includeUnsubscribed: true }) : Promise.resolve([]),
     caps.analytics ? getPageViews() : Promise.resolve([]),
   ]);
 

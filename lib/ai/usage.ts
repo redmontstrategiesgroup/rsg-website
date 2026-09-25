@@ -16,7 +16,7 @@ import type { UsageRecord } from "@/lib/ai/proxy";
 
 /**
  * Approximate per-model USD rates as { input, output } per 1,000,000 tokens.
- * These are ESTIMATES for internal cost attribution only — verify against
+ * These are ESTIMATES for internal cost attribution only, verify against
  * current Anthropic pricing before showing any dollar figure to a customer.
  * Tokens stored are exact; only the derived cost is an estimate. Override the
  * whole map (or add models) via AI_PRICES_JSON.
@@ -55,7 +55,7 @@ export const MONTHLY_TOKEN_CAP = Number(process.env.AI_MONTHLY_TOKEN_CAP ?? 5_00
 
 /**
  * Persist one usage row. Shaped to be passed directly as lib/ai/proxy's
- * onUsage hook. NEVER throws — metering must not break a user-facing AI call.
+ * onUsage hook. NEVER throws: metering must not break a user-facing AI call.
  */
 export async function recordAiUsage(u: UsageRecord): Promise<void> {
   try {
@@ -83,7 +83,7 @@ export type TenantUsage = {
 
 /**
  * This-month usage for one tenant (exact tokens; estimated cost). Sums the
- * month's rows in app code — fine at current volumes; a rollup table or a
+ * month's rows in app code, fine at current volumes; a rollup table or a
  * Postgres aggregate is the scale path if a tenant's monthly row count grows
  * large. Throws if Supabase is unavailable (callers that must not fail should
  * use isTenantOverAiCap, which swallows that).
@@ -122,13 +122,13 @@ export async function tenantUsageThisMonth(clientId: string): Promise<TenantUsag
  *    to fail open.
  */
 export async function isTenantOverAiCap(clientId: string): Promise<boolean> {
-  if (!isSupabaseConfigured()) return false; // local/preview — nothing to protect
+  if (!isSupabaseConfigured()) return false; // local/preview, nothing to protect
   try {
     const usage = await tenantUsageThisMonth(clientId);
     return usage.totalTokens >= MONTHLY_TOKEN_CAP;
   } catch (err) {
     console.error(
-      "[ai/usage] cap check FAILED with Supabase configured — failing CLOSED. " +
+      "[ai/usage] cap check FAILED with Supabase configured, failing CLOSED. " +
         "Is the ai_usage table migrated? Blocking AI to protect the shared key.",
       err
     );

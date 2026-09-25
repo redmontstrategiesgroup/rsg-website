@@ -20,7 +20,7 @@ const CSRF_HEADER = "x-csrf-token";
 const ADMIN_COOKIE = "rsg_admin";
 
 /**
- * Correlation id — minted here, at the entry point, and propagated forward on
+ * Correlation id: minted here, at the entry point, and propagated forward on
  * the request headers so route handlers and every provider call they make log
  * under the same id. Echoed on the response so a browser error report and the
  * server-side trail can be joined.
@@ -39,7 +39,7 @@ function inboundCorrelationId(request: NextRequest): string | null {
   return /^[A-Za-z0-9._:-]+$/.test(trimmed) ? trimmed : null;
 }
 
-/** Obvious non-browser/scripted clients — blocked from mutating API calls. */
+/** Obvious non-browser/scripted clients: blocked from mutating API calls. */
 const BOT_UA =
   /\b(bot|crawl|spider|scrape|slurp|curl|wget|python-requests|python-urllib|aiohttp|scrapy|httpclient|libwww|okhttp|go-http-client|java\/|phantomjs|headlesschrome)\b/i;
 
@@ -61,7 +61,7 @@ function decodeAdminPayload(
   }
 }
 
-/** Base64url (no padding) of an ArrayBuffer — matches Node's digest("base64url"). */
+/** Base64url (no padding) of an ArrayBuffer, matches Node's digest("base64url"). */
 function bufToBase64url(buf: ArrayBuffer): string {
   const bytes = new Uint8Array(buf);
   let bin = "";
@@ -82,11 +82,11 @@ function timingSafeEqualStr(a: string, b: string): boolean {
  * (same secret + base64url shape as lib/auth's `sign`), then the role and
  * expiry. This is what stops a forged/unsigned cookie from passing the page
  * gate. The API handlers and page loaders verify independently too (defense in
- * depth) — but the gate should not accept a cookie the rest of the app rejects.
+ * depth), but the gate should not accept a cookie the rest of the app rejects.
  *
  * Requires AUTH_SECRET at the edge. When it is unset (local dev, where lib/auth
  * uses a per-process random secret the edge runtime can't see), fall back to a
- * structural check so dev isn't locked out — production ALWAYS sets AUTH_SECRET
+ * structural check so dev isn't locked out, production ALWAYS sets AUTH_SECRET
  * (lib/auth throws without it), so production always gets the real check.
  */
 async function hasValidAdminCookie(token: string | undefined): Promise<boolean> {
@@ -217,7 +217,7 @@ async function handle(request: NextRequest, correlationId: string) {
       secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: 60 * 60 * 24 * 180,
-      // Deliberately NOT httpOnly — client JS must read it to echo it back.
+      // Deliberately NOT httpOnly: client JS must read it to echo it back.
       httpOnly: false,
     });
   }

@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     }
 
     // Lifecycle hook: create the preparation questionnaire, advance the
-    // journey, and send the invite email. Best-effort — never blocks booking.
+    // journey, and send the invite email. Best-effort; never blocks booking.
     try {
       const fresh = await getSessionByToken(body.sessionToken);
       const contact = (fresh?.contact ?? {}) as {
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     }
 
     // Consultative managed-services recommendation from the optional
-    // ongoing-support answers. Pure computation — never blocks booking.
+    // ongoing-support answers. Pure computation, never blocks booking.
     let recommendedPlanKey: string | null = null;
     let recommendedPlanName: string | null = null;
     try {

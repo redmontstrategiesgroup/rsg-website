@@ -3,7 +3,7 @@
  * up to nine nav items, so without this a keyboard or switch user tabs through
  * the whole header on every page before reaching the content.
  *
- * Visually hidden until focused, then pinned top-left above everything — the
+ * Visually hidden until focused, then pinned top-left above everything, the
  * navbar sits at z-50, so this has to clear it to be visible when focused.
  */
 export function SkipLink() {

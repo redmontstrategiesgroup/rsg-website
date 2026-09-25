@@ -13,7 +13,7 @@ if (dsn) {
     sendDefaultPii: false,
     // Session Replay is sampled on errors; keep it strictly anonymized so form
     // fields (lead name/email, portal content) can never be reconstructed from
-    // a replay. These are the SDK defaults — pinned here so a future config
+    // a replay. These are the SDK defaults, pinned here so a future config
     // edit can't silently un-mask PII.
     integrations: [
       Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),

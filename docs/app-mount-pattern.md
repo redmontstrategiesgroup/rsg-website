@@ -37,13 +37,13 @@ and every AI call it makes is scoped by that `clientId`.
     if (!(await rateLimit(`<app>:${clientId}:${clientIp(request)}`, 120, 10 * 60_000))) {
       return rateLimitResponse();
     }
-    const body = schema.parse(await request.json()); // zod — never trust the client
+    const body = schema.parse(await request.json()); // zod, never trust the client
     const sb = requireSupabase();
     const { data } = await sb.from("<app>_things").select("*").eq("client_id", clientId); // ALWAYS scope
     return Response.json({ things: data ?? [] });
   }
   ```
-  All mutating browser calls must send the CSRF header — use `postJson`/`patchJson` from `@/lib/api`.
+  All mutating browser calls must send the CSRF header, use `postJson`/`patchJson` from `@/lib/api`.
 
 ## 2. Tables
 
@@ -64,7 +64,7 @@ revoke all on table public.<app>_things from anon, authenticated;
 
 RLS is enabled with **no policies** and anon/authenticated revoked: access is
 service-role only, and isolation is enforced by **always** filtering on
-`client_id` in code. The service-role key bypasses RLS — forgetting the
+`client_id` in code. The service-role key bypasses RLS, forgetting the
 `.eq("client_id", clientId)` filter is a cross-tenant leak; the database will not
 catch it. Verify ownership on every by-id fetch (`row.client_id === clientId`).
 
@@ -86,11 +86,11 @@ const result = await appGenerateStructured<MyShape>({
 ## 4. Seed / demo data
 
 New tenants start **empty**. Any sample/demo data loads only behind an explicit
-"load sample" action, never automatically — a demo record must never appear in a
+"load sample" action, never automatically; a demo record must never appear in a
 real account. `NEXT_PUBLIC_ENABLE_DEMO_DATA` must be `false`/unset in production.
 
 ## 5. Acceptance (per app)
 
-Sign in as tenant A, use the app, refresh — state persists. Sign in as a **second**
-tenant B — B sees none of A's data, and A sees none of B's. That cross-tenant check
+Sign in as tenant A, use the app, refresh, state persists. Sign in as a **second**
+tenant B: B sees none of A's data, and A sees none of B's. That cross-tenant check
 is the test the standalone demos never had.
