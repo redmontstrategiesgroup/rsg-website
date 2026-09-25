@@ -76,7 +76,7 @@ export function SecurityStandard({
               </div>
               <p className="mt-5 text-sm leading-relaxed text-white/40">
                 Controls are selected to fit each project. Informed by NIST and
-                OWASP guidance — never sold as a compliance badge.
+                OWASP guidance, never sold as a compliance badge.
               </p>
             </Reveal>
           </div>

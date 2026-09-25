@@ -253,7 +253,7 @@ export function PrivateAiAdminPanel() {
                 </p>
                 <ul className="mt-2 space-y-1 text-sm text-white/55">
                   {selected.architecture.coreComponents.map((c) => (
-                    <li key={c}>— {c}</li>
+                    <li key={c}>: {c}</li>
                   ))}
                 </ul>
               </div>
@@ -265,7 +265,7 @@ export function PrivateAiAdminPanel() {
                 <ul className="mt-2 space-y-2 text-xs text-white/40">
                   {selected.activity.map((a, i) => (
                     <li key={`${a.at}-${i}`}>
-                      {new Date(a.at).toLocaleString()} — {a.text}
+                      {new Date(a.at).toLocaleString()}: {a.text}
                       {a.by ? ` (${a.by})` : ""}
                     </li>
                   ))}
@@ -289,7 +289,7 @@ function Item({ label, value }: { label: string; value: string }) {
       <dt className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
         {label}
       </dt>
-      <dd className="mt-1 text-white/70">{value || "—"}</dd>
+      <dd className="mt-1 text-white/70">{value || "-"}</dd>
     </div>
   );
 }

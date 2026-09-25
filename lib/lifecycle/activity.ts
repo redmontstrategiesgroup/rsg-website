@@ -1,5 +1,5 @@
 /**
- * Client Lifecycle Platform — client activity log.
+ * Client Lifecycle Platform: client activity log.
  *
  * A lightweight audit/activity feed shared by the portal ("what happened on
  * my account") and the admin console ("what happened across all clients").
@@ -25,7 +25,7 @@ export type LogClientActivityInput = {
 
 /**
  * Fire-and-forget activity insert. Catches and logs every failure (including
- * Supabase being unconfigured) — this function never throws.
+ * Supabase being unconfigured): this function never throws.
  */
 export async function logClientActivity(input: LogClientActivityInput): Promise<void> {
   try {

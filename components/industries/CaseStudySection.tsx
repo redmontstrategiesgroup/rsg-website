@@ -5,7 +5,7 @@ import type { IndustryVertical } from "@/lib/industries/types";
 /**
  * One clearly-labeled scenario per vertical. Until an admin marks a verified
  * case study (with approved metrics and disclosures), the illustrative label
- * and projection note are always rendered — no fabricated names, quotes, or
+ * and projection note are always rendered, no fabricated names, quotes, or
  * results ever appear here.
  */
 export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
@@ -85,7 +85,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
 
               {/* Implementation + KPIs + projections */}
               <div className="mt-10 grid gap-8 lg:grid-cols-12">
-                <div className="lg:col-span-5">
+                <div className="lg:col-span-6">
                   <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     Proposed RSG implementation
                   </p>
@@ -98,22 +98,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
                     ))}
                   </ul>
                 </div>
-                <div className="lg:col-span-3">
-                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
-                    KPIs monitored
-                  </p>
-                  <ul className="mt-4 flex flex-wrap gap-2">
-                    {cs.kpis.map((k) => (
-                      <li
-                        key={k}
-                        className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.72rem] text-white/55"
-                      >
-                        {k}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="lg:col-span-4">
+                <div className="lg:col-span-6">
                   <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     {cs.verified ? "Results" : "Projected outcomes"}
                   </p>

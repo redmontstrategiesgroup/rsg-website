@@ -1,5 +1,5 @@
 /**
- * Future integration interfaces — not connected.
+ * Future integration interfaces, not connected.
  * Do not call these as live providers.
  */
 

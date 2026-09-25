@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 /**
  * Cloudflare Turnstile widget (explicit render, dark theme). Rendered only
- * when NEXT_PUBLIC_TURNSTILE_SITE_KEY is configured — the parent decides.
+ * when NEXT_PUBLIC_TURNSTILE_SITE_KEY is configured: the parent decides.
  */
 
 type TurnstileApi = {

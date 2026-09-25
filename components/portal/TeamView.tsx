@@ -159,7 +159,7 @@ export function TeamView({
 
       <Banner tone="info" title="Access is personal">
         Each person gets their own login and their own permissions. If someone
-        leaves your team, remove their access here — it takes effect
+        leaves your team, remove their access here, it takes effect
         immediately.
       </Banner>
 

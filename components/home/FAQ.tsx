@@ -29,12 +29,12 @@ const FAQS = [
     a: "Then the opportunity is usually in follow-up, conversion, and visibility. Most businesses lose more revenue to weak systems than to a shortage of leads.",
   },
   {
-    q: "Does RSG work with retail stores, or only service businesses?",
-    a: "Both. For retailers we build customer-retention, loyalty, missed-call recovery, ecommerce, review, and inventory-reporting systems — usually connected to the POS and platform the store already runs. The interactive retail demo shows the whole system working on sample data.",
+    q: "Does RSG work with real estate teams, or only service businesses?",
+    a: "Both. For brokerages and agent teams we build speed-to-lead response, showing coordination, contingency deadline tracking, and past-client referral systems; usually connected to the CRM and transaction platform the team already runs. The interactive brokerage demo shows the whole system working on sample data.",
   },
   {
-    q: "Can RSG connect to my POS or ecommerce platform?",
-    a: "Usually. Square, Shopify, Clover, and Lightspeed are common starting points, and integrations are scoped per engagement around what you already use. If a direct connection isn't practical, we say so up front and design the workflow around it.",
+    q: "Can RSG connect to our CRM and MLS feed?",
+    a: "Usually. Follow Up Boss, BoldTrail, Sierra Interactive, Dotloop, and SkySlope are common starting points, and listing data comes through sanctioned MLS or IDX feeds rather than scraping. What each connection can do depends on your plan tier, permissions, and your MLS's participation agreement, so we verify it against your real accounts during scoping. If a direct connection isn't practical, we say so up front and design the workflow around it.",
   },
   {
     q: "Do you manage systems after launch?",

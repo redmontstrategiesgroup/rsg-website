@@ -71,7 +71,7 @@ export async function rateLimit(
     const result = await limiter.limit(key);
     return result.success;
   } catch (err) {
-    console.warn("[security] Upstash rate limit failed — using memory fallback.", err);
+    console.warn("[security] Upstash rate limit failed: using memory fallback.", err);
     return memoryRateLimit(key, limit, windowMs);
   }
 }
@@ -79,7 +79,7 @@ export async function rateLimit(
 /**
  * Best-effort client IP for rate limiting. Prefers x-real-ip (set by the
  * platform proxy and not client-controllable). Falls back to the RIGHTMOST
- * x-forwarded-for entry — the hop the trusted proxy appended — rather than
+ * x-forwarded-for entry, the hop the trusted proxy appended, rather than
  * the leftmost, which a client can spoof to rotate its apparent IP and defeat
  * per-IP caps.
  */

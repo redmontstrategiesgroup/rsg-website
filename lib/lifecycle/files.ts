@@ -1,9 +1,9 @@
 /**
- * Client Lifecycle Platform — secure files.
+ * Client Lifecycle Platform: secure files.
  *
  * Metadata rows in `files` / `file_versions`; binary content in the private
  * Supabase Storage bucket (FILES_BUCKET). Content is only ever reachable
- * through short-lived signed URLs — the bucket is never public.
+ * through short-lived signed URLs: the bucket is never public.
  *
  * Server-only. Tables owned here: files, file_versions.
  */
@@ -141,7 +141,7 @@ export function validateUpload(input: {
 // ---------------------------------------------------------------------------
 
 /**
- * SECURITY: this module must never accept, store, or log credentials —
+ * SECURITY: this module must never accept, store, or log credentials;
  * no passwords, API keys, tokens, or card data, whether as dedicated fields,
  * in `description`, or inside uploaded documents we generate. If access
  * details ever need to change hands, that happens through a human process

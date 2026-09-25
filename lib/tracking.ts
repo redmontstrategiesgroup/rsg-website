@@ -48,7 +48,7 @@ export function getTracking(): Tracking {
   try {
     utm = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? "{}");
   } catch {
-    /* corrupt storage — submit without attribution */
+    /* corrupt storage: submit without attribution */
   }
   const params =
     typeof window !== "undefined"

@@ -4,9 +4,9 @@ import { LocalPage, type LocalPageContent } from "@/components/local/LocalPage";
 const content: LocalPageContent = {
   slug: "servicearea",
   label: "Service Area · Plymouth County & the South Shore",
-  h1: "Business Consulting & AI Strategy Across Plymouth County and the South Shore",
+  h1: "Business Consulting & AI Implementation Across Plymouth County and the South Shore",
   intro: [
-    "RSG is a business consulting and AI strategy firm built for the service businesses that keep this region running: the practices, gyms, trades, and local operators that live on calls, appointments, and jobs.",
+    "RSG is a business consulting and AI implementation firm built for the service businesses that keep this region running: the practices, gyms, trades, and local operators that live on calls, appointments, and jobs.",
     "The work is the same everywhere we go. Understand how the business actually runs, find where time and revenue are being lost, and build practical systems to close the gaps.",
   ],
   parent: { label: "Services", href: "/services" },
@@ -25,7 +25,7 @@ const content: LocalPageContent = {
   includes: [
     "Med spas and aesthetic clinics",
     "Gyms and fitness studios",
-    "Dental and wellness offices",
+    "Wellness, recovery, and therapy practices",
     "Home service companies and contractors",
     "Cleaning companies and local service businesses",
     "High-ticket service providers",
@@ -50,7 +50,7 @@ const content: LocalPageContent = {
     },
     {
       q: "What kinds of businesses fit RSG?",
-      a: "Appointment and job based service businesses: med spas, gyms, dental and wellness offices, home services, contractors, cleaning companies, and other local operators where speed and follow-up decide who wins the work.",
+      a: "Appointment and job based service businesses: med spas, gyms, wellness and therapy practices, home services, contractors, cleaning companies, and other local operators where speed and follow-up decide who wins the work.",
     },
     {
       q: "What is the Business Systems Audit?",
@@ -74,9 +74,9 @@ const content: LocalPageContent = {
     { label: "Industries", href: "/industries" },
   ],
   schema: {
-    serviceName: "Business Consulting & AI Strategy",
+    serviceName: "Business Consulting & AI Implementation",
     serviceDescription:
-      "Business consulting and AI strategy for service businesses across Plymouth County and the South Shore of Massachusetts, covering operations, follow-up systems, CRM, websites, and AI automation.",
+      "Business consulting and AI implementation for service businesses across Plymouth County and the South Shore of Massachusetts, covering operations, follow-up systems, CRM, websites, and AI automation.",
     serviceType: "Business consulting",
   },
 };

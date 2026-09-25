@@ -23,7 +23,7 @@ export default async function ProjectPage({
   const ctx = await requirePortalPage();
   const { id } = await searchParams;
 
-  // Tolerate a not-yet-migrated database — render calm empty states.
+  // Tolerate a not-yet-migrated database: render calm empty states.
   const projects = await listProjectsForClient(ctx.client.id).catch((error) => {
     console.warn("[portal/project] load failed", error);
     return [];
@@ -39,13 +39,13 @@ export default async function ProjectPage({
       <div className="card mt-10">
         <EmptyState
           title="No active project yet"
-          description="When your engagement begins, your full project roadmap — phases, milestones, and approvals — lives here."
+          description="When your engagement begins, your full project roadmap (phases, milestones, and approvals) lives here."
         />
       </div>
     );
   } else {
     // Scope check: listProjectsForClient already filters by client_id, and
-    // `selected` comes only from that list — cross-client access is impossible.
+    // `selected` comes only from that list: cross-client access is impossible.
     const detail = await getProjectWithDetail(selected.id);
     const approvals = await listApprovalsForClient(ctx.client.id, {
       status: "pending",
@@ -71,7 +71,7 @@ export default async function ProjectPage({
         title={selected ? selected.name : "Your project"}
         description={
           selected
-            ? "Live progress, what's next, and anything waiting on your side — always current, never a status meeting away."
+            ? "Live progress, what's next, and anything waiting on your side; always current, never a status meeting away."
             : undefined
         }
       />

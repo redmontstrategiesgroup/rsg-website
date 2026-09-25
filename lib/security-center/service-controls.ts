@@ -80,7 +80,7 @@ export const SECURITY_VARIANTS: Record<SecurityVariant, SecurityVariantDef> = {
     eyebrow: "Security included",
     title: "Security is part of every build",
     intro:
-      "Whatever RSG builds for you, it is designed with controlled access, secure credentials, backups, audit trails, and documented recovery — not added after the fact.",
+      "Whatever RSG builds for you, it is designed with controlled access, secure credentials, backups, audit trails, and documented recovery; not added after the fact.",
     controls: [
       "Multifactor authentication",
       "Role-based permissions",
@@ -94,7 +94,7 @@ export const SECURITY_VARIANTS: Record<SecurityVariant, SecurityVariantDef> = {
     eyebrow: "Security included",
     title: "Confidentiality-focused by design",
     intro:
-      "Private AI is built around how information is stored, retrieved, logged, accessed, and deleted — with deployment options that keep sensitive data under your control.",
+      "Private AI is built around how information is stored, retrieved, logged, accessed, and deleted; with deployment options that keep sensitive data under your control.",
     controls: [
       "Local or private-cloud deployment options",
       "Permission-based knowledge access",

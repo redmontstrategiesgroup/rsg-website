@@ -20,12 +20,12 @@ import type { FormQuestion, FormSection, PrepBrief } from "./types.ts";
 // ---------------------------------------------------------------------------
 
 const ACCESS_HELP =
-  "Never type passwords or login details into this form. Just tell us whether access is something you could provide — if we work together, credentials are exchanged later through a secure channel.";
+  "Never type passwords or login details into this form. Just tell us whether access is something you could provide, if we work together, credentials are exchanged later through a secure channel.";
 
 const ACCESS_OPTIONS = [
-  { value: "can_provide", label: "Yes — I can provide access" },
-  { value: "partial", label: "Some of it — not everything" },
-  { value: "no_access", label: "No — I don't have access myself" },
+  { value: "can_provide", label: "Yes: I can provide access" },
+  { value: "partial", label: "Some of it, not everything" },
+  { value: "no_access", label: "No: I don't have access myself" },
   { value: "not_applicable", label: "Doesn't apply to us" },
 ];
 
@@ -45,7 +45,7 @@ const DECISION_COUNT_OPTIONS = [
 ];
 
 const BRAND_ASSETS_OPTIONS = [
-  { value: "ready", label: "Yes — logo, colors, and fonts are ready to share" },
+  { value: "ready", label: "Yes: logo, colors, and fonts are ready to share" },
   { value: "partial", label: "Some of it exists" },
   { value: "none", label: "No brand assets yet" },
   { value: "not_sure", label: "Not sure" },
@@ -55,7 +55,7 @@ const TIMING_OPTIONS = [
   { value: "asap", label: "As soon as possible" },
   { value: "1_3_months", label: "Within 1–3 months" },
   { value: "3_6_months", label: "Within 3–6 months" },
-  { value: "exploring", label: "No rush — still exploring" },
+  { value: "exploring", label: "No rush, still exploring" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -81,7 +81,7 @@ function currentSoftwareQuestion(placeholder: string): FormQuestion {
     type: "textarea",
     required: false,
     placeholder,
-    help: "List whatever comes to mind — spreadsheets, group texts, and paper systems all count.",
+    help: "List whatever comes to mind: spreadsheets, group texts, and paper systems all count.",
   };
 }
 
@@ -102,7 +102,7 @@ function teamStructureQuestion(): FormQuestion {
     label: "Who's on the team, and what does each person handle?",
     type: "textarea",
     required: false,
-    placeholder: "A rough sketch is fine — roles matter more than names.",
+    placeholder: "A rough sketch is fine: roles matter more than names.",
   };
 }
 
@@ -112,7 +112,7 @@ function decisionMakersQuestion(): FormQuestion {
     label: "Who, besides you, will weigh in on this decision?",
     type: "textarea",
     required: false,
-    placeholder: "Names and roles — e.g. co-owner, office manager, business partner",
+    placeholder: "Names and roles: e.g. co-owner, office manager, business partner",
     help: "If it's just you, feel free to say so or skip this.",
   };
 }
@@ -146,7 +146,7 @@ function integrationsQuestion(): FormQuestion {
     required: false,
     placeholder: "e.g. QuickBooks, Google Calendar, our phone system",
     tooltip:
-      "An integration means two software tools passing information back and forth automatically — like your booking calendar creating invoices in QuickBooks.",
+      "An integration means two software tools passing information back and forth automatically, like your booking calendar creating invoices in QuickBooks.",
   };
 }
 
@@ -156,9 +156,9 @@ function securityQuestion(help?: string): FormQuestion {
     label: "Any security, privacy, or compliance requirements we should design around?",
     type: "textarea",
     required: false,
-    placeholder: "e.g. HIPAA, customer data rules, insurance requirements — or “none I know of”",
+    placeholder: "e.g. HIPAA, customer data rules, insurance requirements; or “none I know of”",
     tooltip:
-      "Compliance means rules your industry requires you to follow when handling information — like HIPAA for health data or PCI for card payments.",
+      "Compliance means rules your industry requires you to follow when handling information, like HIPAA for health data or PCI for card payments.",
     help,
   };
 }
@@ -180,7 +180,7 @@ function documentsQuestion(): FormQuestion {
     label: "Have documents that show how things work today? Upload them here.",
     type: "file",
     required: false,
-    help: "File upload is available — process maps, org charts, price sheets, screenshots, or anything else useful. Skip this if nothing comes to mind.",
+    help: "File upload is available: process maps, org charts, price sheets, screenshots, or anything else useful. Skip this if nothing comes to mind.",
   };
 }
 
@@ -255,7 +255,7 @@ function buildTemplate(copy: TemplateCopy): { key: string; label: string; sectio
             type: "textarea",
             required: true,
             placeholder: copy.goalsPlaceholder,
-            help: "Two or three sentences is plenty — this shapes the whole conversation.",
+            help: "Two or three sentences is plenty, this shapes the whole conversation.",
           },
           successMetricsQuestion(),
         ],
@@ -264,7 +264,7 @@ function buildTemplate(copy: TemplateCopy): { key: string; label: string; sectio
         key: "current_state",
         label: "How things run today",
         description:
-          "No need to polish anything here — the honest, messy version is the most useful one.",
+          "No need to polish anything here; the honest, messy version is the most useful one.",
         estimatedMinutes: 4,
         questions: [
           {
@@ -290,7 +290,7 @@ function buildTemplate(copy: TemplateCopy): { key: string; label: string; sectio
         key: "project",
         label: "Budget & requirements",
         description:
-          "These answers keep our recommendations realistic — every one of them is optional.",
+          "These answers keep our recommendations realistic; every one of them is optional.",
         estimatedMinutes: 3,
         questions: [
           budgetQuestion(),
@@ -303,7 +303,7 @@ function buildTemplate(copy: TemplateCopy): { key: string; label: string; sectio
         key: "access",
         label: "Access & documents",
         description:
-          "We never ask for passwords in this form. These questions only ask whether access is something you could provide — credentials are exchanged later through a secure channel.",
+          "We never ask for passwords in this form. These questions only ask whether access is something you could provide, credentials are exchanged later through a secure channel.",
         estimatedMinutes: 2,
         questions: [
           ...copy.accessQuestions,
@@ -314,7 +314,7 @@ function buildTemplate(copy: TemplateCopy): { key: string; label: string; sectio
       {
         key: "constraints",
         label: "Timing & constraints",
-        description: "Last section — timing, constraints, and anything else we should know.",
+        description: "Last section: timing, constraints, and anything else we should know.",
         estimatedMinutes: 2,
         questions: [timingQuestion(), constraintsQuestion()],
       },
@@ -329,31 +329,31 @@ function buildTemplate(copy: TemplateCopy): { key: string; label: string; sectio
 const WEBSITE_ACCESS = accessQuestion(
   "website_access",
   "If needed, could you provide access to your current website?",
-  "Website access usually means the account where your site is edited — e.g. WordPress, Squarespace, or Wix."
+  "Website access usually means the account where your site is edited, e.g. WordPress, Squarespace, or Wix."
 );
 
 const CRM_ACCESS = accessQuestion(
   "crm_access",
   "If needed, could you provide access to your CRM or customer list?",
-  "A CRM (customer relationship manager) is the software where customer names, jobs, and conversations are tracked — spreadsheets count."
+  "A CRM (customer relationship manager) is the software where customer names, jobs, and conversations are tracked, spreadsheets count."
 );
 
 const ANALYTICS_ACCESS = accessQuestion(
   "analytics_access",
   "If needed, could you provide access to your website or marketing analytics?",
-  "Analytics tools — like Google Analytics — show how many people visit your site and where they come from."
+  "Analytics tools, like Google Analytics, show how many people visit your site and where they come from."
 );
 
 const HOSTING_ACCESS = accessQuestion(
   "hosting_access",
   "If needed, could you provide access to your domain or hosting account?",
-  "Your domain is your web address (yourbusiness.com); hosting is the service that keeps the site online — often GoDaddy, Namecheap, or similar."
+  "Your domain is your web address (yourbusiness.com); hosting is the service that keeps the site online, often GoDaddy, Namecheap, or similar."
 );
 
 const DATA_SYSTEMS_ACCESS = accessQuestion(
   "data_systems_access",
   "If needed, could you provide access to the systems where this data lives?",
-  "For example a CRM, shared drive, database, or document storage — wherever the information an AI system would rely on is kept."
+  "For example a CRM, shared drive, database, or document storage, wherever the information an AI system would rely on is kept."
 );
 
 export const QUESTIONNAIRE_TEMPLATES: Record<
@@ -369,7 +369,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
     goalsPlaceholder:
       "e.g. more consistent lead flow, less time on admin work, clearer visibility into the numbers",
     workflowLabel:
-      "Walk us through how work flows through your business today — from a new inquiry to getting paid.",
+      "Walk us through how work flows through your business today, from a new inquiry to getting paid.",
     workflowPlaceholder:
       "A few sentences is plenty. Where do things start, who touches them, and where do they slow down?",
     softwarePlaceholder: "e.g. QuickBooks, Google Calendar, spreadsheets, Jobber, Mailchimp",
@@ -390,7 +390,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
     key: "growth_systems",
     label: "Growth Systems Preparation",
     goalsDescription:
-      "This consultation is about lead flow, follow-up, and conversion — help us see where the growth should come from.",
+      "This consultation is about lead flow, follow-up, and conversion, help us see where the growth should come from.",
     goalsLabel: "What would meaningful growth look like for you over the next 6–12 months?",
     goalsPlaceholder: "e.g. 20 more qualified leads per month, faster follow-up, a higher close rate",
     workflowLabel: "What happens today when a new lead comes in?",
@@ -420,7 +420,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
         label: "How do you follow up with leads who don't buy right away?",
         type: "textarea",
         required: false,
-        placeholder: "e.g. we call twice then move on, an email sequence, honestly — we don't",
+        placeholder: "e.g. we call twice then move on, an email sequence, honestly, we don't",
         help: "“We don't really” is a genuinely useful answer.",
       },
     ],
@@ -436,7 +436,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
     goalsLabel: "Which parts of your day-to-day operations do you most want to run smoother?",
     goalsPlaceholder:
       "e.g. stop double-booking crews, get quotes out same-day, stop chasing invoices",
-    workflowLabel: "Walk us through a typical job or order — from first contact to paid-in-full.",
+    workflowLabel: "Walk us through a typical job or order, from first contact to paid-in-full.",
     workflowPlaceholder:
       "Who schedules it, who does the work, how does billing happen, and where do things stall?",
     softwarePlaceholder: "e.g. QuickBooks, Jobber, Excel, a whiteboard, group texts",
@@ -473,13 +473,13 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
     key: "business_systems",
     label: "Business Systems Preparation",
     goalsDescription:
-      "This consultation looks at how your business runs end-to-end — the more context, the better the recommendations.",
+      "This consultation looks at how your business runs end-to-end, the more context, the better the recommendations.",
     goalsLabel:
       "If we rebuilt the way your business runs end-to-end, what has to be true a year from now?",
     goalsPlaceholder:
       "e.g. the business runs without me in every decision, one system instead of five, real numbers weekly",
     workflowLabel:
-      "Walk us through how work flows through the business today — from a new inquiry to getting paid.",
+      "Walk us through how work flows through the business today, from a new inquiry to getting paid.",
     workflowPlaceholder:
       "A few sentences is plenty. Where do things start, who touches them, and where do they slow down?",
     softwarePlaceholder: "e.g. QuickBooks, a CRM, spreadsheets, email, paper files",
@@ -500,7 +500,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
     key: "private_ai",
     label: "Private AI Preparation",
     goalsDescription:
-      "This consultation is about a private, secure AI system built around your data — these answers shape the requirements.",
+      "This consultation is about a private, secure AI system built around your data; these answers shape the requirements.",
     goalsLabel: "What do you want a private AI system to do for your business?",
     goalsPlaceholder:
       "e.g. answer customer questions from our own documents, draft quotes, summarize job notes",
@@ -515,7 +515,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
         type: "textarea",
         required: false,
         placeholder: "e.g. Google Drive folders, a CRM, spreadsheets, email history, paper files",
-        help: "A rough inventory is fine — knowing where things live tells us a lot.",
+        help: "A rough inventory is fine: knowing where things live tells us a lot.",
       },
     ],
     projectExtras: [
@@ -525,13 +525,13 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
         type: "select",
         required: false,
         options: [
-          { value: "public", label: "Nothing sensitive — mostly public information" },
+          { value: "public", label: "Nothing sensitive: mostly public information" },
           { value: "internal", label: "Internal business information" },
           { value: "customer_pii", label: "Customer personal information" },
           { value: "regulated", label: "Regulated data (health, financial, legal)" },
         ],
         tooltip:
-          "Customer personal information means details that identify a person — names, addresses, phone numbers, payment or health details.",
+          "Customer personal information means details that identify a person, names, addresses, phone numbers, payment or health details.",
       },
       {
         key: "compliance_frameworks",
@@ -546,7 +546,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
           { value: "other", label: "Something else" },
           { value: "none", label: "None that I know of" },
         ],
-        help: "Pick any that apply — “none that I know of” is a fine answer.",
+        help: "Pick any that apply: “none that I know of” is a fine answer.",
       },
     ],
     accessQuestions: [DATA_SYSTEMS_ACCESS, CRM_ACCESS],
@@ -557,7 +557,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
     key: "website_platform",
     label: "Website & Platform Preparation",
     goalsDescription:
-      "This consultation is about your website or platform — what it should accomplish and what exists today.",
+      "This consultation is about your website or platform, what it should accomplish and what exists today.",
     goalsLabel: "What should a new website or platform accomplish for your business?",
     goalsPlaceholder:
       "e.g. bring in leads instead of just existing, let customers book online, look like the business we actually are",
@@ -575,7 +575,7 @@ export const QUESTIONNAIRE_TEMPLATES: Record<
       },
       {
         key: "site_issues",
-        label: "What's working about your current site — and what isn't?",
+        label: "What's working about your current site, and what isn't?",
         type: "textarea",
         required: false,
         placeholder: "e.g. it looks dated, nobody can update it, it never brings in leads",
@@ -734,7 +734,7 @@ function truncate(text: string, max: number): string {
 
 /**
  * Assembles the internal consultation prep brief strictly from provided
- * answers — empty answers are skipped, nothing is invented.
+ * answers: empty answers are skipped, nothing is invented.
  */
 export function buildPrepBrief(
   answers: Record<string, unknown>,
@@ -758,12 +758,12 @@ export function buildPrepBrief(
   const collect = (keys: string[]): string[] =>
     keys.map(line).filter((entry): entry is string => entry !== null);
 
-  // Flags for notable risks — derived only from answers actually given.
+  // Flags for notable risks: derived only from answers actually given.
   const flags: string[] = [];
 
   const budget = typeof answers.budget_range === "string" ? answers.budget_range : "";
   if (budget === "under_5k") {
-    flags.push("Tight budget (under $5,000) — scope recommendations carefully.");
+    flags.push("Tight budget (under $5,000), scope recommendations carefully.");
   }
 
   const securityText = answerToText(answers.security_requirements, questionIndex.get("security_requirements"));
@@ -774,13 +774,13 @@ export function buildPrepBrief(
     : [];
   const sensitivity = typeof answers.data_sensitivity === "string" ? answers.data_sensitivity : "";
   if (securityText || complianceRaw.length > 0 || sensitivity === "customer_pii" || sensitivity === "regulated") {
-    flags.push("Security or compliance requirements stated — review before proposing an architecture.");
+    flags.push("Security or compliance requirements stated: review before proposing an architecture.");
   }
 
   const dmCount = typeof answers.decision_maker_count === "string" ? answers.decision_maker_count : "";
   if (dmCount === "4_5" || dmCount === "6_plus") {
     const label = answerToText(dmCount, questionIndex.get("decision_maker_count")) ?? dmCount;
-    flags.push(`Larger buying group (${label}) — plan for multiple stakeholders in the decision.`);
+    flags.push(`Larger buying group (${label}): plan for multiple stakeholders in the decision.`);
   }
 
   const noAccess = Object.keys(ACCESS_ANSWER_KEYS).filter((key) => answers[key] === "no_access");
@@ -788,14 +788,14 @@ export function buildPrepBrief(
     flags.push(
       `No access to current systems yet (${noAccess
         .map((key) => ACCESS_ANSWER_KEYS[key])
-        .join(", ")}) — budget extra onboarding time.`
+        .join(", ")}), budget extra onboarding time.`
     );
   }
 
   const primaryGoal = answerToText(answers.business_goals, questionIndex.get("business_goals"));
   const headline = primaryGoal
     ? `${template.label}: ${truncate(primaryGoal, 120)}`
-    : `${template.label} — consultation brief`;
+    : `${template.label}: consultation brief`;
 
   return {
     headline,

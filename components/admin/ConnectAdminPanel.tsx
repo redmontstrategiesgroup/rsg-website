@@ -522,7 +522,7 @@ export function ConnectAdminPanel() {
                       .filter(Boolean),
                   })
                 }
-                placeholder="Sources (instagram,linkedin) — empty = all"
+                placeholder="Sources (instagram,linkedin), empty = all"
               />
               <input
                 className={inputClass}

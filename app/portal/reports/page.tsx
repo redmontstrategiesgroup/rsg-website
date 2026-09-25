@@ -22,7 +22,7 @@ export default async function ReportsPage({
   const ctx = await requirePortalPage();
   const { id } = await searchParams;
 
-  // Tolerate a not-yet-migrated database — render calm empty states.
+  // Tolerate a not-yet-migrated database: render calm empty states.
   const reports = (
     await listReports(ctx.client.id, { limit: 24 }).catch(() => [])
   ).filter((r) => r.status === "published");
@@ -33,7 +33,7 @@ export default async function ReportsPage({
       <PageHeader
         eyebrow="Performance"
         title="Monthly reports"
-        description="What your systems produced, measured against your goals — with honest labels on every number."
+        description="What your systems produced, measured against your goals; with honest labels on every number."
       />
 
       {reports.length === 0 ? (

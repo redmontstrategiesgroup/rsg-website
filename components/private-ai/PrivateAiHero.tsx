@@ -10,7 +10,7 @@ const TRUST_ICONS = [Shield, Server, Lock, Users, Headphones];
 export function PrivateAiHero() {
   return (
     <section className="relative overflow-hidden border-b border-white/[0.08]">
-      {/* Decorative only — hidden on phones, where the blur and grid cost
+      {/* Decorative only: hidden on phones, where the blur and grid cost
           compositing work and add nothing to the message. */}
       <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute inset-0 bg-grid opacity-[0.18]" />
@@ -48,7 +48,7 @@ export function PrivateAiHero() {
             </Reveal>
             <Reveal y={12} delay={0.1}>
               <h1 className="display mt-5 max-w-3xl text-[2.15rem] leading-[1.08] tracking-tight sm:text-[3.1rem]">
-                Custom AI built around your business—not the other way around.
+                Custom AI built around your business, not the other way around.
               </h1>
             </Reveal>
             <Reveal y={12} delay={0.16}>
@@ -127,7 +127,7 @@ export function PrivateAiHero() {
                 </div>
                 <p className="mt-6 text-xs leading-relaxed text-white/35">
                   Sensitive documents, customer records, and proprietary knowledge
-                  stay inside environments you control—not public AI platforms.
+                  stay inside environments you control, not public AI platforms.
                 </p>
                 <Link
                   href={PRIVATE_AI_PATH + "#security"}

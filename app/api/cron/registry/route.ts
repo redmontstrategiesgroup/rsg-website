@@ -17,7 +17,7 @@ export const maxDuration = 60;
  * Nightly client-registry reconcile.
  *
  * Separate from the 5-minute scheduling cron on purpose. Ordinary delivery is
- * already handled there — registry events sit in the same outbox and go out
+ * already handled there: registry events sit in the same outbox and go out
  * with everything else. This sweep exists for the case push cannot cover: an
  * app's Supabase project was paused or unreachable long enough that its
  * deliveries dead-lettered, and nothing would ever retry them.

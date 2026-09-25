@@ -27,9 +27,9 @@ const content: LocalPageContent = {
     "Website conversion review",
     "Sales process and follow-up review",
     "CRM and pipeline assessment",
-    "Product and category performance reporting for retail",
-    "Customer retention and inventory turnover reporting",
-    "Daily owner reporting, including campaign-attributed revenue",
+    "Lead source and agent production reporting for brokerages",
+    "Past-client retention and pipeline conversion reporting",
+    "Daily owner reporting, including source-attributed closings",
     "AI and automation opportunity mapping",
     "Written findings and an implementation roadmap",
   ],
@@ -38,7 +38,7 @@ const content: LocalPageContent = {
     "Owners who suspect leads are slipping but cannot see where",
     "Businesses about to spend on marketing, software, or a rebuild",
     "Teams juggling calls, forms, and DMs with no single system",
-    "Retail stores and ecommerce brands running on gut feel instead of numbers",
+    "Brokerages and agent teams running on gut feel instead of numbers",
     "Operations that have outgrown spreadsheets and memory",
   ],
   serviceArea:
@@ -83,12 +83,8 @@ const content: LocalPageContent = {
       href: "/aiautomation",
     },
     {
-      label: "Retail & Multi-Location Systems",
-      href: "/industries/retail",
-    },
-    {
-      label: "Interactive Retail Demo",
-      href: "/demos/retail",
+      label: "Real Estate & Brokerage Systems",
+      href: "/industries/realestate",
     },
   ],
   schema: {

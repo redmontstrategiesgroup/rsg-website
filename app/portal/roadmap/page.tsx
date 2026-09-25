@@ -23,13 +23,13 @@ export const metadata: Metadata = {
 
 export default async function RoadmapPage() {
   const ctx = await requirePortalPage();
-  // Tolerate a not-yet-migrated database — render calm empty states.
+  // Tolerate a not-yet-migrated database: render calm empty states.
   const [renewals, expansion] = await Promise.all([
     listRenewalsForClient(ctx.client.id).catch(() => []),
     listExpansionItems(ctx.client.id, {}).catch(() => []),
   ]);
 
-  // Clients see recommendations that are at least at the "recommended" stage —
+  // Clients see recommendations that are at least at the "recommended" stage:
   // internal "identified" ideas stay internal until they're worth your time.
   const visibleExpansion = expansion.filter((e) => e.status !== "identified");
   const activeRenewals = renewals.filter((r) => !["lapsed", "cancelled"].includes(r.status));
@@ -39,7 +39,7 @@ export default async function RoadmapPage() {
       <PageHeader
         eyebrow="Strategic planning"
         title="Your roadmap"
-        description="Where your systems go next — grounded in your actual results, discussed at your strategy reviews, never a sales pitch."
+        description="Where your systems go next: grounded in your actual results, discussed at your strategy reviews, never a sales pitch."
       />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -48,7 +48,7 @@ export default async function RoadmapPage() {
             <div className="card">
               <EmptyState
                 title="Roadmap under construction"
-                description="As your systems produce real data, we add recommended next steps here — each tied to a concrete business problem, with expected outcomes and honest investment ranges."
+                description="As your systems produce real data, we add recommended next steps here, each tied to a concrete business problem, with expected outcomes and honest investment ranges."
               />
             </div>
           ) : (
@@ -119,7 +119,7 @@ export default async function RoadmapPage() {
           </SectionCard>
           <SectionCard title="Talk it through">
             <p className="text-xs leading-relaxed text-white/50">
-              Roadmap items are decided together at your strategy reviews —
+              Roadmap items are decided together at your strategy reviews,
               nothing here moves forward without you.
             </p>
             <Link

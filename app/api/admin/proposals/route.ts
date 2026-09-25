@@ -24,7 +24,7 @@ function shareUrlFor(proposal: Proposal): string {
 }
 
 // ---------------------------------------------------------------------------
-// GET — proposals, plans, clients (manage_clients)
+// GET: proposals, plans, clients (manage_clients)
 // ---------------------------------------------------------------------------
 
 export async function GET() {
@@ -50,7 +50,7 @@ export async function GET() {
 }
 
 // ---------------------------------------------------------------------------
-// POST — mutations (manage_billing)
+// POST: mutations (manage_billing)
 // ---------------------------------------------------------------------------
 
 const implementationItemSchema = z.object({
@@ -238,7 +238,7 @@ export async function POST(request: Request) {
         clientId: body.clientId,
         kind: "project_completion",
         status: "sent",
-        title: `${body.projectName} — Delivery & Ongoing Management`,
+        title: `${body.projectName}: Delivery & Ongoing Management`,
         summary: `Delivery summary and recommended ongoing management for ${body.projectName}.`,
         implementation: {
           delivered: body.delivered,

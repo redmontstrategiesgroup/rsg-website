@@ -1,7 +1,7 @@
 import { deliverBatch, enqueue } from "@/lib/webhooks/outbox";
 
 /**
- * Scheduling webhooks — now a thin adapter over the shared outbox
+ * Scheduling webhooks: now a thin adapter over the shared outbox
  * (lib/webhooks/outbox.ts).
  *
  * This file used to contain its own enqueue-and-deliver loop, which had four
@@ -18,7 +18,7 @@ import { deliverBatch, enqueue } from "@/lib/webhooks/outbox";
 /**
  * Queue an event for delivery to every subscribed endpoint.
  *
- * `eventId` should be a stable identity for the DOMAIN event — it is what lets
+ * `eventId` should be a stable identity for the DOMAIN event, it is what lets
  * both this outbox and the receiver collapse duplicates. Pick something that
  * distinguishes genuine repeat occurrences: a booking can be rescheduled more
  * than once, so `booking.rescheduled:<id>` alone would silently swallow the

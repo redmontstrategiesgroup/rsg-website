@@ -38,7 +38,7 @@ export default async function AssessmentPage({
       content = (
         <p className="text-sm text-white/55">
           We couldn&rsquo;t find that assessment link. If it was emailed to
-          you, make sure the full link was copied — or{" "}
+          you, make sure the full link was copied; or{" "}
           <a href="/start" className="link-underline text-white/80">start fresh here</a>.
         </p>
       );

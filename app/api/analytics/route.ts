@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const consent = store.get("rsg_consent")?.value;
   const vid = store.get("rsg_vid")?.value ?? "";
   if (consent !== "all" || !vid || vid.length > 64) {
-    // No consent, nothing recorded — respond quietly.
+    // No consent, nothing recorded, respond quietly.
     return NextResponse.json({ ok: true, recorded: false });
   }
 
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   if (!path.startsWith("/") || path.includes("://")) {
     return NextResponse.json({ error: "Invalid path." }, { status: 400 });
   }
-  // Marketing pages only — never track the portal or admin.
+  // Marketing pages only, never track the portal or admin.
   if (
     path.startsWith("/portal") ||
     path.startsWith("/admin") ||
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, recorded: false });
   }
 
-  // Keep only the referrer's host — enough for attribution, nothing more.
+  // Keep only the referrer's host, enough for attribution, nothing more.
   let referrer = "";
   const rawRef = toStr(body.referrer).slice(0, 300);
   if (rawRef) {
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       const url = new URL(rawRef);
       if (url.host !== request.headers.get("host")) referrer = url.host;
     } catch {
-      /* unparseable referrer — drop it */
+      /* unparseable referrer: drop it */
     }
   }
 

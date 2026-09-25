@@ -52,7 +52,7 @@ export function IncidentsView({
           <p className="mt-1 text-xs leading-relaxed text-white/45">
             Detect, contain, rotate credentials, isolate systems, preserve logs,
             restore service, notify affected clients, and track corrective
-            actions — each incident carries its own record and timeline.
+            actions: each incident carries its own record and timeline.
           </p>
         </div>
         {canManage && (
@@ -107,7 +107,7 @@ export function IncidentsView({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-white/60">{INCIDENT_STATUS_LABELS[i.status]}</td>
-                  <td className="px-4 py-3 text-white/55">{i.owner || "—"}</td>
+                  <td className="px-4 py-3 text-white/55">{i.owner || "-"}</td>
                   <td className="px-4 py-3 text-white/50">{formatDate(i.detectedAt)}</td>
                   <td className="px-4 py-3 text-right">
                     <button
@@ -166,7 +166,7 @@ function IncidentForm({
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description — what was detected"
+        placeholder="Description: what was detected"
         rows={3}
         className={inputClass}
       />
@@ -225,15 +225,15 @@ function IncidentDetail({
 
   const report = () => {
     const lines = [
-      `INCIDENT REPORT — ${incident.title}`,
+      `INCIDENT REPORT: ${incident.title}`,
       `Severity: ${incident.severity}`,
       `Status: ${INCIDENT_STATUS_LABELS[incident.status]}`,
-      `Owner: ${incident.owner || "—"}`,
+      `Owner: ${incident.owner || "-"}`,
       `Detected: ${incident.detectedAt}`,
-      `Systems affected: ${incident.systemsAffected.join(", ") || "—"}`,
+      `Systems affected: ${incident.systemsAffected.join(", ") || "-"}`,
       "",
       "Description:",
-      incident.description || "—",
+      incident.description || "-",
       "",
       "Timeline:",
       ...incident.timeline.map(
@@ -274,7 +274,7 @@ function IncidentDetail({
 
         {incident.description && <p className="mt-3 text-sm text-white/65">{incident.description}</p>}
         <p className="mt-2 text-xs text-white/40">
-          Owner: {incident.owner || "—"} · Detected {formatDate(incident.detectedAt)}
+          Owner: {incident.owner || "-"} · Detected {formatDate(incident.detectedAt)}
           {incident.systemsAffected.length > 0 && <> · Systems: {incident.systemsAffected.join(", ")}</>}
         </p>
 
