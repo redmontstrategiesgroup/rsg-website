@@ -543,7 +543,7 @@ export function DemoOS({
                 )}
               </button>
             )}
-            {stepIndex >= 0 && (
+            {stepIndex > 0 && (
               <button
                 type="button"
                 onClick={prevStep}
@@ -803,23 +803,26 @@ export function DemoOS({
                 )}
             </Popover>
           </div>
-          <div className="hidden items-center sm:flex" role="group" aria-label="Section navigation">
-            <IconButton
-              onClick={() => stepSection(-1)}
-              disabled={!prevSection}
-              className="rounded border border-white/10 text-white/55 hover:text-white disabled:cursor-default disabled:opacity-30 disabled:hover:text-white/55 lg:min-h-7 lg:min-w-7"
-              aria-label="Previous section"
-            >
-              <ChevronLeft size={14} aria-hidden />
-            </IconButton>
-            <IconButton
-              onClick={() => stepSection(1)}
-              disabled={!nextSection}
-              className="ml-1 rounded border border-white/10 text-white/55 hover:text-white disabled:cursor-default disabled:opacity-30 disabled:hover:text-white/55 lg:min-h-7 lg:min-w-7"
-              aria-label="Next section"
-            >
-              <ChevronRight size={14} aria-hidden />
-            </IconButton>
+          {/* Each arrow exists only while there is a section that way. */}
+          <div className="hidden items-center gap-1 sm:flex" role="group" aria-label="Section navigation">
+            {prevSection && (
+              <IconButton
+                onClick={() => stepSection(-1)}
+                className="rounded border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
+                aria-label="Previous section"
+              >
+                <ChevronLeft size={14} aria-hidden />
+              </IconButton>
+            )}
+            {nextSection && (
+              <IconButton
+                onClick={() => stepSection(1)}
+                className="rounded border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
+                aria-label="Next section"
+              >
+                <ChevronRight size={14} aria-hidden />
+              </IconButton>
+            )}
           </div>
           {!embedded && (
           <IconButton
@@ -920,7 +923,10 @@ export function DemoOS({
         {/* Toasts */}
         <div className="pointer-events-none absolute bottom-12 right-4 z-40 flex w-72 max-w-[calc(100%-2rem)] flex-col gap-2" aria-live="polite">
           {state.toasts.slice(-3).map((toast) => (
-            <div key={toast.id} className="pointer-events-auto flex items-start gap-2.5 rounded-lg border border-white/15 bg-base-700/95 p-3 shadow-lift backdrop-blur animate-fade-up">
+            // Taps pass through the card to the controls under it; on a phone
+            // a stack of these covers most of the pane for up to 18s. Only
+            // the dismiss button takes pointer input.
+            <div key={toast.id} className="flex items-start gap-2.5 rounded-lg border border-white/15 bg-base-700/95 p-3 shadow-lift backdrop-blur animate-fade-up">
               {toast.tone === "alert" ? (
                 <AlertTriangle size={14} className="mt-0.5 shrink-0 text-crimson-light" aria-hidden />
               ) : (
@@ -930,7 +936,7 @@ export function DemoOS({
                 <p className="text-xs font-medium text-white/90">{toast.title}</p>
                 {toast.body && <p className="mt-0.5 text-[0.66rem] leading-snug text-white/55">{toast.body}</p>}
               </div>
-              <IconButton onClick={() => dispatch({ type: "dismiss-toast", id: toast.id })} className="-my-2 -mr-2 text-white/35 hover:text-white" aria-label="Dismiss notification">
+              <IconButton onClick={() => dispatch({ type: "dismiss-toast", id: toast.id })} className="pointer-events-auto -my-2 -mr-2 text-white/35 hover:text-white" aria-label="Dismiss notification">
                 <X size={14} />
               </IconButton>
             </div>

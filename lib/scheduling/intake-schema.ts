@@ -58,6 +58,19 @@ export const intakeAnswersSchema = z
 export type IntakeContact = z.infer<typeof intakeContactSchema>;
 export type IntakeAnswers = z.infer<typeof intakeAnswersSchema>;
 
+/**
+ * Display name from a booking session's stored contact. Intake saves
+ * firstName/lastName (see submitIntake), never a single `name`; `name` is
+ * accepted only as a legacy fallback.
+ */
+export function sessionContactName(
+  contact: { firstName?: string; lastName?: string; name?: string } | null | undefined
+): string {
+  if (!contact) return "";
+  const joined = `${contact.firstName ?? ""} ${contact.lastName ?? ""}`.trim();
+  return joined || (contact.name ?? "").trim();
+}
+
 export function splitFullName(fullName: string): {
   firstName: string;
   lastName: string;

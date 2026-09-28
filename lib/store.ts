@@ -828,14 +828,72 @@ const ANALYTICS_FILE = path.join(DATA_DIR, "analytics.json");
 /** Keep the event log bounded; ~20k page views is months of small-site data. */
 const MAX_ANALYTICS_EVENTS = 20_000;
 
-export async function recordPageView(view: PageView): Promise<void> {
+/** The admin summary only looks back this far (lib/analytics.ts). */
+const ANALYTICS_READ_DAYS = 30;
+
+type PageViewRow = {
+  vid: string;
+  path: string;
+  referrer: string | null;
+  viewed_at: string;
+};
+
+export function rowToPageView(row: PageViewRow): PageView {
+  return {
+    vid: row.vid,
+    path: row.path,
+    referrer: row.referrer ?? "",
+    at: row.viewed_at,
+  };
+}
+
+/**
+ * Persist one consented page view. Returns whether it was actually stored,
+ * so the API never reports a view as recorded when it was dropped.
+ */
+export async function recordPageView(view: PageView): Promise<boolean> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from("page_views").insert({
+        vid: view.vid,
+        path: view.path,
+        referrer: view.referrer,
+        viewed_at: view.at,
+      });
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error("[store] page view write to Supabase failed.", err);
+      if (IS_PROD) return false;
+    }
+  }
   const events = await readJson<PageView[]>(ANALYTICS_FILE, []);
   events.unshift(view);
-  await writeJson(ANALYTICS_FILE, events.slice(0, MAX_ANALYTICS_EVENTS));
+  return writeJson(ANALYTICS_FILE, events.slice(0, MAX_ANALYTICS_EVENTS));
 }
 
 export async function getPageViews(): Promise<PageView[]> {
-  return readJson<PageView[]>(ANALYTICS_FILE, []);
+  const fileViews = await readJson<PageView[]>(ANALYTICS_FILE, []);
+  const supabase = getSupabase();
+  if (!supabase) return fileViews;
+
+  try {
+    const since = new Date(
+      Date.now() - ANALYTICS_READ_DAYS * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const { data, error } = await supabase
+      .from("page_views")
+      .select("vid, path, referrer, viewed_at")
+      .gte("viewed_at", since)
+      .order("viewed_at", { ascending: false })
+      .limit(MAX_ANALYTICS_EVENTS);
+    if (error) throw error;
+    return [...((data as PageViewRow[]) ?? []).map(rowToPageView), ...fileViews];
+  } catch (err) {
+    console.warn("[store] page views read from Supabase failed, using file store.", err);
+    return fileViews;
+  }
 }
 
 /* -------------------------------- Admins ------------------------------- */

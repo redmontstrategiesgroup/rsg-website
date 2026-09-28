@@ -55,12 +55,12 @@ export async function POST(request: Request) {
     }
   }
 
-  await recordPageView({
+  const recorded = await recordPageView({
     vid,
     path,
     referrer,
     at: new Date().toISOString(),
   });
 
-  return NextResponse.json({ ok: true, recorded: true });
+  return NextResponse.json({ ok: true, recorded });
 }

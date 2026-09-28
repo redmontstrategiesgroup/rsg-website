@@ -89,15 +89,22 @@ export function TourCaption({ eyebrow, title, detail, chips, accent, onChip, con
         </div>
         {controls && (
           <div className="flex shrink-0 items-center gap-1">
-            <IconButton onClick={controls.onPrev} disabled={!controls.canPrev || controls.playing} aria-label="Previous tour step" className="rounded border border-white/10 text-white/60 hover:text-white">
-              <ChevronLeft size={14} />
-            </IconButton>
-            <IconButton onClick={controls.onToggle} disabled={!controls.canNext} aria-label={controls.playing ? "Pause tour" : "Resume tour"} className="rounded border border-white/10 text-white/60 hover:text-white">
-              {controls.playing ? <Pause size={14} /> : <Play size={14} />}
-            </IconButton>
-            <IconButton onClick={controls.onNext} disabled={!controls.canNext || controls.playing} aria-label="Next tour step" className="rounded border border-white/10 text-white/60 hover:text-white">
-              <ChevronRight size={14} />
-            </IconButton>
+            {/* Arrows only exist while there is a step that way. */}
+            {controls.canPrev && (
+              <IconButton onClick={controls.onPrev} disabled={controls.playing} aria-label="Previous tour step" className="rounded border border-white/10 text-white/60 hover:text-white">
+                <ChevronLeft size={14} />
+              </IconButton>
+            )}
+            {controls.canNext && (
+              <>
+                <IconButton onClick={controls.onToggle} aria-label={controls.playing ? "Pause tour" : "Resume tour"} className="rounded border border-white/10 text-white/60 hover:text-white">
+                  {controls.playing ? <Pause size={14} /> : <Play size={14} />}
+                </IconButton>
+                <IconButton onClick={controls.onNext} disabled={controls.playing} aria-label="Next tour step" className="rounded border border-white/10 text-white/60 hover:text-white">
+                  <ChevronRight size={14} />
+                </IconButton>
+              </>
+            )}
           </div>
         )}
       </div>

@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       score: result.score,
     });
   } catch (err) {
-    if (err instanceof z.ZodError) {
+    if (err instanceof z.ZodError || err instanceof SyntaxError) {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
     console.error("[booking/qualify]", err);

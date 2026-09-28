@@ -255,15 +255,18 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
 
                 {step < 3 && (
                   <div className="mt-9 flex items-center justify-between border-t border-white/[0.08] pt-6">
-                    <button
-                      type="button"
-                      onClick={() => setStep((s) => Math.max(0, s - 1))}
-                      disabled={step === 0}
-                      className="inline-flex min-h-11 items-center gap-2 text-sm text-white/45 transition-colors hover:text-white disabled:invisible lg:min-h-0"
-                    >
-                      <ArrowLeft size={14} aria-hidden />
-                      Back
-                    </button>
+                    {step > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setStep((s) => Math.max(0, s - 1))}
+                        className="inline-flex min-h-11 items-center gap-2 text-sm text-white/45 transition-colors hover:text-white lg:min-h-0"
+                      >
+                        <ArrowLeft size={14} aria-hidden />
+                        Back
+                      </button>
+                    ) : (
+                      <span />
+                    )}
                     {step < 2 ? (
                       <button
                         type="button"

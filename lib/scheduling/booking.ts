@@ -22,6 +22,19 @@ import {
 } from "./ics";
 import type { BookingStatus, MeetingFormat } from "./types";
 
+/** The booking a previous submit with this idempotency key already created. */
+export async function findBookingByIdempotencyKey(
+  idempotencyKey: string
+): Promise<{ bookingId: string; manageToken: string } | null> {
+  const sb = requireSupabase();
+  const { data } = await sb
+    .from("bookings")
+    .select("id, manage_token")
+    .eq("idempotency_key", idempotencyKey)
+    .maybeSingle();
+  return data ? { bookingId: data.id, manageToken: data.manage_token } : null;
+}
+
 export async function createBooking(input: {
   sessionId: string;
   sessionToken: string;
@@ -42,18 +55,8 @@ export async function createBooking(input: {
   }
 
   if (input.idempotencyKey) {
-    const { data: existing } = await sb
-      .from("bookings")
-      .select("id, manage_token")
-      .eq("idempotency_key", input.idempotencyKey)
-      .maybeSingle();
-    if (existing) {
-      return {
-        ok: true,
-        bookingId: existing.id,
-        manageToken: existing.manage_token,
-      };
-    }
+    const existing = await findBookingByIdempotencyKey(input.idempotencyKey);
+    if (existing) return { ok: true, ...existing };
   }
 
   const { data: session } = await sb
@@ -168,18 +171,8 @@ export async function createBooking(input: {
       input.idempotencyKey &&
       /bookings_idempotency_uidx/i.test(insertError.message)
     ) {
-      const { data: existing } = await sb
-        .from("bookings")
-        .select("id, manage_token")
-        .eq("idempotency_key", input.idempotencyKey)
-        .maybeSingle();
-      if (existing) {
-        return {
-          ok: true,
-          bookingId: existing.id,
-          manageToken: existing.manage_token,
-        };
-      }
+      const existing = await findBookingByIdempotencyKey(input.idempotencyKey);
+      if (existing) return { ok: true, ...existing };
     }
     if (/bookings_no_overlap|exclusion|23P01/i.test(insertError.message)) {
       return {
@@ -632,9 +625,37 @@ export async function cancelBooking(input: {
     .eq("booking_id", booking.id)
     .eq("status", "pending");
 
+  // The preparation questionnaire belongs to this meeting. Waive it so the
+  // 48h reminder sweep (which picks up pending/in_progress) stops nudging,
+  // and skip the already-queued invite: otherwise a visitor who cancels gets
+  // "prepare for your consultation" ten minutes later.
+  await sb
+    .from("questionnaires")
+    .update({ status: "waived", updated_at: new Date().toISOString() })
+    .eq("booking_id", booking.id)
+    .in("status", ["pending", "in_progress"]);
+  await sb
+    .from("automation_runs")
+    .update({
+      status: "skipped",
+      executed_at: new Date().toISOString(),
+      error: "Booking cancelled before execution",
+    })
+    .eq("status", "pending")
+    .eq("payload->email->>bookingId", booking.id);
+
   if (booking.lead_id) {
     await updateLeadStatus(booking.lead_id, "cancelled");
   }
+
+  await trackSchedulingEvent({
+    eventType: "cancel",
+    bookingId: booking.id,
+    leadId: booking.lead_id ?? undefined,
+    appointmentTypeId: booking.appointment_type_id ?? undefined,
+    isTest: booking.is_test ?? false,
+    meta: { actor: input.actor ?? "visitor" },
+  });
 
   const lead = booking.leads as Record<string, string> | null;
   const manageUrl = `${siteUrl()}/booking/manage/${booking.manage_token}`;

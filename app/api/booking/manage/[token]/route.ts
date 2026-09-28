@@ -179,7 +179,7 @@ export async function POST(request: Request, ctx: Ctx) {
 
     return NextResponse.json({ error: "Unknown action." }, { status: 400 });
   } catch (err) {
-    if (err instanceof z.ZodError) {
+    if (err instanceof z.ZodError || err instanceof SyntaxError) {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
     console.error("[booking/manage]", err);

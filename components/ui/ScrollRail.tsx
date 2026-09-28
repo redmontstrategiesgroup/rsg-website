@@ -92,13 +92,25 @@ export function ScrollRail({
   const ref = useRef<HTMLElement>(null);
   const [edges, setEdges] = useState({ left: false, right: false });
 
-  /* Edge-fade state: which sides still have content beyond them. */
+  /*
+    Edge-fade state: which sides still have content beyond them.
+
+    "At the start" means the first item is fully in view, not scrollLeft 0.
+    A rail with its own padding snaps its first item a few px in on load
+    (the demo builder landed at scrollLeft 4), and a bare `> 2` check read
+    that as already scrolled: a left arrow and fade over the first card.
+  */
   const measure = useCallback(() => {
     const el = ref.current;
     if (!el) return;
     const max = el.scrollWidth - el.clientWidth;
-    const left = el.scrollLeft > 2;
-    const right = max - el.scrollLeft > 2;
+    const first = el.firstElementChild as HTMLElement | null;
+    const last = el.lastElementChild as HTMLElement | null;
+    const box = el.getBoundingClientRect();
+    const start = first ? first.getBoundingClientRect().left - box.left + el.scrollLeft - el.clientLeft : 0;
+    const end = last ? last.getBoundingClientRect().right - box.left + el.scrollLeft - el.clientLeft : el.scrollWidth;
+    const left = el.scrollLeft > Math.min(start, max) + 2;
+    const right = el.scrollLeft + el.clientWidth < Math.max(end, el.clientWidth) - 2 && max - el.scrollLeft > 2;
     setEdges((prev) => (prev.left === left && prev.right === right ? prev : { left, right }));
   }, []);
 

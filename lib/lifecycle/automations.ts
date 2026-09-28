@@ -495,6 +495,12 @@ type RunPayload = {
   data?: Record<string, unknown>;
 };
 
+/** The booking a run's visitor email is about, if any. */
+export function runBookingId(run: { payload?: unknown }): string | null {
+  const payload = (run.payload ?? {}) as RunPayload;
+  return payload.email?.bookingId ?? null;
+}
+
 function isUniqueViolation(error: { code?: string; message?: string }): boolean {
   return (
     error.code === "23505" ||
@@ -753,6 +759,35 @@ export async function processDueAutomationRuns(limit = 25): Promise<{
       }
       skipped += 1;
       continue;
+    }
+
+    // Backstop for cancelBooking, which skips a booking's queued runs itself:
+    // never mail a visitor about a meeting that no longer exists.
+    const bookingId = runBookingId(run);
+    if (bookingId) {
+      const { data: booking } = await sb
+        .from("bookings")
+        .select("status")
+        .eq("id", bookingId)
+        .maybeSingle();
+      if (booking?.status === "cancelled") {
+        const { error: updateError } = await sb
+          .from("automation_runs")
+          .update({
+            status: "skipped",
+            executed_at: nowIso(),
+            error: "Booking cancelled before execution",
+          })
+          .eq("id", run.id);
+        if (updateError) {
+          console.error(
+            `[lifecycle] processDueAutomationRuns: failed to skip run ${run.id}`,
+            updateError
+          );
+        }
+        skipped += 1;
+        continue;
+      }
     }
 
     const channel: AutomationChannel = setting

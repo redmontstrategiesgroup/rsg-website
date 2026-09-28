@@ -580,14 +580,17 @@ export function SystemDesigner() {
 
             {step < 5 && (
               <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-                <button
-                  type="button"
-                  className="btn-ghost px-5 py-3 disabled:opacity-40"
-                  disabled={step === 0}
-                  onClick={() => setStep((s) => Math.max(0, s - 1))}
-                >
-                  Back
-                </button>
+                {step > 0 ? (
+                  <button
+                    type="button"
+                    className="btn-ghost px-5 py-3"
+                    onClick={() => setStep((s) => Math.max(0, s - 1))}
+                  >
+                    Back
+                  </button>
+                ) : (
+                  <span />
+                )}
                 {step < 4 ? (
                   <button
                     type="button"

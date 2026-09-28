@@ -6,6 +6,16 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    /*
+      `base` is a surface colour, never a text colour, and as one it collides
+      with the `text-base` font-size utility: Tailwind emitted both, so every
+      `sm:text-base` paragraph also got color:#060608 and vanished into the
+      background at >=640px. Text colours are the palette minus `base`.
+    */
+    textColor: ({ theme }) => {
+      const { base: _surface, ...colors } = theme("colors");
+      return colors;
+    },
     extend: {
       colors: {
         // Near-black canvas + cool dark surfaces

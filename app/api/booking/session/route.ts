@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     if (err instanceof SchedulingUnavailableError) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
-    if (err instanceof z.ZodError) {
+    if (err instanceof z.ZodError || err instanceof SyntaxError) {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
     console.error("[booking/session]", err);
@@ -180,7 +180,7 @@ export async function PATCH(request: Request) {
     }
     return NextResponse.json({ ok: true, step: updated.step });
   } catch (err) {
-    if (err instanceof z.ZodError) {
+    if (err instanceof z.ZodError || err instanceof SyntaxError) {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
     console.error("[booking/session PATCH]", err);

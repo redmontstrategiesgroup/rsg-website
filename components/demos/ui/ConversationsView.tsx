@@ -134,9 +134,15 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
   };
 
   return (
-    <div className="grid overflow-hidden rounded-lg border border-white/[0.07] bg-white/[0.02] lg:grid-cols-5">
+    /*
+      grid-cols-1 + min-w-0 are load-bearing on phones: with no column
+      template the implicit `auto` track sized itself to the longest
+      nowrap preview line (~900px), so `truncate` never engaged and the
+      overflow-hidden frame clipped every row's right edge instead.
+    */
+    <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-white/[0.07] bg-white/[0.02] lg:grid-cols-5">
       {/* Contact list */}
-      <div className={`border-white/[0.07] lg:col-span-2 lg:block lg:border-r ${showThreadMobile ? "hidden" : "block"}`}>
+      <div className={`min-w-0 border-white/[0.07] lg:col-span-2 lg:block lg:border-r ${showThreadMobile ? "hidden" : "block"}`}>
         <PanelHeading title={`Unified inbox · ${state.conversations.length}`} />
         <ul className="max-h-[28rem] divide-y divide-white/[0.05] overflow-y-auto overscroll-contain">
           {state.conversations.map((c) => {
@@ -176,7 +182,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
       </div>
 
       {/* Thread */}
-      <div className={`flex flex-col lg:col-span-3 ${showThreadMobile ? "flex" : "hidden lg:flex"}`}>
+      <div className={`flex min-w-0 flex-col lg:col-span-3 ${showThreadMobile ? "flex" : "hidden lg:flex"}`}>
         {selected ? (
           <>
             <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.07] px-4 py-3">
