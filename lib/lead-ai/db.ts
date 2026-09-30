@@ -1,6 +1,6 @@
 import { getSupabase } from "../supabase.ts";
 import type { LeadAiUpdate } from "./analyze.ts";
-import { insightFromRow, summarizeInsights, type InsightRow } from "./row.ts";
+import { insightFromRow, type InsightRow } from "./row.ts";
 import type { LeadInsight, NewInsight } from "./types.ts";
 
 /** Supabase access for lead AI. Throws on DB errors; callers decide policy. */
@@ -65,14 +65,29 @@ export async function getInsightSummary(leadId: string): Promise<{
   latest: LeadInsight | null;
   lastSent: LeadInsight | null;
 }> {
-  const { data, error } = await db()
-    .from("lead_ai_insights")
-    .select("*")
-    .eq("lead_id", leadId)
-    .order("created_at", { ascending: false })
-    .limit(20);
-  if (error) fail(error);
-  return summarizeInsights(((data as InsightRow[]) ?? []).map(insightFromRow));
+  const sb = db();
+  const [latestRes, sentRes] = await Promise.all([
+    sb
+      .from("lead_ai_insights")
+      .select("*")
+      .eq("lead_id", leadId)
+      .order("created_at", { ascending: false })
+      .limit(1),
+    sb
+      .from("lead_ai_insights")
+      .select("*")
+      .eq("lead_id", leadId)
+      .not("sent_at", "is", null)
+      .order("sent_at", { ascending: false })
+      .limit(1),
+  ]);
+  if (latestRes.error) fail(latestRes.error);
+  if (sentRes.error) fail(sentRes.error);
+  const first = (rows: unknown): LeadInsight | null => {
+    const row = Array.isArray(rows) ? (rows[0] as InsightRow | undefined) : undefined;
+    return row ? insightFromRow(row) : null;
+  };
+  return { latest: first(latestRes.data), lastSent: first(sentRes.data) };
 }
 
 /** Atomic send claim: true only for the first caller while sent_at is null. */
