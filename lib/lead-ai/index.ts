@@ -2,7 +2,7 @@ import { generateStructured, type StructuredSchema } from "@/lib/ai/proxy";
 import { siteUrl } from "@/lib/lifecycle/core";
 import { getLeadById } from "@/lib/store";
 import { analyzeLead, type AnalyzeDeps, type AnalyzeResult } from "./analyze.ts";
-import { DEFAULT_SIGNATURE } from "./compose.ts";
+import { resolveSignature } from "./compose.ts";
 import { insertInsight, updateLeadAi } from "./db.ts";
 import { LEAD_AI_TOOL } from "./schema.ts";
 
@@ -18,7 +18,7 @@ export function leadAiEnabled(): boolean {
 }
 
 export function replySignature(): string {
-  return process.env.LEAD_REPLY_SIGNATURE?.replace(/\n/g, "\n") || DEFAULT_SIGNATURE;
+  return resolveSignature(process.env.LEAD_REPLY_SIGNATURE);
 }
 
 function analyzeDeps(): AnalyzeDeps {

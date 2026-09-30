@@ -261,3 +261,11 @@ test("shouldAnalyze only for fresh, stored leads with an API key", () => {
   assert.equal(shouldAnalyze({ ...fresh, leadId: undefined }, env), false);
   assert.equal(shouldAnalyze(fresh, {}), false);
 });
+
+import { DEFAULT_SIGNATURE, resolveSignature } from "../lib/lead-ai/compose.ts";
+
+test("resolveSignature turns literal backslash-n into a newline; blank falls back", () => {
+  assert.equal(resolveSignature("Joseph\\nRSG"), "Joseph\nRSG");
+  assert.equal(resolveSignature(undefined), DEFAULT_SIGNATURE);
+  assert.equal(resolveSignature("  "), DEFAULT_SIGNATURE);
+});

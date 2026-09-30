@@ -8,6 +8,12 @@
 export const BOOKING_TOKEN = "{{BOOKING_LINK}}";
 export const DEFAULT_SIGNATURE = "Joseph\nRedmont Strategies Group";
 
+/** Signature from env: literal "\n" sequences become line breaks; blank -> default. */
+export function resolveSignature(raw: string | undefined): string {
+  const s = raw?.replace(/\\n/g, "\n").trim();
+  return s || DEFAULT_SIGNATURE;
+}
+
 // Stops before trailing punctuation so "www.x.com, or" keeps its comma.
 const URL_RE = /\b(?:https?:\/\/|www\.)(?:[^\s)>\]]*[^\s)>\].,;:!?])/gi;
 const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g;

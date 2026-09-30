@@ -389,9 +389,15 @@ export async function processLead(lead: Lead): Promise<ProcessLeadResult> {
 
   // 2b. Claude analysis (score adjustment + drafted reply) runs after the
   //     response; it can never delay or fail the visitor's submission.
-  const { shouldAnalyze, scheduleLeadAnalysis } = await import("./lead-ai/schedule.ts");
-  if (shouldAnalyze({ duplicate: false, storedInDatabase, leadId: stored.id })) {
-    await scheduleLeadAnalysis(stored.id!);
+  try {
+    const { shouldAnalyze, scheduleLeadAnalysis } = await import("./lead-ai/schedule.ts");
+    if (shouldAnalyze({ duplicate: false, storedInDatabase, leadId: stored.id })) {
+      await scheduleLeadAnalysis(stored.id!);
+    }
+  } catch (err) {
+    console.error("[lead-ai] could not schedule analysis", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   // 3. n8n automation workflow (optional downstream routing, not storage).
