@@ -223,10 +223,19 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
         </div>
       )}
 
-      {lastSent?.sentBody && !sentHere && !sendUnknown && (
+      {lastSent?.sentAt && !sentHere && !sendUnknown && (
         <p className="mt-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.06] px-3 py-2 text-sm text-amber-200">
-          Already replied on {fmt(lastSent.sentAt!)}: “{lastSent.sentSubject}”. Sending this draft
-          would be a second email.
+          {lastSent.sentBody ? (
+            <>
+              Already replied on {fmt(lastSent.sentAt)}: “{lastSent.sentSubject}”. Sending this draft
+              would be a second email.
+            </>
+          ) : (
+            <>
+              This lead may already have been emailed: a send on {fmt(lastSent.sentAt)} was not
+              confirmed. Check your Sent mail before sending another.
+            </>
+          )}
         </p>
       )}
 
