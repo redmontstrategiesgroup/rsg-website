@@ -39,6 +39,7 @@ const goodOutput = {
 function makeDeps(over: Partial<AnalyzeDeps> = {}) {
   const inserted: NewInsight[] = [];
   const updates: unknown[] = [];
+  const notified: unknown[] = [];
   const generateCalls: { system: string; message: string }[] = [];
   const deps: AnalyzeDeps = {
     loadLead: async () => baseLead(),
@@ -53,12 +54,15 @@ function makeDeps(over: Partial<AnalyzeDeps> = {}) {
     updateLeadAi: async (u) => {
       updates.push(u);
     },
+    notifyHotUpgrade: async (e) => {
+      notified.push(e);
+    },
     model: "claude-sonnet-5",
     bookingUrl: "https://rsg.example/book",
     signature: "Joseph\nRSG",
     ...over,
   };
-  return { deps, inserted, updates, generateCalls };
+  return { deps, inserted, updates, generateCalls, notified };
 }
 
 test("analyzeLead stores an ok insight with clamped adjustment and composed draft", async () => {
@@ -76,7 +80,8 @@ test("analyzeLead stores an ok insight with clamped adjustment and composed draf
   assert.doesNotMatch(row.draftBody!, /evil\.example/);
   assert.ok(row.draftBody!.endsWith("Joseph\nRSG"));
   assert.equal(row.inputTokens, 1500);
-  assert.deepEqual(updates, [{ leadId: "lead-1", aiScore: 84, insightId: "ins-1" }]);
+  // rule 52 + clamped 20 = 72
+  assert.deepEqual(updates, [{ leadId: "lead-1", aiScore: 84, insightId: "ins-1", leadScore: 72 }]);
   assert.match(generateCalls[0].message, /^Rule-based score: 52 \/ 100/);
 });
 
@@ -180,7 +185,7 @@ test("analyzeLead never rejects, even when storage throws everywhere", async () 
 });
 
 test("updateLeadAi failure keeps insightId in result", async () => {
-  const { deps, inserted, updates } = makeDeps({
+  const { deps, inserted, updates, notified } = makeDeps({
     updateLeadAi: async () => {
       throw new Error("db down");
     },
@@ -190,6 +195,7 @@ test("updateLeadAi failure keeps insightId in result", async () => {
   assert.equal(inserted.length, 1);
   assert.equal(inserted[0].status, "ok");
   assert.equal(updates.length, 0);
+  assert.equal(notified.length, 0); // no hot alert when the lead was not updated
 });
 
 test("generate resolves undefined → returns failed result without rejecting", async () => {
@@ -320,4 +326,41 @@ test("markContacted or completeSend failing after a real send still reports succ
   assert.equal(r.ok, true);
   assert.equal(calls.emails.length, 1);
   assert.equal(calls.released, 0); // the email went out: never release after sending
+});
+
+test("crossing into hot notifies once; staying hot does not", async () => {
+  const up = makeDeps(); // lead.score 52 -> 72
+  await analyzeLead("lead-1", up.deps);
+  assert.equal(up.notified.length, 1);
+  const alert = up.notified[0] as { before: number; after: number; rationale: string };
+  assert.equal(alert.before, 52);
+  assert.equal(alert.after, 72);
+  assert.equal(alert.rationale, goodOutput.rationale);
+
+  const alreadyHot = makeDeps({ loadLead: async () => baseLead({ ruleScore: 52, score: 72 }) });
+  await analyzeLead("lead-1", alreadyHot.deps);
+  assert.equal(alreadyHot.notified.length, 0);
+});
+
+test("regenerate re-blends from the rule score, not the previous blend", async () => {
+  const { deps, updates } = makeDeps({
+    loadLead: async () => baseLead({ ruleScore: 52, score: 72 }),
+    generate: async () => ({
+      output: { ...goodOutput, adjustment: -5 },
+      model: "claude-sonnet-5",
+      inputTokens: 1,
+      outputTokens: 1,
+    }),
+  });
+  await analyzeLead("lead-1", deps);
+  assert.equal((updates[0] as { leadScore: number }).leadScore, 47);
+});
+
+test("a failing hot-upgrade alert does not fail the analysis", async () => {
+  const { deps } = makeDeps({
+    notifyHotUpgrade: async () => {
+      throw new Error("resend down");
+    },
+  });
+  assert.equal((await analyzeLead("lead-1", deps)).ok, true);
 });

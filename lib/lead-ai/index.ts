@@ -1,11 +1,12 @@
 import { Resend } from "resend";
 import { generateStructured, type StructuredSchema } from "@/lib/ai/proxy";
+import { enqueueEmailJob } from "@/lib/email-jobs";
 import { callProvider } from "@/lib/integration-log";
 import { siteUrl } from "@/lib/lifecycle/core";
-import { DEFAULT_OWNER_NOTIFY_EMAIL } from "@/lib/notify-emails";
+import { contactNotifyEmails, DEFAULT_OWNER_NOTIFY_EMAIL } from "@/lib/notify-emails";
 import { getLeadById, updateLead } from "@/lib/store";
 import { analyzeLead, type AnalyzeDeps, type AnalyzeResult } from "./analyze.ts";
-import { resolveSignature } from "./compose.ts";
+import { resolveSignature, toReplyHtml } from "./compose.ts";
 import { claimSend, completeSend, getInsight, insertInsight, releaseSend, updateLeadAi } from "./db.ts";
 import { sendLeadReply, type ReplyEmail, type ReplyInput, type ReplyResult } from "./reply.ts";
 import { LEAD_AI_TOOL } from "./schema.ts";
@@ -47,6 +48,29 @@ function analyzeDeps(): AnalyzeDeps {
     },
     insertInsight,
     updateLeadAi,
+    notifyHotUpgrade: async ({ lead, before, after, rationale }) => {
+      const to = contactNotifyEmails();
+      const from = process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>";
+      const subject = `Lead upgraded to hot: ${lead.name}${lead.company ? ` (${lead.company})` : ""}`;
+      const text = `Claude raised this lead's score from ${before} to ${after}.
+
+${rationale}
+
+Review and send the drafted reply: ${siteUrl()}/admin`;
+      const html = toReplyHtml(text);
+      const apiKey = process.env.RESEND_API_KEY;
+      try {
+        if (!apiKey) throw new Error("RESEND_API_KEY missing");
+        const resend = new Resend(apiKey);
+        await callProvider({ provider: "resend", operation: "email.send.lead_hot_upgrade" }, async () => {
+          const { data, error } = await resend.emails.send({ from, to, subject, text, html });
+          if (error) throw new Error(error.message);
+          return data;
+        });
+      } catch {
+        await enqueueEmailJob("lead_hot_upgrade", { to, from, subject, text, html });
+      }
+    },
     model: LEAD_AI_MODEL,
     bookingUrl: `${siteUrl()}/book`,
     signature: replySignature(),

@@ -1,5 +1,5 @@
 import type { Lead } from "../types.ts";
-import { clamp, MAX_ADJUSTMENT } from "./blend.ts";
+import { blendScore, clamp, crossedIntoHot, MAX_ADJUSTMENT } from "./blend.ts";
 import { composeDraft } from "./compose.ts";
 import { buildLeadMessage, buildSystemPrompt, PROMPT_VERSION } from "./prompt.ts";
 import { parseLeadAiOutput } from "./schema.ts";
@@ -23,8 +23,8 @@ export type LeadAiUpdate = {
   leadId: string;
   aiScore: number;
   insightId: string;
-  /** Blended score to write to leads.lead_score (Phase 3). */
-  leadScore?: number;
+  /** Blended score to write to leads.lead_score. */
+  leadScore: number;
 };
 
 export type AnalyzeDeps = {
@@ -32,6 +32,12 @@ export type AnalyzeDeps = {
   generate: (req: { system: string; message: string }) => Promise<GenerateResult>;
   insertInsight: (row: NewInsight) => Promise<string>;
   updateLeadAi: (update: LeadAiUpdate) => Promise<void>;
+  notifyHotUpgrade: (e: {
+    lead: Lead;
+    before: number;
+    after: number;
+    rationale: string;
+  }) => Promise<void>;
   model: string;
   bookingUrl: string;
   signature: string;
@@ -126,6 +132,9 @@ export async function analyzeLead(
   const noDraft = v.red_flags.some((f) => NO_DRAFT_FLAGS.includes(f));
   const draft = !noDraft && v.draft ? v.draft : null;
 
+  const adjustment = clamp(v.adjustment, -MAX_ADJUSTMENT, MAX_ADJUSTMENT);
+  const leadScore = blendScore(ruleScore, adjustment);
+
   let insightId: string;
   try {
     insightId = await deps.insertInsight({
@@ -134,7 +143,7 @@ export async function analyzeLead(
       status: "ok",
       error: null,
       aiFitScore: v.ai_fit_score,
-      adjustment: clamp(v.adjustment, -MAX_ADJUSTMENT, MAX_ADJUSTMENT),
+      adjustment,
       rationale: v.rationale,
       signals: v.signals,
       redFlags: v.red_flags,
@@ -151,8 +160,7 @@ export async function analyzeLead(
   }
 
   try {
-    await deps.updateLeadAi({ leadId, aiScore: v.ai_fit_score, insightId });
-    return { ok: true, insightId };
+    await deps.updateLeadAi({ leadId, aiScore: v.ai_fit_score, insightId, leadScore });
   } catch (err) {
     console.error("[lead-ai] insight stored but lead not updated", {
       leadId,
@@ -161,4 +169,15 @@ export async function analyzeLead(
     });
     return { ok: false, reason: "failed", insightId, error: errorText(err) };
   }
+
+  // Alert only after the new score is actually stored; never affects the result.
+  const before = lead.score ?? ruleScore;
+  if (crossedIntoHot(before, leadScore)) {
+    try {
+      await deps.notifyHotUpgrade({ lead, before, after: leadScore, rationale: v.rationale });
+    } catch (err) {
+      console.error("[lead-ai] hot-upgrade alert failed", { leadId, error: errorText(err) });
+    }
+  }
+  return { ok: true, insightId };
 }

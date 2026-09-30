@@ -1626,6 +1626,11 @@ function LeadsTable({
           const status = (l.status ?? "new") as LeadStatus;
           const panelId = `lead-panel-${rowId}`;
           const score = l.score;
+          const adjustedFrom =
+            l.aiScore != null && l.ruleScore != null && score != null && l.ruleScore !== score
+              ? l.ruleScore
+              : null;
+          const delta = adjustedFrom != null && score != null ? score - adjustedFrom : 0;
           return (
             <div
               key={rowId}
@@ -1643,17 +1648,30 @@ function LeadsTable({
                 className="flex w-full flex-wrap items-center gap-3 rounded-xl p-4 text-left transition-colors hover:bg-white/2 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light"
               >
                 <span
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums ${
+                  className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums ${
                     (score ?? 0) >= 60
                       ? "border-crimson/40 bg-crimson/12 text-crimson-light"
                       : (score ?? 0) >= 30
                         ? "border-white/15 bg-white/5 text-white/90"
                         : "border-white/10 text-white/60"
                   }`}
-                  title="Lead score"
+                  title={
+                    adjustedFrom != null
+                      ? `Lead score: rule ${adjustedFrom}, Claude ${delta >= 0 ? "+" : ""}${delta}`
+                      : "Lead score"
+                  }
                 >
                   <span className="sr-only">Score </span>
                   {score ?? "–"}
+                  {adjustedFrom != null ? (
+                    <span className="sr-only"> (adjusted by Claude from {adjustedFrom})</span>
+                  ) : null}
+                  {adjustedFrom != null ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border border-black bg-crimson-light"
+                    />
+                  ) : null}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block wrap-break-word text-sm font-medium text-white">
@@ -1855,7 +1873,19 @@ function LeadsTable({
                       leadId={leadId}
                       leadEmail={l.email}
                       ruleScore={l.ruleScore ?? l.score ?? 0}
-                      applied={false}
+                      applied
+                      onAnalyzed={(latest) => {
+                        if (latest?.status !== "ok" || latest.adjustment == null) return;
+                        const rule = l.ruleScore ?? l.score ?? 0;
+                        const next = Math.min(100, Math.max(0, rule + latest.adjustment));
+                        onLeadsChange(
+                          leads.map((x) =>
+                            x.id === leadId
+                              ? { ...x, score: next, aiScore: latest.aiFitScore ?? x.aiScore, aiInsightId: latest.id }
+                              : x,
+                          ),
+                        );
+                      }}
                       onSent={() =>
                         onLeadsChange(
                           leads.map((x) =>
