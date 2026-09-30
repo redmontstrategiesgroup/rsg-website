@@ -78,9 +78,12 @@ in Phase 3 (below). Existing rows: backfill `rule_score = lead_score`.
 - `prompt.ts` — pure prompt builder. System prompt holds RSG context, scoring guidance,
   and drafting rules. All lead-supplied fields go inside a `<lead>…</lead>` block,
   explicitly labeled untrusted data. Exports `PROMPT_VERSION`.
-- `analyze.ts` — `runLeadAnalysis(lead, deps)`: one Anthropic Messages call through
-  `callProvider({ provider: "anthropic", operation: "lead_ai.analyze" })`, 30 s timeout,
-  structured output, zod-validated. Pure w.r.t. storage (client injected for tests).
+- `analyze.ts` — `analyzeLead(leadId, deps)`: orchestration with every I/O injected
+  (pure for tests). Production `generate` reuses `generateStructured()` from
+  `lib/ai/proxy.ts` (forced-tool JSON, `callProvider` logging, AI kill-switch, prompt
+  caching) with `tenantId: "rsg-lead-ai"` (non-uuid tenants are nulled by
+  `integration-log`), 30 s timeout, 1 SDK retry. Output is zod-validated. The model may
+  return any integer adjustment; code clamps it to ±20.
 - `compose.ts` — pure: fills the code-owned parts of the draft (booking URL
   `${siteUrl()}/book`, signature from `LEAD_REPLY_SIGNATURE` env with a default). The
   model is instructed to write `{{BOOKING_LINK}}` and never emit URLs; `compose` replaces
@@ -89,17 +92,22 @@ in Phase 3 (below). Existing rows: backfill `rule_score = lead_score`.
   and `crossedIntoHot(before, after)`.
 - `persist.ts` — insert insight row; update `leads.ai_score`, `ai_insight_id`
   (and in Phase 3 `lead_score`).
-- `index.ts` — `analyzeLead(leadId): Promise<{ ok: boolean; insightId?: string }>` —
-  load lead, run, compose, persist. Never throws: every failure path writes a
-  `status='failed'` row (when the lead exists) and returns `{ ok: false }`.
+- `index.ts` — production wiring: `runLeadAnalysis(leadId)` and `sendReply(input)` bind the
+  pure functions to Supabase, `generateStructured`, and Resend. Never throws: every
+  failure path writes a `status='failed'` row (when the lead exists) and returns
+  `{ ok: false }`.
+- `schedule.ts` — `scheduleLeadAnalysis(leadId)`: `after()` when inside a request,
+  fire-and-forget otherwise; no-op without `ANTHROPIC_API_KEY`.
 
 Skips: no `ANTHROPIC_API_KEY` → no-op; lead status `spam`/`archived` → no-op.
 
 ### Intake wiring
 
-Each of the five intake call sites, after `processLead` returns a non-duplicate result
-with `leadId`, calls `after(() => analyzeLead(leadId))` (from `next/server`). Visitor
-latency is unchanged. `processLead` also writes `rule_score` via `leadToRow`.
+`processLead` itself, after a successful non-duplicate database insert, calls
+`scheduleLeadAnalysis(leadId)`. This one hook covers all five intake paths (contact,
+connect, chat, assessment, demo request) without editing them. Visitor latency is
+unchanged. `leadToRow` also writes `rule_score` (the intake score, including any
+assessment/demo bonus).
 
 ### On-demand route
 
@@ -132,7 +140,7 @@ old/failed leads.
 2. Load insight; must belong to lead `id`; lead must have an email.
 3. Claim the send atomically: `update lead_ai_insights set sent_at = now(), sent_by = …
    where id = … and sent_at is null returning id`. No row → **409 Already sent**.
-4. Send via Resend: `from` = `CONTACT_FROM_EMAIL`, `to` = lead email,
+4. Send via Resend: `from` = `LEAD_REPLY_FROM_EMAIL` ?? `CONTACT_FROM_EMAIL`, `to` = lead email,
    `replyTo` = `DEFAULT_OWNER_NOTIFY_EMAIL`, text body (plus a minimal escaped HTML
    version), through `callProvider({ provider: "resend", operation: "email.send.lead_reply" })`.
 5. On success: store `sent_subject`, `sent_body`; if lead status is `new`, set `contacted`;
@@ -170,7 +178,11 @@ Regenerate re-blends from `rule_score`, never from the previous blended value.
 
 - Timeouts, API errors, invalid JSON, or zod failure → `failed` row; nothing partial written.
 - `analyzeLead` never throws into intake; `after()` callback is wrapped in try/catch.
-- Usage recorded via `lib/ai/usage.ts`. Estimate ≈ 1.5k in / 400 out tokens ≈ $0.01/lead.
+- Tokens are stored on each insight row (`ai_usage` is tenant-scoped with a non-null
+  `client_id` FK, so it cannot hold internal usage); cost is derivable with
+  `estimateCostUsd` from `lib/ai/usage.ts`. Estimate ≈ 1.5k in / 400 out ≈ $0.01/lead.
+- Privacy: DSAR erase deletes `leads` rows, which cascades to insights. DSAR export
+  (`lib/privacy/erase.ts` `exportDataSubject`) gains an `aiInsights` array.
 
 ## 8. Build order
 
@@ -205,6 +217,8 @@ individual old leads).
 ## Environment
 
 - Existing: `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`.
-- New (optional): `LEAD_AI_MODEL` (default `claude-sonnet-5`), `LEAD_REPLY_SIGNATURE`.
+- New (optional): `LEAD_AI_MODEL` (default `claude-sonnet-5`), `LEAD_REPLY_SIGNATURE`,
+  `LEAD_REPLY_FROM_EMAIL` (a personal sender such as `Joseph <josephoday@…>`; falls back
+  to `CONTACT_FROM_EMAIL`).
   Per the site-chat lesson, a Vercel env value overrides the code default — keep both
   in sync if changed.
