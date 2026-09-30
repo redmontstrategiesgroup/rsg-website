@@ -244,6 +244,12 @@ export type Lead = {
   journey?: { path: string; at: string }[];
   /** Basic lead score, 0–100. */
   score?: number;
+  /** Rule-based intake score (scoreLead + intake bonus), before any Claude adjustment. */
+  ruleScore?: number;
+  /** Claude's own 0–100 fit score from the latest successful analysis. */
+  aiScore?: number;
+  /** Latest lead_ai_insights row id. */
+  aiInsightId?: string;
   /** Where the lead was captured: website_contact_form | website_chat. */
   source?: string;
   /** Admin pipeline status. */
