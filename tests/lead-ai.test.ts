@@ -195,3 +195,8 @@ test("composeDraft strips bare domains and substitutes booking URL", () => {
   const out = composeDraft("Skip evil.com and book at {{BOOKING_LINK}}.", opts);
   assert.equal(out, "Skip and book at https://rsg.example/book.\n\nJoseph\nRSG");
 });
+
+test("composeDraft leaves words like e.g., Node.js, and 24/7 unchanged", () => {
+  const out = composeDraft("For example, e.g. Node.js support is 24/7.", opts);
+  assert.equal(out, "For example, e.g. Node.js support is 24/7.\n\nJoseph\nRSG");
+});
