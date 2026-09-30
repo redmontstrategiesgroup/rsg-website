@@ -12,8 +12,8 @@ export const DEFAULT_SIGNATURE = "Joseph\nRedmont Strategies Group";
 const URL_RE = /\b(?:https?:\/\/|www\.)(?:[^\s)>\]]*[^\s)>\].,;:!?])/gi;
 const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g;
 // Strips bare domains with allowed TLDs, keeping trailing punctuation outside.
-// Matches optional paths after domain.
-const BARE_DOMAIN_RE = /\b[a-z0-9-]+\.(?:com|net|org|io|co|ly|me|app|biz|info|xyz|us|ai|dev)(?:\/[^\s)>\]]*[^\s)>\].,;:!?])?/gi;
+// Matches optional paths after domain. Negative lookahead ensures TLD is not part of a longer word.
+const BARE_DOMAIN_RE = /\b[a-z0-9-]+\.(?:com|net|org|io|co|ly|me|app|biz|info|xyz|us|ai|dev)(?![a-z0-9-])(?:\/[^\s)>\]]*[^\s)>\].,;:!?])?/gi;
 
 export function composeDraft(
   body: string,

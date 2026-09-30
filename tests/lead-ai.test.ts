@@ -183,14 +183,15 @@ test("lead fields are length-capped", () => {
 
 test("composeDraft strips bare domains with allowed TLDs and preserves sentence punctuation", () => {
   const out = composeDraft("Pay at evil.com/pay today, or bit.ly/x.", opts);
-  assert.doesNotMatch(out, /evil\.com|bit\.ly/);
-  assert.match(out, /\./); // period survives
-  assert.match(out, /today/);
+  assert.equal(out, "Pay at today, or .\n\nJoseph\nRSG");
 });
 
-test("composeDraft leaves words like e.g., Node.js, and 24/7 unchanged", () => {
-  const out = composeDraft("Note this e.g. or Node.js and 24/7 for you.", opts);
-  assert.match(out, /e\.g\./);
-  assert.match(out, /Node\.js/);
-  assert.match(out, /24\/7/);
+test("composeDraft leaves TLD-prefix words like acme.company intact", () => {
+  const out = composeDraft("Visit acme.company or file.community now.", opts);
+  assert.equal(out, "Visit acme.company or file.community now.\n\nJoseph\nRSG");
+});
+
+test("composeDraft strips bare domains and substitutes booking URL", () => {
+  const out = composeDraft("Skip evil.com and book at {{BOOKING_LINK}}.", opts);
+  assert.equal(out, "Skip and book at https://rsg.example/book.\n\nJoseph\nRSG");
 });
