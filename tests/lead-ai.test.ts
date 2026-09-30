@@ -10,6 +10,8 @@ import { LEAD_AI_TOOL, parseLeadAiOutput } from "../lib/lead-ai/schema.ts";
 import {
   BOOKING_TOKEN,
   composeDraft,
+  composeSubject,
+  stripLinks,
   toReplyHtml,
 } from "../lib/lead-ai/compose.ts";
 import {
@@ -130,6 +132,21 @@ test("composeDraft strips model-written URLs and email addresses", () => {
   );
   assert.doesNotMatch(out, /evil|other\.example|a@b\.co/);
   assert.match(out, /^See and , or mail me at today\./);
+});
+
+test("composeSubject strips links, domains and the booking token", () => {
+  const out = composeSubject(`Visit evil.io/x or https://bad.example ${BOOKING_TOKEN}`);
+  assert.ok(!/evil|bad\.example|https?:|\{\{/.test(out), out);
+  assert.equal(out, "Visit or");
+});
+
+test("composeSubject passes a normal subject through unchanged", () => {
+  assert.equal(composeSubject("Your inbound call volume"), "Your inbound call volume");
+});
+
+test("composeSubject caps length at 160 and stripLinks removes emails", () => {
+  assert.equal(composeSubject("a".repeat(300)).length, 160);
+  assert.equal(stripLinks("Mail me at x@evil.com now"), "Mail me at now");
 });
 
 test("composeDraft normalizes whitespace", () => {

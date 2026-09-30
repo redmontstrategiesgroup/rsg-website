@@ -21,22 +21,49 @@ const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g;
 // Matches optional paths after domain. Negative lookahead ensures TLD is not part of a longer word.
 const BARE_DOMAIN_RE = /\b[a-z0-9-]+\.(?:com|net|org|io|co|ly|me|app|biz|info|xyz|us|ai|dev)(?![a-z0-9-])(?:\/[^\s)>\]]*[^\s)>\].,;:!?])?/gi;
 
-export function composeDraft(
-  body: string,
-  opts: { bookingUrl: string; signature: string },
-): string {
-  const cleaned = body
-    .replace(/\r\n/g, "\n")
-    .replace(URL_RE, "")
-    .replace(EMAIL_RE, "")
-    .replace(BARE_DOMAIN_RE, "")
-    .split(BOOKING_TOKEN)
-    .join(opts.bookingUrl)
+const WS_TAIL = (t: string) =>
+  t
     .replace(/[ \t]{2,}/g, " ")
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+
+/** Removes URLs, email addresses and bare domains, then normalizes whitespace. */
+export function stripLinks(text: string): string {
+  return WS_TAIL(
+    text
+      .replace(/\r\n/g, "\n")
+      .replace(URL_RE, "")
+      .replace(EMAIL_RE, "")
+      .replace(BARE_DOMAIN_RE, ""),
+  );
+}
+
+export function composeDraft(
+  body: string,
+  opts: { bookingUrl: string; signature: string },
+): string {
+  const cleaned = WS_TAIL(
+    body
+      .replace(/\r\n/g, "\n")
+      .replace(URL_RE, "")
+      .replace(EMAIL_RE, "")
+      .replace(BARE_DOMAIN_RE, "")
+      .split(BOOKING_TOKEN)
+      .join(opts.bookingUrl),
+  );
   return `${cleaned}\n\n${opts.signature.trim()}`;
+}
+
+/** Subject line: no links, no booking token, one line, at most 160 chars. */
+export function composeSubject(subject: string): string {
+  return stripLinks(subject)
+    .split(BOOKING_TOKEN)
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160)
+    .trim();
 }
 
 function esc(s: string): string {

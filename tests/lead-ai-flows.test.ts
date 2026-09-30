@@ -111,6 +111,45 @@ test("vendor_pitch or spam drops the draft even if the model wrote one", async (
   }
 });
 
+test("the stored draft subject has links stripped", async () => {
+  const { deps, inserted } = makeDeps({
+    generate: async () => ({
+      output: { ...goodOutput, draft: { subject: "See evil.com now", body: "Hi" } },
+      model: "claude-sonnet-5",
+      inputTokens: 1,
+      outputTokens: 1,
+    }),
+  });
+  await analyzeLead("lead-1", deps);
+  assert.ok(!inserted[0].draftSubject?.includes("evil.com"));
+  assert.equal(inserted[0].draftSubject, "See now");
+});
+
+test("an all-link subject falls back to a neutral one", async () => {
+  const { deps, inserted } = makeDeps({
+    generate: async () => ({
+      output: { ...goodOutput, draft: { subject: "https://evil.example/x", body: "Hi" } },
+      model: "claude-sonnet-5",
+      inputTokens: 1,
+      outputTokens: 1,
+    }),
+  });
+  await analyzeLead("lead-1", deps);
+  assert.equal(inserted[0].draftSubject, "Following up on your inquiry");
+});
+
+test("a provided redact dep is applied to the failed row's error", async () => {
+  const { deps, inserted } = makeDeps({
+    generate: async () => {
+      throw new Error("bad key sk-secret-123");
+    },
+    redact: (s) => s.replace(/sk-\S+/g, "[redacted]"),
+  });
+  const r = await analyzeLead("lead-1", deps);
+  assert.equal(inserted[0].error, "bad key [redacted]");
+  assert.ok(!r.ok && r.error === "bad key [redacted]");
+});
+
 test("a generate failure writes a failed row and resolves", async () => {
   const { deps, inserted, updates } = makeDeps({
     generate: async () => {

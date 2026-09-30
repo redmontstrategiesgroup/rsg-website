@@ -1,6 +1,6 @@
 import type { Lead } from "../types.ts";
 import { blendScore, clamp, crossedIntoHot, MAX_ADJUSTMENT } from "./blend.ts";
-import { composeDraft } from "./compose.ts";
+import { composeDraft, composeSubject } from "./compose.ts";
 import { buildLeadMessage, buildSystemPrompt, PROMPT_VERSION } from "./prompt.ts";
 import { parseLeadAiOutput } from "./schema.ts";
 import { NO_DRAFT_FLAGS, type NewInsight } from "./types.ts";
@@ -38,6 +38,8 @@ export type AnalyzeDeps = {
     after: number;
     rationale: string;
   }) => Promise<void>;
+  /** Scrubs secrets/addresses from stored error text. Defaults to identity. */
+  redact?: (s: string) => string;
   model: string;
   bookingUrl: string;
   signature: string;
@@ -52,11 +54,23 @@ export type AnalyzeResult =
       error?: string;
     };
 
+const FALLBACK_SUBJECT = "Following up on your inquiry";
 const SKIP_STATUSES = new Set(["spam", "archived"]);
 
-function errorText(err: unknown): string {
+function errorText(err: unknown, redact?: (s: string) => string): string {
   const msg = err instanceof Error ? err.message : String(err);
-  return msg.slice(0, 500) || "Unknown error";
+  return clip(msg, redact);
+}
+
+function clip(msg: string, redact?: (s: string) => string): string {
+  const red = redact ?? ((s: string) => s);
+  let out: string;
+  try {
+    out = red(msg.slice(0, 500));
+  } catch {
+    out = "Unknown error";
+  }
+  return out.slice(0, 500) || "Unknown error";
 }
 
 type FailureBase = Pick<NewInsight, "leadId" | "model" | "promptVersion">;
@@ -71,7 +85,7 @@ async function recordFailure(
     const insightId = await deps.insertInsight({
       ...base,
       status: "failed",
-      error,
+      error: clip(error, deps.redact),
       aiFitScore: null,
       adjustment: null,
       rationale: null,
@@ -82,13 +96,13 @@ async function recordFailure(
       inputTokens: gen?.inputTokens ?? null,
       outputTokens: gen?.outputTokens ?? null,
     });
-    return { ok: false, reason: "failed", insightId, error };
+    return { ok: false, reason: "failed", insightId, error: clip(error, deps.redact) };
   } catch (err) {
     console.error("[lead-ai] could not record failed analysis", {
       leadId: base.leadId,
-      error: errorText(err),
+      error: errorText(err, deps.redact),
     });
-    return { ok: false, reason: "failed", error };
+    return { ok: false, reason: "failed", error: clip(error, deps.redact) };
   }
 }
 
@@ -100,7 +114,7 @@ export async function analyzeLead(
   try {
     lead = await deps.loadLead(leadId);
   } catch (err) {
-    return { ok: false, reason: "failed", error: errorText(err) };
+    return { ok: false, reason: "failed", error: errorText(err, deps.redact) };
   }
   if (!lead) return { ok: false, reason: "not_found" };
   if (SKIP_STATUSES.has(lead.status ?? "new")) return { ok: false, reason: "skipped" };
@@ -115,7 +129,7 @@ export async function analyzeLead(
       message: buildLeadMessage(lead, ruleScore),
     });
   } catch (err) {
-    return recordFailure(deps, base, errorText(err), null);
+    return recordFailure(deps, base, errorText(err, deps.redact), null);
   }
 
   // Guard against undefined or non-object gen
@@ -147,7 +161,9 @@ export async function analyzeLead(
       rationale: v.rationale,
       signals: v.signals,
       redFlags: v.red_flags,
-      draftSubject: draft ? draft.subject : null,
+      draftSubject: draft
+        ? composeSubject(draft.subject) || FALLBACK_SUBJECT
+        : null,
       draftBody: draft
         ? composeDraft(draft.body, { bookingUrl: deps.bookingUrl, signature: deps.signature })
         : null,
@@ -155,8 +171,11 @@ export async function analyzeLead(
       outputTokens: gen.outputTokens,
     });
   } catch (err) {
-    console.error("[lead-ai] could not persist analysis", { leadId, error: errorText(err) });
-    return { ok: false, reason: "failed", error: errorText(err) };
+    console.error("[lead-ai] could not persist analysis", {
+      leadId,
+      error: errorText(err, deps.redact),
+    });
+    return { ok: false, reason: "failed", error: errorText(err, deps.redact) };
   }
 
   try {
@@ -165,9 +184,9 @@ export async function analyzeLead(
     console.error("[lead-ai] insight stored but lead not updated", {
       leadId,
       insightId,
-      error: errorText(err),
+      error: errorText(err, deps.redact),
     });
-    return { ok: false, reason: "failed", insightId, error: errorText(err) };
+    return { ok: false, reason: "failed", insightId, error: errorText(err, deps.redact) };
   }
 
   // Alert only after the new score is actually stored; never affects the result.
@@ -176,7 +195,10 @@ export async function analyzeLead(
     try {
       await deps.notifyHotUpgrade({ lead, before, after: leadScore, rationale: v.rationale });
     } catch (err) {
-      console.error("[lead-ai] hot-upgrade alert failed", { leadId, error: errorText(err) });
+      console.error("[lead-ai] hot-upgrade alert failed", {
+        leadId,
+        error: errorText(err, deps.redact),
+      });
     }
   }
   return { ok: true, insightId };
