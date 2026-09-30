@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { Lead } from "../types.ts";
 import { toReplyHtml } from "./compose.ts";
 import type { LeadInsight } from "./types.ts";
@@ -17,7 +18,14 @@ export type ReplyInput = {
   adminId: string;
 };
 
-export type ReplyEmail = { to: string; subject: string; text: string; html: string };
+export type ReplyEmail = {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  /** Resend idempotency key: a retry of the same content is not sent twice. */
+  idempotencyKey: string;
+};
 
 export type ReplyDeps = {
   getLead: (id: string) => Promise<Lead | null>;
@@ -58,7 +66,14 @@ export async function sendLeadReply(input: ReplyInput, deps: ReplyDeps): Promise
   }
 
   try {
-    await deps.sendEmail({ to: lead.email, subject, text: body, html: toReplyHtml(body) });
+    const hash = createHash("sha256").update(`${subject}\n${body}`).digest("hex").slice(0, 16);
+    await deps.sendEmail({
+      to: lead.email,
+      subject,
+      text: body,
+      html: toReplyHtml(body),
+      idempotencyKey: `lead-reply/${input.insightId}/${hash}`,
+    });
   } catch (err) {
     await deps.releaseSend(input.insightId).catch((e) =>
       console.error("[lead-ai] could not release send claim", e),

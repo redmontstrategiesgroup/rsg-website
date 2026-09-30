@@ -94,14 +94,17 @@ async function sendReplyEmail(msg: ReplyEmail): Promise<void> {
   if (!apiKey) throw new Error("Email is not configured: RESEND_API_KEY is missing.");
   const resend = new Resend(apiKey);
   await callProvider({ provider: "resend", operation: "email.send.lead_reply" }, async () => {
-    const { data, error } = await resend.emails.send({
-      from: replyFrom(),
-      to: msg.to,
-      replyTo: DEFAULT_OWNER_NOTIFY_EMAIL,
-      subject: msg.subject,
-      text: msg.text,
-      html: msg.html,
-    });
+    const { data, error } = await resend.emails.send(
+      {
+        from: replyFrom(),
+        to: msg.to,
+        replyTo: DEFAULT_OWNER_NOTIFY_EMAIL,
+        subject: msg.subject,
+        text: msg.text,
+        html: msg.html,
+      },
+      { idempotencyKey: msg.idempotencyKey },
+    );
     if (error) {
       throw Object.assign(new Error(error.message), {
         name: error.name,

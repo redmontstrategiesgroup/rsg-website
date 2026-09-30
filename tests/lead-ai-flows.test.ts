@@ -288,6 +288,21 @@ function replyDeps(over: Partial<ReplyDeps> = {}) {
 
 const input = { leadId: "lead-1", insightId: "ins-1", subject: "  Your calls ", body: "Hi <Dana>\n\nThanks", adminId: "admin-1" };
 
+test("the reply email carries a stable, content-derived idempotency key", async () => {
+  const a = replyDeps();
+  await sendLeadReply(input, a.deps);
+  const key = a.calls.emails[0].idempotencyKey;
+  assert.match(key, /^lead-reply\/ins-1\/[0-9a-f]{16}$/);
+
+  const same = replyDeps();
+  await sendLeadReply(input, same.deps);
+  assert.equal(same.calls.emails[0].idempotencyKey, key);
+
+  const other = replyDeps();
+  await sendLeadReply({ ...input, body: "A different message" }, other.deps);
+  assert.notEqual(other.calls.emails[0].idempotencyKey, key);
+});
+
 test("sendLeadReply sends once, records it, and marks a new lead contacted", async () => {
   const { deps, calls } = replyDeps();
   const r = await sendLeadReply(input, deps);
