@@ -127,6 +127,7 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
       onSent();
     } catch {
       setError("Network error: the reply may not have been sent. Refresh before retrying.");
+      setConfirming(false);
     } finally {
       setSending(false);
     }
@@ -144,7 +145,8 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
 
   const ok = latest?.status === "ok" ? latest : null;
   const blended = ok?.adjustment != null ? blendScore(ruleScore, ok.adjustment) : null;
-  const sentHere = latest?.sentAt ? latest : null;
+  const sentHere = latest?.sentAt && latest.sentBody ? latest : null;
+  const sendUnknown = Boolean(latest?.sentAt && !latest.sentBody);
   const hasDraft = Boolean(ok && !ok.sentAt && ok.draftBody);
 
   return (
@@ -154,7 +156,7 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
           <Sparkles size={13} aria-hidden="true" /> Claude analysis
         </p>
         {latest && (
-          <button type="button" onClick={generate} disabled={running || !enabled} className={ghostBtn}>
+          <button type="button" onClick={generate} disabled={running || sending || !enabled} className={ghostBtn}>
             <RefreshCw size={14} aria-hidden="true" className={running ? "animate-spin" : ""} />
             {running ? "Analyzing…" : "Regenerate"}
           </button>
@@ -174,7 +176,7 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
           <p className="text-sm text-white/65">
             {enabled ? "Not analyzed yet." : "Add ANTHROPIC_API_KEY to enable Claude analysis."}
           </p>
-          <button type="button" onClick={generate} disabled={running || !enabled} className={primaryBtn}>
+          <button type="button" onClick={generate} disabled={running || sending || !enabled} className={primaryBtn}>
             <Sparkles size={14} aria-hidden="true" />
             {running ? "Analyzing…" : "Generate"}
           </button>
@@ -182,7 +184,7 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
       ) : latest.status === "failed" ? (
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <p className="text-sm text-amber-300">Analysis failed: {latest.error ?? "unknown error"}</p>
-          <button type="button" onClick={generate} disabled={running || !enabled} className={ghostBtn}>
+          <button type="button" onClick={generate} disabled={running || sending || !enabled} className={ghostBtn}>
             Retry
           </button>
         </div>
@@ -221,10 +223,16 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
         </div>
       )}
 
-      {lastSent && !sentHere && (
+      {lastSent?.sentBody && !sentHere && !sendUnknown && (
         <p className="mt-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.06] px-3 py-2 text-sm text-amber-200">
           Already replied on {fmt(lastSent.sentAt!)}: “{lastSent.sentSubject}”. Sending this draft
           would be a second email.
+        </p>
+      )}
+
+      {sendUnknown && (
+        <p role="alert" className="mt-3 rounded-lg border border-amber-400/30 bg-amber-400/[0.06] px-3 py-2 text-sm text-amber-200">
+          Send status unknown: the email may not have gone out. Check your Sent mail before retrying.
         </p>
       )}
 
@@ -257,7 +265,7 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
             {confirming ? (
               <>
                 <span className="text-sm text-white/75">Send to {leadEmail}?</span>
-                <button type="button" onClick={send} disabled={sending || !subject.trim() || !body.trim()} className={primaryBtn}>
+                <button type="button" onClick={send} disabled={sending || running || !subject.trim() || !body.trim()} className={primaryBtn}>
                   <Send size={14} aria-hidden="true" />
                   {sending ? "Sending…" : "Confirm send"}
                 </button>
@@ -266,7 +274,7 @@ export function LeadAiPanel({ leadId, leadEmail, ruleScore, applied, onSent, onA
                 </button>
               </>
             ) : (
-              <button type="button" onClick={() => setConfirming(true)} disabled={!subject.trim() || !body.trim()} className={primaryBtn}>
+              <button type="button" onClick={() => setConfirming(true)} disabled={running || !subject.trim() || !body.trim()} className={primaryBtn}>
                 <Send size={14} aria-hidden="true" /> Send reply
               </button>
             )}
