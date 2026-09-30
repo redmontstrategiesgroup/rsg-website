@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { generateStructured, type StructuredSchema } from "@/lib/ai/proxy";
 import { enqueueEmailJob } from "@/lib/email-jobs";
-import { callProvider } from "@/lib/integration-log";
+import { callProvider, redact } from "@/lib/integration-log";
 import { siteUrl } from "@/lib/lifecycle/core";
 import { contactNotifyEmails, DEFAULT_OWNER_NOTIFY_EMAIL } from "@/lib/notify-emails";
 import { getLeadById, updateLead } from "@/lib/store";
@@ -48,6 +48,7 @@ function analyzeDeps(): AnalyzeDeps {
     },
     insertInsight,
     updateLeadAi,
+    redact,
     notifyHotUpgrade: async ({ lead, before, after, rationale }) => {
       const to = contactNotifyEmails();
       const from = process.env.CONTACT_FROM_EMAIL ?? "RSG Website <onboarding@resend.dev>";
@@ -67,8 +68,12 @@ Review and send the drafted reply: ${siteUrl()}/admin`;
           if (error) throw new Error(error.message);
           return data;
         });
-      } catch {
-        await enqueueEmailJob("lead_hot_upgrade", { to, from, subject, text, html });
+      } catch (err) {
+        console.warn("[lead-ai] hot-upgrade alert send failed, queued for retry", {
+          error: redact(err instanceof Error ? err.message : String(err)),
+        });
+        const queued = await enqueueEmailJob("lead_hot_upgrade", { to, from, subject, text, html });
+        if (!queued) console.error("[lead-ai] hot-upgrade alert could not be queued");
       }
     },
     model: LEAD_AI_MODEL,
