@@ -153,6 +153,8 @@ export async function generateStructured<T>(opts: {
   model?: string;
   maxTokens?: number;
   onUsage?: OnUsage;
+  /** Per-call SDK options, e.g. { timeout: 30_000, maxRetries: 1 }. */
+  requestOptions?: { timeout?: number; maxRetries?: number };
 }): Promise<T> {
   await preflight(opts);
   const model = opts.model ?? DEFAULT_MODEL;
@@ -171,20 +173,23 @@ export async function generateStructured<T>(opts: {
         connectionId: opts.tenantId,
       },
       () =>
-        client.messages.create({
-          model,
-          max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
-          system: [{ type: "text", text: opts.system, cache_control: { type: "ephemeral" } }],
-          tools: [
-            {
-              name: opts.schema.name,
-              description: opts.schema.description,
-              input_schema: opts.schema.input_schema,
-            },
-          ],
-          tool_choice: { type: "tool", name: opts.schema.name },
-          messages: toMessages(opts.input),
-        })
+        client.messages.create(
+          {
+            model,
+            max_tokens: opts.maxTokens ?? DEFAULT_MAX_TOKENS,
+            system: [{ type: "text", text: opts.system, cache_control: { type: "ephemeral" } }],
+            tools: [
+              {
+                name: opts.schema.name,
+                description: opts.schema.description,
+                input_schema: opts.schema.input_schema,
+              },
+            ],
+            tool_choice: { type: "tool", name: opts.schema.name },
+            messages: toMessages(opts.input),
+          },
+          opts.requestOptions,
+        )
     );
   } catch (err) {
     // Classified and recorded by callProvider; map to the route-facing shape.

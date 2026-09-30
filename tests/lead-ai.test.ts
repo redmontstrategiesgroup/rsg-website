@@ -249,3 +249,15 @@ test("summarizeInsights keeps the last sent reply visible after a regenerate", (
   assert.equal(s.lastSent?.id, "old");
   assert.deepEqual(summarizeInsights([]), { latest: null, lastSent: null });
 });
+
+import { shouldAnalyze } from "../lib/lead-ai/schedule.ts";
+
+test("shouldAnalyze only for fresh, stored leads with an API key", () => {
+  const env = { ANTHROPIC_API_KEY: "sk-test" };
+  const fresh = { duplicate: false, storedInDatabase: true, leadId: "lead-1" };
+  assert.equal(shouldAnalyze(fresh, env), true);
+  assert.equal(shouldAnalyze({ ...fresh, duplicate: true }, env), false);
+  assert.equal(shouldAnalyze({ ...fresh, storedInDatabase: false }, env), false);
+  assert.equal(shouldAnalyze({ ...fresh, leadId: undefined }, env), false);
+  assert.equal(shouldAnalyze(fresh, {}), false);
+});

@@ -387,6 +387,13 @@ export async function processLead(lead: Lead): Promise<ProcessLeadResult> {
   const stored = await storeInSupabase(prepared);
   const storedInDatabase = stored.ok;
 
+  // 2b. Claude analysis (score adjustment + drafted reply) runs after the
+  //     response; it can never delay or fail the visitor's submission.
+  const { shouldAnalyze, scheduleLeadAnalysis } = await import("./lead-ai/schedule.ts");
+  if (shouldAnalyze({ duplicate: false, storedInDatabase, leadId: stored.id })) {
+    await scheduleLeadAnalysis(stored.id!);
+  }
+
   // 3. n8n automation workflow (optional downstream routing, not storage).
   const remote = await dispatchToN8n(prepared);
   const storedRemotely = storedInDatabase || remote.ok;
