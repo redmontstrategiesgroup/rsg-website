@@ -88,19 +88,21 @@ test("analyzeLead falls back to lead.score when ruleScore is absent", async () =
 });
 
 test("vendor_pitch or spam drops the draft even if the model wrote one", async () => {
-  const { deps, inserted } = makeDeps({
-    generate: async () => ({
-      output: { ...goodOutput, red_flags: ["vendor_pitch"] },
-      model: "claude-sonnet-5",
-      inputTokens: 1,
-      outputTokens: 1,
-    }),
-  });
-  const r = await analyzeLead("lead-1", deps);
-  assert.equal(r.ok, true);
-  assert.equal(inserted[0].draftSubject, null);
-  assert.equal(inserted[0].draftBody, null);
-  assert.deepEqual(inserted[0].redFlags, ["vendor_pitch"]);
+  for (const flag of ["vendor_pitch", "spam"] as const) {
+    const { deps, inserted } = makeDeps({
+      generate: async () => ({
+        output: { ...goodOutput, red_flags: [flag] },
+        model: "claude-sonnet-5",
+        inputTokens: 1,
+        outputTokens: 1,
+      }),
+    });
+    const r = await analyzeLead("lead-1", deps);
+    assert.equal(r.ok, true);
+    assert.equal(inserted[0].draftSubject, null);
+    assert.equal(inserted[0].draftBody, null);
+    assert.deepEqual(inserted[0].redFlags, [flag]);
+  }
 });
 
 test("a generate failure writes a failed row and resolves", async () => {
@@ -158,10 +160,12 @@ test("analyzeLead never rejects, even when storage throws everywhere", async () 
   const loadFails = makeDeps({ loadLead: boom });
   const r1 = await analyzeLead("lead-1", loadFails.deps);
   assert.equal(r1.ok, false);
+  assert.equal(r1.reason, "failed");
 
   const insertFails = makeDeps({ insertInsight: boom });
   const r2 = await analyzeLead("lead-1", insertFails.deps);
   assert.equal(r2.ok, false);
+  assert.equal(r2.reason, "failed");
 
   const failPathInsertFails = makeDeps({
     insertInsight: boom,
@@ -171,4 +175,30 @@ test("analyzeLead never rejects, even when storage throws everywhere", async () 
   });
   const r3 = await analyzeLead("lead-1", failPathInsertFails.deps);
   assert.equal(r3.ok, false);
+  assert.equal(r3.reason, "failed");
+});
+
+test("updateLeadAi failure keeps insightId in result", async () => {
+  const { deps, inserted, updates } = makeDeps({
+    updateLeadAi: async () => {
+      throw new Error("db down");
+    },
+  });
+  const r = await analyzeLead("lead-1", deps);
+  assert.deepEqual(r, { ok: false, reason: "failed", insightId: "ins-1", error: "db down" });
+  assert.equal(inserted.length, 1);
+  assert.equal(inserted[0].status, "ok");
+  assert.equal(updates.length, 0);
+});
+
+test("generate resolves undefined → returns failed result without rejecting", async () => {
+  const { deps, inserted } = makeDeps({
+    generate: async () => undefined as unknown as GenerateResult,
+  });
+  const r = await analyzeLead("lead-1", deps);
+  assert.equal(r.ok, false);
+  assert.equal(r.reason, "failed");
+  assert.equal(inserted.length, 1);
+  assert.equal(inserted[0].status, "failed");
+  assert.equal(inserted[0].error, "AI returned no result");
 });

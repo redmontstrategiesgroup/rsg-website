@@ -112,6 +112,11 @@ export async function analyzeLead(
     return recordFailure(deps, base, errorText(err), null);
   }
 
+  // Guard against undefined or non-object gen
+  if (!gen || typeof gen !== "object") {
+    return recordFailure(deps, base, "AI returned no result", null);
+  }
+
   const parsed = parseLeadAiOutput(gen.output);
   if (!parsed.ok) {
     return recordFailure(deps, { ...base, model: gen.model }, parsed.error, gen);
@@ -121,8 +126,9 @@ export async function analyzeLead(
   const noDraft = v.red_flags.some((f) => NO_DRAFT_FLAGS.includes(f));
   const draft = !noDraft && v.draft ? v.draft : null;
 
+  let insightId: string;
   try {
-    const insightId = await deps.insertInsight({
+    insightId = await deps.insertInsight({
       ...base,
       model: gen.model,
       status: "ok",
@@ -139,10 +145,20 @@ export async function analyzeLead(
       inputTokens: gen.inputTokens,
       outputTokens: gen.outputTokens,
     });
-    await deps.updateLeadAi({ leadId, aiScore: v.ai_fit_score, insightId });
-    return { ok: true, insightId };
   } catch (err) {
     console.error("[lead-ai] could not persist analysis", { leadId, error: errorText(err) });
     return { ok: false, reason: "failed", error: errorText(err) };
+  }
+
+  try {
+    await deps.updateLeadAi({ leadId, aiScore: v.ai_fit_score, insightId });
+    return { ok: true, insightId };
+  } catch (err) {
+    console.error("[lead-ai] insight stored but lead not updated", {
+      leadId,
+      insightId,
+      error: errorText(err),
+    });
+    return { ok: false, reason: "failed", insightId, error: errorText(err) };
   }
 }
