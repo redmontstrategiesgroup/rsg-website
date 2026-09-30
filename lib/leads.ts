@@ -4,6 +4,7 @@ import { contactNotifyEmails } from "./notify-emails.ts";
 import { getSupabase } from "./supabase.ts";
 import type { Lead, LeadStatus } from "./types.ts";
 import { callProvider } from "./integration-log.ts";
+import { HOT_THRESHOLD, WARM_THRESHOLD } from "./lead-ai/blend.ts";
 
 export { scoreLead } from "./lead-score.ts";
 export {
@@ -22,14 +23,14 @@ export type LeadStorageMetadata = {
 };
 
 function determineScoreBucket(score: number): LeadStorageMetadata["scoreBucket"] {
-  if (score >= 70) return "hot";
-  if (score >= 45) return "warm";
+  if (score >= HOT_THRESHOLD) return "hot";
+  if (score >= WARM_THRESHOLD) return "warm";
   return "cold";
 }
 
 function determineRoutingLabel(score: number): LeadStorageMetadata["routingLabel"] {
-  if (score >= 70) return "priority_follow_up";
-  if (score >= 45) return "follow_up";
+  if (score >= HOT_THRESHOLD) return "priority_follow_up";
+  if (score >= WARM_THRESHOLD) return "follow_up";
   return "nurture";
 }
 
