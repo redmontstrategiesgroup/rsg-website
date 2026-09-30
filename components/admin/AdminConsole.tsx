@@ -45,6 +45,7 @@ import { IndustriesAdminPanel } from "@/components/admin/IndustriesAdminPanel";
 import { ManagedServicesAdminPanel } from "@/components/admin/ManagedServicesAdminPanel";
 import { LifecycleAdminPanel } from "@/components/admin/LifecycleAdminPanel";
 import { PocketAdminPanel } from "@/components/admin/PocketAdminPanel";
+import { LeadAiPanel } from "@/components/admin/LeadAiPanel";
 import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Tab =
@@ -1850,6 +1851,21 @@ function LeadsTable({
                     const leadId = l.id;
                     return (
                     <>
+                    <LeadAiPanel
+                      leadId={leadId}
+                      leadEmail={l.email}
+                      ruleScore={l.ruleScore ?? l.score ?? 0}
+                      applied={false}
+                      onSent={() =>
+                        onLeadsChange(
+                          leads.map((x) =>
+                            x.id === leadId && (x.status ?? "new") === "new"
+                              ? { ...x, status: "contacted" }
+                              : x,
+                          ),
+                        )
+                      }
+                    />
                     <div className="rounded-lg border border-white/10 bg-white/2 p-3.5">
                       <p className="text-xs font-medium text-white/60">
                         Recommended plan
