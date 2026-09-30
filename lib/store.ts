@@ -461,6 +461,9 @@ type LeadRow = {
   visitor_id?: string | null;
   first_touch?: Record<string, unknown> | null;
   lead_score: number | null;
+  rule_score?: number | null;
+  ai_score?: number | null;
+  ai_insight_id?: string | null;
   source: string | null;
   status: string | null;
   notes: string | null;
@@ -546,6 +549,9 @@ function rowToLead(row: LeadRow): Lead {
     visitorId: row.visitor_id ?? undefined,
     firstTouch: firstTouchFromRow(row.first_touch),
     score: row.lead_score ?? 0,
+    ruleScore: row.rule_score ?? undefined,
+    aiScore: row.ai_score ?? undefined,
+    aiInsightId: row.ai_insight_id ?? undefined,
     source: row.source ?? "website_contact_form",
     status: (row.status as Lead["status"]) ?? "new",
     notes: row.notes ?? "",
@@ -699,6 +705,18 @@ export async function findRecentLeadByEmail(
         new Date(l.submittedAt).getTime() >= Date.now() - windowMs
     ) ?? null
   );
+}
+
+/** One lead by id (Supabase only: file-store leads are dev-only and never analyzed). */
+export async function getLeadById(id: string): Promise<Lead | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  const { data, error } = await supabase.from("leads").select("*").eq("id", id).maybeSingle();
+  if (error) {
+    console.warn("[store] lead lookup failed.", error.message);
+    return null;
+  }
+  return data ? rowToLead(data as LeadRow) : null;
 }
 
 export type LeadPatch = {

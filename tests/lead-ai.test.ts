@@ -18,6 +18,7 @@ import {
   PROMPT_VERSION,
 } from "../lib/lead-ai/prompt.ts";
 import type { Lead } from "../lib/types.ts";
+import { insightFromRow, summarizeInsights, type InsightRow } from "../lib/lead-ai/row.ts";
 
 const validOutput = {
   ai_fit_score: 82,
@@ -199,4 +200,52 @@ test("composeDraft strips bare domains and substitutes booking URL", () => {
 test("composeDraft leaves words like e.g., Node.js, and 24/7 unchanged", () => {
   const out = composeDraft("For example, e.g. Node.js support is 24/7.", opts);
   assert.equal(out, "For example, e.g. Node.js support is 24/7.\n\nJoseph\nRSG");
+});
+
+function insightRow(over: Partial<InsightRow> = {}): InsightRow {
+  return {
+    id: "ins-1",
+    lead_id: "lead-1",
+    created_at: "2026-09-30T12:00:00Z",
+    model: "claude-sonnet-5",
+    prompt_version: "lead-ai-v1",
+    status: "ok",
+    error: null,
+    ai_fit_score: 80,
+    adjustment: 10,
+    rationale: "Good fit.",
+    signals: { positive: ["a", 3], negative: "oops" },
+    red_flags: ["spam", "bogus"],
+    draft_subject: "Hi",
+    draft_body: "Body",
+    sent_at: null,
+    sent_by: null,
+    sent_subject: null,
+    sent_body: null,
+    input_tokens: 10,
+    output_tokens: 5,
+    ...over,
+  };
+}
+
+test("insightFromRow maps columns and drops malformed JSON parts", () => {
+  const i = insightFromRow(insightRow());
+  assert.equal(i.leadId, "lead-1");
+  assert.equal(i.aiFitScore, 80);
+  assert.deepEqual(i.signals, { positive: ["a"], negative: [] });
+  assert.deepEqual(i.redFlags, ["spam"]);
+  assert.equal(i.status, "ok");
+  assert.equal(insightFromRow(insightRow({ signals: null, red_flags: null })).signals, null);
+  assert.equal(insightFromRow(insightRow({ status: "weird" })).status, "failed");
+});
+
+test("summarizeInsights keeps the last sent reply visible after a regenerate", () => {
+  const newest = insightFromRow(insightRow({ id: "new", created_at: "2026-09-30T13:00:00Z" }));
+  const sent = insightFromRow(
+    insightRow({ id: "old", sent_at: "2026-09-30T12:30:00Z", sent_subject: "Hi", sent_body: "B" }),
+  );
+  const s = summarizeInsights([newest, sent]);
+  assert.equal(s.latest?.id, "new");
+  assert.equal(s.lastSent?.id, "old");
+  assert.deepEqual(summarizeInsights([]), { latest: null, lastSent: null });
 });

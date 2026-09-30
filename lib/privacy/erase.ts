@@ -86,6 +86,7 @@ export async function exportDataSubject(
   email: string;
   leads: unknown[];
   bookings: unknown[];
+  aiInsights: unknown[];
   subscriber: unknown[];
   clientAccount: unknown[];
   clientUsers: unknown[];
@@ -104,6 +105,19 @@ export async function exportDataSubject(
       bookings = data ?? [];
     } catch {
       bookings = [];
+    }
+  }
+
+  let aiInsights: unknown[] = [];
+  if (leadIds.length) {
+    try {
+      const { data } = await sb
+        .from("lead_ai_insights")
+        .select("id, lead_id, created_at, ai_fit_score, adjustment, rationale, signals, red_flags, draft_subject, draft_body, sent_at, sent_subject, sent_body")
+        .in("lead_id", leadIds);
+      aiInsights = data ?? [];
+    } catch {
+      aiInsights = [];
     }
   }
 
@@ -128,6 +142,7 @@ export async function exportDataSubject(
     email,
     leads,
     bookings,
+    aiInsights,
     subscriber,
     clientAccount,
     clientUsers,

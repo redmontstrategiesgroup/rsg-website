@@ -228,3 +228,8 @@ test("scoreLead weights source intent and revenue as smaller modifiers", () => {
   assert.ok(premium > standard);
   assert.ok(premium - standard < 20);
 });
+
+test("leadToRow writes rule_score from the intake score", () => {
+  assert.equal(leadToRow(baseLead({ score: 71 })).rule_score, 71);
+  assert.equal(leadToRow(baseLead({ score: 71, ruleScore: 50 })).rule_score, 50);
+});

@@ -86,6 +86,7 @@ export function leadToRow(lead: Lead): Record<string, unknown> {
     visitor_id: lead.visitorId ?? null,
     first_touch: lead.firstTouch ?? null,
     lead_score: lead.score ?? 0,
+    rule_score: lead.ruleScore ?? lead.score ?? 0,
     source: lead.source ?? "website_contact_form",
     status: lead.status ?? "new",
     notes: lead.notes ?? "",
