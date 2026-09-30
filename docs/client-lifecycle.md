@@ -18,7 +18,7 @@ console, or email systems.
 | Templated email | `notification_templates` + `lib/scheduling/notifications.ts` (`sendTemplatedEmail`) |
 | Durable email retry | `email_jobs` + `lib/email-jobs.ts` |
 | Cron processing | `/api/cron/scheduling` (Vercel cron, bearer `CRON_SECRET`) |
-| CSRF / bot / origin defense | `middleware.ts` (double-submit `rsg_csrf` + `x-csrf-token` via `lib/api.ts`) |
+| CSRF / bot / origin defense | `proxy.ts` (double-submit `rsg_csrf` + `x-csrf-token` via `lib/api.ts`) |
 | Rate limiting | `lib/security.ts` (Upstash w/ in-memory fallback) |
 | Audit log | `audit_events` + `writeAuditEvent` |
 | Lead pipeline | `leads` table, `lib/leads.ts` (`processLead`) |

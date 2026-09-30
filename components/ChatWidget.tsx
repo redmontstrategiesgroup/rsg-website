@@ -26,26 +26,45 @@ const QUICK_REPLIES = [
   "Book a strategy call",
 ];
 
-/** Render assistant text with bare URLs as links (e.g. the booking link). */
+/**
+ * Full URLs, plus site paths like /book or /crmsystems (the knowledge base
+ * gives the bot relative paths). The lookbehind skips "and/or" and "24/7".
+ */
+const LINK_PATTERN = /(https?:\/\/[^\s)]+|(?<![\w/])\/[a-z][a-z0-9/-]*)/gi;
+const LINK_CLASS =
+  "text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white";
+
+/** Render assistant text with URLs and site paths as links. */
 function Linkified({ text }: { text: string }) {
-  const parts = text.split(/(https?:\/\/[^\s)]+)/g);
+  const parts = text.split(LINK_PATTERN);
   return (
     <>
-      {parts.map((part, i) =>
-        /^https?:\/\//.test(part) ? (
-          <a
-            key={i}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
-          >
-            {part}
-          </a>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
+      {parts.map((part, i) => {
+        if (/^https?:\/\//.test(part)) {
+          // Sentence punctuation right after a URL is not part of it.
+          const url = part.replace(/[.,;:!?]+$/, "");
+          return (
+            <span key={i}>
+              <a href={url} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
+                {url}
+              </a>
+              {part.slice(url.length)}
+            </span>
+          );
+        }
+        if (/^\/[a-z]/i.test(part)) {
+          const path = part.replace(/\/+$/, "");
+          return (
+            <span key={i}>
+              <Link href={path} className={LINK_CLASS}>
+                {path}
+              </Link>
+              {part.slice(path.length)}
+            </span>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
     </>
   );
 }
@@ -180,7 +199,7 @@ export function ChatWidget() {
             setOpen(true);
             trackEvent("chatbot_open");
           }}
-          className="bottom-safe right-safe fixed z-50 inline-flex min-h-12 items-center border border-white/20 bg-base-900 px-5 py-3 text-[0.74rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:bottom-safe-5 sm:right-5 lg:min-h-0 sm:text-[0.65rem]"
+          className="bottom-safe right-safe fixed z-50 inline-flex min-h-12 items-center border border-white/20 bg-base-900 px-5 py-3 text-[0.74rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/40 sm:bottom-safe-5 sm:right-5 lg:min-h-0 sm:text-[0.65rem]"
           aria-label="Open chat with Redmont Strategies Group"
         >
           Chat
@@ -231,7 +250,7 @@ export function ChatWidget() {
               {messages.map((m, i) =>
                 m.role === "user" ? (
                   <div key={i} className="flex justify-end">
-                    <p className="max-w-[85%] border border-white/10 bg-white/[0.05] px-3.5 py-2.5 text-sm leading-relaxed text-white/90">
+                    <p className="max-w-[85%] border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm leading-relaxed text-white/90">
                       {m.content}
                     </p>
                   </div>
@@ -284,7 +303,7 @@ export function ChatWidget() {
                   maxLength={2000}
                   autoComplete="off"
                   enterKeyHint="send"
-                  className="w-full border border-white/15 bg-transparent px-3.5 py-3 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-none"
+                  className="w-full border border-white/15 bg-transparent px-3.5 py-3 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-hidden"
                 />
                 <button
                   type="submit"

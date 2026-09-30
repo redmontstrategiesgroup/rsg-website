@@ -149,7 +149,7 @@ function ItemsRepeater({
           {items.map((item, i) => (
             <div
               key={i}
-              className="grid items-end gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-3 sm:grid-cols-[1fr_1.6fr_auto]"
+              className="grid items-end gap-3 rounded-lg border border-white/10 bg-white/2 p-3 sm:grid-cols-[1fr_1.6fr_auto]"
             >
               <Field label="Title">
                 <input
@@ -180,7 +180,7 @@ function ItemsRepeater({
               <button
                 type="button"
                 aria-label="Remove row"
-                className="mb-2 text-white/40 hover:text-red-300"
+                className="mb-2 text-white/60 hover:text-red-300"
                 onClick={() => onChange(items.filter((_, j) => j !== i))}
               >
                 <Trash2 size={15} />
@@ -189,7 +189,7 @@ function ItemsRepeater({
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-xs text-white/35">No rows yet.</p>
+        <p className="mt-2 text-xs text-white/60">No rows yet.</p>
       )}
     </div>
   );
@@ -314,7 +314,7 @@ export function ProposalsView({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+        <p className="text-xs font-medium uppercase tracking-wide text-white/65">
           Proposals
         </p>
         <button
@@ -332,7 +332,7 @@ export function ProposalsView({
       {proposals.length ? (
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full min-w-[860px] text-left text-sm">
-            <thead className="bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+            <thead className="bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
               <tr className="border-b border-white/10">
                 <th className="px-4 py-3 font-normal">Title</th>
                 <th className="px-4 py-3 font-normal">Client / lead</th>
@@ -348,7 +348,7 @@ export function ProposalsView({
                 <tr
                   key={p.id}
                   className={`border-b border-white/5 last:border-0 ${
-                    draft?.id === p.id ? "bg-crimson/[0.06]" : ""
+                    draft?.id === p.id ? "bg-crimson/6" : ""
                   }`}
                 >
                   <td className="max-w-[240px] truncate px-4 py-3 text-white/85">
@@ -372,7 +372,7 @@ export function ProposalsView({
                       ? `${formatCents(p.monthlyPriceCents)}/mo`
                       : "-"}
                   </td>
-                  <td className="px-4 py-3 text-xs text-white/50">
+                  <td className="px-4 py-3 text-xs text-white/65">
                     {fmtDate(p.sentAt)} · {fmtDate(p.viewedAt)} ·{" "}
                     {fmtDate(p.acceptedAt)}
                   </td>
@@ -413,7 +413,7 @@ export function ProposalsView({
       )}
 
       {shareUrl ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-emerald-400/25 bg-emerald-400/[0.06] px-4 py-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-emerald-400/25 bg-emerald-400/6 px-4 py-3 text-sm">
           <span className="text-emerald-200">Share link:</span>
           <code className="min-w-0 max-w-full break-all text-xs text-white/80">
             {shareUrl}
@@ -432,12 +432,12 @@ export function ProposalsView({
       {draft ? (
         <div className="space-y-6 rounded-xl border border-white/10 p-5">
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+            <p className="text-xs font-medium uppercase tracking-wide text-white/65">
               {draft.id ? "Edit proposal" : "New proposal"}
             </p>
             <button
               type="button"
-              className="text-xs text-white/45 hover:text-white"
+              className="text-xs text-white/65 hover:text-white"
               onClick={() => setDraft(null)}
             >
               Close builder
@@ -516,7 +516,7 @@ export function ProposalsView({
 
           {showImplementation ? (
             <div className="space-y-4 rounded-lg border border-white/10 p-4">
-              <p className="font-mono text-[0.56rem] uppercase tracking-label text-crimson-light">
+              <p className="text-xs font-medium uppercase tracking-wide text-crimson-light">
                 Implementation scope
               </p>
               <Field label="Implementation summary">
@@ -567,7 +567,7 @@ export function ProposalsView({
 
           {showDelivered ? (
             <div className="space-y-4 rounded-lg border border-white/10 p-4">
-              <p className="font-mono text-[0.56rem] uppercase tracking-label text-crimson-light">
+              <p className="text-xs font-medium uppercase tracking-wide text-crimson-light">
                 Delivery summary
               </p>
               <ItemsRepeater
@@ -588,7 +588,7 @@ export function ProposalsView({
 
           {showRecurring ? (
             <div className="space-y-4 rounded-lg border border-white/10 p-4">
-              <p className="font-mono text-[0.56rem] uppercase tracking-label text-crimson-light">
+              <p className="text-xs font-medium uppercase tracking-wide text-crimson-light">
                 Recurring service
               </p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -727,7 +727,7 @@ export function ProposalsView({
                     {draft.addons.map((a, i) => (
                       <div
                         key={i}
-                        className="grid items-end gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-3 sm:grid-cols-[1fr_1.4fr_140px_auto]"
+                        className="grid items-end gap-3 rounded-lg border border-white/10 bg-white/2 p-3 sm:grid-cols-[1fr_1.4fr_140px_auto]"
                       >
                         <Field label="Name">
                           <input
@@ -781,7 +781,7 @@ export function ProposalsView({
                         <button
                           type="button"
                           aria-label="Remove add-on"
-                          className="mb-2 text-white/40 hover:text-red-300"
+                          className="mb-2 text-white/60 hover:text-red-300"
                           onClick={() =>
                             set(
                               "addons",
@@ -795,7 +795,7 @@ export function ProposalsView({
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-2 text-xs text-white/35">No add-ons.</p>
+                  <p className="mt-2 text-xs text-white/60">No add-ons.</p>
                 )}
               </div>
 

@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 import { processLead, scoreLead } from "@/lib/leads";
+import { readAttribution } from "@/lib/attribution";
 import { rateLimit } from "@/lib/security";
 import { recordConnectEvent } from "@/lib/connect";
 import type { Lead } from "@/lib/types";
@@ -132,6 +133,7 @@ export async function submitConnectLead(
     utmSource: data.utm_source || platform,
     utmMedium: data.utm_medium || "connect_page",
     utmCampaign: data.utm_campaign || data.campaign || "rsg_connect",
+    ...(await readAttribution()),
     source: "website_connect_page",
     status: "new",
     submittedAt: new Date().toISOString(),

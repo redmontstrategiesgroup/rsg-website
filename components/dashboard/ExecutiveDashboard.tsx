@@ -102,7 +102,7 @@ const tone = (value: string) =>
       ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
       : value === "completed" || value === "launched" || value === "mitigated"
         ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
-        : "border-white/10 bg-white/[0.04] text-white/55";
+        : "border-white/10 bg-white/4 text-white/55";
 
 function Badge({ value }: { value: string }) {
   return (
@@ -285,7 +285,7 @@ export function ExecutiveDashboard({
     <div className="min-h-dvh bg-base text-white">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-20" />
-        <div className="absolute left-[30%] top-[-20%] h-[520px] w-[760px] rounded-full bg-crimson/[0.05] blur-[150px]" />
+        <div className="absolute left-[30%] top-[-20%] h-[520px] w-[760px] rounded-full bg-crimson/5 blur-[150px]" />
       </div>
       {/* Below lg the drawer is only translated off-screen, so it must also
           be inert or its ten buttons stay in the tab order and the a11y tree. */}
@@ -321,7 +321,7 @@ export function ExecutiveDashboard({
                 key={item.id}
                 onClick={() => openView(item.id)}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? "bg-crimson/15 text-white" : "text-white/48 hover:bg-white/[0.04] hover:text-white"}`}
+                className={`flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${active ? "bg-crimson/15 text-white" : "text-white/48 hover:bg-white/4 hover:text-white"}`}
               >
                 <Icon
                   size={16}
@@ -340,7 +340,7 @@ export function ExecutiveDashboard({
         <div className="border-t border-white/10 p-4">
           <a
             href="/admin"
-            className="mb-3 flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/[0.04] hover:text-white"
+            className="mb-3 flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/4 hover:text-white"
           >
             <Users size={15} /> Client console
           </a>
@@ -350,7 +350,7 @@ export function ExecutiveDashboard({
           </div>
           <button
             onClick={logout}
-            className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/[0.04] hover:text-white"
+            className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/50 hover:bg-white/4 hover:text-white"
           >
             <LogOut size={15} /> Secure logout
           </button>
@@ -393,11 +393,11 @@ export function ExecutiveDashboard({
             <button
               type="button"
               onClick={() => setCommand(true)}
-              className="hidden min-h-11 min-w-56 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2 text-left text-sm text-white/35 hover:border-white/20 sm:flex"
+              className="hidden min-h-11 min-w-56 items-center gap-2 rounded-lg border border-white/10 bg-white/2.5 px-3 py-2 text-left text-sm text-white/35 hover:border-white/20 sm:flex"
             >
               <Search size={15} />
               <span>Search intelligence</span>
-              <kbd className="ml-auto rounded border border-white/10 px-1.5 font-mono text-[0.55rem]">
+              <kbd className="ml-auto rounded-sm border border-white/10 px-1.5 font-mono text-[0.55rem]">
                 ⌘K
               </kbd>
             </button>
@@ -870,7 +870,7 @@ function Briefs({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search title, summary, or content"
-            className="w-full rounded-lg border border-white/10 bg-white/[0.025] py-2.5 pl-9 pr-3 text-sm outline-none focus:border-crimson"
+            className="w-full rounded-lg border border-white/10 bg-white/2.5 py-2.5 pl-9 pr-3 text-sm outline-hidden focus:border-crimson"
           />
         </label>
         <select
@@ -906,7 +906,7 @@ function Briefs({
       )}
       {records.length ? (
         <div className="grid gap-5 lg:min-h-[650px] lg:grid-cols-[320px_1fr]">
-          <aside className="card h-fit divide-y divide-white/[0.06] overflow-hidden">
+          <aside className="card h-fit divide-y divide-white/6 overflow-hidden">
             {records.map((brief) => (
               <button
                 key={brief.id}
@@ -915,7 +915,7 @@ function Briefs({
                   if (!bool(brief.is_read))
                     update("briefs", "briefs", brief.id, { is_read: true });
                 }}
-                className={`w-full p-4 text-left ${current?.id === brief.id ? "bg-crimson/[0.08]" : "hover:bg-white/[0.025]"}`}
+                className={`w-full p-4 text-left ${current?.id === brief.id ? "bg-crimson/8" : "hover:bg-white/2.5"}`}
               >
                 <div className="flex items-center gap-2">
                   <span
@@ -985,7 +985,7 @@ function Briefs({
                   </button>
                 </div>
               </div>
-              <div className="my-6 rounded-lg border border-crimson/15 bg-crimson/[0.05] p-5">
+              <div className="my-6 rounded-lg border border-crimson/15 bg-crimson/5 p-5">
                 <p className="font-mono text-[0.55rem] uppercase tracking-label text-crimson-light">
                   Executive summary
                 </p>
@@ -1053,7 +1053,7 @@ function Toolbar({
     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         <h2 className="display text-2xl">{title}</h2>
-        <p className="mt-2 text-sm text-white/42">{body}</p>
+        <p className="mt-2 text-sm text-white/60">{body}</p>
       </div>
       {action}
     </div>
@@ -1127,7 +1127,7 @@ function Actions({
           ))}
         </div>
       ) : mode === "calendar" ? (
-        <div className="card divide-y divide-white/[0.06]">
+        <div className="card divide-y divide-white/6">
           {active
             .filter((r) => r.due_date)
             .sort((a, b) => str(a.due_date).localeCompare(str(b.due_date)))
@@ -1148,7 +1148,7 @@ function Actions({
           )}
         </div>
       ) : (
-        <div className="card divide-y divide-white/[0.06]">
+        <div className="card divide-y divide-white/6">
           {active.map((r) => (
             <div key={r.id} className="p-4">
               <ActionCard item={r} update={update} working={working} />
@@ -1179,7 +1179,7 @@ function ActionCard({
       <h4 className="mt-3 text-sm font-medium text-white/85">
         {str(item.title)}
       </h4>
-      <p className="mt-2 line-clamp-3 text-xs leading-5 text-white/38">
+      <p className="mt-2 line-clamp-3 text-xs leading-5 text-white/60">
         {str(item.description, "No description")}
       </p>
       <div className="mt-4 flex items-center justify-between text-[0.65rem] text-white/30">
@@ -1341,7 +1341,7 @@ function Intelligence({ records }: { records: DashboardRecord[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search intelligence"
-          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2.5 text-sm outline-none"
+          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/2.5 px-3 py-2.5 text-sm outline-hidden"
         />
         <select
           value={category}
@@ -1355,7 +1355,7 @@ function Intelligence({ records }: { records: DashboardRecord[] }) {
         </select>
       </div>
       {filtered.length ? (
-        <div className="card divide-y divide-white/[0.06]">
+        <div className="card divide-y divide-white/6">
           {filtered.map((r) => (
             <article key={r.id} className="p-5">
               <div className="flex flex-wrap items-center gap-2">
@@ -1434,7 +1434,7 @@ function Risks({
               <p className="mt-2 text-sm leading-6 text-white/45">
                 {str(r.description, "No description")}
               </p>
-              <div className="mt-4 rounded-lg bg-white/[0.025] p-3 text-xs leading-5 text-white/50">
+              <div className="mt-4 rounded-lg bg-white/2.5 p-3 text-xs leading-5 text-white/50">
                 <span className="text-crimson-light">Mitigation: </span>
                 {str(r.mitigation, "Not defined")}
               </div>
@@ -1503,7 +1503,7 @@ function Ideas({
                 <Badge value={str(r.status, "captured")} />
               </div>
               <h3 className="mt-4 font-medium">{str(r.title)}</h3>
-              <p className="mt-2 text-sm leading-6 text-white/42">
+              <p className="mt-2 text-sm leading-6 text-white/60">
                 {str(r.description, "No description")}
               </p>
               <p className="mt-4 text-xs text-crimson-light">
@@ -1599,7 +1599,7 @@ function Analytics({ data }: { data: DashboardData }) {
                     {value} records
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-white/[0.05]">
+                <div className="h-2 rounded-full bg-white/5">
                   <div
                     className="h-full rounded-full bg-crimson"
                     style={{ width: `${(value / max) * 100}%` }}
@@ -1642,7 +1642,7 @@ function Sources({ records }: { records: DashboardRecord[] }) {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.id} className="border-b border-white/[0.06]">
+                  <tr key={r.id} className="border-b border-white/6">
                     <td className="p-4">
                       {r.url ? (
                         <a
@@ -1754,7 +1754,7 @@ function SettingsPanel({ data }: { data: DashboardData }) {
           <h3 className="display text-lg">Ingestion log</h3>
         </div>
         {data.ingestionLogs.length ? (
-          <div className="divide-y divide-white/[0.06]">
+          <div className="divide-y divide-white/6">
             {data.ingestionLogs.slice(0, 10).map((r) => (
               <div
                 key={r.id}
@@ -1851,7 +1851,7 @@ function CommandPalette({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search briefs, actions, opportunities, risks…"
-            className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none"
+            className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-hidden"
           />
         </label>
       </div>
@@ -1890,9 +1890,9 @@ function CommandPalette({
             <button
               key={`${r.type}-${i}`}
               onClick={() => onView(r.view)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left hover:bg-white/[0.04]"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left hover:bg-white/4"
             >
-              <span className="rounded bg-white/[0.05] px-2 py-1 font-mono text-[0.52rem] uppercase text-white/35">
+              <span className="rounded-sm bg-white/5 px-2 py-1 font-mono text-[0.52rem] uppercase text-white/35">
                 {r.type}
               </span>
               <span className="truncate text-sm text-white/70">{r.label}</span>
@@ -1919,7 +1919,7 @@ function PaletteButton({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm text-white/60 hover:bg-white/[0.04] hover:text-white"
+      className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm text-white/60 hover:bg-white/4 hover:text-white"
     >
       <Icon size={16} className="text-crimson-light" />
       {label}
@@ -1941,7 +1941,7 @@ function NotificationPanel({
   useDialogBehaviour(panelRef, onClose);
   return (
     <div
-      className="dialog-backdrop fixed inset-0 z-[80] flex justify-end bg-black/65"
+      className="dialog-backdrop fixed inset-0 z-80 flex justify-end bg-black/65"
       onPointerDown={(e) => {
         if (e.currentTarget === e.target) onClose();
       }}
@@ -1952,7 +1952,7 @@ function NotificationPanel({
         aria-modal="true"
         aria-label="Notifications"
         tabIndex={-1}
-        className="h-dvh w-full max-w-md overflow-y-auto overscroll-contain border-l border-white/10 bg-base-900 p-5 pb-safe outline-none"
+        className="h-dvh w-full max-w-md overflow-y-auto overscroll-contain border-l border-white/10 bg-base-900 p-5 pb-safe outline-hidden"
       >
         <div className="flex items-center justify-between">
           <h2 className="display text-xl">Notifications</h2>
@@ -2013,7 +2013,7 @@ function Modal({
   useDialogBehaviour(panelRef, onClose);
   return (
     <div
-      className="dialog-backdrop fixed inset-0 z-[90] flex items-start justify-center bg-black/75 p-3 pt-[4dvh] sm:p-4 sm:pt-[12dvh]"
+      className="dialog-backdrop fixed inset-0 z-90 flex items-start justify-center bg-black/75 p-3 pt-[4dvh] sm:p-4 sm:pt-[12dvh]"
       onPointerDown={(e) => {
         if (e.currentTarget === e.target) onClose();
       }}
@@ -2023,7 +2023,7 @@ function Modal({
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
-        className="dialog-panel flex max-h-[calc(100dvh-8dvh)] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/12 bg-base-900 shadow-lift outline-none"
+        className="dialog-panel flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/12 bg-base-900 shadow-lift outline-hidden"
       >
         {children}
       </div>
@@ -2168,7 +2168,7 @@ function Composer({
                 rows={8}
               />
               {preview && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
+                <div className="rounded-lg border border-white/10 bg-white/2 p-4">
                   <MarkdownRenderer
                     content={form.content || "Nothing to preview yet."}
                   />
@@ -2254,7 +2254,7 @@ function Field({
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2.5 text-sm outline-none focus:border-crimson"
+        className="w-full rounded-lg border border-white/10 bg-white/2.5 px-3 py-2.5 text-sm outline-hidden focus:border-crimson"
       />
     </label>
   );
@@ -2279,7 +2279,7 @@ function Area({
         rows={rows}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full resize-y rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2.5 text-sm leading-6 outline-none focus:border-crimson"
+        className="w-full resize-y rounded-lg border border-white/10 bg-white/2.5 px-3 py-2.5 text-sm leading-6 outline-hidden focus:border-crimson"
       />
     </label>
   );

@@ -47,7 +47,7 @@ export default async function ReportsPage({
         <div className="mt-8 gap-6 lg:grid lg:grid-cols-[240px_1fr] lg:items-start">
           <div className="mb-6 lg:mb-0">
             <SectionCard padded={false}>
-              <ul className="divide-y divide-white/[0.06]">
+              <ul className="divide-y divide-white/6">
                 {reports.map((r) => (
                   <li key={r.id}>
                     <a

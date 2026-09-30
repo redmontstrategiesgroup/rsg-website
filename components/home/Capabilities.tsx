@@ -49,12 +49,12 @@ export function Capabilities({
           </Reveal>
         </div>
 
-        <div className="mt-10 sm:mt-24 grid border-t border-white/[0.08] sm:grid-cols-2">
+        <div className="mt-10 sm:mt-24 grid border-t border-white/8 sm:grid-cols-2">
           {CAPABILITIES.map((c, i) => (
             <Reveal key={c.name} y={12} delay={(i % 2) * 0.08} className="h-full">
               <div
-                className={`flex h-full flex-col border-b border-white/[0.08] py-10 sm:py-16 ${
-                  i % 2 === 1 ? "sm:border-l sm:border-white/[0.08] sm:pl-14" : "sm:pr-14"
+                className={`flex h-full flex-col border-b border-white/8 py-10 sm:py-16 ${
+                  i % 2 === 1 ? "sm:border-l sm:border-white/8 sm:pl-14" : "sm:pr-14"
                 }`}
               >
                 <h3 className="display max-w-sm text-2xl text-white">
@@ -77,6 +77,14 @@ export function Capabilities({
             </Reveal>
           ))}
         </div>
+
+        <Reveal y={12}>
+          <p className="mt-10 max-w-2xl border-l-2 border-crimson/60 pl-5 text-[1.02rem] leading-relaxed text-white/60 sm:mt-14">
+            We don&rsquo;t launch and leave. Hosting, security, and monthly
+            improvements stay with us, and new systems get built as the
+            business grows.
+          </p>
+        </Reveal>
       </div>
     </section>
   );

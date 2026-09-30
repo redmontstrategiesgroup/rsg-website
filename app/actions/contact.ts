@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { Resend } from "resend";
 import { processLead, scoreLead } from "@/lib/leads";
+import { readAttribution } from "@/lib/attribution";
 import { rateLimit } from "@/lib/security";
 import type { Lead } from "@/lib/types";
 import { callProvider } from "@/lib/integration-log";
@@ -245,6 +246,7 @@ export async function submitContactForm(raw: unknown): Promise<ContactResult> {
     utmCampaign: data.utm_campaign,
     utmContent: data.utm_content,
     utmTerm: data.utm_term,
+    ...(await readAttribution()),
     source: "website_contact_form",
     status: "new",
     submittedAt: new Date().toISOString(),

@@ -48,7 +48,7 @@ export function LoginForm() {
       <div className="relative hidden overflow-hidden border-r border-white/10 lg:block">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-grid opacity-40" />
-          <div className="absolute left-1/3 top-1/4 h-[420px] w-[520px] rounded-full bg-crimson/[0.12] blur-[130px]" />
+          <div className="absolute left-1/3 top-1/4 h-[420px] w-[520px] rounded-full bg-crimson/12 blur-[130px]" />
         </div>
         <div className="relative flex h-full flex-col justify-between p-12">
           <Link href="/" aria-label="Redmont Strategies Group home">
@@ -139,7 +139,7 @@ export function LoginForm() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border border-white/12 bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20"
+                  className="w-full rounded-lg border border-white/35 bg-white/3 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-hidden focus:ring-2 focus:ring-crimson/20"
                   placeholder="Email address"
                 />
               </div>
@@ -160,7 +160,7 @@ export function LoginForm() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-lg border border-white/12 bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20"
+                  className="w-full rounded-lg border border-white/35 bg-white/3 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-hidden focus:ring-2 focus:ring-crimson/20"
                   placeholder="••••••••••"
                 />
               </div>

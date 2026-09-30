@@ -19,7 +19,7 @@ export function ProblemsSection({
   const { problems, problemsIntro } = vertical;
 
   return (
-    <section id="problems" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900 section-y-sm">
+    <section id="problems" className="scroll-mt-24 border-y border-white/8 bg-base-900 section-y-sm">
       <div className="container-px">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -40,7 +40,7 @@ export function ProblemsSection({
           >
             {problems.map((p, i) => (
               <Reveal key={p.id} y={14} delay={(i % 3) * 0.06} className="h-full">
-                <article className="flex h-full flex-col rounded-xl border border-white/10 bg-white/[0.02] p-6 transition-colors hover:border-white/20">
+                <article className="flex h-full flex-col rounded-xl border border-white/10 bg-white/2 p-6 transition-colors hover:border-white/20">
                   <span className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light/70">
                     Ticket {String(i + 1).padStart(2, "0")}
                   </span>
@@ -59,12 +59,12 @@ export function ProblemsSection({
 
         {variant === "ledger" && (
           <MobileReveal
-            className="mt-6 border-t border-white/[0.08] sm:mt-10"
+            className="mt-6 border-t border-white/8 sm:mt-10"
             label={`Show all ${problems.length} problems`}
           >
             {problems.map((p, i) => (
               <Reveal key={p.id} y={10} delay={Math.min(i * 0.03, 0.2)}>
-                <article className="grid gap-3 border-b border-white/[0.08] py-6 sm:grid-cols-12 sm:gap-8">
+                <article className="grid gap-3 border-b border-white/8 py-6 sm:grid-cols-12 sm:gap-8">
                   <div className="sm:col-span-4 lg:col-span-3">
                     <div className="flex items-baseline gap-3">
                       <span className="font-mono text-[0.72rem] sm:text-[0.62rem] text-crimson-light/70">
@@ -91,7 +91,7 @@ export function ProblemsSection({
 
         {variant === "tiles" && (
           <MobileReveal
-            className="mt-6 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] sm:mt-10 sm:grid-cols-2 lg:grid-cols-4"
+            className="mt-6 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/6 sm:mt-10 sm:grid-cols-2 lg:grid-cols-4"
             label={`Show all ${problems.length} problems`}
           >
             {problems.map((p, i) => (

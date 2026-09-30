@@ -58,8 +58,16 @@ Core services:
 7. Operations Consulting
 8. Business Systems Audit
 
-Custom Private AI Systems page:
-https://redmontstrategiesgroup.com/services/customprivateaisystems
+Service pages (share the one that matches what the visitor is asking about):
+1. Business Consulting: /businessconsulting
+2. AI Strategy & Implementation: /aistrategy
+3. Custom Private AI Systems: /services/customprivateaisystems
+4. Web Development & Digital Infrastructure: /webdevelopment
+5. AI Automation: /aiautomation
+6. CRM & Pipeline Systems: /crmsystems
+7. Operations Consulting: /operationsconsulting
+8. Business Systems Audit: /systemsaudit
+All services overview: /services. How an engagement runs: /process. Common questions: /faq. About RSG: /about.
 
 ONGOING PARTNERSHIP:
 Your initial implementation creates cash flow. Ongoing management creates lasting business value.

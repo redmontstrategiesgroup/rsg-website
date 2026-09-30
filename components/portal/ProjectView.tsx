@@ -88,7 +88,7 @@ export function ProjectView({
               href={`/portal/project?id=${p.id}`}
               className={`border px-3.5 py-2 text-xs transition ${
                 p.id === project.id
-                  ? "border-crimson/60 bg-crimson/[0.08] text-white"
+                  ? "border-crimson/60 bg-crimson/8 text-white"
                   : "border-white/10 text-white/50 hover:border-white/30"
               }`}
             >
@@ -143,7 +143,7 @@ export function ProjectView({
             {approvals.map((a) => (
               <div
                 key={a.id}
-                className="flex flex-wrap items-center justify-between gap-3 border border-amber-400/20 bg-amber-400/[0.04] px-4 py-3.5"
+                className="flex flex-wrap items-center justify-between gap-3 border border-amber-400/20 bg-amber-400/4 px-4 py-3.5"
               >
                 <div className="min-w-0">
                   <p className="text-sm text-white/85">{a.title}</p>
@@ -305,7 +305,7 @@ export function ProjectView({
             </a>
           }
         >
-          <ul className="divide-y divide-white/[0.06]">
+          <ul className="divide-y divide-white/6">
             {files.slice(0, 6).map((f) => (
               <li key={f.id} className="flex items-center justify-between gap-3 py-2.5">
                 <span className="min-w-0 truncate text-sm text-white/75">{f.name}</span>

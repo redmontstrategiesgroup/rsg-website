@@ -140,7 +140,7 @@ function QuestionField({
                 type="button"
                 aria-pressed={current === n}
                 onClick={() => onChange(current === n ? "" : n)}
-                className={`min-h-[44px] flex-1 border text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+                className={`min-h-[44px] flex-1 border text-sm transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
                   current === n
                     ? "border-crimson/70 bg-crimson/10 text-white"
                     : "border-white/15 text-white/60 hover:border-white/35"
@@ -354,7 +354,7 @@ export function FormFlow({
         </p>
         <div className="mt-5 space-y-6">
           {active.map((s, i) => (
-            <div key={s.key} className="border border-white/10 bg-white/[0.02] px-5 py-4">
+            <div key={s.key} className="border border-white/10 bg-white/2 px-5 py-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium text-white">{s.label}</p>
                 <button

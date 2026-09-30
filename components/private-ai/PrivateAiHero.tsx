@@ -9,13 +9,13 @@ const TRUST_ICONS = [Shield, Server, Lock, Users, Headphones];
 
 export function PrivateAiHero() {
   return (
-    <section className="relative overflow-hidden border-b border-white/[0.08]">
+    <section className="relative overflow-hidden border-b border-white/8">
       {/* Decorative only: hidden on phones, where the blur and grid cost
           compositing work and add nothing to the message. */}
       <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute inset-0 bg-grid opacity-[0.18]" />
-        <div className="absolute left-1/2 top-[-20%] h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-crimson/[0.08] blur-[140px]" />
-        <div className="absolute bottom-0 right-0 h-[280px] w-[420px] rounded-full bg-white/[0.03] blur-[100px]" />
+        <div className="absolute left-1/2 top-[-20%] h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-crimson/8 blur-[140px]" />
+        <div className="absolute bottom-0 right-0 h-[280px] w-[420px] rounded-full bg-white/3 blur-[100px]" />
       </div>
 
       <div className="container-px pb-16 pt-14 sm:pb-24 sm:pt-20">
@@ -111,11 +111,11 @@ export function PrivateAiHero() {
                 </p>
                 <div className="mt-5 space-y-3">
                   {[
-                    { label: "Company data layer", tone: "border-white/15 bg-white/[0.04]" },
-                    { label: "Permission & audit layer", tone: "border-crimson/30 bg-crimson/[0.08]" },
-                    { label: "Private model runtime", tone: "border-white/15 bg-white/[0.04]" },
-                    { label: "Approved integrations", tone: "border-white/10 bg-white/[0.025]" },
-                    { label: "Human approval gates", tone: "border-white/15 bg-white/[0.04]" },
+                    { label: "Company data layer", tone: "border-white/15 bg-white/4" },
+                    { label: "Permission & audit layer", tone: "border-crimson/30 bg-crimson/8" },
+                    { label: "Private model runtime", tone: "border-white/15 bg-white/4" },
+                    { label: "Approved integrations", tone: "border-white/10 bg-white/2.5" },
+                    { label: "Human approval gates", tone: "border-white/15 bg-white/4" },
                   ].map((row) => (
                     <div
                       key={row.label}

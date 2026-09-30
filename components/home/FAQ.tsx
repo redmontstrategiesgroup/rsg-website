@@ -71,7 +71,7 @@ export function FAQ({
           <div className="lg:col-span-6 lg:col-start-7">
             {FAQS.map((item, i) => (
               <Reveal key={item.q} y={12} delay={i * 0.04}>
-                <details className="group border-t border-white/[0.08] last:border-b">
+                <details className="group border-t border-white/8 last:border-b">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 [&::-webkit-details-marker]:hidden">
                     <span className="display text-[1.15rem] leading-snug text-white">
                       {item.q}

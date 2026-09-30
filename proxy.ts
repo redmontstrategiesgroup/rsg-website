@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Edge middleware: CSRF protection and coarse bot filtering for every
+ * Proxy (Next 16's name for middleware): CSRF protection and coarse bot filtering for every
  * state-changing API request, plus issuing the CSRF token cookie.
  * Also gates /admin and /dashboard page routes (cookie presence + signature).
  *
@@ -25,9 +25,9 @@ const ADMIN_COOKIE = "rsg_admin";
  * under the same id. Echoed on the response so a browser error report and the
  * server-side trail can be joined.
  *
- * Middleware runs on the edge runtime, so this file must NOT import
- * lib/integration-log (node:async_hooks). The header is the contract between
- * them; the constant is duplicated deliberately.
+ * This file stays free of lib/integration-log (node:async_hooks) so it keeps
+ * no server-module dependencies; the header is the contract between them and
+ * the constant is duplicated deliberately.
  */
 const CORRELATION_HEADER = "x-correlation-id";
 
@@ -84,8 +84,8 @@ function timingSafeEqualStr(a: string, b: string): boolean {
  * gate. The API handlers and page loaders verify independently too (defense in
  * depth), but the gate should not accept a cookie the rest of the app rejects.
  *
- * Requires AUTH_SECRET at the edge. When it is unset (local dev, where lib/auth
- * uses a per-process random secret the edge runtime can't see), fall back to a
+ * Requires AUTH_SECRET in the proxy. When it is unset (local dev, where lib/auth
+ * uses a per-process random secret this module does not share), fall back to a
  * structural check so dev isn't locked out, production ALWAYS sets AUTH_SECRET
  * (lib/auth throws without it), so production always gets the real check.
  */
@@ -123,7 +123,7 @@ async function hasValidAdminCookie(token: string | undefined): Promise<boolean> 
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const correlationId = inboundCorrelationId(request) ?? crypto.randomUUID();
   const response = await handle(request, correlationId);
   response.headers.set(CORRELATION_HEADER, correlationId);
@@ -169,6 +169,11 @@ async function handle(request: NextRequest, correlationId: string) {
     // verification (constructEvent) plus a unique-event replay guard in the
     // route handler. Browser CSRF and user-agent checks do not apply.
     if (pathname === "/api/stripe/webhook") {
+      return forward();
+    }
+    // Pocket recorder webhooks are server-to-server and authenticate via an
+    // HMAC signature (X-HeyPocket-Signature) verified in the route handler.
+    if (pathname === "/api/pocket/webhook") {
       return forward();
     }
     // Health checks are GET-only; nothing to exempt here for mutating.

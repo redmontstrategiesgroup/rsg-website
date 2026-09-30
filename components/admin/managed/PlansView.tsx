@@ -203,7 +203,7 @@ export function PlansView({
       {/* Plans table */}
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[760px] text-left text-sm">
-          <thead className="bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+          <thead className="bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
             <tr className="border-b border-white/10">
               <th className="px-4 py-3 font-normal">Plan</th>
               <th className="px-4 py-3 font-normal">Monthly</th>
@@ -218,16 +218,16 @@ export function PlansView({
               <tr
                 key={p.id}
                 className={`border-b border-white/5 last:border-0 ${
-                  draft?.id === p.id ? "bg-crimson/[0.06]" : ""
+                  draft?.id === p.id ? "bg-crimson/6" : ""
                 }`}
               >
                 <td className="px-4 py-3">
                   <span className="text-white/90">{p.name}</span>
-                  <span className="ml-2 font-mono text-[0.58rem] text-white/35">
+                  <span className="ml-2 font-mono text-[0.6875rem] text-white/60">
                     {p.key}
                   </span>
                   {p.recommended ? (
-                    <span className="ml-2 rounded-full border border-crimson/40 bg-crimson/10 px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-wider text-crimson-light">
+                    <span className="ml-2 rounded-full border border-crimson/40 bg-crimson/10 px-2 py-0.5 font-mono text-[0.6875rem] uppercase tracking-wider text-crimson-light">
                       Recommended
                     </span>
                   ) : null}
@@ -239,7 +239,7 @@ export function PlansView({
                   {p.basePlanKey ? (
                     <>
                       Custom · base {p.basePlanKey}
-                      <span className="block text-xs text-white/40">
+                      <span className="block text-xs text-white/60">
                         {clientLabel(clients, p.clientId)}
                       </span>
                     </>
@@ -274,9 +274,9 @@ export function PlansView({
       {/* New custom variation */}
       <form
         onSubmit={createCustom}
-        className="rounded-xl border border-white/10 bg-white/[0.02] p-5"
+        className="rounded-xl border border-white/10 bg-white/2 p-5"
       >
-        <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+        <p className="text-xs font-medium uppercase tracking-wide text-white/65">
           New custom variation
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -358,12 +358,12 @@ export function PlansView({
       {draft ? (
         <div className="space-y-6 rounded-xl border border-white/10 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+            <p className="text-xs font-medium uppercase tracking-wide text-white/65">
               Editing plan · <span className="text-crimson-light">{draft.key}</span>
             </p>
             <button
               type="button"
-              className="text-xs text-white/45 hover:text-white"
+              className="text-xs text-white/65 hover:text-white"
               onClick={() => setDraft(null)}
             >
               Close editor
@@ -552,7 +552,7 @@ export function PlansView({
                 {draft.addons.map((a, i) => (
                   <div
                     key={i}
-                    className="grid items-end gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-3 sm:grid-cols-[1fr_1.4fr_140px_auto]"
+                    className="grid items-end gap-3 rounded-lg border border-white/10 bg-white/2 p-3 sm:grid-cols-[1fr_1.4fr_140px_auto]"
                   >
                     <Field label="Name">
                       <input
@@ -602,7 +602,7 @@ export function PlansView({
                     <button
                       type="button"
                       aria-label="Remove add-on"
-                      className="mb-2 text-white/40 hover:text-red-300"
+                      className="mb-2 text-white/60 hover:text-red-300"
                       onClick={() =>
                         set(
                           "addons",
@@ -616,7 +616,7 @@ export function PlansView({
                 ))}
               </div>
             ) : (
-              <p className="mt-2 text-xs text-white/35">No add-ons on this plan.</p>
+              <p className="mt-2 text-xs text-white/60">No add-ons on this plan.</p>
             )}
           </div>
 
@@ -637,7 +637,7 @@ export function PlansView({
                     className="grid items-center gap-3 rounded-lg border border-white/5 px-3 py-2 sm:grid-cols-[220px_60px_1fr]"
                   >
                     <span className="text-sm text-white/70">{cat.label}</span>
-                    <label className="flex items-center gap-1.5 text-xs text-white/45">
+                    <label className="flex items-center gap-1.5 text-xs text-white/65">
                       <input
                         type="checkbox"
                         checked={cell.included}
@@ -723,7 +723,7 @@ export function PlansView({
           </button>
         </div>
       ) : (
-        <p className="text-sm text-white/40">
+        <p className="text-sm text-white/60">
           Select a plan above to edit its pricing and configuration.
         </p>
       )}

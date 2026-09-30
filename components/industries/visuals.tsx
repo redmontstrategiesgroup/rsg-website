@@ -18,9 +18,9 @@ function Window({
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none select-none overflow-hidden rounded-xl border border-white/10 bg-base-900/80 shadow-card backdrop-blur"
+      className="pointer-events-none select-none overflow-hidden rounded-xl border border-white/10 bg-base-900/80 shadow-card backdrop-blur-sm"
     >
-      <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-2.5">
+      <div className="flex items-center justify-between border-b border-white/8 px-4 py-2.5">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-white/15" />
           <span className="h-2 w-2 rounded-full bg-white/15" />
@@ -40,7 +40,7 @@ function Window({
 
 function MiniStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2">
+    <div className="rounded-lg border border-white/8 bg-white/2 px-3 py-2">
       <p className="font-mono text-[0.6rem] uppercase leading-tight tracking-[0.12em] text-white/35 sm:text-[0.5rem] sm:tracking-label">
         {label}
       </p>
@@ -71,7 +71,7 @@ export function DispatchBoardVisual() {
           <MiniStat label="Unsent estimates" value="0" />
         </div>
 
-        <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-3">
+        <div className="rounded-lg border border-white/8 bg-white/2 p-3">
           <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
             Dispatch: today
           </p>
@@ -79,12 +79,12 @@ export function DispatchBoardVisual() {
             {TECH_ROWS.map((t) => (
               <div key={t.name} className="flex items-center gap-2.5">
                 <span className="w-20 shrink-0 truncate text-[0.72rem] sm:text-[0.62rem] text-white/55">{t.name}</span>
-                <div className="relative h-5 flex-1 rounded bg-white/[0.04]">
+                <div className="relative h-5 flex-1 rounded-sm bg-white/4">
                   {t.jobs.map((j) => (
                     <span
                       key={j.label}
                       style={{ width: j.w, left: j.l }}
-                      className="absolute top-0 flex h-5 items-center overflow-hidden rounded border border-crimson/40 bg-crimson/20 px-1.5 text-[0.7rem] sm:text-[0.52rem] text-white/80"
+                      className="absolute top-0 flex h-5 items-center overflow-hidden rounded-sm border border-crimson/40 bg-crimson/20 px-1.5 text-[0.7rem] sm:text-[0.52rem] text-white/80"
                     >
                       <span className="truncate">{j.label}</span>
                     </span>
@@ -128,7 +128,7 @@ export function TreatmentRoomScheduleVisual() {
 
         <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
           {TREATMENT_ROOMS.map((op) => (
-            <div key={op.name} className="w-[62%] shrink-0 snap-start rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5 sm:w-auto">
+            <div key={op.name} className="w-[62%] shrink-0 snap-start rounded-lg border border-white/8 bg-white/2 p-2.5 sm:w-auto">
               <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">{op.name}</p>
               <div className="mt-2 space-y-1.5">
                 {op.slots.map((s, i) => (
@@ -136,7 +136,7 @@ export function TreatmentRoomScheduleVisual() {
                     key={i}
                     className={`rounded border px-1.5 py-1 text-[0.7rem] sm:text-[0.55rem] ${
                       s.tone === "confirmed"
-                        ? "border-white/10 bg-white/[0.05] text-white/70"
+                        ? "border-white/10 bg-white/5 text-white/70"
                         : s.tone === "risk"
                           ? "border-crimson/40 bg-crimson/15 text-crimson-light"
                           : "border-dashed border-white/15 bg-transparent text-white/35"
@@ -208,7 +208,7 @@ export function ListingPipelineVisual() {
 
         <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-1 pb-1 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
           {LISTING_COLUMNS.map((col) => (
-            <div key={col.name} className="w-[62%] shrink-0 snap-start rounded-lg border border-white/[0.08] bg-white/[0.02] p-2.5 sm:w-auto">
+            <div key={col.name} className="w-[62%] shrink-0 snap-start rounded-lg border border-white/8 bg-white/2 p-2.5 sm:w-auto">
               <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">{col.name}</p>
               <div className="mt-2 space-y-1.5">
                 {col.files.map((f) => (
@@ -216,7 +216,7 @@ export function ListingPipelineVisual() {
                     key={f.address}
                     className={`rounded border px-1.5 py-1 text-[0.7rem] sm:text-[0.55rem] ${
                       f.tone === "normal"
-                        ? "border-white/10 bg-white/[0.05] text-white/70"
+                        ? "border-white/10 bg-white/5 text-white/70"
                         : f.tone === "risk"
                           ? "border-crimson/40 bg-crimson/15 text-crimson-light"
                           : "border-dashed border-white/15 bg-transparent text-white/35"

@@ -132,7 +132,7 @@ function Table({
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-white/10 font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+          <tr className="border-b border-white/10 text-xs font-medium uppercase tracking-wide text-white/60">
             {headers.map((h) => (
               <th key={h} className="px-4 py-3 font-medium">
                 {h}
@@ -140,9 +140,9 @@ function Table({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.06] align-top">
+        <tbody className="divide-y divide-white/6 align-top">
           {rows.map((cells, i) => (
-            <tr key={i} className="hover:bg-white/[0.015]">
+            <tr key={i} className="hover:bg-white/1.5">
               {cells.map((cell, j) => (
                 <td key={j} className="px-4 py-3">
                   {cell}
@@ -220,7 +220,7 @@ export function LifecycleAdminPanel() {
               setClientId(null);
             }}
             className={`relative shrink-0 whitespace-nowrap px-3.5 py-2.5 text-sm transition ${
-              section === s.id ? "text-white" : "text-white/45 hover:text-white/75"
+              section === s.id ? "text-white" : "text-white/65 hover:text-white/75"
             }`}
           >
             {s.label}
@@ -265,7 +265,7 @@ function Loading({ error }: { error: string | null }) {
       {error}
     </Banner>
   ) : (
-    <p className="py-10 text-center text-sm text-white/40">Loading…</p>
+    <p className="py-10 text-center text-sm text-white/60">Loading…</p>
   );
 }
 
@@ -331,12 +331,12 @@ function Pipeline() {
             const lead = o.lead_id ? leads[o.lead_id] : null;
             return [
               <span key="n" className="text-white/85">{o.name}</span>,
-              <span key="c" className="text-xs text-white/50">
+              <span key="c" className="text-xs text-white/65">
                 {lead ? `${lead.name} · ${lead.email}` : "-"}
               </span>,
               <select
                 key="stage"
-                className={`${inputClass(false)} !w-auto !px-2 !py-1.5 text-xs`}
+                className={`${inputClass(false)} w-auto! px-2! py-1.5! text-xs`}
                 value={o.stage}
                 onChange={async (e) => {
                   try {
@@ -483,7 +483,7 @@ function Proposals() {
           rows={(data.proposals as AnyRecord[]).map((p) => [
             <div key="t">
               <span className="text-white/85">{p.title}</span>
-              <span className="ml-2 font-mono text-[0.55rem] text-white/30">v{p.version}</span>
+              <span className="ml-2 font-mono text-[0.6875rem] text-white/60">v{p.version}</span>
             </div>,
             <StatusPill key="s" status={p.status} />,
             formatCents(p.total_cents),
@@ -516,7 +516,7 @@ function Proposals() {
                 />
               )}
               <a
-                className="text-xs text-white/45 underline underline-offset-4 hover:text-white"
+                className="text-xs text-white/65 underline underline-offset-4 hover:text-white"
                 href={`/proposals/${p.token}`}
                 target="_blank"
                 rel="noreferrer"
@@ -656,7 +656,7 @@ function Contracts() {
               />
             )}
             <a
-              className="text-xs text-white/45 underline underline-offset-4 hover:text-white"
+              className="text-xs text-white/65 underline underline-offset-4 hover:text-white"
               href={`/agreement/${c.token}`}
               target="_blank"
               rel="noreferrer"
@@ -708,7 +708,7 @@ function Billing() {
                 </>
               )}
               <a
-                className="text-xs text-white/45 underline underline-offset-4 hover:text-white"
+                className="text-xs text-white/65 underline underline-offset-4 hover:text-white"
                 href={`/pay/${i.token}`}
                 target="_blank"
                 rel="noreferrer"
@@ -729,7 +729,7 @@ function Billing() {
                 Respond within
                 <input
                   type="number"
-                  className={`${inputClass(false)} !w-24 !px-2 !py-1.5 text-xs`}
+                  className={`${inputClass(false)} w-24! px-2! py-1.5! text-xs`}
                   defaultValue={p.target_response_minutes}
                   onBlur={(e) =>
                     void run("update_sla", {
@@ -784,7 +784,7 @@ function Billing() {
           </Button>
         }
       >
-        <p className="mb-4 text-xs leading-relaxed text-white/50">
+        <p className="mb-4 text-xs leading-relaxed text-white/65">
           For bank transfers, checks, or other offline payments. Record the
           amount and a reference, never card numbers. If this completes a
           deposit, portal activation and project creation run automatically.
@@ -819,7 +819,7 @@ function Clients({ onOpen }: { onOpen: (id: string) => void }) {
         rows={(data.clients as AnyRecord[]).map((c) => [
           <span key="c" className="text-white/85">{c.company}</span>,
           c.name,
-          <span key="e" className="text-xs text-white/50">{c.email}</span>,
+          <span key="e" className="text-xs text-white/65">{c.email}</span>,
           <button
             key="o"
             className="text-xs text-crimson-light underline underline-offset-4 hover:text-white"
@@ -864,11 +864,11 @@ function ClientRecord({ clientId, onBack }: { clientId: string; onBack: () => vo
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+          <p className="text-xs font-medium uppercase tracking-wide text-white/60">
             Unified client record
           </p>
           <h3 className="font-display text-lg text-white">
-            {data.client.company} <span className="text-white/40">· {data.client.name}</span>
+            {data.client.company} <span className="text-white/60">· {data.client.name}</span>
           </h3>
         </div>
         <Button variant="ghost" onClick={onBack}>
@@ -879,14 +879,14 @@ function ClientRecord({ clientId, onBack }: { clientId: string; onBack: () => vo
         {blocks.map((b) => (
           <SectionCard key={b.title} title={`${b.title} (${b.rows.length})`}>
             {b.rows.length === 0 ? (
-              <p className="text-xs text-white/35">None.</p>
+              <p className="text-xs text-white/60">None.</p>
             ) : (
               <ul className="space-y-1.5 text-xs text-white/65">
                 {b.rows.slice(0, 8).map((r, i) => (
                   <li key={i}>{b.render(r)}</li>
                 ))}
                 {b.rows.length > 8 && (
-                  <li className="text-white/35">…and {b.rows.length - 8} more</li>
+                  <li className="text-white/60">…and {b.rows.length - 8} more</li>
                 )}
               </ul>
             )}
@@ -894,14 +894,14 @@ function ClientRecord({ clientId, onBack }: { clientId: string; onBack: () => vo
         ))}
       </div>
       <SectionCard title="Complete history" padded={false}>
-        <ul className="max-h-96 divide-y divide-white/[0.06] overflow-y-auto">
+        <ul className="max-h-96 divide-y divide-white/6 overflow-y-auto">
           {(data.activity as AnyRecord[]).map((a) => (
             <li key={a.id} className="flex justify-between gap-4 px-5 py-2.5 text-xs">
               <span className="text-white/70">
-                <span className="text-white/35">{a.actor_name || a.actor_type}: </span>
+                <span className="text-white/60">{a.actor_name || a.actor_type}: </span>
                 {a.action}
               </span>
-              <span className="shrink-0 text-white/30">{fmtDate(a.created_at, true)}</span>
+              <span className="shrink-0 text-white/60">{fmtDate(a.created_at, true)}</span>
             </li>
           ))}
         </ul>
@@ -949,7 +949,7 @@ function ProjectDetail({ id, onBack }: { id: string; onBack: () => void }) {
       <div className="flex items-center justify-between">
         <h3 className="font-display text-lg text-white">
           {data.project.name}{" "}
-          <span className="font-mono text-xs text-white/40">{data.project.code}</span>
+          <span className="font-mono text-xs text-white/60">{data.project.code}</span>
         </h3>
         <Button variant="ghost" onClick={onBack}>
           Back
@@ -963,13 +963,13 @@ function ProjectDetail({ id, onBack }: { id: string; onBack: () => void }) {
             <div key="m">
               <span className="text-white/85">{m.name}</span>
               {m.client_action && (
-                <p className="mt-0.5 text-[0.65rem] text-white/40">Client: {m.client_action}</p>
+                <p className="mt-0.5 text-xs text-white/60">Client: {m.client_action}</p>
               )}
             </div>,
             m.owner_party,
             <select
               key="st"
-              className={`${inputClass(false)} !w-auto !px-2 !py-1.5 text-xs`}
+              className={`${inputClass(false)} w-auto! px-2! py-1.5! text-xs`}
               value={m.status}
               onChange={async (e) => {
                 try {
@@ -1165,13 +1165,13 @@ function ThreadModal({
               key={m.id}
               className={`border px-3.5 py-2.5 ${
                 m.internal
-                  ? "border-amber-400/25 bg-amber-400/[0.04]"
+                  ? "border-amber-400/25 bg-amber-400/4"
                   : m.author_type === "admin"
-                    ? "border-crimson/25 bg-crimson/[0.05]"
-                    : "border-white/10 bg-white/[0.02]"
+                    ? "border-crimson/25 bg-crimson/5"
+                    : "border-white/10 bg-white/2"
               }`}
             >
-              <p className="text-[0.65rem] text-white/35">
+              <p className="text-xs text-white/60">
                 {m.author_name || m.author_type}
                 {m.internal && " · internal note"} · {fmtDate(m.created_at, true)}
               </p>
@@ -1179,7 +1179,7 @@ function ThreadModal({
             </div>
           ))}
           {(data.messages as AnyRecord[]).length === 0 && (
-            <p className="text-center text-xs text-white/35">No messages yet.</p>
+            <p className="text-center text-xs text-white/60">No messages yet.</p>
           )}
           <div className="border-t border-white/10 pt-3">
             <textarea
@@ -1190,7 +1190,7 @@ function ThreadModal({
               onChange={(e) => setBody(e.target.value)}
             />
             <div className="mt-2 flex items-center justify-between">
-              <label className="flex items-center gap-2 text-xs text-white/50">
+              <label className="flex items-center gap-2 text-xs text-white/65">
                 <input
                   type="checkbox"
                   className="accent-crimson"
@@ -1466,12 +1466,12 @@ function Automations() {
           rows={(data.settings as AnyRecord[]).map((s) => [
             <div key="l">
               <span className="text-white/85">{s.label ?? s.id}</span>
-              <p className="mt-0.5 text-[0.65rem] text-white/40">{s.description ?? ""}</p>
+              <p className="mt-0.5 text-xs text-white/60">{s.description ?? ""}</p>
             </div>,
             <span key="t" className="text-xs text-white/55">{s.trigger ?? "-"}</span>,
             <select
               key="c"
-              className={`${inputClass(false)} !w-auto !px-2 !py-1.5 text-xs`}
+              className={`${inputClass(false)} w-auto! px-2! py-1.5! text-xs`}
               defaultValue={s.channel}
               onChange={(e) =>
                 void run("update_automation", { id: s.id, channel: e.target.value }).catch(() => {})
@@ -1485,7 +1485,7 @@ function Automations() {
             <input
               key="d"
               type="number"
-              className={`${inputClass(false)} !w-20 !px-2 !py-1.5 text-xs`}
+              className={`${inputClass(false)} w-20! px-2! py-1.5! text-xs`}
               defaultValue={s.delay_minutes}
               onBlur={(e) =>
                 void run("update_automation", { id: s.id, delayMinutes: Number(e.target.value) }).catch(
@@ -1511,7 +1511,7 @@ function Automations() {
           empty="No automation runs yet."
           rows={(data.runs as AnyRecord[]).map((r) => [
             r.automation_key,
-            <span key="e" className="font-mono text-[0.6rem] text-white/40">
+            <span key="e" className="font-mono text-xs text-white/60">
               {r.entity_type}:{String(r.entity_id).slice(0, 8)}
             </span>,
             <StatusPill key="s" status={r.status === "completed" ? "completed" : r.status} />,
@@ -1539,18 +1539,18 @@ function Activity() {
   if (loading || error || !data) return <Loading error={error} />;
   return (
     <SectionCard title="Lifecycle activity" padded={false}>
-      <ul className="divide-y divide-white/[0.06]">
+      <ul className="divide-y divide-white/6">
         {(data.activity as AnyRecord[]).map((a) => (
           <li key={a.id} className="flex justify-between gap-4 px-5 py-2.5 text-xs">
             <span className="text-white/70">
-              <span className="text-white/35">{a.actor_name || a.actor_type}: </span>
+              <span className="text-white/60">{a.actor_name || a.actor_type}: </span>
               {a.action}
             </span>
-            <span className="shrink-0 text-white/30">{fmtDate(a.created_at, true)}</span>
+            <span className="shrink-0 text-white/60">{fmtDate(a.created_at, true)}</span>
           </li>
         ))}
         {(data.activity as AnyRecord[]).length === 0 && (
-          <li className="px-5 py-8 text-center text-white/35">No activity yet.</li>
+          <li className="px-5 py-8 text-center text-white/60">No activity yet.</li>
         )}
       </ul>
     </SectionCard>

@@ -5,7 +5,7 @@ import { useId, type ReactNode } from "react";
 /** Shared presentational pieces for the simplified booking funnel. */
 
 export function inputClass(error?: boolean) {
-  return `w-full border bg-white/[0.03] px-4 py-3.5 text-base text-white outline-none transition focus:border-crimson/60 focus-visible:ring-1 focus-visible:ring-crimson/50 ${
+  return `w-full border bg-white/3 px-4 py-3.5 text-base text-white outline-hidden transition focus:border-crimson/60 focus-visible:ring-1 focus-visible:ring-crimson/50 ${
     error ? "border-crimson/70" : "border-white/15"
   }`;
 }
@@ -57,10 +57,10 @@ export function OptionCard({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`min-h-[64px] border px-5 py-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+      className={`min-h-[64px] border px-5 py-4 text-left transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
         selected
           ? "border-crimson/70 bg-crimson/10"
-          : "border-white/10 bg-white/[0.02] hover:border-white/30"
+          : "border-white/10 bg-white/2 hover:border-white/30"
       }`}
     >
       <span className="block text-[0.95rem] font-medium text-white">
@@ -160,7 +160,7 @@ export function ChoiceChips({
                 onChange(active ? "" : o);
               }
             }}
-            className={`min-h-11 border px-3.5 py-2 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+            className={`min-h-11 border px-3.5 py-2 text-sm transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
               active
                 ? "border-crimson/70 bg-crimson/10 text-white"
                 : "border-white/15 text-white/70 hover:border-white/35"
@@ -183,8 +183,8 @@ export function Expandable({
   children: ReactNode;
 }) {
   return (
-    <details className="group border border-white/10 bg-white/[0.02]">
-      <summary className="cursor-pointer select-none list-none px-5 py-4 text-sm font-medium text-white/70 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 [&::-webkit-details-marker]:hidden">
+    <details className="group border border-white/10 bg-white/2">
+      <summary className="cursor-pointer select-none list-none px-5 py-4 text-sm font-medium text-white/70 transition hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 [&::-webkit-details-marker]:hidden">
         <span className="mr-2 inline-block transition-transform group-open:rotate-90">
           ›
         </span>

@@ -8,21 +8,21 @@ import { PHONE_TEL, SITE_URL } from "@/lib/site";
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-sans",
+  variable: "--font-inter",
 });
 
 // Techy geometric display
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-display",
+  variable: "--font-space-grotesk",
 });
 
 // Mono for labels, indices, data microtype
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-mono",
+  variable: "--font-jetbrains-mono",
 });
 
 export const viewport: Viewport = {

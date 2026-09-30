@@ -91,12 +91,12 @@ export function PortalShell({
             <Link
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+              className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
                 dense ? "py-2" : "py-2.5"
               } ${
                 active
-                  ? "bg-white/[0.06] text-white"
-                  : "text-white/55 hover:bg-white/[0.03] hover:text-white/85"
+                  ? "bg-white/6 text-white"
+                  : "text-white/55 hover:bg-white/3 hover:text-white/85"
               }`}
             >
               <Icon
@@ -128,7 +128,7 @@ export function PortalShell({
         <IconButton
           type="submit"
           aria-label="Sign out"
-          className="rounded-lg text-white/45 hover:bg-white/[0.04] hover:text-white"
+          className="rounded-lg text-white/45 hover:bg-white/4 hover:text-white"
         >
           <LogOut size={16} aria-hidden />
         </IconButton>
@@ -141,7 +141,7 @@ export function PortalShell({
       {/* Ambient background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="bg-grid absolute inset-0 opacity-40" />
-        <div className="absolute -top-32 right-0 h-96 w-96 rounded-full bg-crimson/[0.08] blur-3xl" />
+        <div className="absolute -top-32 right-0 h-96 w-96 rounded-full bg-crimson/8 blur-3xl" />
       </div>
 
       <div className="relative lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
@@ -217,7 +217,7 @@ function Drawer({
 
   return (
     <div
-      className="dialog-backdrop fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden"
+      className="dialog-backdrop fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden"
       onPointerDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -229,7 +229,7 @@ function Drawer({
         aria-modal="true"
         aria-label="Portal navigation"
         tabIndex={-1}
-        className="dialog-panel flex h-dvh w-[min(20rem,85vw)] flex-col border-r border-white/10 bg-base-900 outline-none"
+        className="dialog-panel flex h-dvh w-[min(20rem,85vw)] flex-col border-r border-white/10 bg-base-900 outline-hidden"
       >
         <div className="flex h-14 items-center justify-between gap-3 pl-4 pr-1">
           <div className="flex min-w-0 items-center gap-3">

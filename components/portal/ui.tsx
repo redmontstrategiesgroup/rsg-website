@@ -18,7 +18,7 @@ import { ScrollRail } from "@/components/ui/ScrollRail";
 export type Tone = "neutral" | "info" | "success" | "warning" | "danger" | "progress";
 
 const TONE_CLASSES: Record<Tone, string> = {
-  neutral: "bg-white/[0.06] text-white/55",
+  neutral: "bg-white/6 text-white/55",
   info: "bg-sky-400/10 text-sky-300",
   success: "bg-emerald-400/10 text-emerald-300",
   warning: "bg-amber-400/10 text-amber-300",
@@ -297,7 +297,7 @@ export function EmptyState({
 }
 
 export function Skeleton({ className = "h-4 w-full" }: { className?: string }) {
-  return <div className={`animate-pulse rounded bg-white/[0.06] ${className}`} />;
+  return <div className={`animate-pulse rounded-sm bg-white/6 ${className}`} />;
 }
 
 export function SkeletonCard({ lines = 3 }: { lines?: number }) {
@@ -329,7 +329,7 @@ export function Banner({
           ? "border-emerald-400/30"
           : "border-white/15";
   return (
-    <div className={`border ${border} bg-white/[0.02] px-4 py-3.5`} role={tone === "danger" ? "alert" : undefined}>
+    <div className={`border ${border} bg-white/2 px-4 py-3.5`} role={tone === "danger" ? "alert" : undefined}>
       {title && <p className="text-sm font-medium text-white">{title}</p>}
       {children && (
         <div className={`text-xs leading-relaxed text-white/55 ${title ? "mt-1" : ""}`}>
@@ -369,7 +369,7 @@ export function TimelineItem({
         ? "border-crimson bg-crimson/30 shadow-glow-sm"
         : status === "warning"
           ? "border-amber-400/60 bg-amber-400/20"
-          : "border-white/20 bg-white/[0.04]";
+          : "border-white/20 bg-white/4";
   return (
     <li className="relative flex gap-4 pb-8 last:pb-0">
       {!last && (
@@ -411,7 +411,7 @@ export function Avatar({ name }: { name: string }) {
     .map((p) => p[0]?.toUpperCase() ?? "")
     .join("");
   return (
-    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] font-mono text-[0.6rem] text-white/70">
+    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/4 font-mono text-[0.6rem] text-white/70">
       {initials || "•"}
     </span>
   );
@@ -442,13 +442,13 @@ export function TabBar<T extends string>({
             role="tab"
             aria-selected={isActive}
             onClick={() => onSelect(t.id)}
-            className={`relative shrink-0 whitespace-nowrap px-4 py-3 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+            className={`relative shrink-0 whitespace-nowrap px-4 py-3 text-sm transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
               isActive ? "text-white" : "text-white/45 hover:text-white/75"
             }`}
           >
             {t.label}
             {typeof t.count === "number" && t.count > 0 && (
-              <span className="ml-2 rounded-full bg-white/[0.08] px-1.5 py-0.5 font-mono text-[0.55rem] text-white/60">
+              <span className="ml-2 rounded-full bg-white/8 px-1.5 py-0.5 font-mono text-[0.55rem] text-white/60">
                 {t.count}
               </span>
             )}
@@ -528,7 +528,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled || busy}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50 ${styles} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base disabled:cursor-not-allowed disabled:opacity-50 ${styles} ${className}`}
     >
       {busy && (
         <span
@@ -607,7 +607,7 @@ export function InfoTip({ text }: { text: string }) {
           setOpen((v) => !v);
         }}
         onFocus={place}
-        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full text-white/50 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60"
+        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full text-white/50 transition hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60"
       >
         <span
           aria-hidden="true"

@@ -182,7 +182,7 @@ export function ConnectPageView({
             height={96}
           />
           {settings.badgeLabel ? (
-            <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-[0.54rem] uppercase tracking-label text-crimson-light">
+            <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/3 px-3 py-1 font-mono text-[0.54rem] uppercase tracking-label text-crimson-light">
               <ShieldCheck size={12} aria-hidden />
               {settings.badgeLabel}
             </p>
@@ -226,7 +226,7 @@ export function ConnectPageView({
             <Link
               href={campaignHref}
               onClick={() => track("campaign_click", "campaign")}
-              className="block rounded-xl border border-crimson/35 bg-crimson/[0.08] p-4 transition-colors hover:border-crimson/55 hover:bg-crimson/[0.12]"
+              className="block rounded-xl border border-crimson/35 bg-crimson/8 p-4 transition-colors hover:border-crimson/55 hover:bg-crimson/12"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -282,11 +282,11 @@ export function ConnectPageView({
                   onClick={() => track("link_click", link.id)}
                   className={`group flex items-start gap-3.5 rounded-xl border p-4 transition-colors ${
                     link.featured
-                      ? "border-white/18 bg-white/[0.045] hover:border-white/28"
-                      : "border-white/10 bg-white/[0.025] hover:border-white/20 hover:bg-white/[0.04]"
+                      ? "border-white/18 bg-white/4.5 hover:border-white/28"
+                      : "border-white/10 bg-white/2.5 hover:border-white/20 hover:bg-white/4"
                   }`}
                 >
-                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-crimson-light">
+                  <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-crimson-light">
                     <Icon size={17} aria-hidden />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -295,7 +295,7 @@ export function ConnectPageView({
                         {link.title}
                       </span>
                       {link.badge ? (
-                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-label text-white/50">
+                        <span className="rounded-full border border-white/10 bg-white/4 px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-label text-white/50">
                           {link.badge}
                         </span>
                       ) : null}
@@ -361,7 +361,7 @@ function SocialRow({ settings }: { settings: ConnectSettings }) {
           href={item.href}
           target={item.href.startsWith("http") ? "_blank" : undefined}
           rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-          className="inline-flex min-h-11 items-center rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-xs text-white/55 transition-colors hover:border-white/25 hover:text-white lg:min-h-0"
+          className="inline-flex min-h-11 items-center rounded-full border border-white/10 bg-white/3 px-3.5 py-1.5 text-xs text-white/55 transition-colors hover:border-white/25 hover:text-white lg:min-h-0"
         >
           {item.label}
         </a>

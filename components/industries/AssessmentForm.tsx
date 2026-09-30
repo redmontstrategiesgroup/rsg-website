@@ -76,7 +76,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
   }
 
   return (
-    <section id="assessment" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
+    <section id="assessment" className="scroll-mt-24 border-y border-white/8 bg-base-900">
       <div className="container-px section-y">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
           <div className="lg:col-span-4">
@@ -143,7 +143,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                               id={`aq-${vertical.slug}-${q.id}`}
                               value={answers[q.id] ?? ""}
                               onChange={(e) => setAnswer(q.id, e.target.value)}
-                              className="mt-2 w-full rounded-lg border border-white/12 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white/85 focus:border-crimson/60 focus:outline-none"
+                              className="mt-2 w-full rounded-lg border border-white/35 bg-white/3 px-3.5 py-2.5 text-sm text-white/85 focus:border-crimson/60 focus:outline-hidden"
                             >
                               <option value="" disabled>
                                 Select…
@@ -163,7 +163,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                               placeholder={q.placeholder}
                               maxLength={300}
                               onChange={(e) => setAnswer(q.id, e.target.value)}
-                              className="mt-2 w-full rounded-lg border border-white/12 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none"
+                              className="mt-2 w-full rounded-lg border border-white/35 bg-white/3 px-3.5 py-2.5 text-sm text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-hidden"
                             />
                           )}
                           {q.helper && (
@@ -203,7 +203,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                       />
                     </div>
                     {/* Honeypot: invisible to humans */}
-                    <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
+                    <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
                       <label>
                         Leave this field empty
                         <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
@@ -254,7 +254,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                 )}
 
                 {step < 3 && (
-                  <div className="mt-9 flex items-center justify-between border-t border-white/[0.08] pt-6">
+                  <div className="mt-9 flex items-center justify-between border-t border-white/8 pt-6">
                     {step > 0 ? (
                       <button
                         type="button"
@@ -342,7 +342,7 @@ function ContactField({
         inputMode={inputMode}
         maxLength={200}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-lg border border-white/12 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white/85 focus:border-crimson/60 focus:outline-none"
+        className="mt-2 w-full rounded-lg border border-white/35 bg-white/3 px-3.5 py-2.5 text-sm text-white/85 focus:border-crimson/60 focus:outline-hidden"
       />
     </div>
   );

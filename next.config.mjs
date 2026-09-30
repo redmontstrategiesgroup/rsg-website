@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -112,6 +112,9 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
+      // Pocket plays recordings back from signed URLs: Supabase Storage for
+      // uploads, Pocket's pre-signed S3 URLs for synced recordings.
+      "media-src 'self' blob: https://*.supabase.co https://*.amazonaws.com",
       "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.resend.com https://*.ingest.sentry.io https://*.sentry.io https://challenges.cloudflare.com",
       "frame-src 'self' https://challenges.cloudflare.com",
       "frame-ancestors 'none'",
@@ -168,7 +171,12 @@ export default sentryEnabled
       project: process.env.SENTRY_PROJECT,
       silent: !process.env.CI,
       widenClientFileUpload: true,
-      disableLogger: true,
-      automaticVercelMonitors: true,
+      // Builds run on Turbopack (Next 16 default); the webpack block only
+      // applies if a build is ever forced onto webpack.
+      _experimental: { vercelCronsMonitoring: true },
+      webpack: {
+        treeshake: { removeDebugLogging: true },
+        automaticVercelMonitors: true,
+      },
     })
   : nextConfig;

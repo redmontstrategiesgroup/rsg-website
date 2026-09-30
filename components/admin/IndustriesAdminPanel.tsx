@@ -69,7 +69,7 @@ export function IndustriesAdminPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-3 py-16 text-sm text-white/50">
+      <div className="flex items-center gap-3 py-16 text-sm text-white/65">
         <Loader2 size={16} className="animate-spin" /> Loading industry content…
       </div>
     );
@@ -90,8 +90,8 @@ export function IndustriesAdminPanel() {
               onClick={() => setActiveSlug(r.vertical.slug)}
               className={`inline-flex items-center gap-2.5 rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                 active
-                  ? "border-crimson/50 bg-crimson/[0.08] text-white"
-                  : "border-white/10 bg-white/[0.02] text-white/55 hover:border-white/25"
+                  ? "border-crimson/50 bg-crimson/8 text-white"
+                  : "border-white/10 bg-white/2 text-white/55 hover:border-white/25"
               }`}
             >
               {r.vertical.shortName}
@@ -130,7 +130,7 @@ function StatusChip({
   const published = vertical.status === "published";
   return (
     <span
-      className={`rounded-full border px-2 py-0.5 font-mono text-[0.52rem] uppercase tracking-label ${
+      className={`rounded-full border px-2 py-0.5 text-xs font-medium uppercase tracking-wide ${
         published
           ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
           : "border-amber-400/30 bg-amber-400/10 text-amber-300"
@@ -219,10 +219,10 @@ function VerticalEditor({
     <div className="grid gap-8 lg:grid-cols-12">
       {/* Editor column */}
       <div className="space-y-4 lg:col-span-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/2 px-5 py-4">
           <div>
             <p className="font-display text-lg text-white">{draft.name}</p>
-            <p className="mt-0.5 font-mono text-[0.58rem] uppercase tracking-label text-white/35">
+            <p className="mt-0.5 text-xs font-medium uppercase tracking-wide text-white/60">
               /industries/{draft.slug} · demo /demos/{draft.demoSlug}
             </p>
           </div>
@@ -232,7 +232,7 @@ function VerticalEditor({
               <select
                 value={draft.status}
                 onChange={(e) => update({ status: e.target.value as IndustryVertical["status"] })}
-                className="rounded-lg border border-white/12 bg-white/[0.03] px-3 py-2 text-sm text-white/85 focus:border-crimson/60 focus:outline-none"
+                className="rounded-lg border border-white/35 bg-white/3 px-3 py-2 text-sm text-white/85 focus:border-crimson/60 focus:outline-hidden"
               >
                 <option value="draft">Draft (hidden, noindex)</option>
                 <option value="published" disabled={!completeness.complete}>
@@ -253,7 +253,7 @@ function VerticalEditor({
               type="button"
               onClick={save}
               disabled={!dirty || saving || resetting}
-              className="btn-primary !px-4 !py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+              className="btn-primary px-4! py-2! text-sm disabled:cursor-not-allowed disabled:opacity-40"
             >
               {saving ? <Loader2 size={14} className="mr-2 animate-spin" /> : <Save size={14} className="mr-2" />}
               Save changes
@@ -289,13 +289,13 @@ function VerticalEditor({
 
       {/* Completeness column */}
       <div className="lg:col-span-4">
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6 lg:sticky lg:top-28">
+        <div className="rounded-xl border border-white/10 bg-white/2 p-6 lg:sticky lg:top-28">
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/35">
+            <p className="text-xs font-medium uppercase tracking-wide text-white/60">
               Content completeness
             </p>
             <span
-              className={`font-mono text-[0.58rem] uppercase tracking-label ${
+              className={`text-xs font-medium uppercase tracking-wide ${
                 completeness.complete ? "text-emerald-300" : "text-amber-300"
               }`}
             >
@@ -317,14 +317,14 @@ function VerticalEditor({
                     {c.label}
                   </p>
                   {!c.ok && (
-                    <p className="mt-0.5 text-[0.68rem] leading-relaxed text-white/40">{c.detail}</p>
+                    <p className="mt-0.5 text-[0.68rem] leading-relaxed text-white/60">{c.detail}</p>
                   )}
                 </div>
               </li>
             ))}
           </ul>
           {!completeness.complete && (
-            <p className="mt-5 flex items-start gap-2 border-t border-white/[0.08] pt-4 text-[0.72rem] leading-relaxed text-amber-300/80">
+            <p className="mt-5 flex items-start gap-2 border-t border-white/8 pt-4 text-[0.72rem] leading-relaxed text-amber-300/80">
               <AlertTriangle size={13} className="mt-0.5 shrink-0" />
               Publishing is blocked until every check passes; the page stays in draft (404 +
               noindex) meanwhile.
@@ -374,41 +374,41 @@ function SectionEditor({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-white/2">
       <button
         type="button"
         onClick={() => (open ? setOpen(false) : openEditor())}
-        className="flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-white/[0.02]"
+        className="flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-white/2"
         aria-expanded={open}
       >
         <span>
           <span className="text-sm font-medium text-white/80">{label}</span>
-          <span className="ml-3 hidden text-[0.72rem] text-white/35 sm:inline">{hint}</span>
+          <span className="ml-3 hidden text-[0.72rem] text-white/60 sm:inline">{hint}</span>
         </span>
         <ChevronDown
           size={15}
-          className={`shrink-0 text-white/35 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`shrink-0 text-white/60 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && (
-        <div className="border-t border-white/[0.08] p-4">
+        <div className="border-t border-white/8 p-4">
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             spellCheck={false}
             rows={Math.min(24, Math.max(6, text.split("\n").length + 1))}
-            className="w-full rounded-lg border border-white/12 bg-base/80 p-3 font-mono text-[0.72rem] leading-relaxed text-white/80 focus:border-crimson/60 focus:outline-none"
+            className="w-full rounded-lg border border-white/35 bg-base/80 p-3 font-mono text-[0.72rem] leading-relaxed text-white/80 focus:border-crimson/60 focus:outline-hidden"
           />
           {parseError && <p className="mt-2 text-[0.72rem] text-crimson-light">{parseError}</p>}
           <div className="mt-3 flex justify-end gap-3">
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="text-sm text-white/45 transition-colors hover:text-white"
+              className="text-sm text-white/65 transition-colors hover:text-white"
             >
               Cancel
             </button>
-            <button type="button" onClick={apply} className="btn-primary !px-4 !py-2 text-sm">
+            <button type="button" onClick={apply} className="btn-primary px-4! py-2! text-sm">
               Apply to draft
             </button>
           </div>

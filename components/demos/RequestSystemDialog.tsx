@@ -241,7 +241,7 @@ export function RequestSystemDialog({
         <p
           ref={stepHeadingRef}
           tabIndex={-1}
-          className="text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40 outline-none"
+          className="text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40 outline-hidden"
         >
           Step {step} of 2: {step === 1 ? "what you need" : "how to reach you"}
         </p>
@@ -256,7 +256,7 @@ export function RequestSystemDialog({
         {step === 1 && (
           <div className="space-y-4">
             {/* Demo context: visible and editable, never silently attached */}
-            <div className="rounded-lg border border-crimson/20 bg-crimson/[0.05] px-3.5 py-3">
+            <div className="rounded-lg border border-crimson/20 bg-crimson/5 px-3.5 py-3">
               <p className="text-[0.62rem] font-medium uppercase tracking-[0.16em] text-crimson-light/90">
                 Your demo session
               </p>
@@ -289,15 +289,15 @@ export function RequestSystemDialog({
                     key={s}
                     className={`flex cursor-pointer items-center gap-2.5 rounded border px-3 py-2 text-xs transition-colors ${
                       services.includes(s)
-                        ? "border-crimson/50 bg-crimson/[0.08] text-white/90"
-                        : "border-white/10 bg-white/[0.02] text-white/60 hover:border-white/25"
+                        ? "border-crimson/50 bg-crimson/8 text-white/90"
+                        : "border-white/10 bg-white/2 text-white/60 hover:border-white/25"
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={services.includes(s)}
                       onChange={() => toggleService(s)}
-                      className="h-3.5 w-3.5 rounded border-white/20 bg-base-900 accent-[#b3243a]"
+                      className="h-3.5 w-3.5 rounded-sm border-white/20 bg-base-900 accent-crimson"
                     />
                     {s}
                   </label>
@@ -330,7 +330,7 @@ export function RequestSystemDialog({
               helper="Optional: current tools, bottlenecks, goals…"
             />
 
-            <div className="flex items-center justify-between gap-2 border-t border-white/[0.06] pt-3">
+            <div className="flex items-center justify-between gap-2 border-t border-white/6 pt-3">
               <SmallButton onClick={onClose}>Cancel</SmallButton>
               <button type="button" onClick={() => setStep(2)} className="btn-primary px-5 py-2.5 text-xs">
                 Continue
@@ -347,7 +347,7 @@ export function RequestSystemDialog({
                 ref={errorSummaryRef}
                 tabIndex={-1}
                 role="alert"
-                className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300/90 outline-none"
+                className="rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300/90 outline-hidden"
               >
                 Please fix the highlighted fields below, then send again.
               </p>
@@ -382,7 +382,7 @@ export function RequestSystemDialog({
                   value={preferredDate}
                   min={todayIso}
                   onChange={(e) => setPreferredDate(e.target.value)}
-                  className="w-full rounded border border-white/12 bg-base-900 px-3 py-2 text-xs text-white/85 [color-scheme:dark] focus:border-crimson/60 focus:outline-none focus:ring-1 focus:ring-crimson/40"
+                  className="w-full rounded-sm border border-white/35 bg-base-900 px-3 py-2 text-xs text-white/85 scheme-dark focus:border-crimson/60 focus:outline-hidden focus:ring-1 focus:ring-crimson/40"
                 />
               </Field>
               <SelectInput
@@ -394,7 +394,7 @@ export function RequestSystemDialog({
             </div>
 
             {/* Honeypot: hidden from real users, catches naive bots */}
-            <div className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+            <div className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
               <label>
                 Leave this field empty
                 <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
@@ -412,12 +412,12 @@ export function RequestSystemDialog({
             </div>
 
             {status === "error" && (
-              <p role="alert" className="rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300/90">
+              <p role="alert" className="rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300/90">
                 {serverError}
               </p>
             )}
 
-            <div className="flex flex-col-reverse items-stretch gap-2 border-t border-white/[0.06] pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col-reverse items-stretch gap-2 border-t border-white/6 pt-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[0.62rem] leading-relaxed text-white/35">
                 This form is the only part of the demo that contacts a real person.
               </p>

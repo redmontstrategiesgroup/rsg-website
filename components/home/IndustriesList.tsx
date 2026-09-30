@@ -50,13 +50,13 @@ export function IndustriesList({
           </Reveal>
         </div>
 
-        <div className="mt-10 sm:mt-16 grid border-t border-white/[0.08] lg:grid-cols-3">
+        <div className="mt-10 sm:mt-16 grid border-t border-white/8 lg:grid-cols-3">
           {VERTICALS.map((v, i) => (
             <Reveal key={v.name} y={12} delay={i * 0.08} className="h-full">
               <Link
                 href={v.href}
-                className={`group flex h-full flex-col border-b border-white/[0.08] py-8 sm:py-12 sm:pr-8 transition-colors lg:border-b-0 ${
-                  i > 0 ? "lg:border-l lg:border-white/[0.08] lg:pl-10" : ""
+                className={`group flex h-full flex-col border-b border-white/8 py-8 sm:py-12 sm:pr-8 transition-colors lg:border-b-0 ${
+                  i > 0 ? "lg:border-l lg:border-white/8 lg:pl-10" : ""
                 }`}
               >
                 <p className="font-mono text-[0.7rem] sm:text-[0.58rem] uppercase tracking-label text-white/35">

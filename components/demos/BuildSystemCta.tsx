@@ -69,9 +69,9 @@ export function BuildSystemCta({
             <button
               type="button"
               onClick={exploreDemo}
-              className="group flex w-full items-start gap-3.5 rounded-lg border border-white/12 bg-white/[0.02] p-4 text-left transition-colors hover:border-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+              className="group flex w-full items-start gap-3.5 rounded-lg border border-white/12 bg-white/2 p-4 text-left transition-colors hover:border-white/30 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
             >
-              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04]">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/4">
                 <MousePointerClick size={15} className="text-white/60" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
@@ -89,7 +89,7 @@ export function BuildSystemCta({
             <button
               type="button"
               onClick={() => setStep("request")}
-              className="group flex w-full items-start gap-3.5 rounded-lg border border-crimson/35 bg-crimson/[0.06] p-4 text-left transition-colors hover:border-crimson/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+              className="group flex w-full items-start gap-3.5 rounded-lg border border-crimson/35 bg-crimson/6 p-4 text-left transition-colors hover:border-crimson/60 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
             >
               <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-crimson/30 bg-crimson/10">
                 <Send size={14} className="text-crimson-light" aria-hidden />

@@ -18,7 +18,7 @@ export function BuilderShowcase({ configs }: { configs: IndustryConfig[] }) {
       <ScrollRail
         activeKey={active.slug}
         keyboardTabs
-        className="flex border-b border-white/[0.08]"
+        className="flex border-b border-white/8"
         role="tablist"
         aria-label="Select an industry workflow"
       >
@@ -31,7 +31,7 @@ export function BuilderShowcase({ configs }: { configs: IndustryConfig[] }) {
               role="tab"
               aria-selected={selected}
               onClick={() => setActiveSlug(c.slug)}
-              className={`shrink-0 whitespace-nowrap border-b-2 px-5 py-3.5 text-xs transition-colors focus:outline-none focus-visible:bg-white/[0.05] ${
+              className={`shrink-0 whitespace-nowrap border-b-2 px-5 py-3.5 text-xs transition-colors focus:outline-hidden focus-visible:bg-white/5 ${
                 selected
                   ? "border-crimson text-white"
                   : "border-transparent text-white/45 hover:text-white/80"
@@ -47,7 +47,8 @@ export function BuilderShowcase({ configs }: { configs: IndustryConfig[] }) {
           <span className="font-medium text-white/70">{active.builderFlow.title}</span>: the same
           engine, configured for {active.industry.toLowerCase()}.
         </p>
-        <AutomationFlow flow={active.builderFlow} />
+        {/* Keyed so switching industries remounts the rail at its first step. */}
+        <AutomationFlow key={active.slug} flow={active.builderFlow} />
       </div>
     </div>
   );

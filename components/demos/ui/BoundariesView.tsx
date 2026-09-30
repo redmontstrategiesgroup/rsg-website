@@ -51,7 +51,7 @@ export function BoundariesView({ state, config, track, openRequest }: ViewProps)
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {cards.map(({ label, value, Icon }) => (
-          <div key={label} className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+          <div key={label} className="rounded-lg border border-white/[0.07] bg-white/2 p-4">
             <p className="flex items-center gap-1.5 text-[0.62rem] font-medium uppercase tracking-[0.14em] text-white/40">
               <Icon size={11} className="text-rose-300/80" aria-hidden /> {label}
             </p>
@@ -63,7 +63,7 @@ export function BoundariesView({ state, config, track, openRequest }: ViewProps)
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="space-y-2 lg:col-span-3">
           {boundaries.rules.map((rule) => (
-            <div key={rule.id} className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+            <div key={rule.id} className="rounded-lg border border-white/[0.07] bg-white/2 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs font-medium text-white/85">{rule.label}</p>
                 <div className="flex items-center gap-2">
@@ -76,7 +76,7 @@ export function BoundariesView({ state, config, track, openRequest }: ViewProps)
           ))}
         </div>
 
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-2">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-2">
           <PanelHeading title="What stays human" />
           <ul className="space-y-2 px-4 py-3">
             {config.breakdown.teamControls.map((item) => (
@@ -89,12 +89,12 @@ export function BoundariesView({ state, config, track, openRequest }: ViewProps)
         </div>
       </div>
 
-      <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+      <div className="rounded-lg border border-white/[0.07] bg-white/2">
         <PanelHeading title={`Guardrail log · ${events.length}`} />
         {events.length === 0 ? (
           <EmptyState text="Nothing yet. Take a call as the AI receptionist and ask it something it shouldn't answer." />
         ) : (
-          <ul className="divide-y divide-white/[0.05]">
+          <ul className="divide-y divide-white/5">
             {events.map((e) => {
               const rule = boundaries.rules.find((r) => r.id === e.ruleId);
               const meta = OUTCOME_META[e.outcome];
@@ -131,7 +131,7 @@ export function BoundariesView({ state, config, track, openRequest }: ViewProps)
             track("reviewed guardrails");
             openRequest({ source: "boundaries_view", feature: "Guardrails & compliance boundaries" });
           }}
-          className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+          className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
         >
           Add these guardrails to my system <ArrowRight size={11} aria-hidden />
         </button>

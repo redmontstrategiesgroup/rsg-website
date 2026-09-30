@@ -113,7 +113,7 @@ export function RequestsView({
     <div className="space-y-6">
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[880px] text-left text-sm">
-          <thead className="bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+          <thead className="bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
             <tr className="border-b border-white/10">
               <th className="px-4 py-3 font-normal">Client</th>
               <th className="px-4 py-3 font-normal">Type</th>
@@ -129,8 +129,8 @@ export function RequestsView({
               <tr
                 key={r.id}
                 onClick={() => select(r)}
-                className={`cursor-pointer border-b border-white/5 last:border-0 hover:bg-white/[0.02] ${
-                  selectedId === r.id ? "bg-crimson/[0.06]" : ""
+                className={`cursor-pointer border-b border-white/5 last:border-0 hover:bg-white/2 ${
+                  selectedId === r.id ? "bg-crimson/6" : ""
                 }`}
               >
                 <td className="px-4 py-3 text-white/85">
@@ -151,7 +151,7 @@ export function RequestsView({
                 </td>
                 <td
                   className={`px-4 py-3 text-xs ${
-                    isOverdue(r) ? "text-red-300" : "text-white/50"
+                    isOverdue(r) ? "text-red-300" : "text-white/65"
                   }`}
                 >
                   {fmtDateTime(r.responseDueAt)}
@@ -168,7 +168,7 @@ export function RequestsView({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm text-white/90">{selected.title}</p>
-              <p className="mt-1 text-xs text-white/45">
+              <p className="mt-1 text-xs text-white/65">
                 {clientLabel(clients, selected.clientId)} ·{" "}
                 {SERVICE_REQUEST_TYPE_LABELS[selected.type]} · Submitted{" "}
                 {fmtDateTime(selected.createdAt)}
@@ -181,7 +181,7 @@ export function RequestsView({
             </div>
             <button
               type="button"
-              className="text-xs text-white/45 hover:text-white"
+              className="text-xs text-white/65 hover:text-white"
               onClick={() => {
                 setSelectedId("");
                 setDraft(null);
@@ -314,10 +314,10 @@ export function RequestsView({
 
           {selected.activity.length ? (
             <div>
-              <p className="font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <p className="text-xs font-medium uppercase tracking-wide text-white/60">
                 Activity
               </p>
-              <ul className="mt-2 space-y-1.5 text-xs text-white/45">
+              <ul className="mt-2 space-y-1.5 text-xs text-white/65">
                 {selected.activity.slice(0, 12).map((a, i) => (
                   <li key={`${a.at}-${i}`}>
                     {fmtDateTime(a.at)}: {a.text}
@@ -329,7 +329,7 @@ export function RequestsView({
           ) : null}
         </div>
       ) : (
-        <p className="text-sm text-white/40">
+        <p className="text-sm text-white/60">
           Select a request to triage status, scope, hours, and notes.
         </p>
       )}

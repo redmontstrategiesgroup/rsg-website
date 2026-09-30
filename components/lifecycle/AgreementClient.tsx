@@ -132,7 +132,7 @@ export function AgreementClient({
           </h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {signatures.map((s) => (
-              <div key={s.id} className="border border-white/10 bg-white/[0.02] px-5 py-4">
+              <div key={s.id} className="border border-white/10 bg-white/2 px-5 py-4">
                 <p className="text-xs text-white/40">
                   {s.role === "countersigner" ? "Redmont Strategies Group" : "Client"}
                   {s.signer_title ? ` · ${s.signer_title}` : ""}
@@ -217,7 +217,7 @@ export function AgreementClient({
                   autoComplete="name"
                 />
                 {signedName.trim().length >= 2 && (
-                  <p className="mt-2 border border-white/10 bg-white/[0.02] px-4 py-3 text-center font-display text-xl italic text-white">
+                  <p className="mt-2 border border-white/10 bg-white/2 px-4 py-3 text-center font-display text-xl italic text-white">
                     {signedName.trim()}
                   </p>
                 )}

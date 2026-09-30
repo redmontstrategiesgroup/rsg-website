@@ -130,7 +130,7 @@ export function SupportView({
               </p>
             )}
             {t.resolution_notes && (
-              <p className="mt-3 border border-emerald-400/20 bg-emerald-400/[0.05] px-3 py-2 text-xs leading-relaxed text-emerald-200/80">
+              <p className="mt-3 border border-emerald-400/20 bg-emerald-400/5 px-3 py-2 text-xs leading-relaxed text-emerald-200/80">
                 Resolution: {t.resolution_notes}
               </p>
             )}
@@ -140,8 +140,8 @@ export function SupportView({
                   key={m.id}
                   className={`max-w-[85%] border px-3.5 py-2.5 ${
                     m.author_type === "client"
-                      ? "ml-auto border-crimson/25 bg-crimson/[0.06]"
-                      : "border-white/10 bg-white/[0.02]"
+                      ? "ml-auto border-crimson/25 bg-crimson/6"
+                      : "border-white/10 bg-white/2"
                   }`}
                 >
                   <p className="text-[0.65rem] text-white/35">
@@ -176,7 +176,7 @@ export function SupportView({
               <div className="mt-4 flex gap-2">
                 <input
                   type="text"
-                  className={`${inputClass(false)} !py-2.5 text-sm`}
+                  className={`${inputClass(false)} py-2.5! text-sm`}
                   placeholder="Add a reply…"
                   value={reply[t.id] ?? ""}
                   onChange={(e) => setReply((prev) => ({ ...prev, [t.id]: e.target.value }))}

@@ -98,7 +98,7 @@ export default async function RoadmapPage() {
                 reminders well before anything renews.
               </p>
             ) : (
-              <div className="divide-y divide-white/[0.06]">
+              <div className="divide-y divide-white/6">
                 {activeRenewals.map((r) => (
                   <div key={r.id} className="py-3 first:pt-0 last:pb-0">
                     <div className="flex items-center justify-between gap-2">
@@ -124,7 +124,7 @@ export default async function RoadmapPage() {
             </p>
             <Link
               href="/book/client-strategy-call"
-              className="btn-ghost mt-4 inline-flex !px-5 !py-2.5 text-sm"
+              className="btn-ghost mt-4 inline-flex px-5! py-2.5! text-sm"
             >
               Book a strategy call
             </Link>

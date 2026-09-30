@@ -41,10 +41,24 @@ const SUBS: { id: SubTab; label: string }[] = [
   { id: "testing", label: "Testing" },
 ];
 
+/** {"website_booking_funnel": 2} -> "Website booking funnel (2)". */
+function formatCounts(counts: unknown): string {
+  if (!counts || typeof counts !== "object") return "None";
+  const entries = Object.entries(counts as Record<string, number>).filter(([, n]) => n > 0);
+  if (!entries.length) return "None";
+  return entries
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, n]) => {
+      const label = k.replace(/^website_/, "website ").replace(/[_-]+/g, " ").trim();
+      return `${label.charAt(0).toUpperCase()}${label.slice(1)} (${n})`;
+    })
+    .join(", ");
+}
+
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="border border-white/10 bg-white/[0.02] p-4">
-      <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+    <div className="border border-white/10 bg-white/2 p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-white/60">
         {label}
       </p>
       <p className="mt-2 text-2xl text-white">{value}</p>
@@ -118,13 +132,7 @@ export function SchedulingAdminPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="display text-xl text-white">Scheduling</h2>
-          <p className="mt-1 text-sm text-white/45">
-            Native consultation booking, qualification, and calendar controls.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex gap-2">
           <Link href="/book" target="_blank" className="btn-ghost px-3 py-2 text-xs">
             Preview public flow
@@ -148,7 +156,7 @@ export function SchedulingAdminPanel() {
             aria-selected={sub === s.id}
             onClick={() => setSub(s.id)}
             className={`shrink-0 px-3 py-2 text-xs ${
-              sub === s.id ? "border-b border-crimson text-white" : "text-white/45"
+              sub === s.id ? "border-b border-crimson text-white" : "text-white/65"
             }`}
           >
             {s.label}
@@ -157,13 +165,13 @@ export function SchedulingAdminPanel() {
       </ScrollRail>
 
       {message && (
-        <div className="border border-white/15 bg-white/[0.03] px-4 py-2 text-sm text-white/70">
+        <div className="border border-white/15 bg-white/3 px-4 py-2 text-sm text-white/70">
           {message}
         </div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-16 text-white/40">
+        <div className="flex justify-center py-16 text-white/60">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : (
@@ -207,7 +215,7 @@ export function SchedulingAdminPanel() {
 
               <div className="grid gap-6 lg:grid-cols-2">
                 <div className="border border-white/10 p-4">
-                  <p className="label mb-3">Upcoming</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">Upcoming</p>
                   <ul className="space-y-3 text-sm">
                     {((dashboard.upcoming as unknown[]) || []).map(
                       (b: unknown) => {
@@ -224,12 +232,12 @@ export function SchedulingAdminPanel() {
                           >
                             <span>
                               {row.leads?.name || "-"}
-                              <span className="block text-xs text-white/40">
+                              <span className="block text-xs text-white/60">
                                 {row.appointment_types?.name} ·{" "}
                                 {row.leads?.business_name}
                               </span>
                             </span>
-                            <span className="text-xs text-white/50">
+                            <span className="text-xs text-white/65">
                               {new Date(row.starts_at).toLocaleString()}
                             </span>
                           </li>
@@ -237,12 +245,12 @@ export function SchedulingAdminPanel() {
                       }
                     )}
                     {!((dashboard.upcoming as unknown[]) || []).length && (
-                      <li className="text-white/40">No upcoming appointments.</li>
+                      <li className="text-white/60">No upcoming appointments.</li>
                     )}
                   </ul>
                 </div>
                 <div className="border border-white/10 p-4">
-                  <p className="label mb-3">Failed emails</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">Failed emails</p>
                   <ul className="space-y-2 text-sm text-white/60">
                     {((dashboard.failedEmails as unknown[]) || []).map(
                       (e: unknown) => {
@@ -259,16 +267,15 @@ export function SchedulingAdminPanel() {
                       }
                     )}
                     {!((dashboard.failedEmails as unknown[]) || []).length && (
-                      <li className="text-white/40">No failures.</li>
+                      <li className="text-white/60">No failures.</li>
                     )}
                   </ul>
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-white/50">
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-white/65">
                     <div>
-                      Outcomes:{" "}
-                      {JSON.stringify(dashboard.byOutcome ?? {})}
+                      Outcomes: {formatCounts(dashboard.byOutcome)}
                     </div>
                     <div>
-                      Sources: {JSON.stringify(dashboard.bySource ?? {})}
+                      Sources: {formatCounts(dashboard.bySource)}
                     </div>
                   </div>
                 </div>
@@ -278,7 +285,7 @@ export function SchedulingAdminPanel() {
 
           {sub === "calendar" && (
             <div className="space-y-3">
-              <p className="label">Agenda (next 45 days)</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-white/60">Agenda (next 45 days)</p>
               {calendar.map((b) => {
                 const row = b as {
                   id: string;
@@ -294,7 +301,7 @@ export function SchedulingAdminPanel() {
                     key={row.id}
                     type="button"
                     onClick={() => setSelectedBooking(row)}
-                    className="flex w-full items-start justify-between gap-4 border border-white/10 bg-white/[0.02] px-4 py-3 text-left text-sm hover:border-white/25"
+                    className="flex w-full items-start justify-between gap-4 border border-white/10 bg-white/2 px-4 py-3 text-left text-sm hover:border-white/25"
                   >
                     <div className="flex gap-3">
                       <span
@@ -307,19 +314,19 @@ export function SchedulingAdminPanel() {
                         <p className="text-white">
                           {row.appointment_types?.name}: {row.leads?.name}
                         </p>
-                        <p className="text-xs text-white/40">
+                        <p className="text-xs text-white/60">
                           {row.leads?.business_name} · {row.status}
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs text-white/50">
+                    <span className="text-xs text-white/65">
                       {new Date(row.starts_at).toLocaleString()}
                     </span>
                   </button>
                 );
               })}
               {!calendar.length && (
-                <p className="text-sm text-white/40">No appointments in range.</p>
+                <p className="text-sm text-white/60">No appointments in range.</p>
               )}
             </div>
           )}
@@ -327,7 +334,7 @@ export function SchedulingAdminPanel() {
           {sub === "bookings" && (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="text-[0.65rem] uppercase tracking-wider text-white/40">
+                <thead className="text-xs uppercase tracking-wider text-white/60">
                   <tr className="border-b border-white/10">
                     <th className="py-2 pr-3">When</th>
                     <th className="py-2 pr-3">Lead</th>
@@ -372,14 +379,14 @@ export function SchedulingAdminPanel() {
                           >
                             {row.leads?.name}
                           </button>
-                          <div className="text-xs text-white/40">
+                          <div className="text-xs text-white/60">
                             {row.leads?.business_name}
                           </div>
                         </td>
                         <td className="py-3 pr-3 text-white/70">
                           {category}
                           {notSure && (
-                            <span className="ml-2 inline-block border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-[0.6rem] uppercase tracking-wider text-amber-200/90">
+                            <span className="ml-2 inline-block border border-amber-400/40 bg-amber-400/10 px-1.5 py-0.5 text-xs uppercase tracking-wider text-amber-200/90">
                               Not sure yet
                             </span>
                           )}
@@ -387,7 +394,7 @@ export function SchedulingAdminPanel() {
                         <td className="py-3 pr-3 text-white/60">
                           {row.appointment_types?.name}
                           {row.leads?.qualification_score != null && (
-                            <span className="block text-[0.65rem] text-white/35">
+                            <span className="block text-xs text-white/60">
                               Score {row.leads.qualification_score}
                             </span>
                           )}
@@ -410,7 +417,7 @@ export function SchedulingAdminPanel() {
                             </button>
                             <button
                               type="button"
-                              className="text-xs text-white/50"
+                              className="text-xs text-white/65"
                               onClick={() =>
                                 run("mark_status", {
                                   bookingId: row.id,
@@ -423,7 +430,7 @@ export function SchedulingAdminPanel() {
                             </button>
                             <button
                               type="button"
-                              className="text-xs text-white/50"
+                              className="text-xs text-white/65"
                               onClick={() =>
                                 run("admin_cancel", { bookingId: row.id })
                               }
@@ -433,7 +440,7 @@ export function SchedulingAdminPanel() {
                             {row.manage_token && (
                               <Link
                                 href={`/booking/manage/${row.manage_token}`}
-                                className="text-xs text-white/50 underline"
+                                className="text-xs text-white/65 underline"
                                 target="_blank"
                               >
                                 Manage link
@@ -447,7 +454,7 @@ export function SchedulingAdminPanel() {
                 </tbody>
               </table>
               {!bookings.length && (
-                <p className="py-8 text-sm text-white/40">No bookings yet.</p>
+                <p className="py-8 text-sm text-white/60">No bookings yet.</p>
               )}
             </div>
           )}
@@ -455,7 +462,7 @@ export function SchedulingAdminPanel() {
           {sub === "qualification" && config && (
             <div className="grid gap-6 lg:grid-cols-2">
               <div>
-                <p className="label mb-3">Questions</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">Questions</p>
                 <ul className="max-h-96 space-y-2 overflow-y-auto text-sm">
                   {((config.questions as unknown[]) || []).map((q) => {
                     const row = q as {
@@ -474,14 +481,14 @@ export function SchedulingAdminPanel() {
                       >
                         <div className="flex justify-between gap-2">
                           <span className="text-white">{row.label}</span>
-                          <span className="text-[0.65rem] text-white/35">
+                          <span className="text-xs text-white/60">
                             {row.question_type} · {row.max_points}pts
                           </span>
                         </div>
                         <div className="mt-2 flex gap-2">
                           <button
                             type="button"
-                            className="text-xs text-white/50"
+                            className="text-xs text-white/65"
                             onClick={() =>
                               run("upsert_question", {
                                 question: {
@@ -500,11 +507,11 @@ export function SchedulingAdminPanel() {
                 </ul>
               </div>
               <div>
-                <p className="label mb-3">Published rule set</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">Published rule set</p>
                 {ruleDraft && (
                   <div className="space-y-3 text-sm">
                     <label className="block">
-                      <span className="text-white/45">Min qualifying score</span>
+                      <span className="text-white/65">Min qualifying score</span>
                       <input
                         type="number"
                         className="mt-1 w-full border border-white/15 bg-transparent px-3 py-2"
@@ -518,7 +525,7 @@ export function SchedulingAdminPanel() {
                       />
                     </label>
                     <label className="block">
-                      <span className="text-white/45">
+                      <span className="text-white/65">
                         Allow calendar on manual review
                       </span>
                       <input
@@ -536,7 +543,7 @@ export function SchedulingAdminPanel() {
                       />
                     </label>
                     <label className="block">
-                      <span className="text-white/45">Qualified message</span>
+                      <span className="text-white/65">Qualified message</span>
                       <textarea
                         className="mt-1 min-h-[80px] w-full border border-white/15 bg-transparent px-3 py-2"
                         value={
@@ -574,7 +581,7 @@ export function SchedulingAdminPanel() {
                         Publish
                       </button>
                     </div>
-                    <p className="text-xs text-white/35">
+                    <p className="text-xs text-white/60">
                       Hard rules and point maps are editable via save_rule_set /
                       upsert_question APIs. Status: {String(ruleDraft.status)}
                     </p>
@@ -602,13 +609,13 @@ export function SchedulingAdminPanel() {
                     ? "Resume bookings"
                     : "Pause all bookings"}
                 </button>
-                <span className="text-xs text-white/40">
+                <span className="text-xs text-white/60">
                   Timezone:{" "}
                   {(config.settings as { admin_timezone?: string })
                     ?.admin_timezone || "America/New_York"}
                 </span>
               </div>
-              <p className="label">Weekly windows</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-white/60">Weekly windows</p>
               <ul className="space-y-2 text-sm text-white/70">
                 {((config.windows as unknown[]) || []).map((w) => {
                   const row = w as {
@@ -629,7 +636,7 @@ export function SchedulingAdminPanel() {
                 })}
               </ul>
               <div className="border border-white/10 p-4">
-                <p className="label mb-3">Block time</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">Block time</p>
                 <button
                   type="button"
                   className="btn-ghost px-3 py-2 text-xs"
@@ -659,7 +666,7 @@ export function SchedulingAdminPanel() {
           {sub === "types" && config && (
             <div className="grid gap-6 lg:grid-cols-2">
               <div>
-                <p className="label mb-3">Services</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">Services</p>
                 <ul className="space-y-2 text-sm">
                   {((config.services as unknown[]) || []).map((s) => {
                     const row = s as {
@@ -675,7 +682,7 @@ export function SchedulingAdminPanel() {
                       >
                         <span>
                           {row.name}
-                          <span className="ml-2 text-xs text-white/35">
+                          <span className="ml-2 text-xs text-white/60">
                             /{row.slug}
                           </span>
                         </span>
@@ -696,7 +703,7 @@ export function SchedulingAdminPanel() {
                 </ul>
               </div>
               <div>
-                <p className="label mb-3">Appointment types</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">Appointment types</p>
                 <ul className="space-y-2 text-sm">
                   {((config.appointmentTypes as unknown[]) || []).map((t) => {
                     const row = t as {
@@ -711,14 +718,14 @@ export function SchedulingAdminPanel() {
                       <li key={row.id} className="border border-white/10 px-3 py-2">
                         <div className="flex justify-between">
                           <span className="text-white">{row.name}</span>
-                          <span className="text-xs text-white/40">
+                          <span className="text-xs text-white/60">
                             {row.duration_minutes}m
                           </span>
                         </div>
                         <div className="mt-2 flex gap-3 text-xs">
                           <button
                             type="button"
-                            className="text-white/50"
+                            className="text-white/65"
                             onClick={() =>
                               run("upsert_appointment_type", {
                                 appointmentType: {
@@ -770,7 +777,7 @@ export function SchedulingAdminPanel() {
               {templateDraft && (
                 <div className="space-y-3">
                   <label className="block text-sm">
-                    <span className="text-white/45">Subject</span>
+                    <span className="text-white/65">Subject</span>
                     <input
                       className="mt-1 w-full border border-white/15 bg-transparent px-3 py-2"
                       value={String(templateDraft.subject ?? "")}
@@ -783,7 +790,7 @@ export function SchedulingAdminPanel() {
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="text-white/45">HTML body</span>
+                    <span className="text-white/65">HTML body</span>
                     <textarea
                       className="mt-1 min-h-[140px] w-full border border-white/15 bg-transparent px-3 py-2 font-mono text-xs"
                       value={String(templateDraft.body_html ?? "")}
@@ -862,13 +869,13 @@ export function SchedulingAdminPanel() {
                   >
                     <div>
                       <p className="text-white">{row.name}</p>
-                      <p className="text-xs text-white/40">
+                      <p className="text-xs text-white/60">
                         {row.email} · {row.role} · {row.timezone}
                       </p>
                     </div>
                     <button
                       type="button"
-                      className="text-xs text-white/50"
+                      className="text-xs text-white/65"
                       onClick={() =>
                         run("upsert_team_member", {
                           member: { ...row, active: !row.active },
@@ -899,7 +906,7 @@ export function SchedulingAdminPanel() {
                   return (
                     <li key={row.id} className="border border-white/10 px-3 py-2">
                       {row.url}{" "}
-                      <span className="text-xs text-white/40">
+                      <span className="text-xs text-white/60">
                         {row.enabled ? "enabled" : "disabled"}
                       </span>
                     </li>
@@ -924,12 +931,12 @@ export function SchedulingAdminPanel() {
                 Add webhook endpoint
               </button>
               <div>
-                <p className="label mb-2">Future integrations (not connected)</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-2">Future integrations (not connected)</p>
                 <ul className="grid gap-2 sm:grid-cols-2">
                   {INTEGRATION_PLACEHOLDERS.map((i) => (
                     <li
                       key={i.provider}
-                      className="border border-white/10 px-3 py-2 text-xs text-white/45"
+                      className="border border-white/10 px-3 py-2 text-xs text-white/65"
                     >
                       {i.provider} · {i.category} · Not connected
                     </li>
@@ -942,7 +949,7 @@ export function SchedulingAdminPanel() {
           {sub === "jobs" && config && (
             <div className="grid gap-6 lg:grid-cols-2">
               <div>
-                <p className="label mb-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">
                   <AlertTriangle className="mr-1 inline h-3 w-3" />
                   Pending / failed jobs
                 </p>
@@ -970,7 +977,7 @@ export function SchedulingAdminPanel() {
                 </ul>
               </div>
               <div>
-                <p className="label mb-3">Failed deliveries</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-3">Failed deliveries</p>
                 <ul className="max-h-80 space-y-2 overflow-y-auto text-xs text-white/60">
                   {((config.failedDeliveries as unknown[]) || []).map((d) => {
                     const row = d as {
@@ -985,8 +992,8 @@ export function SchedulingAdminPanel() {
                     );
                   })}
                 </ul>
-                <p className="label mb-2 mt-6">Recent activity</p>
-                <ul className="max-h-40 space-y-1 overflow-y-auto text-xs text-white/40">
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-2 mt-6">Recent activity</p>
+                <ul className="max-h-40 space-y-1 overflow-y-auto text-xs text-white/60">
                   {((config.activity as unknown[]) || []).map((a) => {
                     const row = a as {
                       id: string;
@@ -1021,7 +1028,7 @@ export function SchedulingAdminPanel() {
                   };
                   return (
                     <label key={row.key} className="block text-xs">
-                      <span className="text-white/50">{row.label}</span>
+                      <span className="text-white/65">{row.label}</span>
                       {row.options?.length ? (
                         <select
                           className="mt-1 w-full border border-white/15 bg-base px-2 py-2"

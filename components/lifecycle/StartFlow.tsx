@@ -18,7 +18,7 @@ export function StartFlow() {
   if (outcome) {
     const isAssessment = outcome.next === "assessment";
     return (
-      <div className="animate-fade-up border border-white/10 bg-white/[0.02] px-6 py-10 text-center sm:px-10">
+      <div className="animate-fade-up border border-white/10 bg-white/2 px-6 py-10 text-center sm:px-10">
         <p className="label justify-center">Received</p>
         <h2 className="display mt-4 text-2xl sm:text-3xl">
           {isAssessment ? "You're a strong fit." : "Thank you: we have what we need."}

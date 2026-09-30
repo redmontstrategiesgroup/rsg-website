@@ -172,7 +172,7 @@ export function RoadmapsView({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+        <p className="text-xs font-medium uppercase tracking-wide text-white/65">
           Technology roadmaps
         </p>
         <button
@@ -187,7 +187,7 @@ export function RoadmapsView({
       {roadmaps.length ? (
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+            <thead className="bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
               <tr className="border-b border-white/10">
                 <th className="px-4 py-3 font-normal">Client</th>
                 <th className="px-4 py-3 font-normal">Title</th>
@@ -203,7 +203,7 @@ export function RoadmapsView({
                 <tr
                   key={r.id}
                   className={`border-b border-white/5 last:border-0 ${
-                    draft?.id === r.id ? "bg-crimson/[0.06]" : ""
+                    draft?.id === r.id ? "bg-crimson/6" : ""
                   }`}
                 >
                   <td className="px-4 py-3 text-white/80">
@@ -217,7 +217,7 @@ export function RoadmapsView({
                     <StatusPill value={r.status} />
                   </td>
                   <td className="px-4 py-3 text-white/60">{r.items.length}</td>
-                  <td className="px-4 py-3 text-xs text-white/50">
+                  <td className="px-4 py-3 text-xs text-white/65">
                     {r.approvedAt ? `${fmtDate(r.approvedAt)}` : "-"}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -244,12 +244,12 @@ export function RoadmapsView({
       {draft ? (
         <div className="space-y-6 rounded-xl border border-white/10 p-5">
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+            <p className="text-xs font-medium uppercase tracking-wide text-white/65">
               {draft.id ? "Edit roadmap" : "New roadmap"}
             </p>
             <button
               type="button"
-              className="text-xs text-white/45 hover:text-white"
+              className="text-xs text-white/65 hover:text-white"
               onClick={() => setDraft(null)}
             >
               Close editor
@@ -257,7 +257,7 @@ export function RoadmapsView({
           </div>
 
           {draft.approvedAt ? (
-            <p className="rounded-lg border border-emerald-400/25 bg-emerald-400/[0.06] px-3.5 py-2 text-xs text-emerald-200">
+            <p className="rounded-lg border border-emerald-400/25 bg-emerald-400/6 px-3.5 py-2 text-xs text-emerald-200">
               Approved {fmtDateTime(draft.approvedAt)}
               {draft.approvedBy ? ` by ${draft.approvedBy}` : ""}
             </p>
@@ -359,7 +359,7 @@ export function RoadmapsView({
                 {draft.items.map((item, i) => (
                   <div
                     key={item.id ?? `new-${i}`}
-                    className="space-y-3 rounded-lg border border-white/10 bg-white/[0.02] p-3.5"
+                    className="space-y-3 rounded-lg border border-white/10 bg-white/2 p-3.5"
                   >
                     <div className="grid gap-3 sm:grid-cols-[160px_1fr_150px_auto]">
                       <Field label="Kind">
@@ -404,7 +404,7 @@ export function RoadmapsView({
                       <button
                         type="button"
                         aria-label="Remove item"
-                        className="self-end pb-2.5 text-white/40 hover:text-red-300"
+                        className="self-end pb-2.5 text-white/60 hover:text-red-300"
                         onClick={() =>
                           set(
                             "items",
@@ -442,7 +442,7 @@ export function RoadmapsView({
                 ))}
               </div>
             ) : (
-              <p className="mt-2 text-xs text-white/35">
+              <p className="mt-2 text-xs text-white/60">
                 No items yet: add current systems, problems, and planned work.
               </p>
             )}

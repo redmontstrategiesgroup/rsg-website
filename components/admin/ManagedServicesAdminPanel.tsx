@@ -146,13 +146,7 @@ export function ManagedServicesAdminPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="display text-xl text-white">Managed Services</h2>
-          <p className="mt-1 text-sm text-white/45">
-            Plans, subscriptions, service delivery, reporting, and proposals.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <button
           type="button"
           onClick={() => void load()}
@@ -173,7 +167,7 @@ export function ManagedServicesAdminPanel() {
             className={`shrink-0 px-3 py-2 text-xs transition-colors ${
               sub === s.id
                 ? "border-b border-crimson text-white"
-                : "text-white/45 hover:text-white/75"
+                : "text-white/65 hover:text-white/75"
             }`}
           >
             {s.label}
@@ -184,7 +178,7 @@ export function ManagedServicesAdminPanel() {
       {message ? (
         <div
           role="status"
-          className="rounded-lg border border-emerald-400/25 bg-emerald-400/[0.06] px-4 py-2 text-sm text-emerald-200"
+          className="rounded-lg border border-emerald-400/25 bg-emerald-400/6 px-4 py-2 text-sm text-emerald-200"
         >
           {message}
         </div>
@@ -199,11 +193,11 @@ export function ManagedServicesAdminPanel() {
       ) : null}
 
       {loading ? (
-        <div className="flex justify-center py-16 text-white/40">
+        <div className="flex justify-center py-16 text-white/60">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : !data ? (
-        <p className="text-sm text-white/40">
+        <p className="text-sm text-white/60">
           Managed-services data could not be loaded. Check that the Supabase
           migration is applied, then refresh.
         </p>

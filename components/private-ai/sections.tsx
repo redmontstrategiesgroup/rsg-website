@@ -15,7 +15,7 @@ import Link from "next/link";
 
 export function SystemsGrid() {
   return (
-    <section id="systems" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="systems" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Systems RSG can build</p>
@@ -28,7 +28,7 @@ export function SystemsGrid() {
         <div className="mt-9 sm:mt-14 grid gap-4 md:grid-cols-2">
           {SYSTEMS_WE_BUILD.slice(0, Math.max(0, SYSTEMS_WE_BUILD.length - 4)).map((system, i) => (
             <Reveal key={system.id} y={12} delay={(i % 4) * 0.04}>
-              <article className="h-full border border-white/10 bg-white/[0.02] p-6 sm:p-7">
+              <article className="h-full border border-white/10 bg-white/2 p-6 sm:p-7">
                 <h3 className="display text-xl text-white">{system.name}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/50">
                   {system.summary}
@@ -57,7 +57,7 @@ export function SystemsGrid() {
 
 export function SecuritySection() {
   return (
-    <section id="security" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="security" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Privacy and security architecture</p>
@@ -88,7 +88,7 @@ export function SecuritySection() {
         <ul className="mt-8 sm:mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {SECURITY_CAPABILITIES.map((item, i) => (
             <Reveal key={item} y={10} delay={(i % 6) * 0.03}>
-              <li className="border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/65">
+              <li className="border border-white/10 bg-white/2 px-4 py-3 text-sm text-white/65">
                 {item}
               </li>
             </Reveal>
@@ -101,7 +101,7 @@ export function SecuritySection() {
 
 export function ModelOptionsSection() {
   return (
-    <section className="border-b border-white/[0.08]">
+    <section className="border-b border-white/8">
       <div className="container-px section-y">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
@@ -139,7 +139,7 @@ export function ModelOptionsSection() {
 
 export function IntegrationsSection() {
   return (
-    <section className="border-b border-white/[0.08]">
+    <section className="border-b border-white/8">
       <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Integration capabilities</p>
@@ -159,7 +159,7 @@ export function IntegrationsSection() {
           {INTEGRATION_CATEGORIES.map((item) => (
             <li
               key={item}
-              className="rounded-lg border border-white/10 bg-white/[0.025] px-3.5 py-2 text-sm text-white/60"
+              className="rounded-lg border border-white/10 bg-white/2.5 px-3.5 py-2 text-sm text-white/60"
             >
               {item}
             </li>
@@ -172,7 +172,7 @@ export function IntegrationsSection() {
 
 export function IndustryUseCases() {
   return (
-    <section className="border-b border-white/[0.08]">
+    <section className="border-b border-white/8">
       <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Industry use cases</p>
@@ -191,7 +191,7 @@ export function IndustryUseCases() {
         <div className="mt-8 sm:mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {INDUSTRY_USE_CASES.map((industry, i) => (
             <Reveal key={industry.name} y={12} delay={(i % 3) * 0.04}>
-              <article className="h-full border border-white/10 bg-white/[0.02] p-5">
+              <article className="h-full border border-white/10 bg-white/2 p-5">
                 <h3 className="font-medium text-white">{industry.name}</h3>
                 <ul className="mt-4 space-y-1.5">
                   {industry.examples.map((ex) => (
@@ -212,7 +212,7 @@ export function IndustryUseCases() {
 
 export function ProcessSection() {
   return (
-    <section id="process" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="process" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Development process</p>
@@ -232,7 +232,7 @@ export function ProcessSection() {
         <ol className="mt-8 sm:mt-12 grid gap-3 md:grid-cols-2">
           {PROCESS_STAGES.map((stage, i) => (
             <Reveal key={stage.step} y={10} delay={(i % 4) * 0.03}>
-              <li className="flex gap-4 border border-white/10 bg-white/[0.02] p-5">
+              <li className="flex gap-4 border border-white/10 bg-white/2 p-5">
                 <span className="font-mono text-sm text-crimson-light">
                   {String(stage.step).padStart(2, "0")}
                 </span>
@@ -253,7 +253,7 @@ export function ProcessSection() {
 
 export function PrivateAiFaq() {
   return (
-    <section id="faq" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="faq" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Frequently asked questions</p>
@@ -285,7 +285,7 @@ export function PrivateAiFaq() {
 
 export function PrivateAiCta() {
   return (
-    <section className="border-b border-white/[0.08]">
+    <section className="border-b border-white/8">
       <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Next step</p>

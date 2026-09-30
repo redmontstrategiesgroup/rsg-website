@@ -94,7 +94,7 @@ export function Footer() {
             {/* Tapping to call is a primary mobile action; give it a real target. */}
             <a
               href={`tel:${PHONE_TEL}`}
-              className="mt-6 inline-flex min-h-11 items-center text-sm text-white/55 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 sm:mt-8 lg:min-h-0"
+              className="mt-6 inline-flex min-h-11 items-center text-sm text-white/55 transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/30 sm:mt-8 lg:min-h-0"
             >
               {PHONE_DISPLAY}
             </a>

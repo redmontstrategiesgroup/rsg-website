@@ -458,6 +458,8 @@ type LeadRow = {
   utm_campaign: string | null;
   utm_content: string | null;
   utm_term: string | null;
+  visitor_id?: string | null;
+  first_touch?: Record<string, unknown> | null;
   lead_score: number | null;
   source: string | null;
   status: string | null;
@@ -502,6 +504,24 @@ function demoMetaFromSnapshot(
   };
 }
 
+/** Read back the first_touch JSONB, dropping anything not string-shaped. */
+function firstTouchFromRow(
+  raw: Record<string, unknown> | null | undefined
+): Lead["firstTouch"] {
+  if (!raw || typeof raw !== "object" || typeof raw.at !== "string") return undefined;
+  const s = (k: string) => (typeof raw[k] === "string" ? (raw[k] as string) : "");
+  return {
+    utmSource: s("utmSource"),
+    utmMedium: s("utmMedium"),
+    utmCampaign: s("utmCampaign"),
+    utmContent: s("utmContent"),
+    utmTerm: s("utmTerm"),
+    referrer: s("referrer"),
+    landingPage: s("landingPage"),
+    at: raw.at,
+  };
+}
+
 function rowToLead(row: LeadRow): Lead {
   return {
     id: row.id,
@@ -523,6 +543,8 @@ function rowToLead(row: LeadRow): Lead {
     utmCampaign: row.utm_campaign ?? "",
     utmContent: row.utm_content ?? "",
     utmTerm: row.utm_term ?? "",
+    visitorId: row.visitor_id ?? undefined,
+    firstTouch: firstTouchFromRow(row.first_touch),
     score: row.lead_score ?? 0,
     source: row.source ?? "website_contact_form",
     status: (row.status as Lead["status"]) ?? "new",
@@ -564,13 +586,21 @@ export async function getLeads(): Promise<Lead[]> {
       .limit(500);
     if (error) throw error;
     const remote = ((data as LeadRow[]) ?? []).map(rowToLead);
-    // Prefer remote records; append file-only leads that aren't already present.
-    const remoteEmails = new Set(
-      remote.map((l) => `${l.email.toLowerCase()}|${l.submittedAt}`)
-    );
-    const extras = fileLeads.filter(
-      (l) => !remoteEmails.has(`${l.email.toLowerCase()}|${l.submittedAt}`)
-    );
+    // Prefer remote records; append file-only leads that aren't already
+    // present. Match on id, and on email + instant (not the raw string:
+    // Postgres returns "+00:00" where the file store has "Z", so a string
+    // compare let every mirrored lead through twice with the same id).
+    const instant = (l: Lead) =>
+      `${l.email.toLowerCase()}|${new Date(l.submittedAt).getTime()}`;
+    const seenIds = new Set(remote.map((l) => l.id).filter(Boolean));
+    const seenInstants = new Set(remote.map(instant));
+    const extras: Lead[] = [];
+    for (const l of fileLeads) {
+      if ((l.id && seenIds.has(l.id)) || seenInstants.has(instant(l))) continue;
+      if (l.id) seenIds.add(l.id);
+      seenInstants.add(instant(l));
+      extras.push(l);
+    }
     return [...remote, ...extras].sort(
       (a, b) =>
         new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
@@ -579,6 +609,59 @@ export async function getLeads(): Promise<Lead[]> {
     console.warn("[store] leads read from Supabase failed, using file store.", err);
     return fileLeads;
   }
+}
+
+/** Most page views shown per lead journey. */
+const MAX_JOURNEY_VIEWS = 50;
+
+/**
+ * Attach each lead's consented browsing (page_views for its visitorId, up to
+ * the moment it was submitted) for the admin lead card. Best-effort: on any
+ * failure the leads come back unchanged.
+ */
+export async function attachJourneys(leads: Lead[]): Promise<Lead[]> {
+  const vids = [...new Set(leads.map((l) => l.visitorId).filter(Boolean))] as string[];
+  if (!vids.length) return leads;
+
+  let views: PageView[] = [];
+  const supabase = getSupabase();
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("page_views")
+        .select("vid, path, referrer, viewed_at")
+        .in("vid", vids)
+        .order("viewed_at", { ascending: true })
+        .limit(MAX_ANALYTICS_EVENTS);
+      if (error) throw error;
+      views = ((data as PageViewRow[]) ?? []).map(rowToPageView);
+    } else {
+      const vidSet = new Set(vids);
+      views = (await readJson<PageView[]>(ANALYTICS_FILE, []))
+        .filter((v) => vidSet.has(v.vid))
+        .sort((a, b) => a.at.localeCompare(b.at));
+    }
+  } catch (err) {
+    console.warn("[store] lead journey read failed.", err);
+    return leads;
+  }
+
+  const byVid = new Map<string, PageView[]>();
+  for (const v of views) {
+    const list = byVid.get(v.vid) ?? [];
+    list.push(v);
+    byVid.set(v.vid, list);
+  }
+  return leads.map((lead) => {
+    const list = lead.visitorId ? byVid.get(lead.visitorId) : undefined;
+    if (!list) return lead;
+    const cutoff = new Date(lead.submittedAt).getTime();
+    const journey = list
+      .filter((v) => new Date(v.at).getTime() <= cutoff)
+      .slice(-MAX_JOURNEY_VIEWS)
+      .map((v) => ({ path: v.path, at: v.at }));
+    return journey.length ? { ...lead, journey } : lead;
+  });
 }
 
 /** True if the same email submitted within the last `windowMs` (dedupe). */

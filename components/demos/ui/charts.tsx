@@ -32,10 +32,10 @@ export function BarChart({
                 {p.value}
               </span>
               <div
-                className={`w-full rounded-sm transition-colors ${
+                className={`w-full rounded-xs transition-colors ${
                   isAccent
                     ? "bg-crimson/80 group-hover:bg-crimson"
-                    : "bg-white/[0.14] group-hover:bg-white/[0.24]"
+                    : "bg-white/[0.14] group-hover:bg-white/24"
                 }`}
                 style={{ height: `${Math.max((p.value / max) * 100, 4)}%` }}
               />
@@ -141,7 +141,7 @@ export function FunnelChart({ points }: { points: AnalyticsPoint[] }) {
             <span className="text-xs text-white/60">{p.label}</span>
             <span className="text-xs tabular-nums text-white/80">{p.value}</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-white/6">
             <div
               className={`h-full rounded-full ${
                 i === points.length - 1 ? "bg-crimson" : "bg-white/25"

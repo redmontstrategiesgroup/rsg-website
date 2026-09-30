@@ -1,6 +1,266 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+
+  /*
+    `base` is a surface colour, never a text colour, and its name collides with
+    the `text-base` font-size utility: as a --color-* token Tailwind 4 compiles
+    `text-base` to `color: var(--color-base)` and drops the font size. Scoping
+    it to the background (and ring-offset) namespaces keeps `bg-base-*` working
+    while `text-base` stays a font size.
+  */
+  --background-color-base-600: #1d1d26;
+  --background-color-base-700: #16161d;
+  --background-color-base-800: #111116;
+  --background-color-base-900: #0c0c10;
+  --background-color-base: #060608;
+  --ring-offset-color-base: #060608;
+
+  --color-crimson: #b3243a;
+  --color-crimson-light: #d94b5e;
+  --color-crimson-dark: #8a1a2c;
+  --color-crimson-deep: #57101d;
+  --color-crimson-soft: rgba(179, 36, 58, 0.12);
+
+  --color-platinum: #e8e6e3;
+
+  /* next/font exposes --font-inter etc.; the theme tokens must use different
+     names or they reference themselves and the font stack collapses. */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --tracking-label: 0.2em;
+
+  --shadow-glow:
+    0 0 0 1px rgba(179, 36, 58, 0.3), 0 12px 40px -10px rgba(179, 36, 58, 0.35);
+  --shadow-glow-sm: 0 0 20px -8px rgba(179, 36, 58, 0.4);
+  --shadow-card: 0 20px 50px -24px rgba(0, 0, 0, 0.8);
+  --shadow-lift: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+
+  --container-content: 1240px;
+  --container-app: 1600px;
+
+  --animate-fade-up: fade-up 0.6s ease-out forwards;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-shimmer: shimmer 6s linear infinite;
+  --animate-glow-pulse: glow-pulse 4s ease-in-out infinite;
+  --animate-marquee: marquee 32s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 32s linear infinite;
+
+  @keyframes fade-up {
+    0% {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes marquee-reverse {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility container-px {
+  @apply mx-auto w-full max-w-content px-6 sm:px-10 lg:px-14;
+}
+
+@utility section-y {
+  /*
+    Section vertical rhythm. One class so every section on the site breathes
+    identically. Mobile is deliberately tighter than desktop: at 80px top and
+    bottom the homepage carried ~1,550px of pure padding; over two phone
+    screens of scrolling past nothing. From `sm` up these are the values the
+    site has always used, so desktop is untouched.
+  */
+  @apply py-14 sm:py-28;
+}
+
+@utility section-y-sm {
+  /* Same rhythm, one step quieter; for stacked or sub-sections. */
+  @apply py-12 sm:py-20;
+}
+
+@utility section-lead {
+  /* Gap between a section's heading block and the content beneath it. */
+  @apply mt-10 sm:mt-16;
+}
+
+@utility label {
+  /*
+    Quiet small-caps section eyebrow. 12px on phones (up from 10.9px, which
+    read as noise at arm's length) and the original size from `sm` up.
+  */
+  @apply inline-flex items-center gap-3 text-[0.75rem] font-medium uppercase tracking-[0.2em] text-white/40 sm:text-[0.68rem] sm:tracking-[0.22em];
+}
+
+@utility section-grid {
+  /* Editorial 12-column section grid */
+  @apply grid gap-y-12 lg:grid-cols-12 lg:gap-x-8;
+}
+
+@utility display {
+  /* Display heading, geometric + tight, gradient-able */
+  @apply font-display font-medium tracking-[-0.02em] text-white;
+}
+
+@utility text-gradient {
+  @apply bg-linear-to-b from-white via-white to-white/55 bg-clip-text text-transparent;
+}
+
+@utility btn-primary {
+  /*
+    Buttons. `min-h-12` (48px) guarantees the touch target clears the 44px
+    floor even where a caller trims the padding, and `text-center` keeps
+    two-line labels tidy when a long CTA wraps on a 320px screen.
+  */
+
+  /* Primary: solid deep ruby, sharp corners, no glow */
+  @apply inline-flex min-h-12 items-center justify-center gap-2 bg-crimson px-8 py-4 text-center text-sm font-medium tracking-wide text-white transition-colors duration-200 hover:bg-crimson-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2 focus-visible:ring-offset-base;
+}
+
+@utility btn-ghost {
+  /* Ghost: plain hairline border, sharp corners */
+  @apply inline-flex min-h-12 items-center justify-center border border-white/20 px-8 py-4 text-center text-sm font-medium tracking-wide text-white/85 transition-colors duration-200 hover:border-white/50 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/20;
+}
+
+@utility link-underline {
+  /* Quiet underlined text link */
+  @apply text-sm font-medium text-white/80 underline decoration-white/25 underline-offset-8 transition-colors hover:text-white hover:decoration-white/60;
+}
+
+@utility link-arrow {
+  /*
+    Standalone "Learn more →" style link. These sit on their own line and act
+    as buttons, so they need a real touch target: min-h-11 (44px) gives them
+    one on mobile without changing how they look on desktop, where the text
+    box alone was only 20px tall.
+  */
+  /* Pair with `group` in the markup for the arrow nudge on hover. */
+  @apply inline-flex min-h-11 items-center gap-2.5 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/30 lg:min-h-0;
+}
+
+@utility link-list {
+  /*
+    Stacked text-link lists: footer columns, "related" lists. Put the class on
+    the <ul>. Each link becomes a 44px row on touch devices so neighbours are
+    not mis-tapped (the footer's 11-link Company column was 20px rows with
+    12px gaps), and returns to natural text height from lg up. Pair with
+    `space-y-0 lg:space-y-3` on the list so the rows don't double up.
+  */
+  & a {
+    @apply inline-flex min-h-11 items-center lg:min-h-0;
+  }
+}
+
+@utility card {
+  /* Flat dark surface card */
+  @apply rounded-xl border border-white/10 bg-white/2 transition-colors duration-200;
+}
+
+@utility hairline {
+  @apply h-px w-full bg-white/10;
+}
+
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility bottom-safe {
+  /*
+    Safe-area offsets for fixed chrome on notched phones. The floor is the
+    spacing the element used before; the inset wins when it is larger (34px
+    for the iOS home indicator). Needs viewportFit: "cover" in app/layout.tsx.
+  */
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@utility bottom-safe-5 {
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+
+@utility bottom-safe-20 {
+  bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+@utility right-safe {
+  right: max(0.75rem, env(safe-area-inset-right));
+}
+
+@utility pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@utility bg-grid {
+  /* Technical grid background */
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
 
 @layer base {
   html {
@@ -49,17 +309,18 @@
   }
 }
 
-/*
+@layer utilities {
+  /*
   Keep outside @layer so this wins over Tailwind [&>option] utilities.
   Native menus on Windows often stay light while inheriting text-white.
 */
-select option,
-select optgroup {
-  background-color: #ffffff;
-  color: #111111;
-}
+  select option,
+  select optgroup {
+    background-color: #ffffff;
+    color: #111111;
+  }
 
-/*
+  /*
   iOS Safari zooms the whole page when a focused field is under 16px, and
   every form here was styled `text-sm` (14px), so tapping any input on an
   iPhone kicked the layout sideways and left the user pinching back out.
@@ -74,135 +335,36 @@ select optgroup {
   landscape and a 768px iPad both zoom exactly like a 375px phone, and a
   max-width query left them out. A mouse-driven desktop never matches.
 */
-@media (hover: none) and (pointer: coarse) {
-  input:not([type="checkbox"]):not([type="radio"]),
-  select,
-  textarea {
-    font-size: 16px !important;
-  }
+  @media (hover: none) and (pointer: coarse) {
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
 
-  /* And a comfortable touch height to go with the readable text. */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-  select {
-    min-height: 2.75rem;
-  }
+    /* And a comfortable touch height to go with the readable text. */
+    input:not([type='checkbox']):not([type='radio']):not([type='range']),
+    select {
+      min-height: 2.75rem;
+    }
 
-  /*
+    /*
     The button half of the same floor. 44px is the Apple/Google target size;
     without this, icon-only closers (h-7 w-7), tab strips (py-2 text-xs) and
     inline "Edit" buttons across the demos, portal and admin sat at 16–32px.
     Desktop is untouched: a mouse is precise and the compact sizes read fine.
   */
-  button:not([hidden]),
-  [role="button"],
-  [role="tab"] {
-    min-height: 2.75rem;
-    min-width: 2.75rem;
+    button:not([hidden]),
+    [role='button'],
+    [role='tab'] {
+      min-height: 2.75rem;
+      min-width: 2.75rem;
+    }
   }
 }
 
-@layer components {
-  .container-px {
-    @apply mx-auto w-full max-w-content px-6 sm:px-10 lg:px-14;
-  }
-
+@layer utilities {
   /*
-    Section vertical rhythm. One class so every section on the site breathes
-    identically. Mobile is deliberately tighter than desktop: at 80px top and
-    bottom the homepage carried ~1,550px of pure padding; over two phone
-    screens of scrolling past nothing. From `sm` up these are the values the
-    site has always used, so desktop is untouched.
-  */
-  .section-y {
-    @apply py-14 sm:py-28;
-  }
-
-  /* Same rhythm, one step quieter; for stacked or sub-sections. */
-  .section-y-sm {
-    @apply py-12 sm:py-20;
-  }
-
-  /* Gap between a section's heading block and the content beneath it. */
-  .section-lead {
-    @apply mt-10 sm:mt-16;
-  }
-
-  /*
-    Quiet small-caps section eyebrow. 12px on phones (up from 10.9px, which
-    read as noise at arm's length) and the original size from `sm` up.
-  */
-  .label {
-    @apply inline-flex items-center gap-3 text-[0.75rem] font-medium uppercase tracking-[0.2em] text-white/40 sm:text-[0.68rem] sm:tracking-[0.22em];
-  }
-
-  /* Editorial 12-column section grid */
-  .section-grid {
-    @apply grid gap-y-12 lg:grid-cols-12 lg:gap-x-8;
-  }
-
-  /* Display heading, geometric + tight, gradient-able */
-  .display {
-    @apply font-display font-medium tracking-[-0.02em] text-white;
-  }
-
-  .text-gradient {
-    @apply bg-gradient-to-b from-white via-white to-white/55 bg-clip-text text-transparent;
-  }
-
-  /*
-    Buttons. `min-h-12` (48px) guarantees the touch target clears the 44px
-    floor even where a caller trims the padding, and `text-center` keeps
-    two-line labels tidy when a long CTA wraps on a 320px screen.
-  */
-
-  /* Primary: solid deep ruby, sharp corners, no glow */
-  .btn-primary {
-    @apply inline-flex min-h-12 items-center justify-center bg-crimson px-8 py-4 text-center text-sm font-medium tracking-wide text-white transition-colors duration-200 hover:bg-crimson-light focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson focus-visible:ring-offset-2 focus-visible:ring-offset-base;
-  }
-
-  /* Ghost: plain hairline border, sharp corners */
-  .btn-ghost {
-    @apply inline-flex min-h-12 items-center justify-center border border-white/20 px-8 py-4 text-center text-sm font-medium tracking-wide text-white/85 transition-colors duration-200 hover:border-white/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20;
-  }
-
-  /* Quiet underlined text link */
-  .link-underline {
-    @apply text-sm font-medium text-white/80 underline decoration-white/25 underline-offset-8 transition-colors hover:text-white hover:decoration-white/60;
-  }
-
-  /*
-    Standalone "Learn more →" style link. These sit on their own line and act
-    as buttons, so they need a real touch target: min-h-11 (44px) gives them
-    one on mobile without changing how they look on desktop, where the text
-    box alone was only 20px tall.
-  */
-  /* Pair with `group` in the markup for the arrow nudge on hover. */
-  .link-arrow {
-    @apply inline-flex min-h-11 items-center gap-2.5 text-sm font-medium text-white/70 transition-colors hover:text-crimson-light focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 lg:min-h-0;
-  }
-
-  /*
-    Stacked text-link lists: footer columns, "related" lists. Put the class on
-    the <ul>. Each link becomes a 44px row on touch devices so neighbours are
-    not mis-tapped (the footer's 11-link Company column was 20px rows with
-    12px gaps), and returns to natural text height from lg up. Pair with
-    `space-y-0 lg:space-y-3` on the list so the rows don't double up.
-  */
-  .link-list a {
-    @apply inline-flex min-h-11 items-center lg:min-h-0;
-  }
-
-  /* Flat dark surface card */
-  .card {
-    @apply rounded-xl border border-white/10 bg-white/[0.02] transition-colors duration-200;
-  }
-
-  .hairline {
-    @apply h-px w-full bg-white/10;
-  }
-}
-
-/*
   Scroll reveals (components/Reveal.tsx + components/RevealObserver.tsx).
 
   `[data-reveal]` nodes are visible by default: that is the whole point, and
@@ -214,182 +376,184 @@ select optgroup {
   Phones therefore get plain, immediately-painted content with no observer
   and no animation JS; desktop keeps the reveal it has always had.
 */
-html[data-reveal="on"] [data-reveal] {
-  opacity: 0;
-  transform: translateY(var(--reveal-y, 12px));
-  will-change: opacity, transform;
-}
-
-html[data-reveal="on"] [data-reveal][data-reveal-in] {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-  /* transition-delay is set per-node inline by <Reveal delay=…> */
-  will-change: auto;
-}
-
-/* Hero systems-visual motion (disabled for reduced-motion users) */
-@keyframes dash-flow {
-  to {
-    stroke-dashoffset: -72;
-  }
-}
-@keyframes core-pulse {
-  0% {
-    transform: scale(0.55);
-    opacity: 0.45;
-  }
-  100% {
-    transform: scale(1.9);
+  html[data-reveal='on'] [data-reveal] {
     opacity: 0;
+    transform: translateY(var(--reveal-y, 12px));
+    will-change: opacity, transform;
   }
-}
-.flow-line {
-  stroke-dasharray: 3 9;
-  animation: dash-flow 7s linear infinite;
-}
-.core-pulse {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: core-pulse 4.5s ease-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .flow-line,
+
+  html[data-reveal='on'] [data-reveal][data-reveal-in] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    /* transition-delay is set per-node inline by <Reveal delay=…> */
+    will-change: auto;
+  }
+
+  /* Hero systems-visual motion (disabled for reduced-motion users) */
+  @keyframes dash-flow {
+    to {
+      stroke-dashoffset: -72;
+    }
+  }
+  @keyframes core-pulse {
+    0% {
+      transform: scale(0.55);
+      opacity: 0.45;
+    }
+    100% {
+      transform: scale(1.9);
+      opacity: 0;
+    }
+  }
+  .flow-line {
+    stroke-dasharray: 3 9;
+    animation: dash-flow 7s linear infinite;
+  }
   .core-pulse {
-    animation: none;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: core-pulse 4.5s ease-out infinite;
   }
-}
+  @media (prefers-reduced-motion: reduce) {
+    .flow-line,
+    .core-pulse {
+      animation: none;
+    }
+  }
 
-/* Dialog entrance (components/ui/Dialog.tsx). Sheets rise, centred panels fade. */
-@keyframes dialog-backdrop-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes dialog-panel-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: none; }
-}
-.dialog-backdrop {
-  animation: dialog-backdrop-in 0.2s ease-out both;
-}
-.dialog-panel {
-  animation: dialog-panel-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .dialog-backdrop,
+  /* Dialog entrance (components/ui/Dialog.tsx). Sheets rise, centred panels fade. */
+  @keyframes dialog-backdrop-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes dialog-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .dialog-backdrop {
+    animation: dialog-backdrop-in 0.2s ease-out both;
+  }
   .dialog-panel {
-    animation: none;
+    animation: dialog-panel-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-}
+  @media (prefers-reduced-motion: reduce) {
+    .dialog-backdrop,
+    .dialog-panel {
+      animation: none;
+    }
+  }
 
-/* Tour spotlight (components/demos/ui/Spotlight.tsx). One palette shared by
+  /* Tour spotlight (components/demos/ui/Spotlight.tsx). One palette shared by
    rings, caption chips, and nav pulses: record = accent, message = sky,
    task = amber, calendar/metric/recovery = emerald, boundary = rose. */
-.demo-spotlight {
-  --spot: var(--demo-accent, #b3243a);
-  position: relative;
-  animation: demo-spotlight 6s ease-out forwards;
-}
-.demo-spotlight--message { --spot: #38bdf8; }
-.demo-spotlight--task { --spot: #fbbf24; }
-.demo-spotlight--calendar,
-.demo-spotlight--metric,
-.demo-spotlight--recovery { --spot: #34d399; }
-.demo-spotlight--boundary { --spot: #fb7185; }
-@keyframes demo-spotlight {
-  0% {
-    box-shadow: 0 0 0 2px var(--spot), 0 0 22px color-mix(in srgb, var(--spot) 45%, transparent);
-    background-color: color-mix(in srgb, var(--spot) 14%, transparent);
+  .demo-spotlight {
+    --spot: var(--demo-accent, #b3243a);
+    position: relative;
+    animation: demo-spotlight 6s ease-out forwards;
   }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-    background-color: transparent;
+  .demo-spotlight--message {
+    --spot: #38bdf8;
   }
-}
-.demo-spotlight__pill {
-  position: absolute;
-  right: 0.5rem;
-  top: 0.35rem;
-  border-radius: 0.25rem;
-  border: 1px solid color-mix(in srgb, var(--spot) 55%, transparent);
-  background: color-mix(in srgb, var(--spot) 18%, #0b0b0f);
-  color: #fff;
-  font-size: 0.56rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  line-height: 1;
-  padding: 0.2rem 0.4rem;
-  text-transform: uppercase;
-  pointer-events: none;
-  animation: demo-spotlight-pill 6s ease-out forwards;
-}
-/*
+  .demo-spotlight--task {
+    --spot: #fbbf24;
+  }
+  .demo-spotlight--calendar,
+  .demo-spotlight--metric,
+  .demo-spotlight--recovery {
+    --spot: #34d399;
+  }
+  .demo-spotlight--boundary {
+    --spot: #fb7185;
+  }
+  @keyframes demo-spotlight {
+    0% {
+      box-shadow:
+        0 0 0 2px var(--spot),
+        0 0 22px color-mix(in srgb, var(--spot) 45%, transparent);
+      background-color: color-mix(in srgb, var(--spot) 14%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+      background-color: transparent;
+    }
+  }
+  .demo-spotlight__pill {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.35rem;
+    border-radius: 0.25rem;
+    border: 1px solid color-mix(in srgb, var(--spot) 55%, transparent);
+    background: color-mix(in srgb, var(--spot) 18%, #0b0b0f);
+    color: #fff;
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    padding: 0.2rem 0.4rem;
+    text-transform: uppercase;
+    pointer-events: none;
+    animation: demo-spotlight-pill 6s ease-out forwards;
+  }
+  /*
   For rows that already own their top-right corner — a pipeline card's
   hot/warm badge, a calendar chip's status pill. The marker sits in flow
   beside what it would otherwise cover, placed either by Spotlight's
   `pill="inline"` or by the caller rendering <FreshPill inline /> itself.
 */
-.demo-spotlight__pill--inline {
-  position: static;
-  flex-shrink: 0;
-  letter-spacing: 0.06em;
-  padding: 0.2rem 0.3rem;
-}
-@keyframes demo-spotlight-pill {
-  0%, 70% { opacity: 1; }
-  100% { opacity: 0; }
-}
-.demo-nav-pulse {
-  animation: demo-nav-pulse 0.9s ease-out 1;
-}
-@keyframes demo-nav-pulse {
-  0% { background-color: color-mix(in srgb, var(--spot, var(--demo-accent)) 28%, transparent); }
-  100% { background-color: transparent; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .demo-spotlight { animation: none; box-shadow: inset 3px 0 0 var(--spot); }
-  .demo-spotlight__pill { animation: none; }
-  .demo-nav-pulse { animation: none; }
-}
-
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+  .demo-spotlight__pill--inline {
+    position: static;
+    flex-shrink: 0;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.3rem;
   }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  @keyframes demo-spotlight-pill {
+    0%,
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
   }
-
-  /*
-    Safe-area offsets for fixed chrome on notched phones. The floor is the
-    spacing the element used before; the inset wins when it is larger (34px
-    for the iOS home indicator). Needs viewportFit: "cover" in app/layout.tsx.
-  */
-  .bottom-safe {
-    bottom: max(0.75rem, env(safe-area-inset-bottom));
+  .demo-nav-pulse {
+    animation: demo-nav-pulse 0.9s ease-out 1;
   }
-  .bottom-safe-5 {
-    bottom: max(1.25rem, env(safe-area-inset-bottom));
+  @keyframes demo-nav-pulse {
+    0% {
+      background-color: color-mix(
+        in srgb,
+        var(--spot, var(--demo-accent)) 28%,
+        transparent
+      );
+    }
+    100% {
+      background-color: transparent;
+    }
   }
-  .bottom-safe-20 {
-    bottom: calc(5rem + env(safe-area-inset-bottom));
-  }
-  .right-safe {
-    right: max(0.75rem, env(safe-area-inset-right));
-  }
-  .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
-
-  /* Technical grid background */
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-    background-size: 56px 56px;
+  @media (prefers-reduced-motion: reduce) {
+    .demo-spotlight {
+      animation: none;
+      box-shadow: inset 3px 0 0 var(--spot);
+    }
+    .demo-spotlight__pill {
+      animation: none;
+    }
+    .demo-nav-pulse {
+      animation: none;
+    }
   }
 }
 

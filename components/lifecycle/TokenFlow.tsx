@@ -59,7 +59,7 @@ export function TokenFlow({
       return <AssessmentSummaryView summary={summary} />;
     }
     return (
-      <div className="animate-fade-up border border-white/10 bg-white/[0.02] px-6 py-10 text-center sm:px-10">
+      <div className="animate-fade-up border border-white/10 bg-white/2 px-6 py-10 text-center sm:px-10">
         <p className="label justify-center">All set</p>
         <h2 className="display mt-4 text-2xl">Thank you: we&rsquo;re prepared.</h2>
         <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-white/55">
@@ -227,7 +227,7 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
   const bookSlug = CATEGORY_APPOINTMENT_SLUGS[category] ?? "business-systems-consultation";
   return (
     <div className="animate-fade-up space-y-6">
-      <div className="border border-white/10 bg-white/[0.02] px-6 py-8 sm:px-8">
+      <div className="border border-white/10 bg-white/2 px-6 py-8 sm:px-8">
         <p className="label">Your preliminary assessment</p>
         <p className="mt-4 text-sm leading-relaxed text-white/75">{summary.overview}</p>
       </div>
@@ -236,7 +236,7 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
         <SummaryList title="Highest-priority problems" items={summary.priority_problems} />
         <SummaryList title="Revenue opportunities" items={summary.revenue_opportunities} />
         <SummaryList title="Operational risks" items={summary.operational_risks} />
-        <div className="border border-white/10 bg-white/[0.02] px-5 py-5">
+        <div className="border border-white/10 bg-white/2 px-5 py-5">
           <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
             Where you stand by area
           </p>
@@ -258,7 +258,7 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
         </div>
       </div>
 
-      <div className="border border-crimson/30 bg-crimson/[0.06] px-6 py-8 text-center sm:px-8">
+      <div className="border border-crimson/30 bg-crimson/6 px-6 py-8 text-center sm:px-8">
         <p className="label justify-center">Recommended next step</p>
         <h3 className="display mt-3 text-xl sm:text-2xl">
           {SERVICE_CATEGORY_LABELS[category] ?? "Business Systems"} Consultation
@@ -285,7 +285,7 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
 
 function SummaryList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="border border-white/10 bg-white/[0.02] px-5 py-5">
+    <div className="border border-white/10 bg-white/2 px-5 py-5">
       <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">{title}</p>
       {items.length === 0 ? (
         <p className="mt-3 text-sm text-white/45">

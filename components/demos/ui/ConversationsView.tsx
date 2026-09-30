@@ -140,11 +140,11 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
       nowrap preview line (~900px), so `truncate` never engaged and the
       overflow-hidden frame clipped every row's right edge instead.
     */
-    <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-white/[0.07] bg-white/[0.02] lg:grid-cols-5">
+    <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-white/[0.07] bg-white/2 lg:grid-cols-5">
       {/* Contact list */}
       <div className={`min-w-0 border-white/[0.07] lg:col-span-2 lg:block lg:border-r ${showThreadMobile ? "hidden" : "block"}`}>
         <PanelHeading title={`Unified inbox · ${state.conversations.length}`} />
-        <ul className="max-h-[28rem] divide-y divide-white/[0.05] overflow-y-auto overscroll-contain">
+        <ul className="max-h-112 divide-y divide-white/5 overflow-y-auto overscroll-contain">
           {state.conversations.map((c) => {
             const last = c.messages[c.messages.length - 1];
             const active = selected?.id === c.id;
@@ -156,8 +156,8 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                     setSelectedId(c.id);
                     setAiOutput(null);
                   }}
-                  className={`w-full px-4 py-3 text-left transition-colors focus:outline-none focus-visible:bg-white/[0.05] ${
-                    active ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
+                  className={`w-full px-4 py-3 text-left transition-colors focus:outline-hidden focus-visible:bg-white/5 ${
+                    active ? "bg-white/4" : "hover:bg-white/2"
                   } ${c.resolved ? "opacity-50" : ""}`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -188,7 +188,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
             <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.07] px-4 py-3">
               <IconButton
                 onClick={() => setSelectedId(null)}
-                className="-ml-2 rounded text-white/50 hover:text-white lg:hidden"
+                className="-ml-2 rounded-sm text-white/50 hover:text-white lg:hidden"
                 aria-label="Back to inbox"
               >
                 <ChevronLeft size={16} />
@@ -207,7 +207,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                   ]);
                   track("assigned conversations");
                 }}
-                className="rounded border border-white/10 bg-base-900 px-1.5 py-1 text-[0.62rem] text-white/60 focus:border-crimson/60 focus:outline-none"
+                className="rounded-sm border border-white/10 bg-base-900 px-1.5 py-1 text-[0.62rem] text-white/60 focus:border-crimson/60 focus:outline-hidden"
               >
                 <option value="">Unassigned</option>
                 {state.settings.staff.map((s) => (
@@ -229,7 +229,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
               <ChannelBadge channel={selected.channel} />
             </div>
 
-            <div className="flex max-h-[19rem] min-h-[13rem] flex-1 flex-col gap-3 overflow-y-auto p-4 no-scrollbar">
+            <div className="flex max-h-76 min-h-52 flex-1 flex-col gap-3 overflow-y-auto p-4 no-scrollbar">
               {selected.messages.map((m) => (
                 <Spotlight
                   as="div"
@@ -242,12 +242,12 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                   <div
                     className={`rounded-lg px-3.5 py-2.5 text-xs leading-relaxed ${
                       m.internal
-                        ? "border border-dashed border-amber-400/40 bg-amber-500/[0.06] text-amber-100/85"
+                        ? "border border-dashed border-amber-400/40 bg-amber-500/6 text-amber-100/85"
                         : m.from === "contact"
-                          ? "border border-white/[0.08] bg-white/[0.05] text-white/80"
+                          ? "border border-white/8 bg-white/5 text-white/80"
                           : m.from === "system"
-                            ? "border border-crimson/25 bg-crimson/[0.09] text-white/85"
-                            : "border border-white/[0.08] bg-base-700 text-white/85"
+                            ? "border border-crimson/25 bg-crimson/9 text-white/85"
+                            : "border border-white/8 bg-base-700 text-white/85"
                     }`}
                   >
                     {m.text}
@@ -307,7 +307,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                           key={t.id}
                           type="button"
                           onClick={() => insertTemplate(t.id)}
-                          className="block w-full border-b border-white/[0.06] px-3 py-2 text-left text-[0.68rem] text-white/70 last:border-0 hover:bg-white/[0.04]"
+                          className="block w-full border-b border-white/6 px-3 py-2 text-left text-[0.68rem] text-white/70 last:border-0 hover:bg-white/4"
                         >
                           {t.name}
                           <span className="ml-1.5 text-[0.58rem] uppercase text-white/30">{t.channel}</span>
@@ -337,7 +337,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                     type="checkbox"
                     checked={internal}
                     onChange={(e) => setInternal(e.target.checked)}
-                    className="h-3.5 w-3.5 accent-[#b3243a]"
+                    className="h-3.5 w-3.5 accent-crimson"
                   />
                   Internal note
                 </label>
@@ -352,7 +352,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                   onChange={(e) => setReply(e.target.value)}
                   rows={2}
                   placeholder={internal ? "Add a note only your team can see…" : `Reply to ${selected.contact.split(" ")[0]}… (simulated: nothing is really sent)`}
-                  className="min-h-[2.5rem] flex-1 resize-y rounded border border-white/12 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none"
+                  className="min-h-10 flex-1 resize-y rounded-sm border border-white/35 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-hidden"
                 />
                 <button
                   type="button"

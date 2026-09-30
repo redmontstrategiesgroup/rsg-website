@@ -21,7 +21,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
   const visibleRest = rest.slice(0, Math.max(0, rest.length - 4));
 
   return (
-    <section id="systems" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
+    <section id="systems" className="scroll-mt-24 border-y border-white/8 bg-base-900">
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -39,7 +39,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
 
         {flagship && (
           <Reveal y={14} delay={0.1}>
-            <article className="mt-10 sm:mt-16 overflow-hidden rounded-xl border border-crimson/30 bg-crimson/[0.04]">
+            <article className="mt-10 sm:mt-16 overflow-hidden rounded-xl border border-crimson/30 bg-crimson/4">
               <div className="grid gap-8 p-8 sm:p-10 lg:grid-cols-12">
                 <div className="lg:col-span-7">
                   <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light">
@@ -58,7 +58,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
                     ))}
                   </ul>
                 </div>
-                <div className="flex flex-col justify-between gap-8 lg:col-span-5 lg:border-l lg:border-white/[0.08] lg:pl-8">
+                <div className="flex flex-col justify-between gap-8 lg:col-span-5 lg:border-l lg:border-white/8 lg:pl-8">
                   <dl className="grid gap-5 sm:grid-cols-2">
                     <div>
                       <dt className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
@@ -102,7 +102,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
         >
           {visibleRest.map((s, i) => (
             <Reveal key={s.id} y={14} delay={(i % 3) * 0.06} className="h-full">
-              <article className="flex h-full flex-col rounded-xl border border-white/10 bg-white/[0.02] p-7 transition-colors hover:border-white/20">
+              <article className="flex h-full flex-col rounded-xl border border-white/10 bg-white/2 p-7 transition-colors hover:border-white/20">
                 <h3 className="font-display text-[1.12rem] leading-snug text-white">{s.name}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/50">{s.outcome}</p>
                 <ul className="mt-5 space-y-2">
@@ -113,7 +113,7 @@ export function SystemsGrid({ vertical }: { vertical: IndustryVertical }) {
                     </li>
                   ))}
                 </ul>
-                <dl className="mt-6 grid gap-4 border-t border-white/[0.08] pt-5 sm:grid-cols-2">
+                <dl className="mt-6 grid gap-4 border-t border-white/8 pt-5 sm:grid-cols-2">
                   <div>
                     <dt className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
                       Timeline

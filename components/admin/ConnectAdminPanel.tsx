@@ -28,7 +28,7 @@ import { putJson } from "@/lib/api";
 import { SITE_URL } from "@/lib/site";
 
 const inputClass =
-  "w-full rounded-lg border border-white/12 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20";
+  "w-full rounded-lg border border-white/35 bg-white/3 px-3.5 py-2.5 text-sm text-white placeholder:text-white/45 transition-colors focus:border-crimson focus:outline-hidden focus:ring-2 focus:ring-crimson/20";
 
 export function ConnectAdminPanel() {
   const [loading, setLoading] = useState(true);
@@ -177,7 +177,7 @@ export function ConnectAdminPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-white/50">
+      <div className="flex items-center gap-2 text-white/65">
         <Loader2 size={16} className="animate-spin" />
         Loading Connect page…
       </div>
@@ -186,13 +186,7 @@ export function ConnectAdminPanel() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="display text-xl">Connect Page</h2>
-          <p className="mt-1 text-sm text-white/45">
-            Manage the RSG link hub used on social, cards, and QR codes.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -249,7 +243,7 @@ export function ConnectAdminPanel() {
         </p>
       )}
 
-      <div className="grid gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm text-white/55 sm:grid-cols-2">
+      <div className="grid gap-3 rounded-xl border border-white/10 bg-white/2 p-4 text-sm text-white/55 sm:grid-cols-2">
         <p>
           Public URL:{" "}
           <a href={publicUrl} className="text-crimson-light hover:underline" target="_blank" rel="noreferrer">
@@ -265,13 +259,13 @@ export function ConnectAdminPanel() {
       {analytics && (
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-white/60">
               Analytics
             </h3>
             <button
               type="button"
               onClick={exportCsv}
-              className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white"
+              className="inline-flex items-center gap-2 text-sm text-white/65 hover:text-white"
             >
               <Download size={14} /> Export CSV
             </button>
@@ -287,8 +281,8 @@ export function ConnectAdminPanel() {
               ["CTR", `${Math.round(analytics.clickThroughRate * 1000) / 10}%`],
               ["Conv.", `${Math.round(analytics.conversionRate * 1000) / 10}%`],
             ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+              <div key={String(label)} className="rounded-xl border border-white/10 bg-white/2 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60">
                   {label}
                 </p>
                 <p className="mt-2 font-mono text-2xl text-white">{value}</p>
@@ -299,14 +293,14 @@ export function ConnectAdminPanel() {
             <div className="overflow-x-auto rounded-xl border border-white/10">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                  <tr className="border-b border-white/10 text-xs font-medium uppercase tracking-wide text-white/60">
                     <th className="px-4 py-3 font-normal">Link</th>
                     <th className="px-4 py-3 font-normal">Clicks</th>
                   </tr>
                 </thead>
                 <tbody>
                   {analytics.byLink.slice(0, 12).map((row) => (
-                    <tr key={row.id} className="border-b border-white/[0.06]">
+                    <tr key={row.id} className="border-b border-white/6">
                       <td className="px-4 py-3 text-white/80">{row.title}</td>
                       <td className="px-4 py-3 font-mono text-white/55">{row.clicks}</td>
                     </tr>
@@ -320,7 +314,7 @@ export function ConnectAdminPanel() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+          <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
             Headline
           </span>
           <input
@@ -330,7 +324,7 @@ export function ConnectAdminPanel() {
           />
         </label>
         <label className="block">
-          <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+          <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
             Badge label
           </span>
           <input
@@ -340,7 +334,7 @@ export function ConnectAdminPanel() {
           />
         </label>
         <label className="block lg:col-span-2">
-          <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+          <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
             Description
           </span>
           <textarea
@@ -350,7 +344,7 @@ export function ConnectAdminPanel() {
             onChange={(e) => setSettings({ ...settings, description: e.target.value })}
           />
         </label>
-        <label className="inline-flex items-center gap-2 text-sm text-white/60">
+        <label className="inline-flex min-h-11 items-center gap-2 text-sm text-white/75">
           <input
             type="checkbox"
             checked={settings.published}
@@ -360,12 +354,12 @@ export function ConnectAdminPanel() {
         </label>
       </section>
 
-      <section className="space-y-3 rounded-xl border border-crimson/25 bg-crimson/[0.04] p-4">
+      <section className="space-y-3 rounded-xl border border-crimson/25 bg-crimson/4 p-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-mono text-[0.58rem] uppercase tracking-label text-crimson-light">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-crimson-light">
             Featured campaign
           </h3>
-          <label className="inline-flex items-center gap-2 text-sm text-white/60">
+          <label className="inline-flex min-h-11 items-center gap-2 text-sm text-white/75">
             <input
               type="checkbox"
               checked={settings.campaignActive}
@@ -377,32 +371,44 @@ export function ConnectAdminPanel() {
           </label>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <input
-            className={inputClass}
-            placeholder="Campaign title"
-            value={settings.campaignTitle}
-            onChange={(e) => setSettings({ ...settings, campaignTitle: e.target.value })}
-          />
-          <input
-            className={inputClass}
-            placeholder="Badge"
-            value={settings.campaignBadge}
-            onChange={(e) => setSettings({ ...settings, campaignBadge: e.target.value })}
-          />
-          <input
-            className={inputClass}
-            placeholder="URL"
-            value={settings.campaignUrl}
-            onChange={(e) => setSettings({ ...settings, campaignUrl: e.target.value })}
-          />
-          <input
-            className={inputClass}
-            placeholder="Description"
-            value={settings.campaignDescription}
-            onChange={(e) =>
-              setSettings({ ...settings, campaignDescription: e.target.value })
-            }
-          />
+          <label className="block">
+            <span className={fieldLabel}>Title</span>
+            <input
+              className={inputClass}
+              
+              value={settings.campaignTitle}
+              onChange={(e) => setSettings({ ...settings, campaignTitle: e.target.value })}
+            />
+          </label>
+          <label className="block">
+            <span className={fieldLabel}>Badge</span>
+            <input
+              className={inputClass}
+              placeholder="Optional"
+              value={settings.campaignBadge}
+              onChange={(e) => setSettings({ ...settings, campaignBadge: e.target.value })}
+            />
+          </label>
+          <label className="block">
+            <span className={fieldLabel}>URL</span>
+            <input
+              className={inputClass}
+              placeholder="/path or https://…"
+              value={settings.campaignUrl}
+              onChange={(e) => setSettings({ ...settings, campaignUrl: e.target.value })}
+            />
+          </label>
+          <label className="block">
+            <span className={fieldLabel}>Description</span>
+            <input
+              className={inputClass}
+              
+              value={settings.campaignDescription}
+              onChange={(e) =>
+                setSettings({ ...settings, campaignDescription: e.target.value })
+              }
+            />
+          </label>
         </div>
       </section>
 
@@ -415,7 +421,7 @@ export function ConnectAdminPanel() {
           ] as const
         ).map(([label, key]) => (
           <label key={key} className="block">
-            <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+            <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
               {label}
             </span>
             <input
@@ -429,7 +435,7 @@ export function ConnectAdminPanel() {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-white/60">
             Links
           </h3>
           <button
@@ -443,18 +449,18 @@ export function ConnectAdminPanel() {
         {sorted.map((link) => (
           <div
             key={link.id}
-            className="space-y-3 rounded-xl border border-white/10 bg-white/[0.02] p-4"
+            className="space-y-3 rounded-xl border border-white/10 bg-white/2 p-4"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <button type="button" onClick={() => move(link.id, -1)} className="rounded border border-white/10 p-1.5 text-white/50 hover:text-white" aria-label="Move up">
-                <ArrowUp size={14} />
+              <button type="button" onClick={() => move(link.id, -1)} className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 text-white/65 hover:text-white" aria-label={`Move ${link.title || "link"} up`}>
+                <ArrowUp size={16} aria-hidden="true" />
               </button>
-              <button type="button" onClick={() => move(link.id, 1)} className="rounded border border-white/10 p-1.5 text-white/50 hover:text-white" aria-label="Move down">
-                <ArrowDown size={14} />
+              <button type="button" onClick={() => move(link.id, 1)} className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 text-white/65 hover:text-white" aria-label={`Move ${link.title || "link"} down`}>
+                <ArrowDown size={16} aria-hidden="true" />
               </button>
-              <span className="font-mono text-[0.52rem] text-white/30">{link.id}</span>
+              <span className="font-mono text-[0.6875rem] text-white/60">{link.id}</span>
               <div className="ml-auto flex gap-2">
-                <label className="inline-flex items-center gap-1.5 text-xs text-white/50">
+                <label className="inline-flex min-h-11 items-center gap-2 px-1 text-sm text-white/75">
                   <input
                     type="checkbox"
                     checked={link.active}
@@ -462,7 +468,7 @@ export function ConnectAdminPanel() {
                   />
                   Active
                 </label>
-                <label className="inline-flex items-center gap-1.5 text-xs text-white/50">
+                <label className="inline-flex min-h-11 items-center gap-2 px-1 text-sm text-white/75">
                   <input
                     type="checkbox"
                     checked={link.featured}
@@ -473,79 +479,101 @@ export function ConnectAdminPanel() {
                 <button
                   type="button"
                   onClick={() => removeLink(link.id)}
-                  className="rounded border border-white/10 p-1.5 text-white/40 hover:text-crimson-light"
-                  aria-label="Delete link"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 text-white/60 hover:text-crimson-light"
+                  aria-label={`Delete ${link.title || "link"}`}
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={16} aria-hidden="true" />
                 </button>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <input
-                className={inputClass}
-                value={link.title}
-                onChange={(e) => updateLink(link.id, { title: e.target.value })}
-                placeholder="Title"
-              />
-              <input
-                className={inputClass}
-                value={link.url}
-                onChange={(e) => updateLink(link.id, { url: e.target.value })}
-                placeholder="URL"
-              />
-              <input
-                className={inputClass}
-                value={link.description}
-                onChange={(e) => updateLink(link.id, { description: e.target.value })}
-                placeholder="Description"
-              />
-              <input
-                className={inputClass}
-                value={link.badge}
-                onChange={(e) => updateLink(link.id, { badge: e.target.value })}
-                placeholder="Badge (optional)"
-              />
-              <input
-                className={inputClass}
-                value={link.icon}
-                onChange={(e) => updateLink(link.id, { icon: e.target.value })}
-                placeholder="Icon key"
-              />
-              <input
-                className={inputClass}
-                value={link.sources.join(",")}
-                onChange={(e) =>
-                  updateLink(link.id, {
-                    sources: e.target.value
-                      .split(",")
-                      .map((s) => s.trim())
-                      .filter(Boolean),
-                  })
-                }
-                placeholder="Sources (instagram,linkedin), empty = all"
-              />
-              <input
-                className={inputClass}
-                type="datetime-local"
-                value={link.startsAt ? link.startsAt.slice(0, 16) : ""}
-                onChange={(e) =>
-                  updateLink(link.id, {
-                    startsAt: e.target.value ? new Date(e.target.value).toISOString() : null,
-                  })
-                }
-              />
-              <input
-                className={inputClass}
-                type="datetime-local"
-                value={link.expiresAt ? link.expiresAt.slice(0, 16) : ""}
-                onChange={(e) =>
-                  updateLink(link.id, {
-                    expiresAt: e.target.value ? new Date(e.target.value).toISOString() : null,
-                  })
-                }
-              />
+              <label className="block">
+                <span className={fieldLabel}>Title</span>
+                <input
+                  className={inputClass}
+                  value={link.title}
+                  onChange={(e) => updateLink(link.id, { title: e.target.value })}
+                />
+              </label>
+              <label className="block">
+                <span className={fieldLabel}>URL</span>
+                <input
+                  className={inputClass}
+                  value={link.url}
+                  onChange={(e) => updateLink(link.id, { url: e.target.value })}
+                  placeholder="/path or https://…"
+                />
+              </label>
+              <label className="block">
+                <span className={fieldLabel}>Description</span>
+                <input
+                  className={inputClass}
+                  value={link.description}
+                  onChange={(e) => updateLink(link.id, { description: e.target.value })}
+                />
+              </label>
+              <label className="block">
+                <span className={fieldLabel}>Badge</span>
+                <input
+                  className={inputClass}
+                  value={link.badge}
+                  onChange={(e) => updateLink(link.id, { badge: e.target.value })}
+                  placeholder="Optional"
+                />
+              </label>
+              <label className="block">
+                <span className={fieldLabel}>Icon key</span>
+                <input
+                  className={inputClass}
+                  value={link.icon}
+                  onChange={(e) => updateLink(link.id, { icon: e.target.value })}
+                  placeholder="e.g. calendar"
+                />
+              </label>
+              <label className="block">
+                <span className={fieldLabel}>Show only for sources</span>
+                <input
+                  className={inputClass}
+                  value={link.sources.join(",")}
+                  onChange={(e) =>
+                    updateLink(link.id, {
+                      sources: e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  placeholder="instagram, linkedin (empty = all)"
+                />
+              </label>
+              <label className="block">
+                <span className={fieldLabel}>Starts</span>
+                <input
+                  className={inputClass}
+                  type="datetime-local"
+                  value={link.startsAt ? link.startsAt.slice(0, 16) : ""}
+                  onChange={(e) =>
+                    updateLink(link.id, {
+                      startsAt: e.target.value ? new Date(e.target.value).toISOString() : null,
+                    })
+                  }
+                />
+              </label>
+              <label className="block">
+                <span className={fieldLabel}>Expires</span>
+                <input
+                  className={inputClass}
+                  type="datetime-local"
+                  value={link.expiresAt ? link.expiresAt.slice(0, 16) : ""}
+                  onChange={(e) =>
+                    updateLink(link.id, {
+                      expiresAt: e.target.value ? new Date(e.target.value).toISOString() : null,
+                    })
+                  }
+                />
+              </label>
             </div>
-            <label className="inline-flex items-center gap-2 text-xs text-white/45">
+            <label className="inline-flex min-h-11 items-center gap-2 text-sm text-white/75">
               <input
                 type="checkbox"
                 checked={link.openNewTab}
@@ -559,3 +587,5 @@ export function ConnectAdminPanel() {
     </div>
   );
 }
+
+const fieldLabel = "mb-1.5 block text-xs font-medium text-white/70";

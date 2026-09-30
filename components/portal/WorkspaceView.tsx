@@ -196,14 +196,14 @@ export function WorkspaceView({
           <div className="flex flex-wrap gap-3">
             <input
               type="search"
-              className={`${inputClass(false)} max-w-xs !py-2.5 text-sm`}
+              className={`${inputClass(false)} max-w-xs py-2.5! text-sm`}
               placeholder="Search requests…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search requests"
             />
             <select
-              className={`${inputClass(false)} w-auto !py-2.5 text-sm`}
+              className={`${inputClass(false)} w-auto py-2.5! text-sm`}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               aria-label="Filter by status"
@@ -269,7 +269,7 @@ export function WorkspaceView({
                         <p className="text-sm leading-relaxed text-white/65">{r.description}</p>
                       )}
                       {r.change_order_required && (
-                        <p className="mt-3 border border-amber-400/20 bg-amber-400/[0.05] px-3 py-2 text-xs leading-relaxed text-amber-200/80">
+                        <p className="mt-3 border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-xs leading-relaxed text-amber-200/80">
                           This kind of request can change project scope. If it
                           does, we&rsquo;ll bring you a clear change order with
                           pricing before any work begins: nothing is ever
@@ -277,7 +277,7 @@ export function WorkspaceView({
                         </p>
                       )}
                       {r.resolution && (
-                        <p className="mt-3 border border-emerald-400/20 bg-emerald-400/[0.05] px-3 py-2 text-xs leading-relaxed text-emerald-200/80">
+                        <p className="mt-3 border border-emerald-400/20 bg-emerald-400/5 px-3 py-2 text-xs leading-relaxed text-emerald-200/80">
                           Resolution: {r.resolution}
                         </p>
                       )}
@@ -287,8 +287,8 @@ export function WorkspaceView({
                             key={m.id}
                             className={`max-w-[85%] border px-3.5 py-2.5 ${
                               m.author_type === "client"
-                                ? "ml-auto border-crimson/25 bg-crimson/[0.06]"
-                                : "border-white/10 bg-white/[0.02]"
+                                ? "ml-auto border-crimson/25 bg-crimson/6"
+                                : "border-white/10 bg-white/2"
                             }`}
                           >
                             <p className="text-[0.65rem] text-white/35">
@@ -307,7 +307,7 @@ export function WorkspaceView({
                         <div className="mt-4 flex gap-2">
                           <input
                             type="text"
-                            className={`${inputClass(false)} !py-2.5 text-sm`}
+                            className={`${inputClass(false)} py-2.5! text-sm`}
                             placeholder="Write a reply…"
                             value={reply[r.id] ?? ""}
                             onChange={(e) =>
@@ -342,7 +342,7 @@ export function WorkspaceView({
                 description="Brand assets, documents, deliverables; everything shared in either direction is versioned and kept here."
               />
             ) : (
-              <ul className="divide-y divide-white/[0.06]">
+              <ul className="divide-y divide-white/6">
                 {files.map((f) => (
                   <li
                     key={f.id}
@@ -408,13 +408,13 @@ export function WorkspaceView({
             )}
           </Field>
           {SCOPE_SENSITIVE.includes(category) && (
-            <p className="border border-amber-400/20 bg-amber-400/[0.05] px-3 py-2 text-xs leading-relaxed text-amber-200/80">
+            <p className="border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-xs leading-relaxed text-amber-200/80">
               New features and scope changes may require a formal change order
               with adjusted pricing: we&rsquo;ll always confirm with you first.
             </p>
           )}
           {category === "access_credentials" && (
-            <p className="border border-sky-400/20 bg-sky-400/[0.05] px-3 py-2 text-xs leading-relaxed text-sky-200/80">
+            <p className="border border-sky-400/20 bg-sky-400/5 px-3 py-2 text-xs leading-relaxed text-sky-200/80">
               Don&rsquo;t include any passwords here. Describe what access is
               needed and we&rsquo;ll follow up with a secure exchange method.
             </p>

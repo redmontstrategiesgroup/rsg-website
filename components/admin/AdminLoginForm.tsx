@@ -57,7 +57,7 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
     <div className="relative flex min-h-dvh items-center justify-center overflow-hidden p-6">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-grid opacity-30" />
-        <div className="absolute left-1/2 top-0 h-[420px] w-[620px] -translate-x-1/2 rounded-full bg-crimson/[0.10] blur-[130px]" />
+        <div className="absolute left-1/2 top-0 h-[420px] w-[620px] -translate-x-1/2 rounded-full bg-crimson/10 blur-[130px]" />
       </div>
 
       <motion.div
@@ -68,7 +68,7 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
       >
         <Link
           href="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-white/45 transition-colors hover:text-white"
+          className="mb-8 inline-flex items-center gap-2 text-sm text-white/65 transition-colors hover:text-white"
         >
           <ArrowLeft size={15} />
           Back to site
@@ -76,7 +76,7 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
 
         <Logo showWordmark={false} />
 
-        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[0.58rem] uppercase tracking-label text-crimson-light">
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/3 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-crimson-light">
           <ShieldCheck size={13} />
           Admin console
         </div>
@@ -84,7 +84,7 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
         <h1 className="display mt-4 text-2xl font-semibold text-white">
           {mfaTicket ? "Authenticator code" : "Sign in to manage clients"}
         </h1>
-        <p className="mt-2 text-sm text-white/50">
+        <p className="mt-2 text-sm text-white/65">
           {mfaTicket
             ? "Enter the 6-digit code from your authenticator app."
             : "Restricted access. Admin credentials required."}
@@ -94,13 +94,13 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
           {!mfaTicket ? (
             <>
               <label className="block">
-                <span className="mb-1.5 block font-mono text-[0.58rem] uppercase tracking-label text-white/55">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/55">
                   Admin email
                 </span>
                 <div className="relative">
                   <Mail
                     size={16}
-                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60"
                   />
                   <input
                     type="email"
@@ -108,20 +108,20 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-white/12 bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20"
+                    className="w-full rounded-lg border border-white/35 bg-white/3 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/45 transition-colors focus:border-crimson focus:outline-hidden focus:ring-2 focus:ring-crimson/20"
                     placeholder="Email address"
                   />
                 </div>
               </label>
 
               <label className="block">
-                <span className="mb-1.5 block font-mono text-[0.58rem] uppercase tracking-label text-white/55">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/55">
                   Password
                 </span>
                 <div className="relative">
                   <Lock
                     size={16}
-                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60"
                   />
                   <input
                     type="password"
@@ -129,7 +129,7 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-white/12 bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20"
+                    className="w-full rounded-lg border border-white/35 bg-white/3 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/45 transition-colors focus:border-crimson focus:outline-hidden focus:ring-2 focus:ring-crimson/20"
                     placeholder="••••••••••"
                   />
                 </div>
@@ -137,13 +137,13 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
             </>
           ) : (
             <label className="block">
-              <span className="mb-1.5 block font-mono text-[0.58rem] uppercase tracking-label text-white/55">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/55">
                 MFA code
               </span>
               <div className="relative">
                 <KeyRound
                   size={16}
-                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/60"
                 />
                 <input
                   type="text"
@@ -156,7 +156,7 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
                   onChange={(e) =>
                     setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))
                   }
-                  className="w-full rounded-lg border border-white/12 bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm tracking-[0.3em] text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20"
+                  className="w-full rounded-lg border border-white/35 bg-white/3 py-2.5 pl-10 pr-4 text-sm tracking-wide text-white placeholder:text-white/45 transition-colors focus:border-crimson focus:outline-hidden focus:ring-2 focus:ring-crimson/20"
                   placeholder="000000"
                 />
               </div>
@@ -193,7 +193,7 @@ export function AdminLoginForm({ next = "/admin" }: { next?: string }) {
           {mfaTicket && (
             <button
               type="button"
-              className="w-full text-sm text-white/45 hover:text-white"
+              className="w-full text-sm text-white/65 hover:text-white"
               onClick={() => {
                 setMfaTicket(null);
                 setMfaCode("");

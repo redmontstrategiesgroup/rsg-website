@@ -304,7 +304,7 @@ function Overview({
                   transition={{ delay: 0.15 + i * 0.07 }}
                   className="flex gap-3"
                 >
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-crimson-light">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-crimson-light">
                     <Icon size={14} />
                   </span>
                   <div className="min-w-0">
@@ -429,7 +429,7 @@ function SystemRow({ system, compact }: { system: PortalSystem; compact?: boolea
   const st = STATUS_STYLES[system.status];
   return (
     <div
-      className={`rounded-xl border border-white/10 bg-white/[0.02] p-4 transition-colors hover:border-white/20 ${
+      className={`rounded-xl border border-white/10 bg-white/2 p-4 transition-colors hover:border-white/20 ${
         compact ? "" : "h-full"
       }`}
     >
@@ -454,7 +454,7 @@ function SystemRow({ system, compact }: { system: PortalSystem; compact?: boolea
           {st.label}
         </span>
       </div>
-      <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
+      <div className="mt-3 flex items-center justify-between border-t border-white/6 pt-3">
         <span className="inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-label text-white/45">
           <Zap size={11} className="text-crimson-light" />
           {system.throughput}
@@ -517,12 +517,12 @@ function Projects({ client }: { client: ClientPublic }) {
                 <span>Progress</span>
                 <span className="text-white/70">{p.progress}%</span>
               </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[0.06]">
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/6">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${p.progress}%` }}
                   transition={{ delay: 0.2 + i * 0.06, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                  className="h-full rounded-full bg-gradient-to-r from-crimson-dark to-crimson-light shadow-glow-sm"
+                  className="h-full rounded-full bg-linear-to-r from-crimson-dark to-crimson-light shadow-glow-sm"
                 />
               </div>
             </div>
@@ -536,7 +536,7 @@ function Projects({ client }: { client: ClientPublic }) {
                   <span
                     key={ph}
                     className={`h-1 flex-1 rounded-full ${
-                      reached ? "bg-crimson/70" : "bg-white/[0.08]"
+                      reached ? "bg-crimson/70" : "bg-white/8"
                     }`}
                     title={ph}
                   />
@@ -561,9 +561,9 @@ function Projects({ client }: { client: ClientPublic }) {
           {client.deliverables.map((d) => (
             <li
               key={d.name}
-              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3.5 transition-colors hover:border-white/20"
+              className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/2 p-3.5 transition-colors hover:border-white/20"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-crimson-light">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-crimson-light">
                 <FileText size={15} />
               </span>
               <div className="min-w-0 flex-1">
@@ -578,7 +578,7 @@ function Projects({ client }: { client: ClientPublic }) {
                     ? "bg-emerald-400/10 text-emerald-300"
                     : d.status === "In review"
                     ? "bg-amber-400/10 text-amber-300"
-                    : "bg-white/[0.06] text-white/50"
+                    : "bg-white/6 text-white/50"
                 }`}
               >
                 {d.status}
@@ -631,7 +631,7 @@ function Billing({ client }: { client: ClientPublic }) {
             {client.invoices.map((inv) => (
               <li
                 key={inv.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 px-4 py-3"
               >
                 <div className="min-w-0">
                   <p className="truncate font-mono text-xs text-white/80">{inv.id}</p>
@@ -648,7 +648,7 @@ function Billing({ client }: { client: ClientPublic }) {
           <div className="hidden overflow-hidden rounded-xl border border-white/10 md:block">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                <tr className="border-b border-white/10 bg-white/2 font-mono text-[0.54rem] uppercase tracking-label text-white/40">
                   <th className="px-4 py-3 font-normal">Invoice</th>
                   <th className="px-4 py-3 font-normal">Date</th>
                   <th className="px-4 py-3 font-normal">Amount</th>
@@ -657,7 +657,7 @@ function Billing({ client }: { client: ClientPublic }) {
               </thead>
               <tbody>
                 {client.invoices.map((inv) => (
-                  <tr key={inv.id} className="border-b border-white/[0.06] last:border-0">
+                  <tr key={inv.id} className="border-b border-white/6 last:border-0">
                     <td className="px-4 py-3.5 font-mono text-white/80">{inv.id}</td>
                     <td className="px-4 py-3.5 text-white/60">{inv.date}</td>
                     <td className="px-4 py-3.5 text-white/80">
@@ -718,7 +718,7 @@ function InvoiceStatus({
           ? "bg-emerald-400/10 text-emerald-300"
           : status === "Due"
             ? "bg-crimson/15 text-crimson-light"
-            : "bg-white/[0.06] text-white/50"
+            : "bg-white/6 text-white/50"
       } ${className}`}
     >
       {status}

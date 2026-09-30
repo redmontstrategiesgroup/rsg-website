@@ -193,6 +193,21 @@ export const LEAD_STATUSES: LeadStatus[] = [
   "archived",
 ];
 
+/** A visitor's first consented visit (rsg_ft cookie, lib/attribution.ts). */
+export type FirstTouch = {
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  utmContent: string;
+  utmTerm: string;
+  /** Referring site's host only, "" for direct or internal. */
+  referrer: string;
+  /** Path of the first page seen. */
+  landingPage: string;
+  /** ISO timestamp of that visit. */
+  at: string;
+};
+
 export type Lead = {
   /** Stable id when loaded from Supabase or assigned locally. */
   id?: string;
@@ -221,6 +236,12 @@ export type Lead = {
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
+  /** Anonymous rsg_vid cookie at submit time (only with cookie consent). */
+  visitorId?: string;
+  /** First consented visit, from the rsg_ft cookie (only with cookie consent). */
+  firstTouch?: FirstTouch;
+  /** Consented page views for visitorId, oldest first. Admin reads only. */
+  journey?: { path: string; at: string }[];
   /** Basic lead score, 0–100. */
   score?: number;
   /** Where the lead was captured: website_contact_form | website_chat. */

@@ -76,7 +76,7 @@ export function UsersRolesView({
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Role</th>
@@ -85,11 +85,11 @@ export function UsersRolesView({
             </thead>
             <tbody>
               {admins.map((a) => (
-                <tr key={a.id} className="border-b border-white/[0.06] last:border-0">
+                <tr key={a.id} className="border-b border-white/6 last:border-0">
                   <td className="px-4 py-3.5 text-white">{a.name}</td>
                   <td className="px-4 py-3.5 text-white/60">{a.email}</td>
                   <td className="px-4 py-3.5">
-                    <span className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-0.5 text-xs text-white/70">
+                    <span className="rounded-full border border-white/12 bg-white/4 px-2.5 py-0.5 text-xs text-white/70">
                       {a.roleLabel}
                     </span>
                   </td>
@@ -99,7 +99,7 @@ export function UsersRolesView({
                         <ShieldCheck size={13} /> Enabled
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-xs text-white/45">
+                      <span className="inline-flex items-center gap-1.5 text-xs text-white/65">
                         <ShieldOff size={13} /> Not set
                       </span>
                     )}
@@ -109,7 +109,7 @@ export function UsersRolesView({
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-white/40">
+        <p className="text-xs text-white/60">
           Admin accounts are provisioned in the database. MFA is enrolled by
           each admin from their own account panel above.
           {!canManageMfa && " Your role cannot manage other admins' MFA."}
@@ -121,7 +121,7 @@ export function UsersRolesView({
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <p className={labelClass}>Roles & permissions</p>
-            <p className="mt-1 max-w-2xl text-xs text-white/45">
+            <p className="mt-1 max-w-2xl text-xs text-white/65">
               Permissions are enforced server-side on every API route and, for
               Supabase tables, by Row Level Security, hiding a button is never
               the control. This matrix summarizes each role.
@@ -131,7 +131,7 @@ export function UsersRolesView({
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <th className="px-4 py-3">Role</th>
                 {PERMISSION_COLUMNS.map((c) => (
                   <th key={c.key} className="px-3 py-3 text-center">
@@ -145,17 +145,17 @@ export function UsersRolesView({
               {ADMIN_ROLES.map((role) => {
                 const grid = roleGrid(role);
                 return (
-                  <tr key={role} className="border-b border-white/[0.06] last:border-0 align-top">
+                  <tr key={role} className="border-b border-white/6 last:border-0 align-top">
                     <td className="px-4 py-3.5">
                       <p className="font-medium text-white">{ADMIN_ROLE_LABELS[role]}</p>
-                      <p className="mt-1 max-w-xs text-xs text-white/40">{ROLE_SUMMARY[role]}</p>
+                      <p className="mt-1 max-w-xs text-xs text-white/60">{ROLE_SUMMARY[role]}</p>
                     </td>
                     {PERMISSION_COLUMNS.map((c) => (
                       <td key={c.key} className="px-3 py-3.5 text-center">
                         {grid[c.key] ? (
                           <span className="text-emerald-300">●</span>
                         ) : (
-                          <span className="text-white/15">-</span>
+                          <span className="text-white/60">-</span>
                         )}
                       </td>
                     ))}
@@ -176,13 +176,13 @@ export function UsersRolesView({
           </table>
         </div>
         {canManageSettings ? (
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-white/60">
             Requiring MFA for a role blocks that role&apos;s permission-gated
             actions server-side until the admin enrolls (the owner bootstrap
             account is exempt so recovery is always possible).
           </p>
         ) : (
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-white/60">
             Your role can view this matrix but not change MFA enforcement.
           </p>
         )}

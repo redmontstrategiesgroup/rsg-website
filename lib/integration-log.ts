@@ -38,6 +38,8 @@ export type Provider =
   | "resend"
   | "stripe"
   | "anthropic"
+  | "openai"
+  | "pocket"
   | "supabase"
   | "twilio"
   // Not a third party: our own scheduled work. A cron that stopped firing

@@ -11,7 +11,7 @@ export function IntegrationsSection({ vertical }: { vertical: IndustryVertical }
   const categories = [...new Set(items.map((i) => i.category))];
 
   return (
-    <section id="integrations" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
+    <section id="integrations" className="scroll-mt-24 border-y border-white/8 bg-base-900">
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -38,7 +38,7 @@ export function IntegrationsSection({ vertical }: { vertical: IndustryVertical }
                     .map((i) => (
                       <article
                         key={i.name}
-                        className="rounded-xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-white/20"
+                        className="rounded-xl border border-white/10 bg-white/2 p-5 transition-colors hover:border-white/20"
                       >
                         <h3 className="font-display text-[0.98rem] text-white">{i.name}</h3>
                         <p className="mt-2 text-[0.8rem] leading-relaxed text-white/50">{i.connects}</p>

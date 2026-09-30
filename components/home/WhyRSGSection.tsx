@@ -45,7 +45,7 @@ export function WhyRSGSection() {
                 {PRINCIPLES.map((p) => (
                   <li
                     key={p}
-                    className="border-t border-white/[0.08] py-[1.1rem] text-[0.95rem] text-white/70 last:border-b"
+                    className="border-t border-white/8 py-[1.1rem] text-[0.95rem] text-white/70 last:border-b"
                   >
                     {p}
                   </li>

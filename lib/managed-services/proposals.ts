@@ -89,8 +89,7 @@ function rowToProposal(row: Record<string, unknown>): Proposal {
       : "implementation",
     summary: str(row.summary),
     preparedFor: str(row.prepared_for ?? row.preparedFor),
-    implementation:
-      ((row.implementation ?? {}) as ProposalImplementation) ?? {},
+    implementation: (row.implementation ?? {}) as ProposalImplementation,
     planId: strOrNull(row.plan_id ?? row.planId),
     alternativePlanIds: Array.isArray(row.alternative_plan_ids)
       ? (row.alternative_plan_ids as string[])

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { postJson } from "@/lib/api";
-import { captureUtm } from "@/lib/tracking";
+import { captureUtm, saveFirstTouch } from "@/lib/tracking";
 
 function consentedAll(): boolean {
   return document.cookie.includes("rsg_consent=all");
@@ -26,6 +26,7 @@ export function AnalyticsTracker() {
     const track = () => {
       if (!consentedAll() || lastTracked.current === pathname) return;
       lastTracked.current = pathname;
+      saveFirstTouch();
       postJson("/api/analytics", {
         path: pathname,
         referrer: document.referrer,

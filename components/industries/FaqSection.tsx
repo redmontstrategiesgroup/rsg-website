@@ -20,9 +20,9 @@ export function FaqSection({ vertical }: { vertical: IndustryVertical }) {
           </div>
           <div className="lg:col-span-8">
             <Reveal y={12} delay={0.1}>
-              <div className="border-t border-white/[0.08]">
+              <div className="border-t border-white/8">
                 {vertical.faqs.map((f) => (
-                  <details key={f.q} className="group border-b border-white/[0.08]">
+                  <details key={f.q} className="group border-b border-white/8">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left [&::-webkit-details-marker]:hidden">
                       <span className="font-display text-[1.02rem] leading-snug text-white/85">
                         {f.q}

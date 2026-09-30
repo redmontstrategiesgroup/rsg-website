@@ -45,7 +45,7 @@ export function TestsView({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-2xl">
           <p className={labelClass}>Security & AI abuse testing</p>
-          <p className="mt-1 text-xs leading-relaxed text-white/45">
+          <p className="mt-1 text-xs leading-relaxed text-white/65">
             The internal checklist for AI-enabled projects, prompt injection,
             sensitive-info disclosure, permission bypass, data leakage, excessive
             agency, and more; plus platform tests like backup restoration and
@@ -57,7 +57,7 @@ export function TestsView({
           <button
             onClick={() => run({ action: "seed_test_checklist" })}
             disabled={busy}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 disabled:opacity-50"
           >
             <ListChecks size={14} /> Load standard checklist
           </button>
@@ -67,10 +67,10 @@ export function TestsView({
       {tests.length === 0 ? (
         <div className="card p-6 text-sm text-white/55">
           <div className="flex items-start gap-3">
-            <FlaskConical size={18} className="mt-0.5 shrink-0 text-white/40" />
+            <FlaskConical size={18} className="mt-0.5 shrink-0 text-white/60" />
             <div>
               <p>No tests recorded yet.</p>
-              <p className="mt-1 text-xs text-white/40">
+              <p className="mt-1 text-xs text-white/60">
                 {canManage
                   ? "Load the standard checklist to seed the AI and platform tests below, then record results."
                   : "Tests will appear here once the checklist is populated."}
@@ -86,7 +86,7 @@ export function TestsView({
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <th className="px-4 py-3">Test</th>
                 <th className="px-4 py-3">Result</th>
                 <th className="px-4 py-3">Severity</th>
@@ -97,27 +97,27 @@ export function TestsView({
             </thead>
             <tbody>
               {tests.map((t) => (
-                <tr key={t.id} className="border-b border-white/[0.06] last:border-0 align-top">
+                <tr key={t.id} className="border-b border-white/6 last:border-0 align-top">
                   <td className="px-4 py-3.5">
                     <p className="text-white/85">{t.name}</p>
-                    <p className="font-mono text-[0.56rem] uppercase tracking-label text-white/35">{t.category}</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-white/60">{t.category}</p>
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${resultPill(t.result)}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-xs ${resultPill(t.result)}`}>
                       {RESULT_LABELS[t.result]}
                     </span>
                   </td>
                   <td className="px-4 py-3.5">
                     {t.severity ? (
-                      <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${riskPill(t.severity)}`}>
+                      <span className={`rounded-full border px-2 py-0.5 text-xs ${riskPill(t.severity)}`}>
                         {t.severity}
                       </span>
                     ) : (
-                      <span className="text-white/30">-</span>
+                      <span className="text-white/60">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3.5 text-white/55">{t.retestStatus}</td>
-                  <td className="px-4 py-3.5 text-white/45">{formatDate(t.lastRunAt)}</td>
+                  <td className="px-4 py-3.5 text-white/65">{formatDate(t.lastRunAt)}</td>
                   <td className="px-4 py-3.5 text-right">
                     {canManage && (
                       <button onClick={() => setEditing(t)} className="text-xs text-crimson-light hover:underline">
@@ -149,8 +149,8 @@ export function TestsView({
 
 function ChecklistPreview({ title, items }: { title: string; items: SecurityTestDef[] }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-      <p className="font-mono text-[0.56rem] uppercase tracking-label text-white/45">{title}</p>
+    <div className="rounded-lg border border-white/10 bg-white/2 p-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-white/65">{title}</p>
       <ul className="mt-2 space-y-1 text-xs text-white/55">
         {items.slice(0, 8).map((i) => (
           <li key={i.category} className="flex gap-2">
@@ -158,7 +158,7 @@ function ChecklistPreview({ title, items }: { title: string; items: SecurityTest
             {i.label}
           </li>
         ))}
-        {items.length > 8 && <li className="text-white/35">+{items.length - 8} more</li>}
+        {items.length > 8 && <li className="text-white/60">+{items.length - 8} more</li>}
       </ul>
     </div>
   );
@@ -183,14 +183,14 @@ function TestForm({
       <div className="max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl border border-white/12 bg-base-900 p-6" onClick={(e) => e.stopPropagation()}>
         <p className={labelClass}>Record test result</p>
         <p className="mt-2 text-sm font-medium text-white">{t.name}</p>
-        <p className="text-xs text-white/40">{t.category}</p>
+        <p className="text-xs text-white/60">{t.category}</p>
         <div className="mt-4 space-y-3">
           <div>
-            <p className="mb-1 text-xs text-white/45">Expected behavior</p>
+            <p className="mb-1 text-xs text-white/65">Expected behavior</p>
             <textarea value={t.expected} onChange={(e) => set("expected", e.target.value)} rows={2} className={inputClass} />
           </div>
           <div>
-            <p className="mb-1 text-xs text-white/45">Actual behavior</p>
+            <p className="mb-1 text-xs text-white/65">Actual behavior</p>
             <textarea value={t.actual} onChange={(e) => set("actual", e.target.value)} rows={2} className={inputClass} />
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -223,7 +223,7 @@ function TestForm({
           <button
             onClick={() => onSubmit(t as unknown as Record<string, unknown>)}
             disabled={busy}
-            className="btn-primary !px-5 !py-2.5 text-sm disabled:opacity-50"
+            className="btn-primary px-5! py-2.5! text-sm disabled:opacity-50"
           >
             Save result
           </button>

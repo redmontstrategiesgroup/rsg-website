@@ -82,7 +82,7 @@ export function TrainingView({
               onClick={() => setSystem(s)}
               className={`border px-3 py-1.5 text-xs transition ${
                 system === s
-                  ? "border-crimson/60 bg-crimson/[0.08] text-white"
+                  ? "border-crimson/60 bg-crimson/8 text-white"
                   : "border-white/10 text-white/50 hover:border-white/30"
               }`}
             >
@@ -156,7 +156,7 @@ export function TrainingView({
                 href={open.item.url}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="btn-ghost inline-flex !px-5 !py-2.5 text-sm"
+                className="btn-ghost inline-flex px-5! py-2.5! text-sm"
               >
                 Open {open.item.kind === "video" ? "video" : "resource"} ↗
               </a>

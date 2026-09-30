@@ -74,7 +74,7 @@ export function QuotesView(props: ViewProps) {
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-5">
         {/* Builder */}
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-3">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-3">
           <PanelHeading title={q.title} right={<SampleDataTag className="hidden sm:inline-flex" />} />
           <div className="space-y-3 p-4">
             <p className="text-xs leading-relaxed text-white/50">{q.description}</p>
@@ -98,8 +98,8 @@ export function QuotesView(props: ViewProps) {
             </div>
 
             {/* Live line items */}
-            <div className="rounded border border-white/[0.08] bg-base-900/50">
-              <ul className="divide-y divide-white/[0.05]">
+            <div className="rounded-sm border border-white/8 bg-base-900/50">
+              <ul className="divide-y divide-white/5">
                 {lines.map((l) => (
                   <li key={l.label} className="flex items-center justify-between px-3 py-2 text-xs">
                     <span className="text-white/60">{l.label}</span>
@@ -109,7 +109,7 @@ export function QuotesView(props: ViewProps) {
                   </li>
                 ))}
               </ul>
-              <div className="flex items-center justify-between border-t border-white/[0.1] px-3 py-2.5">
+              <div className="flex items-center justify-between border-t border-white/10 px-3 py-2.5">
                 <span className="text-[0.64rem] font-medium uppercase tracking-[0.14em] text-white/45">
                   {q.totalLabel ?? "Estimated total"}
                 </span>
@@ -150,12 +150,12 @@ export function QuotesView(props: ViewProps) {
         </div>
 
         {/* Records */}
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-2">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-2">
           <PanelHeading title={`${q.documentLabel}s · ${state.quotes.length}`} />
           {state.quotes.length === 0 ? (
             <EmptyState text={`No ${q.documentLabel.toLowerCase()}s yet: build one with the calculator.`} />
           ) : (
-            <ul className="divide-y divide-white/[0.05]">
+            <ul className="divide-y divide-white/5">
               {state.quotes.map((quote) => (
                 <Spotlight as="li" id={quote.id} fresh={state.fresh} kind="record" key={quote.id} className="px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
@@ -196,11 +196,11 @@ export function QuotesView(props: ViewProps) {
               ))}
             </ul>
           )}
-          <div className="border-t border-white/[0.06] px-4 py-3">
+          <div className="border-t border-white/6 px-4 py-3">
             <button
               type="button"
               onClick={() => openRequest({ feature: "Instant quotes & estimate follow-up", source: "quotes_view" })}
-              className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+              className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
             >
               See what this would cost for my business
               <ArrowRight size={11} aria-hidden />

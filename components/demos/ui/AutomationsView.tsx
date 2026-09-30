@@ -25,8 +25,8 @@ function Toggle({
       aria-checked={on}
       aria-label={label}
       onClick={onChange}
-      className={`relative h-5 w-9 shrink-0 rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson ${
-        on ? "border-emerald-500/50 bg-emerald-500/25" : "border-white/15 bg-white/[0.06]"
+      className={`relative h-5 w-9 shrink-0 rounded-full border transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson ${
+        on ? "border-emerald-500/50 bg-emerald-500/25" : "border-white/15 bg-white/6"
       }`}
     >
       <span
@@ -51,7 +51,7 @@ function AutomationCard({
   const active = automation.status === "active";
 
   return (
-    <div className={`rounded-lg border bg-white/[0.02] ${active ? "border-white/[0.07]" : "border-white/[0.05] opacity-80"}`}>
+    <div className={`rounded-lg border bg-white/2 ${active ? "border-white/[0.07]" : "border-white/5 opacity-80"}`}>
       <div className="flex items-start justify-between gap-3 p-4">
         <div className="min-w-0">
           <p className="text-xs font-medium text-white/85">{automation.name}</p>
@@ -79,7 +79,7 @@ function AutomationCard({
           </li>
         ))}
       </ol>
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/[0.06] px-4 py-3">
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/6 px-4 py-3">
         <span className="mr-auto text-[0.62rem] tabular-nums text-white/35">
           {automation.runsThisMonth.toLocaleString()} baseline runs · {runs.length} in your session
         </span>
@@ -108,7 +108,7 @@ function AutomationCard({
       </div>
 
       {open && (
-        <div className="space-y-3 border-t border-white/[0.06] px-4 py-3">
+        <div className="space-y-3 border-t border-white/6 px-4 py-3">
           {automation.delayLabel !== undefined && (
             <TextInput
               label="Delay before first follow-up"
@@ -149,7 +149,7 @@ function AutomationCard({
                     fresh={state.fresh}
                     kind="record"
                     key={r.id}
-                    className="rounded border border-white/[0.07] bg-base-900/60 px-2.5 py-1.5 text-[0.64rem] text-white/55"
+                    className="rounded-sm border border-white/[0.07] bg-base-900/60 px-2.5 py-1.5 text-[0.64rem] text-white/55"
                   >
                     <span className="mr-1.5 text-emerald-400/70">✓ simulated</span>
                     {r.detail}
@@ -193,7 +193,7 @@ export function AutomationsView(props: ViewProps) {
       </div>
 
       {state.workflowRuns.length > 0 && (
-        <div className="mt-4 rounded-lg border border-white/[0.07] bg-white/[0.02]">
+        <div className="mt-4 rounded-lg border border-white/[0.07] bg-white/2">
           <PanelHeading
             title={`All executions this session · ${state.workflowRuns.length}`}
             right={
@@ -202,7 +202,7 @@ export function AutomationsView(props: ViewProps) {
               </span>
             }
           />
-          <ul className="max-h-56 divide-y divide-white/[0.05] overflow-y-auto overscroll-contain">
+          <ul className="max-h-56 divide-y divide-white/5 overflow-y-auto overscroll-contain">
             {state.workflowRuns.map((r) => (
               <Spotlight as="li" id={r.id} fresh={state.fresh} kind="record" key={r.id} className="px-4 py-2.5">
                 <p className="text-xs text-white/70">{r.name}</p>

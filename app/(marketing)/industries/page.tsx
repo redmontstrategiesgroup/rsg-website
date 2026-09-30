@@ -69,7 +69,7 @@ export default async function IndustriesPage() {
         <div className="space-y-6">
           {verticals.map((v, i) => (
             <Reveal key={v.slug} y={16} delay={i * 0.06}>
-              <article className="group grid gap-8 overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-8 transition-colors hover:border-white/25 sm:p-10 lg:grid-cols-12">
+              <article className="group grid gap-8 overflow-hidden rounded-xl border border-white/10 bg-white/2 p-8 transition-colors hover:border-white/25 sm:p-10 lg:grid-cols-12">
                 <div className="lg:col-span-8">
                   <h2 className="display text-[1.7rem] leading-[1.1] text-white sm:text-[2.1rem]">
                     <Link
@@ -83,7 +83,7 @@ export default async function IndustriesPage() {
                     {VERTICAL_BLURBS[v.slug] ?? v.hero.subheadline}
                   </p>
                 </div>
-                <div className="flex flex-col justify-center gap-3 lg:col-span-4 lg:border-l lg:border-white/[0.08] lg:pl-8">
+                <div className="flex flex-col justify-center gap-3 lg:col-span-4 lg:border-l lg:border-white/8 lg:pl-8">
                   <Link
                     href={VERTICAL_ROUTES[v.slug]}
                     className="link-arrow group/link text-white"

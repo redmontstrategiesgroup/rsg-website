@@ -23,10 +23,10 @@ export type RunFn = (
 ) => Promise<RunResult>;
 
 export const inputClass =
-  "w-full rounded-lg border border-white/12 bg-white/[0.03] px-3 py-2 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none [&>option]:bg-base-900";
+  "w-full rounded-lg border border-white/35 bg-white/3 px-3 py-2 text-sm text-white placeholder:text-white/45 transition-colors focus:border-crimson focus:outline-hidden [&>option]:bg-base-900";
 
 export const labelClass =
-  "mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/45";
+  "mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/65";
 
 export function Field({
   label,
@@ -47,8 +47,8 @@ export function Field({
 
 export function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-      <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+    <div className="rounded-xl border border-white/10 bg-white/2 p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-white/60">
         {label}
       </p>
       <p className="mt-2 text-2xl text-white">{value}</p>
@@ -58,10 +58,10 @@ export function Stat({ label, value }: { label: string; value: string | number }
 
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-10 text-center">
-      <Inbox size={26} className="mx-auto text-white/25" />
+    <div className="rounded-xl border border-white/10 bg-white/2 p-10 text-center">
+      <Inbox size={26} className="mx-auto text-white/60" />
       <p className="mt-4 text-sm text-white/55">{title}</p>
-      {hint ? <p className="mt-1 text-xs text-white/35">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-xs text-white/60">{hint}</p> : null}
     </div>
   );
 }
@@ -89,10 +89,10 @@ const PILL_STYLES: Record<string, string> = {
 
 export function StatusPill({ value }: { value: string }) {
   const style =
-    PILL_STYLES[value] ?? "border-white/15 bg-white/[0.04] text-white/60";
+    PILL_STYLES[value] ?? "border-white/15 bg-white/4 text-white/60";
   return (
     <span
-      className={`inline-block rounded-full border px-2 py-0.5 font-mono text-[0.54rem] uppercase tracking-wider ${style}`}
+      className={`inline-block rounded-full border px-2 py-0.5 font-mono text-[0.6875rem] uppercase tracking-wider ${style}`}
     >
       {value.replaceAll("_", " ")}
     </span>

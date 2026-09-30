@@ -57,7 +57,7 @@ export function Navbar() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
         scrolled || mobileOpen
-          ? "border-b border-white/10 bg-base/95 backdrop-blur"
+          ? "border-b border-white/10 bg-base/95 backdrop-blur-sm"
           : "border-b border-transparent"
       }`}
     >
@@ -66,7 +66,7 @@ export function Navbar() {
         <Link
           href="/"
           aria-label="Redmont Strategies Group home"
-          className="flex min-h-11 min-w-0 items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 lg:min-h-0"
+          className="flex min-h-11 min-w-0 items-center focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/40 lg:min-h-0"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -109,7 +109,7 @@ export function Navbar() {
         <button
           ref={toggleRef}
           type="button"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-white/15 text-white transition-colors hover:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-white/15 text-white transition-colors hover:border-white/40 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
@@ -139,7 +139,7 @@ export function Navbar() {
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex min-h-14 items-center border-b border-white/[0.06] px-1 text-[1.05rem] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
+                  className={`flex min-h-14 items-center border-b border-white/6 px-1 text-[1.05rem] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/40 ${
                     active ? "text-white" : "text-white/70 hover:text-white"
                   }`}
                 >
@@ -150,7 +150,7 @@ export function Navbar() {
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}
-              className="flex min-h-14 items-center border-b border-white/[0.06] px-1 text-[1.05rem] text-white/70 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+              className="flex min-h-14 items-center border-b border-white/6 px-1 text-[1.05rem] text-white/70 transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/40"
             >
               Client Login
             </Link>

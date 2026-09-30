@@ -716,7 +716,7 @@ export function BookingFunnel({
 
   if (fatalError && !config) {
     return (
-      <div className="border border-white/10 bg-white/[0.02] p-8 text-center">
+      <div className="border border-white/10 bg-white/2 p-8 text-center">
         <AlertCircle className="mx-auto mb-4 h-8 w-8 text-crimson" />
         <p className="text-white/70">{fatalError}</p>
         <Link href="/connect" className="link-underline mt-6 inline-block">
@@ -736,7 +736,7 @@ export function BookingFunnel({
 
   if (config.bookingsPaused) {
     return (
-      <div className="border border-white/10 bg-white/[0.02] p-8 text-center">
+      <div className="border border-white/10 bg-white/2 p-8 text-center">
         <p className="text-lg text-white">Online booking is temporarily paused.</p>
         <p className="mt-3 text-sm text-white/55">
           Please email{" "}
@@ -791,7 +791,7 @@ export function BookingFunnel({
             ))}
           </div>
           {notSureSelected && (
-            <p className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-white/70">
+            <p className="mt-4 border border-white/10 bg-white/3 px-4 py-3 text-sm leading-relaxed text-white/70">
               That’s completely fine. You’ll book a general strategy consultation
               and we’ll help identify the best opportunities for your business.
             </p>
@@ -861,7 +861,7 @@ export function BookingFunnel({
                 <span className="text-sm">Loading available times…</span>
               </div>
             ) : availableDays.length === 0 ? (
-              <div className="border border-white/10 bg-white/[0.02] p-6 text-sm text-white/60">
+              <div className="border border-white/10 bg-white/2 p-6 text-sm text-white/60">
                 No online times are open in the next four weeks. Email{" "}
                 <a className="underline" href="mailto:contact@redmontstrategiesgroup.com">
                   contact@redmontstrategiesgroup.com
@@ -895,10 +895,10 @@ export function BookingFunnel({
                             setSelectedSlot(null);
                             track("date_selected");
                           }}
-                          className={`min-w-[76px] shrink-0 border px-3 py-3 text-center transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+                          className={`min-w-[76px] shrink-0 border px-3 py-3 text-center transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
                             active
                               ? "border-crimson/70 bg-crimson/10"
-                              : "border-white/10 bg-white/[0.02] hover:border-white/30"
+                              : "border-white/10 bg-white/2 hover:border-white/30"
                           }`}
                         >
                           <span className="block text-[0.7rem] uppercase tracking-wider text-white/45 sm:text-[0.65rem]">
@@ -934,10 +934,10 @@ export function BookingFunnel({
                             setSelectedSlot(s.start);
                             track("time_selected");
                           }}
-                          className={`min-h-[48px] border px-2 py-3 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+                          className={`min-h-[48px] border px-2 py-3 text-sm transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
                             active
                               ? "border-crimson bg-crimson text-white"
-                              : "border-white/10 bg-white/[0.02] text-white/80 hover:border-white/30"
+                              : "border-white/10 bg-white/2 text-white/80 hover:border-white/30"
                           }`}
                         >
                           {s.label}
@@ -953,7 +953,7 @@ export function BookingFunnel({
                 </div>
 
                 {selectedSlot && (
-                  <p className="border border-crimson/30 bg-crimson/[0.06] px-4 py-3 text-sm text-white/80">
+                  <p className="border border-crimson/30 bg-crimson/6 px-4 py-3 text-sm text-white/80">
                     Selected: <strong>{formatSelectedSlot(selectedSlot, timezone)}</strong>
                   </p>
                 )}
@@ -997,7 +997,7 @@ export function BookingFunnel({
             Tell us about your business
           </h2>
           {selectedSlot && (
-            <p className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/75">
+            <p className="mt-4 border border-white/10 bg-white/3 px-4 py-3 text-sm text-white/75">
               <Calendar className="mr-2 inline h-4 w-4 text-crimson" aria-hidden="true" />
               {formatSelectedSlot(selectedSlot, timezone)}
               {appointmentType ? ` · ${appointmentType.durationMinutes} min · Free` : ""}
@@ -1348,7 +1348,7 @@ export function BookingFunnel({
               <label className="flex items-start gap-3 text-sm leading-relaxed text-white/60">
                 <input
                   type="checkbox"
-                  className="mt-1 h-4 w-4 shrink-0 accent-[#b3243a]"
+                  className="mt-1 h-4 w-4 shrink-0 accent-crimson"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
                   aria-invalid={errors.consent ? true : undefined}

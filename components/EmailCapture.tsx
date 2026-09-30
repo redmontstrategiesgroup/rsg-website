@@ -130,7 +130,7 @@ export function EmailCapture() {
       size="sm"
       zIndexClassName="z-50"
       hideHeader
-      panelClassName="relative bg-base-900 [&>div]:p-8 [&>div]:sm:p-10"
+      panelClassName="relative bg-base-900 [&>div]:p-8 sm:[&>div]:p-10"
     >
       {done ? (
         <div>
@@ -192,7 +192,7 @@ export function EmailCapture() {
                 placeholder="Email address"
                 aria-label="Email address"
                 maxLength={254}
-                className="w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-none"
+                className="w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-hidden"
               />
               <button
                 type="submit"

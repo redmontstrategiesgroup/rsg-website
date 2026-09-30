@@ -116,7 +116,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
   // -------------------------------------------------------------------------
   if (declined || vm.status === "declined") {
     return (
-      <div className="border border-white/10 bg-white/[0.02] p-6">
+      <div className="border border-white/10 bg-white/2 p-6">
         <p className="text-sm text-white/70">
           This proposal has been declined
           {vm.declinedAt ? ` on ${formatDate(vm.declinedAt)}` : ""}. If that was
@@ -129,7 +129,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
 
   if (vm.status === "accepted") {
     return (
-      <div className="border border-emerald-500/25 bg-emerald-500/[0.06] p-6">
+      <div className="border border-emerald-500/25 bg-emerald-500/6 p-6">
         <p className="text-sm text-emerald-200/90">
           Accepted{vm.acceptedAt ? ` on ${formatDate(vm.acceptedAt)}` : ""}.
           We&apos;ll be in touch within one business day to begin onboarding.
@@ -140,7 +140,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
 
   if (!vm.acceptable) {
     return (
-      <div className="border border-amber-500/25 bg-amber-500/[0.06] p-6">
+      <div className="border border-amber-500/25 bg-amber-500/6 p-6">
         <p className="text-sm text-amber-200/90">
           This proposal has expired. Contact us and we&apos;ll prepare an
           updated version for you.
@@ -154,7 +154,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
   // -------------------------------------------------------------------------
   if (accepted) {
     return (
-      <div className="border border-emerald-500/25 bg-emerald-500/[0.06] p-6">
+      <div className="border border-emerald-500/25 bg-emerald-500/6 p-6">
         <p className="text-sm text-emerald-200/90">
           Agreement accepted: we&apos;ll be in touch within one business day.
         </p>
@@ -172,7 +172,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
 
   if (redirecting) {
     return (
-      <div className="border border-white/10 bg-white/[0.02] p-6">
+      <div className="border border-white/10 bg-white/2 p-6">
         <p className="text-sm text-white/70">Redirecting to secure checkout…</p>
       </div>
     );
@@ -255,7 +255,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
   }
 
   return (
-    <div className="border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+    <div className="border border-white/10 bg-white/2 p-6 sm:p-8">
       <span className="label">Accept this proposal</span>
 
       {/* Scope selection */}
@@ -313,8 +313,8 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
                   key={plan.id}
                   className={`cursor-pointer border p-5 transition-colors ${
                     selected
-                      ? "border-white/40 bg-white/[0.04]"
-                      : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                      ? "border-white/40 bg-white/4"
+                      : "border-white/10 bg-white/2 hover:border-white/25"
                   }`}
                 >
                   <input
@@ -394,7 +394,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoComplete="name"
-            className="mt-2 w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 focus:border-white/40 focus:outline-none"
+            className="mt-2 w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 focus:border-white/40 focus:outline-hidden"
             placeholder="Your name"
           />
         </div>
@@ -411,7 +411,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
-            className="mt-2 w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 focus:border-white/40 focus:outline-none"
+            className="mt-2 w-full border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 focus:border-white/40 focus:outline-hidden"
             placeholder="you@company.com"
           />
         </div>
@@ -430,7 +430,7 @@ export function ProposalView({ vm }: { vm: ProposalViewModel }) {
       </label>
 
       {error ? (
-        <p className="mt-5 border border-red-500/25 bg-red-500/[0.06] px-4 py-3 text-sm text-red-200/90">
+        <p className="mt-5 border border-red-500/25 bg-red-500/6 px-4 py-3 text-sm text-red-200/90">
           {error}
         </p>
       ) : null}

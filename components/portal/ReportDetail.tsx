@@ -74,7 +74,7 @@ export function ReportDetail({
         <SectionCard title="Performance scorecard" padded={false}>
           <div className="overflow-x-auto overscroll-x-contain">
             {/* 5 columns crush to unreadable at 375px without a floor. */}
-            <table className="w-full min-w-[36rem] text-left text-sm">
+            <table className="w-full min-w-xl text-left text-sm">
               <thead>
                 <tr className="border-b border-white/10 font-mono text-[0.55rem] uppercase tracking-label text-white/35">
                   <th className="px-5 py-3 font-medium">Metric</th>
@@ -84,7 +84,7 @@ export function ReportDetail({
                   <th className="px-5 py-3 font-medium">Data source</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.06]">
+              <tbody className="divide-y divide-white/6">
                 {report.scorecard.map((entry) => (
                   <tr key={entry.key}>
                     <td className="px-5 py-3 text-white/75">{entry.label}</td>

@@ -16,14 +16,14 @@ export function DemoPageHeader({ config }: { config: IndustryConfig }) {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/demos"
-            className="inline-flex min-h-11 items-center text-[0.75rem] font-medium uppercase tracking-[0.2em] text-white/40 transition-colors hover:text-white sm:text-[0.68rem] lg:min-h-0"
+            className="inline-flex min-h-11 items-center text-[0.75rem] font-medium uppercase tracking-label text-white/40 transition-colors hover:text-white sm:text-[0.68rem] lg:min-h-0"
           >
             Demo Systems
           </Link>
           <span className="text-white/25" aria-hidden>
             /
           </span>
-          <span className="label !text-crimson-light">{config.industry}</span>
+          <span className="label text-crimson-light!">{config.industry}</span>
         </div>
         <h1 className="display mt-5 max-w-3xl text-3xl leading-tight sm:text-4xl lg:text-5xl">
           {config.systemName}
@@ -33,8 +33,8 @@ export function DemoPageHeader({ config }: { config: IndustryConfig }) {
         </p>
       </Reveal>
       <Reveal delay={0.1}>
-        <div className="mt-8 max-w-3xl border-l-2 border-crimson bg-white/[0.02] px-5 py-4">
-          <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/40">
+        <div className="mt-8 max-w-3xl border-l-2 border-crimson bg-white/2 px-5 py-4">
+          <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-label text-white/40">
             The operational problem
           </p>
           <p className="mt-2 text-sm leading-relaxed text-white/70">{config.problem}</p>
@@ -60,13 +60,13 @@ export function AutomationFlow({
             <div
               className={`relative w-40 shrink-0 rounded-lg border px-3.5 py-3 ${
                 i === 0
-                  ? "border-crimson/50 bg-crimson/[0.08]"
+                  ? "border-crimson/50 bg-crimson/8"
                   : i === flow.steps.length - 1
-                    ? "border-emerald-500/30 bg-emerald-500/[0.05]"
-                    : "border-white/10 bg-white/[0.025]"
+                    ? "border-emerald-500/30 bg-emerald-500/5"
+                    : "border-white/10 bg-white/2.5"
               }`}
             >
-              <span className="absolute -top-2 left-3 rounded bg-base px-1.5 text-[0.7rem] sm:text-[0.55rem] font-medium uppercase tracking-wider text-white/35">
+              <span className="absolute -top-2 left-3 rounded-sm bg-base px-1.5 text-[0.7rem] sm:text-[0.55rem] font-medium uppercase tracking-wider text-white/35">
                 {i === 0 ? "Trigger" : `Step ${i}`}
               </span>
               <p className="text-xs font-medium leading-snug text-white/85">{step.label}</p>
@@ -74,7 +74,7 @@ export function AutomationFlow({
             </div>
             {i < flow.steps.length - 1 && (
               <span className="relative mx-1 block h-px w-6 shrink-0 bg-white/20" aria-hidden>
-                <span className="absolute -right-0.5 -top-[3px] border-b-[3.5px] border-l-[5px] border-t-[3.5px] border-b-transparent border-l-white/30 border-t-transparent" />
+                <span className="absolute -right-0.5 top-[-3px] border-b-[3.5px] border-l-[5px] border-t-[3.5px] border-b-transparent border-l-white/30 border-t-transparent" />
               </span>
             )}
           </li>

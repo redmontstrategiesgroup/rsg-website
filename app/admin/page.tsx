@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { resolveAdminContext, isMfaSetupRequired } from "@/lib/admin-auth";
-import { getClients, getLeads, getSubscribers, getPageViews } from "@/lib/store";
+import { attachJourneys, getClients, getLeads, getSubscribers, getPageViews } from "@/lib/store";
 import { toPublic } from "@/lib/seed";
 import { summarizeAnalytics } from "@/lib/analytics";
 import { can } from "@/lib/scheduling/permissions";
@@ -29,6 +29,7 @@ export default async function AdminPage() {
     scheduling: can("view_appointments", role),
     connect: can("manage_clients", role),
     privateAi: can("manage_leads", role),
+    pocket: can("manage_leads", role),
     brief: can("manage_leads", role),
     security: can("view_security", role),
   };
@@ -36,7 +37,7 @@ export default async function AdminPage() {
   // Only load what this role is allowed to see.
   const [clients, leads, subscribers, pageViews] = await Promise.all([
     caps.clients ? getClients() : Promise.resolve([]),
-    caps.leads ? getLeads() : Promise.resolve([]),
+    caps.leads ? getLeads().then(attachJourneys) : Promise.resolve([]),
     caps.leads ? getSubscribers({ includeUnsubscribed: true }) : Promise.resolve([]),
     caps.analytics ? getPageViews() : Promise.resolve([]),
   ]);

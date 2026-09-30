@@ -34,13 +34,13 @@ export function OverviewView({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-white/10 p-5">
-          <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+          <p className="text-xs font-medium uppercase tracking-wide text-white/65">
             MRR by plan
           </p>
           {revenue.byPlan.length ? (
             <div className="mt-4 overflow-x-auto overscroll-x-contain">
             <table className="w-full min-w-[24rem] text-left text-sm">
-              <thead className="font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <thead className="text-xs font-medium uppercase tracking-wide text-white/60">
                 <tr className="border-b border-white/10">
                   <th className="py-2 pr-3 font-normal">Plan</th>
                   <th className="py-2 pr-3 font-normal">Subscriptions</th>
@@ -52,7 +52,7 @@ export function OverviewView({
                   <tr key={p.planId} className="border-b border-white/5 last:border-0">
                     <td className="py-2.5 pr-3 text-white/85">
                       {p.planName}
-                      <span className="ml-2 font-mono text-[0.58rem] text-white/35">
+                      <span className="ml-2 font-mono text-[0.6875rem] text-white/60">
                         {p.planKey}
                       </span>
                     </td>
@@ -66,14 +66,14 @@ export function OverviewView({
             </table>
             </div>
           ) : (
-            <p className="mt-4 text-sm text-white/40">
+            <p className="mt-4 text-sm text-white/60">
               No revenue-generating subscriptions yet.
             </p>
           )}
         </div>
 
         <div className="rounded-xl border border-white/10 p-5">
-          <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+          <p className="text-xs font-medium uppercase tracking-wide text-white/65">
             Recent events
           </p>
           {events.length ? (
@@ -81,17 +81,17 @@ export function OverviewView({
               {events.map((e) => (
                 <li key={e.id} className="border-b border-white/5 pb-2.5 last:border-0">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-mono text-[0.6rem] uppercase tracking-wider text-crimson-light">
+                    <span className="font-mono text-xs uppercase tracking-wider text-crimson-light">
                       {e.type}
                     </span>
-                    <span className="text-xs text-white/35">
+                    <span className="text-xs text-white/60">
                       {fmtDateTime(e.createdAt)}
                     </span>
                   </div>
                   {e.description ? (
                     <p className="mt-1 text-white/70">{e.description}</p>
                   ) : null}
-                  <p className="mt-0.5 text-xs text-white/35">{e.actor}</p>
+                  <p className="mt-0.5 text-xs text-white/60">{e.actor}</p>
                 </li>
               ))}
             </ul>

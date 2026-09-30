@@ -76,7 +76,7 @@ export default async function BillingPage() {
                     <th className="px-5 py-3" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.06]">
+                <tbody className="divide-y divide-white/6">
                   {visible.map((invoice) => (
                     <tr key={invoice.id}>
                       <td className="px-5 py-3 font-mono text-xs text-white/60">
@@ -116,7 +116,7 @@ export default async function BillingPage() {
       {payments.length > 0 && (
         <div className="mt-6">
           <SectionCard title="Payment history" padded={false}>
-            <ul className="divide-y divide-white/[0.06]">
+            <ul className="divide-y divide-white/6">
               {payments.map((p) => (
                 <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
                   <div>

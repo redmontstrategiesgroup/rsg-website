@@ -93,7 +93,7 @@ export default async function PortalReportPage({
       <div className="container-px mx-auto max-w-3xl print:max-w-none">
         <ReportActions />
 
-        <article className="report-doc mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-8 sm:p-12 print:mt-0">
+        <article className="report-doc mt-6 rounded-2xl border border-white/10 bg-white/2 p-8 sm:p-12 print:mt-0">
           {/* Header */}
           <header>
             <p className="font-mono text-[0.62rem] uppercase tracking-label text-crimson-light report-muted">
@@ -111,7 +111,7 @@ export default async function PortalReportPage({
 
           {/* Summary */}
           {report.summary && (
-            <p className="report-rule mt-8 border-t border-white/[0.08] pt-8 text-[0.95rem] leading-relaxed text-white/75">
+            <p className="report-rule mt-8 border-t border-white/8 pt-8 text-[0.95rem] leading-relaxed text-white/75">
               {report.summary}
             </p>
           )}
@@ -164,7 +164,7 @@ export default async function PortalReportPage({
                   {data.leadMetrics.map((m) => (
                     <tr
                       key={m.label}
-                      className="report-rule border-b border-white/[0.08] last:border-0"
+                      className="report-rule border-b border-white/8 last:border-0"
                     >
                       <td className="report-muted py-2.5 pr-4 text-white/55">
                         {m.label}
@@ -230,7 +230,7 @@ export default async function PortalReportPage({
               </ReportSection>
             )}
 
-          <footer className="report-rule report-muted mt-10 border-t border-white/[0.08] pt-6 text-[0.72rem] text-white/35">
+          <footer className="report-rule report-muted mt-10 border-t border-white/8 pt-6 text-[0.72rem] text-white/35">
             Prepared by Redmont Strategies Group
             {report.publishedAt ? ` · Published ${formatDate(report.publishedAt)}` : ""}.
             Questions about this report? Reach your account manager through the
@@ -250,7 +250,7 @@ function ReportSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="report-rule mt-8 border-t border-white/[0.08] pt-7">
+    <section className="report-rule mt-8 border-t border-white/8 pt-7">
       <h2 className="font-display text-lg font-semibold text-white">{title}</h2>
       <div className="report-muted mt-3 text-sm leading-relaxed text-white/60">
         {children}

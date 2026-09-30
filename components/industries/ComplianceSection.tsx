@@ -20,7 +20,7 @@ export function ComplianceSection({
   return (
     <section
       id="compliance"
-      className={`scroll-mt-24 ${emphasized ? "border-y border-crimson/20 bg-crimson/[0.03]" : ""}`}
+      className={`scroll-mt-24 ${emphasized ? "border-y border-crimson/20 bg-crimson/3" : ""}`}
     >
       <div className="container-px section-y">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
@@ -45,7 +45,7 @@ export function ComplianceSection({
           </div>
 
           <div className="lg:col-span-8">
-            <div className="grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/[0.06] sm:grid-cols-2">
+            <div className="grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/6 sm:grid-cols-2">
               {items.map((item, i) => (
                 <div key={item.title} className="bg-base-900 p-6">
                   <div className="flex items-baseline gap-3">

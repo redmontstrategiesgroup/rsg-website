@@ -15,7 +15,7 @@ function inline(text: string): ReactNode[] {
       return (
         <code
           key={index}
-          className="break-all rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.85em] text-white/80"
+          className="break-all rounded-sm bg-white/6 px-1.5 py-0.5 font-mono text-[0.85em] text-white/80"
         >
           {part.slice(1, -1)}
         </code>
@@ -28,7 +28,7 @@ function inline(text: string): ReactNode[] {
           href={link[2]}
           target="_blank"
           rel="noopener noreferrer"
-          className="break-words text-crimson-light underline underline-offset-4"
+          className="wrap-break-word text-crimson-light underline underline-offset-4"
         >
           {link[1]}
         </a>
@@ -122,7 +122,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
   }
 
   return (
-    <div className="space-y-3 text-[0.95rem] leading-7 text-white/72 [overflow-wrap:anywhere]">
+    <div className="space-y-3 text-[0.95rem] leading-7 text-white/72 wrap-anywhere">
       {blocks}
     </div>
   );

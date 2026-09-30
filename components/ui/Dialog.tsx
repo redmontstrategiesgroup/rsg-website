@@ -157,7 +157,7 @@ export function Dialog({
   align = "sheet",
   hideHeader = false,
   panelClassName = "",
-  zIndexClassName = "z-[70]",
+  zIndexClassName = "z-70",
   headerActions,
 }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -177,7 +177,7 @@ export function Dialog({
 
   return (
     <div
-      className={`dialog-backdrop fixed inset-0 ${zIndexClassName} flex justify-center bg-black/70 backdrop-blur-sm ${
+      className={`dialog-backdrop fixed inset-0 ${zIndexClassName} flex justify-center bg-black/70 backdrop-blur-xs ${
         sheet ? "items-end p-0 sm:items-center sm:p-6" : "items-center p-4 sm:p-6"
       }`}
       onPointerDown={onBackdrop}
@@ -188,7 +188,7 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`dialog-panel flex w-full flex-col overflow-hidden border border-white/12 bg-base-800 shadow-lift outline-none ${
+        className={`dialog-panel flex w-full flex-col overflow-hidden border border-white/12 bg-base-800 shadow-lift outline-hidden ${
           sheet ? "max-h-[92dvh] rounded-t-xl sm:rounded-xl" : "max-h-[calc(100dvh-2rem)] rounded-xl"
         } ${SIZE[size]} ${panelClassName}`}
       >
@@ -197,7 +197,7 @@ export function Dialog({
             {title}
           </h2>
         ) : (
-          <div className="flex items-start justify-between gap-3 border-b border-white/[0.08] py-2 pl-5 pr-2">
+          <div className="flex items-start justify-between gap-3 border-b border-white/8 py-2 pl-5 pr-2">
             <div className="min-w-0 py-2">
               <h2 id={titleId} className="text-sm font-medium text-white">
                 {title}
@@ -209,14 +209,14 @@ export function Dialog({
               <IconButton
                 onClick={onClose}
                 aria-label="Close dialog"
-                className="rounded text-white/50 hover:text-white"
+                className="rounded-sm text-white/50 hover:text-white"
               >
                 <X size={16} />
               </IconButton>
             </div>
           </div>
         )}
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 pb-safe">
           {children}
         </div>
       </div>

@@ -153,12 +153,12 @@ export function BookingManageClient({
   return (
     <div className="space-y-6">
       {message && (
-        <div className="border border-white/15 bg-white/[0.03] px-4 py-3 text-sm text-white/70">
+        <div className="border border-white/15 bg-white/3 px-4 py-3 text-sm text-white/70">
           {message}
         </div>
       )}
 
-      <div className="border border-white/10 bg-white/[0.02] p-6">
+      <div className="border border-white/10 bg-white/2 p-6">
         <div className="flex items-start gap-3">
           <Calendar className="mt-1 h-5 w-5 text-crimson" />
           <div>
@@ -181,7 +181,7 @@ export function BookingManageClient({
       </div>
 
       {data.contact && (data.contact.name || data.contact.email) && (
-        <div className="border border-white/10 bg-white/[0.02] p-6">
+        <div className="border border-white/10 bg-white/2 p-6">
           <p className="label mb-4">Your details</p>
           <dl className="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
             {data.contact.name && (
@@ -213,7 +213,7 @@ export function BookingManageClient({
       )}
 
       {confirmedView && data.status !== "cancelled" && (
-        <div className="border border-white/10 bg-white/[0.02] p-6">
+        <div className="border border-white/10 bg-white/2 p-6">
           <p className="label mb-4">What happens on the call</p>
           <ul className="space-y-2 text-sm leading-relaxed text-white/60">
             <li>· We review what you shared before the call so we start prepared.</li>

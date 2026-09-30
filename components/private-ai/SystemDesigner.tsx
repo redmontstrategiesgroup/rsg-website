@@ -79,7 +79,7 @@ function ChipButton({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-left text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 lg:min-h-0 ${
+      className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-left text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/50 lg:min-h-0 ${
         selected
           ? "border-crimson/45 bg-crimson/10 text-white"
           : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
@@ -205,7 +205,7 @@ export function SystemDesigner() {
   return (
     <section
       id="private-ai-designer"
-      className="scroll-mt-24 border-b border-white/[0.08] bg-base-900/40"
+      className="scroll-mt-24 border-b border-white/8 bg-base-900/40"
     >
       <div className="container-px section-y">
         <Reveal y={12}>
@@ -306,7 +306,7 @@ export function SystemDesigner() {
                       }
                       className={`rounded-xl border p-4 text-left transition-colors ${
                         config.deployment === opt.id
-                          ? "border-crimson/45 bg-crimson/[0.08]"
+                          ? "border-crimson/45 bg-crimson/8"
                           : "border-white/10 hover:border-white/25"
                       }`}
                     >
@@ -621,7 +621,7 @@ export function SystemDesigner() {
 
 function ArchBlock({ title, body }: { title: string; body: string }) {
   return (
-    <div className="border border-white/10 bg-white/[0.02] p-4">
+    <div className="border border-white/10 bg-white/2 p-4">
       <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
         {title}
       </p>
@@ -632,7 +632,7 @@ function ArchBlock({ title, body }: { title: string; body: string }) {
 
 function ArchList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="border border-white/10 bg-white/[0.02] p-4">
+    <div className="border border-white/10 bg-white/2 p-4">
       <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
         {title}
       </p>
@@ -674,7 +674,7 @@ function Field({
   const id = label.toLowerCase().replace(/\s+/g, "-");
   const errorId = `${id}-error`;
   const cls =
-    "w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm text-white outline-none focus:border-crimson/40";
+    "w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5 text-sm text-white outline-hidden focus:border-crimson/40";
   const a11y = {
     "aria-invalid": error ? true : undefined,
     "aria-describedby": error ? errorId : undefined,

@@ -67,7 +67,7 @@ export function MfaSetup({
 
   if (enabled) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.06] px-4 py-3 text-sm text-emerald-200/90">
+      <div className="flex items-center gap-3 rounded-xl border border-emerald-400/25 bg-emerald-400/6 px-4 py-3 text-sm text-emerald-200/90">
         <ShieldCheck size={16} />
         Multifactor authentication is enabled on your account.
       </div>
@@ -78,8 +78,8 @@ export function MfaSetup({
     <div
       className={`rounded-xl border p-5 ${
         required
-          ? "border-crimson/40 bg-crimson/[0.06]"
-          : "border-white/12 bg-white/[0.02]"
+          ? "border-crimson/40 bg-crimson/6"
+          : "border-white/12 bg-white/2"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -94,7 +94,7 @@ export function MfaSetup({
               ? "MFA is required for your role"
               : "Add multifactor authentication"}
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-white/50">
+          <p className="mt-1 text-xs leading-relaxed text-white/65">
             Protect your account with a time-based one-time code from an
             authenticator app. Recommended for every privileged account.
           </p>
@@ -106,18 +106,18 @@ export function MfaSetup({
             <button
               onClick={start}
               disabled={busy}
-              className="btn-primary mt-4 !px-5 !py-2.5 text-sm disabled:opacity-50"
+              className="btn-primary mt-4 px-5! py-2.5! text-sm disabled:opacity-50"
             >
               {busy ? <Loader2 size={14} className="animate-spin" /> : "Set up MFA"}
             </button>
           ) : (
             <div className="mt-4 space-y-3">
               <div className="rounded-lg border border-white/10 bg-black/30 p-3">
-                <p className="font-mono text-[0.56rem] uppercase tracking-label text-white/40">
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60">
                   Secret (enter manually in your app)
                 </p>
                 <p className="mt-1 break-all font-mono text-xs text-white/80">{secret}</p>
-                <p className="mt-2 break-all font-mono text-[0.6rem] text-white/35">
+                <p className="mt-2 break-all font-mono text-xs text-white/60">
                   {otpauth}
                 </p>
               </div>
@@ -133,7 +133,7 @@ export function MfaSetup({
                 <button
                   onClick={enable}
                   disabled={busy || code.trim().length !== 6}
-                  className="btn-primary !px-5 !py-2.5 text-sm disabled:opacity-50"
+                  className="btn-primary px-5! py-2.5! text-sm disabled:opacity-50"
                 >
                   {busy ? <Loader2 size={14} className="animate-spin" /> : "Verify & enable"}
                 </button>

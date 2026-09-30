@@ -24,7 +24,13 @@ export const runtime = "nodejs";
  * into the same lead pipeline as the contact form.
  */
 
-const MODEL = process.env.CHAT_MODEL ?? "claude-sonnet-5";
+const MODEL = process.env.CHAT_MODEL ?? "claude-haiku-4-5";
+
+/**
+ * Haiku 4.5 rejects adaptive thinking and `effort` (400), so those are only
+ * sent to models that accept them. An intake chat doesn't need thinking.
+ */
+const SUPPORTS_ADAPTIVE = !MODEL.startsWith("claude-haiku");
 
 /* ------------------------- Cost / abuse controls ------------------------ */
 /** Max history messages sent to the model per request (older turns drop). */
@@ -74,7 +80,7 @@ When a visitor asks what RSG does, answer with:
 ${RSG_KNOWLEDGE_BASE}
 
 # Tone
-Direct, professional, confident, calm, strategic, human, premium. No hype, no fake guarantees, no cheesy AI language. Never use phrases like "revolutionary", "game-changing", "unlock your potential", "AI-powered everything", or "transform your business overnight". No emoji. No exclamation marks. No bullet lists unless the visitor asks for a breakdown. Plain confident prose. Keep answers to 2–4 sentences unless the visitor asks for detail. Do not over-answer simple questions. Do not reintroduce yourself or restate what RSG is unless asked, continue the conversation like a colleague would.
+Direct, professional, confident, calm, strategic, human, premium. No hype, no fake guarantees, no cheesy AI language. Never use phrases like "revolutionary", "game-changing", "unlock your potential", "AI-powered everything", or "transform your business overnight". No emoji. No exclamation marks. No bullet lists unless the visitor asks for a breakdown. Plain confident prose. Keep answers to 2–4 sentences in a single short paragraph unless the visitor asks for detail. This is a chat window, not an email: say the one most useful thing, then ask one question. Do not lay out a full solution; that is what the audit is for. Do not over-answer simple questions. Do not reintroduce yourself or restate what RSG is unless asked, continue the conversation like a colleague would.
 
 # Conversation behavior
 Your goals, in order: understand the visitor's business; identify likely operational, sales, lead-flow, marketing, website, CRM, follow-up, or automation problems; explain briefly how RSG thinks about the issue; recommend the most relevant next step; qualify the visitor; and move serious prospects toward a strategy call or Business Systems Audit.
@@ -92,7 +98,10 @@ ${RSG_GUARDRAILS}
 # Handoff
 ${RSG_BOOKING_PLAYBOOK}
 
-Never trap the visitor in conversation. Once the right next step is clear, the booking link, submitting details here via submit_lead, or the contact form in the Contact section, point them to it plainly and let them act. Treat a Business Systems Audit request the same way: collect their details with submit_lead or direct them to the contact form.`;
+Never trap the visitor in conversation. Once the right next step is clear, the booking link, submitting details here via submit_lead, or the contact form in the Contact section, point them to it plainly and let them act. Treat a Business Systems Audit request the same way: collect their details with submit_lead or direct them to the contact form.
+
+# Reply length (strict)
+Every reply is ONE paragraph of at most 4 sentences, ending with at most one question. No line breaks between paragraphs. Only go longer when the visitor explicitly asks for detail or a breakdown.`;
 
 /* ------------------------------ Lead tool ------------------------------ */
 
@@ -283,10 +292,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const bookingUrl = process.env.BOOKING_URL;
-  const system = bookingUrl
-    ? `${SYSTEM_PROMPT}\n\n# Booking\nA booking calendar exists. When a visitor wants to book a strategy call, share this exact link: ${bookingUrl}`
-    : `${SYSTEM_PROMPT}\n\n# Booking\nThere is no online booking calendar. When a visitor wants to book a strategy call, direct them to the contact form in the Contact section of this site (or collect their details here with submit_lead).`;
+  // Always the site's own scheduler (the same /book the auto-reply email and
+  // every CTA use), never an external calendar from BOOKING_URL.
+  const system = `${SYSTEM_PROMPT}\n\n# Booking\nThe site has its own booking page. When a visitor wants to book a strategy call, share this exact path: /book`;
 
   // Routed through lib/ai/proxy rather than a local `new Anthropic()`, so every
   // Anthropic call in the app goes through one place: the same preflight, the
@@ -310,8 +318,9 @@ export async function POST(request: Request) {
       model: MODEL,
       maxTokens: MAX_OUTPUT_TOKENS,
       maxToolRounds: MAX_TOOL_ROUNDS,
-      thinking: { type: "adaptive" },
-      outputConfig: { effort: "low" },
+      ...(SUPPORTS_ADAPTIVE
+        ? { thinking: { type: "adaptive" } as const, outputConfig: { effort: "low" } as const }
+        : {}),
       system,
       messages: incoming,
       tools: [SUBMIT_LEAD_TOOL],

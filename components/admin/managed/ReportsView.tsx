@@ -174,7 +174,7 @@ export function ReportsView({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+        <p className="text-xs font-medium uppercase tracking-wide text-white/65">
           Service reports
         </p>
         <button
@@ -189,7 +189,7 @@ export function ReportsView({
       {reports.length ? (
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className="bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+            <thead className="bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
               <tr className="border-b border-white/10">
                 <th className="px-4 py-3 font-normal">Client</th>
                 <th className="px-4 py-3 font-normal">Kind</th>
@@ -205,7 +205,7 @@ export function ReportsView({
                 <tr
                   key={r.id}
                   className={`border-b border-white/5 last:border-0 ${
-                    draft?.id === r.id ? "bg-crimson/[0.06]" : ""
+                    draft?.id === r.id ? "bg-crimson/6" : ""
                   }`}
                 >
                   <td className="px-4 py-3 text-white/80">
@@ -215,13 +215,13 @@ export function ReportsView({
                   <td className="max-w-[260px] truncate px-4 py-3 text-white/85">
                     {r.title}
                   </td>
-                  <td className="px-4 py-3 text-xs text-white/50">
+                  <td className="px-4 py-3 text-xs text-white/65">
                     {fmtDate(r.periodStart)} – {fmtDate(r.periodEnd)}
                   </td>
                   <td className="px-4 py-3">
                     <StatusPill value={r.status} />
                   </td>
-                  <td className="px-4 py-3 text-xs text-white/50">
+                  <td className="px-4 py-3 text-xs text-white/65">
                     {fmtDate(r.publishedAt)}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -248,12 +248,12 @@ export function ReportsView({
       {draft ? (
         <div className="space-y-6 rounded-xl border border-white/10 p-5">
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+            <p className="text-xs font-medium uppercase tracking-wide text-white/65">
               {draft.id ? "Edit report" : "New report"}
             </p>
             <button
               type="button"
-              className="text-xs text-white/45 hover:text-white"
+              className="text-xs text-white/65 hover:text-white"
               onClick={() => setDraft(null)}
             >
               Close builder

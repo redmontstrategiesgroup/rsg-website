@@ -60,13 +60,13 @@ export function TourCaption({ eyebrow, title, detail, chips, accent, onChip, con
   return (
     <div
       data-tour-caption
-      className="sticky top-0 z-20 border-b px-4 py-3 backdrop-blur sm:px-5"
+      className="sticky top-0 z-20 border-b px-4 py-3 backdrop-blur-sm sm:px-5"
       style={{ borderColor: `${accent}66`, backgroundColor: `color-mix(in srgb, ${accent} 10%, #0b0b0f)` }}
       aria-live="polite"
     >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[0.58rem] font-medium uppercase tracking-[0.2em]" style={{ color: accentText }}>{eyebrow}</p>
+          <p className="text-[0.58rem] font-medium uppercase tracking-label" style={{ color: accentText }}>{eyebrow}</p>
           <p className="mt-0.5 text-sm font-medium text-white">{title}</p>
           <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-white/60">{detail}</p>
           {chips.length > 0 && (
@@ -76,7 +76,7 @@ export function TourCaption({ eyebrow, title, detail, chips, accent, onChip, con
                   <button
                     type="button"
                     onClick={() => onChip(c.tab)}
-                    className="inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[0.62rem] text-white/80 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                    className="inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 text-[0.62rem] text-white/80 transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/40"
                     style={{ borderColor: `color-mix(in srgb, ${KIND_COLOR[c.kind]} 55%, transparent)`, backgroundColor: `color-mix(in srgb, ${KIND_COLOR[c.kind]} 14%, transparent)` }}
                   >
                     <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: KIND_COLOR[c.kind] }} aria-hidden />
@@ -91,16 +91,16 @@ export function TourCaption({ eyebrow, title, detail, chips, accent, onChip, con
           <div className="flex shrink-0 items-center gap-1">
             {/* Arrows only exist while there is a step that way. */}
             {controls.canPrev && (
-              <IconButton onClick={controls.onPrev} disabled={controls.playing} aria-label="Previous tour step" className="rounded border border-white/10 text-white/60 hover:text-white">
+              <IconButton onClick={controls.onPrev} disabled={controls.playing} aria-label="Previous tour step" className="rounded-sm border border-white/10 text-white/60 hover:text-white">
                 <ChevronLeft size={14} />
               </IconButton>
             )}
             {controls.canNext && (
               <>
-                <IconButton onClick={controls.onToggle} aria-label={controls.playing ? "Pause tour" : "Resume tour"} className="rounded border border-white/10 text-white/60 hover:text-white">
+                <IconButton onClick={controls.onToggle} aria-label={controls.playing ? "Pause tour" : "Resume tour"} className="rounded-sm border border-white/10 text-white/60 hover:text-white">
                   {controls.playing ? <Pause size={14} /> : <Play size={14} />}
                 </IconButton>
-                <IconButton onClick={controls.onNext} disabled={controls.playing} aria-label="Next tour step" className="rounded border border-white/10 text-white/60 hover:text-white">
+                <IconButton onClick={controls.onNext} disabled={controls.playing} aria-label="Next tour step" className="rounded-sm border border-white/10 text-white/60 hover:text-white">
                   <ChevronRight size={14} />
                 </IconButton>
               </>

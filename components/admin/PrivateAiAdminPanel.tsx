@@ -72,7 +72,7 @@ export function PrivateAiAdminPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-white/45">
+      <div className="flex items-center gap-2 text-sm text-white/65">
         <Loader2 className="animate-spin" size={16} /> Loading private AI pipeline…
       </div>
     );
@@ -80,13 +80,7 @@ export function PrivateAiAdminPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="display text-xl">Private AI Pipeline</h2>
-          <p className="mt-1 text-sm text-white/45">
-            Configurations submitted from the Private AI System Designer.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <button
           type="button"
           onClick={() => void load()}
@@ -101,13 +95,13 @@ export function PrivateAiAdminPanel() {
           {error}
         </p>
       ) : null}
-      {message ? <p className="text-sm text-white/50">{message}</p> : null}
+      {message ? <p className="text-sm text-white/65">{message}</p> : null}
 
       {!rows.length ? (
-        <p className="text-sm text-white/40">No private AI inquiries yet.</p>
+        <p className="text-sm text-white/60">No private AI inquiries yet.</p>
       ) : (
         <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
-          <aside className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/10">
+          <aside className="divide-y divide-white/6 overflow-hidden rounded-xl border border-white/10">
             {rows.map((row) => (
               <button
                 key={row.id}
@@ -115,17 +109,17 @@ export function PrivateAiAdminPanel() {
                 onClick={() => setSelectedId(row.id)}
                 className={`w-full p-4 text-left ${
                   selectedId === row.id
-                    ? "bg-crimson/[0.08]"
-                    : "hover:bg-white/[0.025]"
+                    ? "bg-crimson/8"
+                    : "hover:bg-white/2.5"
                 }`}
               >
                 <p className="text-sm font-medium text-white/85">
                   {row.businessName || row.name}
                 </p>
-                <p className="mt-1 font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                <p className="mt-1 text-xs font-medium uppercase tracking-wide text-white/60">
                   {PRIVATE_AI_STAGE_LABELS[row.status] ?? row.status}
                 </p>
-                <p className="mt-1 truncate text-xs text-white/40">
+                <p className="mt-1 truncate text-xs text-white/60">
                   {deploymentLabel(row.deploymentPreference)} · {row.email}
                 </p>
               </button>
@@ -136,14 +130,14 @@ export function PrivateAiAdminPanel() {
             <div className="space-y-5 rounded-xl border border-white/10 p-5">
               <div>
                 <h3 className="display text-lg">{selected.businessName}</h3>
-                <p className="mt-1 text-sm text-white/50">
+                <p className="mt-1 text-sm text-white/65">
                   {selected.name} · {selected.email} · {selected.phone}
                 </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm">
-                  <span className="mb-1.5 block font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
                     Stage
                   </span>
                   <select
@@ -163,11 +157,11 @@ export function PrivateAiAdminPanel() {
                   </select>
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1.5 block font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
                     Owner
                   </span>
                   <input
-                    className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5"
+                    className="w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5"
                     defaultValue={selected.owner}
                     key={`owner-${selected.id}-${selected.updatedAt}`}
                     onBlur={(e) => void savePatch({ owner: e.target.value })}
@@ -204,12 +198,12 @@ export function PrivateAiAdminPanel() {
               </dl>
 
               <label className="block text-sm">
-                <span className="mb-1.5 block font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
                   Admin notes
                 </span>
                 <textarea
                   rows={4}
-                  className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5"
+                  className="w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5"
                   defaultValue={selected.adminNotes}
                   key={`notes-${selected.id}-${selected.updatedAt}`}
                   onBlur={(e) => void savePatch({ adminNotes: e.target.value })}
@@ -218,12 +212,12 @@ export function PrivateAiAdminPanel() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm">
-                  <span className="mb-1.5 block font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
                     Technical notes
                   </span>
                   <textarea
                     rows={3}
-                    className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5"
+                    className="w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5"
                     defaultValue={selected.technicalNotes}
                     key={`tech-${selected.id}-${selected.updatedAt}`}
                     onBlur={(e) =>
@@ -232,12 +226,12 @@ export function PrivateAiAdminPanel() {
                   />
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1.5 block font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
                     Security notes
                   </span>
                   <textarea
                     rows={3}
-                    className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5"
+                    className="w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5"
                     defaultValue={selected.securityNotes}
                     key={`sec-${selected.id}-${selected.updatedAt}`}
                     onBlur={(e) =>
@@ -248,7 +242,7 @@ export function PrivateAiAdminPanel() {
               </div>
 
               <div>
-                <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60">
                   Architecture summary
                 </p>
                 <ul className="mt-2 space-y-1 text-sm text-white/55">
@@ -259,10 +253,10 @@ export function PrivateAiAdminPanel() {
               </div>
 
               <div>
-                <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60">
                   Activity
                 </p>
-                <ul className="mt-2 space-y-2 text-xs text-white/40">
+                <ul className="mt-2 space-y-2 text-xs text-white/60">
                   {selected.activity.map((a, i) => (
                     <li key={`${a.at}-${i}`}>
                       {new Date(a.at).toLocaleString()}: {a.text}
@@ -272,7 +266,7 @@ export function PrivateAiAdminPanel() {
                 </ul>
               </div>
 
-              <p className="text-xs text-white/30">
+              <p className="text-xs text-white/60">
                 {saving ? "Saving…" : `Updated ${new Date(selected.updatedAt).toLocaleString()}`}
               </p>
             </div>
@@ -286,7 +280,7 @@ export function PrivateAiAdminPanel() {
 function Item({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="font-mono text-[0.52rem] uppercase tracking-label text-white/35">
+      <dt className="text-xs font-medium uppercase tracking-wide text-white/60">
         {label}
       </dt>
       <dd className="mt-1 text-white/70">{value || "-"}</dd>

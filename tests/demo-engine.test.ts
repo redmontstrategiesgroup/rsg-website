@@ -99,7 +99,7 @@ describe("fresh tracking", () => {
 
 describe("serializeSession", () => {
   it("strips toasts and fresh but keeps everything else", () => {
-    let s = apply(fresh(), [
+    const s = apply(fresh(), [
       { kind: "notify", notification: { id: "n-1", title: "Hello" } },
       { kind: "metric", id: "new-leads", delta: 1 },
     ]);

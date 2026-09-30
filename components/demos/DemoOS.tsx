@@ -501,7 +501,7 @@ export function DemoOS({
       <div className="mb-5 rounded-xl border border-white/10 bg-base-900/80">
         <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center">
           <div className="min-w-0 flex-1">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em]" style={{ color: accent === "#b3243a" ? "#d94b5e" : accent }}>
+            <p className="text-[0.62rem] font-medium uppercase tracking-label" style={{ color: accent === "#b3243a" ? "#d94b5e" : accent }}>
               {runningScenario
                 ? `Scenario running · step ${runningScenario.step} of ${runningScenario.total}`
                 : `Guided tour · step ${Math.max(stepIndex + 1, 0)} of ${steps.length}`}
@@ -587,17 +587,17 @@ export function DemoOS({
                   Simulate
                 </button>
                 <Popover open={simMenu} onClose={() => setSimMenu(false)} className="w-72" label="One-click simulations">
-                    <p className="border-b border-white/[0.08] px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
+                    <p className="border-b border-white/8 px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
                       One-click simulations
                     </p>
                     <ul>
                       {config.simActions?.map((action) => (
-                        <li key={action.id} className="border-b border-white/[0.06] last:border-0">
+                        <li key={action.id} className="border-b border-white/6 last:border-0">
                           <button
                             type="button"
                             onClick={() => runSimAction(action)}
                             disabled={!!runningScenario}
-                            className="w-full px-3 py-2.5 text-left transition-colors hover:bg-white/[0.04] focus:outline-none focus-visible:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-40"
+                            className="w-full px-3 py-2.5 text-left transition-colors hover:bg-white/4 focus:outline-hidden focus-visible:bg-white/6 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             <p className="text-xs text-white/80">{action.label}</p>
                             <p className="mt-0.5 text-[0.64rem] leading-snug text-white/40">{action.description}</p>
@@ -624,14 +624,14 @@ export function DemoOS({
                 Scenarios
               </button>
               <Popover open={scenarioMenu} onClose={() => setScenarioMenu(false)} className="w-80" label="Launch a scenario">
-                  <p className="border-b border-white/[0.08] px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
+                  <p className="border-b border-white/8 px-3 py-2 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/40">
                     Launch a scenario
                   </p>
                   <ul className="max-h-72 overflow-y-auto overscroll-contain">
                     {config.scenarios.map((sc) => {
                       const runs = state.scenarioRuns[sc.id] ?? 0;
                       return (
-                        <li key={sc.id} className="border-b border-white/[0.06] last:border-0">
+                        <li key={sc.id} className="border-b border-white/6 last:border-0">
                           <div className="px-3 py-2.5">
                             <p className="text-xs text-white/80">{sc.label}</p>
                             <p className="mt-0.5 text-[0.64rem] leading-snug text-white/40">{sc.description}</p>
@@ -661,7 +661,7 @@ export function DemoOS({
             )}
             {/* Desktop/mobile preview toggle, only meaningful on large screens */}
             <div
-              className="hidden items-center rounded border border-white/15 lg:inline-flex"
+              className="hidden items-center rounded-sm border border-white/15 lg:inline-flex"
               role="group"
               aria-label="Preview device"
             >
@@ -678,8 +678,8 @@ export function DemoOS({
                   aria-pressed={device === id}
                   aria-label={label}
                   title={label}
-                  className={`inline-flex items-center px-3 py-2.5 text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson ${
-                    device === id ? "bg-white/[0.08] text-white" : "text-white/45 hover:text-white"
+                  className={`inline-flex items-center px-3 py-2.5 text-xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson ${
+                    device === id ? "bg-white/8 text-white" : "text-white/45 hover:text-white"
                   }`}
                 >
                   <Icon size={13} aria-hidden />
@@ -689,7 +689,7 @@ export function DemoOS({
             <button
               type="button"
               onClick={() => setConfirmReset(true)}
-              className="inline-flex items-center gap-1.5 border border-white/15 px-3.5 py-2.5 text-xs text-white/55 transition-colors hover:border-white/40 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+              className="inline-flex items-center gap-1.5 border border-white/15 px-3.5 py-2.5 text-xs text-white/55 transition-colors hover:border-white/40 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/20"
               aria-label="Reset the entire demo"
             >
               <RotateCcw size={12} aria-hidden /> Reset
@@ -717,13 +717,13 @@ export function DemoOS({
       {/* ------------------------------------------------ Mobile preview frame */}
       {mobilePreview && (
         <div className="flex justify-center">
-          <div className="w-[24.5rem] max-w-full rounded-[2rem] border border-white/15 bg-base-900 p-2.5 shadow-lift">
+          <div className="w-98 max-w-full rounded-4xl border border-white/15 bg-base-900 p-2.5 shadow-lift">
             <div className="mx-auto mb-2 h-1.5 w-16 rounded-full bg-white/15" aria-hidden />
             <iframe
               key={frameKey}
               src={`/demopreview/${config.slug}`}
               title={`${config.osName} mobile preview`}
-              className="h-[42rem] w-full rounded-[1.4rem] border border-white/10 bg-base"
+              className="h-168 w-full rounded-[1.4rem] border border-white/10 bg-base"
             />
           </div>
         </div>
@@ -736,14 +736,14 @@ export function DemoOS({
         onKeyDown={onWindowKeyDown}
         className={`flex flex-col overflow-clip bg-base-900 scroll-mt-24 ${
           fullscreen
-            ? "fixed inset-0 z-[60]"
+            ? "fixed inset-0 z-60"
             : embedded
               ? "relative h-[calc(100dvh-1rem)] rounded-xl border border-white/10"
               : "relative rounded-xl border border-white/10 shadow-lift"
         }`}
       >
         {/* Window chrome */}
-        <div className="flex items-center gap-3 border-b border-white/[0.08] bg-base-800/60 px-4 py-3">
+        <div className="flex items-center gap-3 border-b border-white/8 bg-base-800/60 px-4 py-3">
           <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: accent }} aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-medium text-white/85">
@@ -754,13 +754,13 @@ export function DemoOS({
               </span>
             </p>
           </div>
-          <span className="hidden rounded border px-2 py-0.5 text-[0.58rem] font-medium uppercase tracking-[0.16em] md:inline-flex" style={{ borderColor: `${accent}55`, color: accent === "#b3243a" ? "#d94b5e" : accent, backgroundColor: `${accent}18` }}>
+          <span className="hidden rounded-sm border px-2 py-0.5 text-[0.58rem] font-medium uppercase tracking-[0.16em] md:inline-flex" style={{ borderColor: `${accent}55`, color: accent === "#b3243a" ? "#d94b5e" : accent, backgroundColor: `${accent}18` }}>
             {role.label} view
           </span>
           <div className="relative">
             <IconButton
               onClick={() => setBellOpen((v) => !v)}
-              className="relative rounded border border-white/10 text-white/55 hover:text-white focus-visible:ring-crimson lg:min-h-7 lg:min-w-7"
+              className="relative rounded-sm border border-white/10 text-white/55 hover:text-white focus-visible:ring-crimson lg:min-h-7 lg:min-w-7"
               aria-label={`Staff notifications (${unread})`}
               aria-expanded={bellOpen}
             >
@@ -772,7 +772,7 @@ export function DemoOS({
               )}
             </IconButton>
             <Popover open={bellOpen} onClose={() => setBellOpen(false)} className="w-72" offsetClassName="top-full mt-1" label="Staff notifications">
-                <div className="flex items-center justify-between border-b border-white/[0.08] px-3 py-2.5">
+                <div className="flex items-center justify-between border-b border-white/8 px-3 py-2.5">
                   <span className="text-[0.62rem] font-medium uppercase tracking-[0.16em] text-white/45">
                     Staff notifications
                   </span>
@@ -785,7 +785,7 @@ export function DemoOS({
                 {state.notifications.length === 0 ? (
                   <p className="px-3 py-6 text-center text-xs text-white/35">No notifications yet. Run a scenario.</p>
                 ) : (
-                  <ul className="max-h-64 divide-y divide-white/[0.06] overflow-y-auto overscroll-contain">
+                  <ul className="max-h-64 divide-y divide-white/6 overflow-y-auto overscroll-contain">
                     {state.notifications.map((n) => (
                       <li key={n.id} className="flex items-start gap-2.5 px-3 py-2.5">
                         {n.tone === "alert" ? (
@@ -808,7 +808,7 @@ export function DemoOS({
             {prevSection && (
               <IconButton
                 onClick={() => stepSection(-1)}
-                className="rounded border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
+                className="rounded-sm border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
                 aria-label="Previous section"
               >
                 <ChevronLeft size={14} aria-hidden />
@@ -817,7 +817,7 @@ export function DemoOS({
             {nextSection && (
               <IconButton
                 onClick={() => stepSection(1)}
-                className="rounded border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
+                className="rounded-sm border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
                 aria-label="Next section"
               >
                 <ChevronRight size={14} aria-hidden />
@@ -827,7 +827,7 @@ export function DemoOS({
           {!embedded && (
           <IconButton
             onClick={() => setFullscreen((v) => !v)}
-            className="rounded border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
+            className="rounded-sm border border-white/10 text-white/55 hover:text-white lg:min-h-7 lg:min-w-7"
             aria-label={fullscreen ? "Exit full screen" : "Full screen"}
             aria-pressed={fullscreen}
           >
@@ -838,7 +838,7 @@ export function DemoOS({
 
         <div className={`flex flex-col lg:flex-row ${fill ? "min-h-0 flex-1" : ""}`}>
           {/* Nav */}
-          <nav aria-label={`${config.osName} sections`} className="border-b border-white/[0.08] lg:w-48 lg:shrink-0 lg:border-b-0 lg:border-r">
+          <nav aria-label={`${config.osName} sections`} className="border-b border-white/8 lg:w-48 lg:shrink-0 lg:border-b-0 lg:border-r">
             <ScrollRail
               as="ul"
               activeKey={tab}
@@ -855,8 +855,8 @@ export function DemoOS({
                       type="button"
                       onClick={() => setTabTracked(item.id)}
                       aria-current={active ? "page" : undefined}
-                      className={`flex w-full items-center gap-2.5 whitespace-nowrap border-b-2 px-4 py-3 text-xs transition-colors focus:outline-none focus-visible:bg-white/[0.06] lg:border-b-0 lg:border-l-2 lg:py-2.5 ${
-                        active ? "bg-white/[0.04] text-white" : "border-transparent text-white/50 hover:text-white/85"
+                      className={`flex w-full items-center gap-2.5 whitespace-nowrap border-b-2 px-4 py-3 text-xs transition-colors focus:outline-hidden focus-visible:bg-white/6 lg:border-b-0 lg:border-l-2 lg:py-2.5 ${
+                        active ? "bg-white/4 text-white" : "border-transparent text-white/50 hover:text-white/85"
                       } ${pulse?.tab === item.id ? "demo-nav-pulse" : ""}`}
                       style={{ ...(active ? { borderColor: accent } : {}), ["--spot" as string]: pulse?.tab === item.id ? KIND_COLOR[pulse.kind] : undefined }}
                     >
@@ -879,7 +879,7 @@ export function DemoOS({
           <div
             data-demo-pane=""
             className={`min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain [touch-action:pan-y] ${
-              fill ? "min-h-0 flex-1" : "h-[32rem] lg:h-[38rem] lg:flex-1"
+              fill ? "min-h-0 flex-1" : "h-128 lg:h-152 lg:flex-1"
             }`}
             onPointerDown={onPanePointerDown}
             onPointerUp={onPanePointerUp}
@@ -900,7 +900,7 @@ export function DemoOS({
         </div>
 
         {/* Persistent demo-environment indicator */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] bg-base-800/40 px-4 py-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/8 bg-base-800/40 px-4 py-2">
           <p className="flex items-center gap-1.5 text-[0.62rem] text-white/40">
             <ShieldCheck size={11} className="shrink-0 text-emerald-400/60" aria-hidden />
             <span className="sm:hidden">Swipe sideways to change section. </span>
@@ -912,7 +912,7 @@ export function DemoOS({
               trackEvent("demo_cta_click", { demo: config.slug, cta: "build_in_os" });
               openRequest({ source: "os_footer" });
             }}
-            className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+            className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
             style={{ color: accent === "#b3243a" ? "#d94b5e" : accent }}
           >
             Build this for my business
@@ -926,7 +926,7 @@ export function DemoOS({
             // Taps pass through the card to the controls under it; on a phone
             // a stack of these covers most of the pane for up to 18s. Only
             // the dismiss button takes pointer input.
-            <div key={toast.id} className="flex items-start gap-2.5 rounded-lg border border-white/15 bg-base-700/95 p-3 shadow-lift backdrop-blur animate-fade-up">
+            <div key={toast.id} className="flex items-start gap-2.5 rounded-lg border border-white/15 bg-base-700/95 p-3 shadow-lift backdrop-blur-sm animate-fade-up">
               {toast.tone === "alert" ? (
                 <AlertTriangle size={14} className="mt-0.5 shrink-0 text-crimson-light" aria-hidden />
               ) : (

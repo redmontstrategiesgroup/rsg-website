@@ -229,7 +229,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    R[Request] --> M[middleware.ts]
+    R[Request] --> M[proxy.ts]
     M -->|correlation id| M
     M -->|/admin or /dashboard| G{Valid signed<br/>admin cookie?}
     G -->|no| L[Redirect /admin/login]

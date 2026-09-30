@@ -19,7 +19,7 @@ export function MiniPreview({
   return (
     <div className="overflow-hidden rounded-lg border border-white/10 bg-base-900 text-left shadow-card">
       {/* chrome */}
-      <div className="flex items-center gap-2 border-b border-white/[0.08] bg-base-800/70 px-3 py-2">
+      <div className="flex items-center gap-2 border-b border-white/8 bg-base-800/70 px-3 py-2">
         <span className="flex gap-1" aria-hidden>
           <i className="h-1.5 w-1.5 rounded-full bg-white/15" />
           <i className="h-1.5 w-1.5 rounded-full bg-white/15" />
@@ -28,7 +28,7 @@ export function MiniPreview({
         <span className="truncate text-[0.6rem] font-medium text-white/60">
           {config.businessName} · {config.osName}
         </span>
-        <span className="ml-auto hidden rounded border border-crimson/30 bg-crimson/10 px-1 py-px text-[0.5rem] uppercase tracking-wider text-crimson-light sm:block">
+        <span className="ml-auto hidden rounded-sm border border-crimson/30 bg-crimson/10 px-1 py-px text-[0.5rem] uppercase tracking-wider text-crimson-light sm:block">
           Demo
         </span>
       </div>
@@ -39,7 +39,7 @@ export function MiniPreview({
             const DeltaIcon = m.deltaDir === "down" ? ArrowDownRight : ArrowUpRight;
             const good = m.deltaGood ?? m.deltaDir !== "down";
             return (
-              <div key={m.id} className="rounded border border-white/[0.07] bg-white/[0.02] p-1.5">
+              <div key={m.id} className="rounded-sm border border-white/[0.07] bg-white/2 p-1.5">
                 <p className="truncate text-[0.5rem] uppercase tracking-wider text-white/35">
                   {m.label}
                 </p>
@@ -64,16 +64,16 @@ export function MiniPreview({
             return (
               <div
                 key={s.id}
-                className="min-w-0 flex-1 rounded border border-white/[0.07] bg-white/[0.015] px-1.5 py-1"
+                className="min-w-0 flex-1 rounded-sm border border-white/[0.07] bg-white/1.5 px-1.5 py-1"
               >
                 <p className="truncate text-[0.48rem] uppercase tracking-wider text-white/35">
                   {s.label}
                 </p>
                 <div className="mt-1 flex gap-0.5" aria-hidden>
                   {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
-                    <span key={i} className="h-1 flex-1 rounded-sm bg-crimson/50" />
+                    <span key={i} className="h-1 flex-1 rounded-xs bg-crimson/50" />
                   ))}
-                  {count === 0 && <span className="h-1 flex-1 rounded-sm bg-white/[0.06]" />}
+                  {count === 0 && <span className="h-1 flex-1 rounded-xs bg-white/6" />}
                 </div>
               </div>
             );
@@ -81,7 +81,7 @@ export function MiniPreview({
         </div>
         {/* automated message */}
         {!compact && lastAuto && (
-          <div className="rounded border border-crimson/20 bg-crimson/[0.06] px-2 py-1.5">
+          <div className="rounded-sm border border-crimson/20 bg-crimson/6 px-2 py-1.5">
             <p className="flex items-center gap-1 text-[0.5rem] uppercase tracking-wider text-crimson-light/80">
               <Zap size={8} aria-hidden /> Automated · {convo.contact}
             </p>
@@ -111,7 +111,7 @@ export function DirectoryCard({
         which is what pushed the page 104px wide on a 320px phone.
       */}
       <div className={`min-w-0 lg:col-span-5 ${index % 2 === 1 ? "lg:order-2 lg:col-start-8" : ""}`}>
-        <p className="label !text-crimson-light">{config.industry}</p>
+        <p className="label text-crimson-light!">{config.industry}</p>
         <h3 className="display mt-3 text-xl sm:text-2xl">{config.systemName}</h3>
         <p className="mt-3 text-sm leading-relaxed text-white/55">{config.outcome}</p>
         <ul className="mt-6 space-y-2">
@@ -134,7 +134,7 @@ export function DirectoryCard({
           </TrackedLink>
         </div>
       </div>
-      <div className={`min-w-0 overflow-hidden ${index % 2 === 1 ? "lg:order-1 lg:col-span-6 lg:col-start-1" : "lg:col-span-6 lg:col-start-7"}`}>
+      <div className={`min-w-0 overflow-x-clip ${index % 2 === 1 ? "lg:order-1 lg:col-span-6 lg:col-start-1" : "lg:col-span-6 lg:col-start-7"}`}>
         {/* Illustrative miniature of the running system, a picture made of
             DOM, so it is hidden from assistive tech rather than read out as
             a stream of stray numbers. */}

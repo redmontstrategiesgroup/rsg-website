@@ -35,7 +35,7 @@ export function RecoveredView({ state, config, track, openRequest }: ViewProps) 
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
-        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.06] p-5 lg:col-span-2">
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/6 p-5 lg:col-span-2">
           <p className="flex items-center gap-1.5 text-[0.62rem] font-medium uppercase tracking-[0.14em] text-emerald-300/80">
             <LifeBuoy size={11} aria-hidden /> Recovered this month
           </p>
@@ -46,7 +46,7 @@ export function RecoveredView({ state, config, track, openRequest }: ViewProps) 
             {ledger.length} {ledger.length === 1 ? "contact" : "contacts"} that had gone quiet
           </p>
         </div>
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4 lg:col-span-3">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 p-4 lg:col-span-3">
           <p className="mb-4 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-white/45">By trigger</p>
           {derived.recoveredByTrigger.length === 0 ? (
             <EmptyState text="Run a scenario to see where the recovered dollars come from." />
@@ -56,12 +56,12 @@ export function RecoveredView({ state, config, track, openRequest }: ViewProps) 
         </div>
       </div>
 
-      <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+      <div className="rounded-lg border border-white/[0.07] bg-white/2">
         <PanelHeading title={`Ledger · ${ledger.length}`} />
         {ledger.length === 0 ? (
           <EmptyState text="Nothing recovered yet this session." />
         ) : (
-          <ul className="divide-y divide-white/[0.05]">
+          <ul className="divide-y divide-white/5">
             {ledger.map((r) => (
               <Spotlight
                 as="li"
@@ -91,7 +91,7 @@ export function RecoveredView({ state, config, track, openRequest }: ViewProps) 
             ))}
           </ul>
         )}
-        <p className="border-t border-white/[0.06] px-4 py-2.5 text-[0.62rem] leading-relaxed text-white/35">
+        <p className="border-t border-white/6 px-4 py-2.5 text-[0.62rem] leading-relaxed text-white/35">
           How it is counted: {recovered.attributionRule}
         </p>
       </div>
@@ -104,7 +104,7 @@ export function RecoveredView({ state, config, track, openRequest }: ViewProps) 
             track("reviewed recovered revenue");
             openRequest({ source: "recovered_view", feature: "Automated follow-up sequences" });
           }}
-          className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+          className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
         >
           See what this would recover for my business <ArrowRight size={11} aria-hidden />
         </button>

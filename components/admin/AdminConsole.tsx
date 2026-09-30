@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,9 +28,11 @@ import {
   ShieldAlert,
   Wrench,
   Route,
+  Mic,
+  ChevronDown,
 } from "lucide-react";
 import type { AdminRole, ClientPublic, Lead, LeadStatus, Subscriber } from "@/lib/types";
-import { LEAD_STATUSES } from "@/lib/types";
+import { ADMIN_ROLE_LABELS, LEAD_STATUSES } from "@/lib/types";
 import type { AnalyticsSummary } from "@/lib/analytics";
 import { formatMetricValue } from "@/lib/format";
 import { Logo } from "@/components/Logo";
@@ -42,12 +44,14 @@ import { SecurityCenterPanel } from "@/components/admin/SecurityCenterPanel";
 import { IndustriesAdminPanel } from "@/components/admin/IndustriesAdminPanel";
 import { ManagedServicesAdminPanel } from "@/components/admin/ManagedServicesAdminPanel";
 import { LifecycleAdminPanel } from "@/components/admin/LifecycleAdminPanel";
+import { PocketAdminPanel } from "@/components/admin/PocketAdminPanel";
 import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Tab =
   | "clients"
   | "lifecycle"
   | "leads"
+  | "pocket"
   | "analytics"
   | "brief"
   | "connect"
@@ -64,12 +68,146 @@ export type AdminCaps = {
   scheduling: boolean;
   connect: boolean;
   privateAi: boolean;
+  pocket: boolean;
   brief: boolean;
   security: boolean;
 };
 
+type NavItem = {
+  id: Tab;
+  label: string;
+  description: string;
+  icon: typeof Users;
+  allowed: (caps: AdminCaps) => boolean;
+};
+
+/**
+ * Sections, grouped the way the work is done. Order within the list is also
+ * the default-landing order: the first section a role can see opens first.
+ * Real enforcement is server-side on every API route; `allowed` only keeps
+ * the UI honest to the role.
+ */
+const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
+  {
+    label: "Pipeline",
+    items: [
+      {
+        id: "clients",
+        label: "Clients",
+        description: "Provision portal accounts and edit the metrics each client sees.",
+        icon: Users,
+        allowed: (c) => c.clients,
+      },
+      {
+        id: "lifecycle",
+        label: "Client OS",
+        description: "Track every account from first touch through delivery.",
+        icon: Route,
+        allowed: (c) => c.leads || c.clients,
+      },
+      {
+        id: "leads",
+        label: "Leads",
+        description: "Review inbound leads, update their status, and follow up.",
+        icon: Inbox,
+        allowed: (c) => c.leads,
+      },
+      {
+        id: "pocket",
+        label: "Pocket",
+        description: "Recordings from the Pocket recorder, transcribed, summarized, and matched to leads.",
+        icon: Mic,
+        allowed: (c) => c.pocket,
+      },
+    ],
+  },
+  {
+    label: "Insights",
+    items: [
+      {
+        id: "analytics",
+        label: "Analytics",
+        description: "Page views and visitors from consenting site traffic.",
+        icon: BarChart3,
+        allowed: (c) => c.analytics,
+      },
+      {
+        id: "brief",
+        label: "Audit Brief",
+        description: "Generate a pre-call research brief from a lead's website.",
+        icon: FileSearch,
+        allowed: (c) => c.brief,
+      },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      {
+        id: "scheduling",
+        label: "Scheduling",
+        description: "Native consultation booking, qualification, and calendar controls.",
+        icon: Calendar,
+        allowed: (c) => c.scheduling,
+      },
+      {
+        id: "managed",
+        label: "Managed Services",
+        description: "Plans, subscriptions, service delivery, reporting, and proposals.",
+        icon: Wrench,
+        allowed: (c) => c.clients,
+      },
+      {
+        id: "private-ai",
+        label: "Private AI",
+        description: "Configurations submitted from the Private AI System Designer.",
+        icon: Cpu,
+        allowed: (c) => c.privateAi,
+      },
+    ],
+  },
+  {
+    label: "Website",
+    items: [
+      {
+        id: "connect",
+        label: "Connect Page",
+        description: "Manage the RSG link hub used on social, cards, and QR codes.",
+        icon: Link2,
+        allowed: (c) => c.connect,
+      },
+      {
+        id: "industries",
+        label: "Industries",
+        description: "Manage the industry pages shown on the marketing site.",
+        icon: Building2,
+        allowed: (c) => c.connect,
+      },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      {
+        id: "security",
+        label: "Security",
+        description: "Identity, data, AI approvals, vendors, retention, incidents, and testing, backed by real system data.",
+        icon: ShieldCheck,
+        allowed: (c) => c.security,
+      },
+    ],
+  },
+];
+
+const ALL_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
+
+function isTab(value: string): value is Tab {
+  return ALL_ITEMS.some((i) => i.id === value);
+}
+
 export function AdminConsole({
   adminEmail,
+  role,
   caps,
   mfaEnabled = false,
   mfaSetupRequired = false,
@@ -90,30 +228,57 @@ export function AdminConsole({
   analytics?: AnalyticsSummary;
 }) {
   const router = useRouter();
-  // Tabs available to this role, in display order. Real enforcement is
-  // server-side on every API route; this keeps the UI honest to the role.
-  const availableTabs: Tab[] = [
-    caps.clients && ("clients" as Tab),
-    (caps.leads || caps.clients) && ("lifecycle" as Tab),
-    caps.leads && ("leads" as Tab),
-    caps.analytics && ("analytics" as Tab),
-    caps.scheduling && ("scheduling" as Tab),
-    caps.connect && ("connect" as Tab),
-    caps.connect && ("industries" as Tab),
-    caps.clients && ("managed" as Tab),
-    caps.privateAi && ("private-ai" as Tab),
-    caps.security && ("security" as Tab),
-    caps.brief && ("brief" as Tab),
-  ].filter(Boolean) as Tab[];
-  const [tab, setTab] = useState<Tab>(availableTabs[0] ?? "security");
+  const groups = NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => i.allowed(caps)),
+  })).filter((g) => g.items.length > 0);
+  const availableTabs = groups.flatMap((g) => g.items.map((i) => i.id));
+  const [tab, setTabState] = useState<Tab>(availableTabs[0] ?? "security");
   const [clients, setClients] = useState(initialClients);
   const [leads, setLeads] = useState(initialLeads);
   const [selectedId, setSelectedId] = useState(initialClients[0]?.id ?? "");
   const [creating, setCreating] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const newLeadCount = leads.filter((l) => (l.status ?? "new") === "new").length;
 
   const selected = clients.find((c) => c.id === selectedId) ?? null;
+  const current = ALL_ITEMS.find((i) => i.id === tab);
+  const currentGroup = groups.find((g) => g.items.some((i) => i.id === tab));
+
+  const counts: Partial<Record<Tab, { count?: number; badge?: number }>> = {
+    clients: { count: clients.length },
+    leads: { count: leads.length, badge: newLeadCount },
+    analytics: { count: analytics?.totalViews ?? 0 },
+  };
+
+  // Deep-link: /admin#leads opens the Leads section, and reloads keep place.
+  useEffect(() => {
+    const syncFromHash = () => {
+      const fromHash = window.location.hash.slice(1);
+      if (isTab(fromHash) && availableTabs.includes(fromHash)) setTabState(fromHash);
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+    return () => window.removeEventListener("hashchange", syncFromHash);
+    // availableTabs is derived from server-fixed caps, so subscribe once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * User-initiated section change. Moves focus to the new section's heading
+   * so keyboard and screen-reader users land on the content they asked for
+   * instead of staying in the nav with no sign that anything changed.
+   */
+  function setTab(next: Tab) {
+    setTabState(next);
+    window.history.replaceState(null, "", `#${next}`);
+    requestAnimationFrame(() => headingRef.current?.focus({ preventScroll: true }));
+    if (window.scrollY > 0) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    }
+  }
 
   // Sliding-session keepalive while the console is open.
   useEffect(() => {
@@ -143,296 +308,357 @@ export function AdminConsole({
     setCreating(false);
   }
 
+  function navBadge(id: Tab, active: boolean) {
+    const c = counts[id];
+    if (!c) return null;
+    if (c.badge && c.badge > 0) {
+      return (
+        <span className="ml-auto rounded-full bg-crimson px-2 py-0.5 text-[0.6875rem] font-semibold tabular-nums text-white">
+          {c.badge}
+          <span className="sr-only"> new</span>
+        </span>
+      );
+    }
+    if (c.count == null) return null;
+    return (
+      <span
+        className={`ml-auto rounded-full px-2 py-0.5 text-[0.6875rem] tabular-nums ${
+          active ? "bg-white/15 text-white" : "bg-white/6 text-white/60"
+        }`}
+      >
+        {c.count}
+        <span className="sr-only"> total</span>
+      </span>
+    );
+  }
+
   return (
     <div className="min-h-dvh bg-base">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-[0.3]" />
-        <div className="absolute left-1/2 top-[-10%] h-[440px] w-[760px] -translate-x-1/2 rounded-full bg-crimson/[0.06] blur-[130px]" />
+      <a
+        href="#admin-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-crimson focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:text-white"
+      >
+        Skip to content
+      </a>
+
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-grid opacity-[0.25]" />
+        <div className="absolute left-1/2 top-[-10%] h-[440px] w-[760px] -translate-x-1/2 rounded-full bg-crimson/6 blur-[130px]" />
       </div>
 
       {/* Top bar */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-base/70 backdrop-blur-xl">
-        <div className="container-px flex h-20 items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Link href="/" aria-label="Redmont Strategies Group home" className="inline-flex min-h-11 min-w-11 items-center">
-              <Logo showWordmark={false} />
-            </Link>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[0.56rem] uppercase tracking-label text-crimson-light">
-              <ShieldCheck size={13} />
-              Admin
-            </span>
-          </div>
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-base/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-app items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link
-              href="/dashboard"
-              className="hidden min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white sm:inline-flex"
+              href="/"
+              aria-label="Redmont Strategies Group home"
+              className="inline-flex min-h-11 min-w-11 items-center rounded-lg focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light"
             >
-              <LayoutDashboard size={15} />
+              <Logo showWordmark={false} />
+            </Link>
+            <span className="inline-flex items-center gap-2 rounded-full border border-crimson/30 bg-crimson/8 px-3 py-1 text-xs font-medium text-crimson-light">
+              <ShieldCheck size={13} aria-hidden="true" />
+              Admin console
+            </span>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/dashboard"
+              className={`${quietButton} hidden sm:inline-flex`}
+            >
+              <LayoutDashboard size={15} aria-hidden="true" />
               Intelligence
             </Link>
-            <span className="hidden font-mono text-[0.58rem] uppercase tracking-label text-white/40 md:block">
-              {adminEmail}
-            </span>
+            <div className="hidden text-right leading-tight md:block">
+              <p className="max-w-[16rem] truncate text-sm text-white/85">{adminEmail}</p>
+              <p className="text-xs text-white/60">{ADMIN_ROLE_LABELS[role] ?? role}</p>
+            </div>
             <button
+              type="button"
               onClick={logout}
               disabled={loggingOut}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 text-sm text-white/70 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+              aria-label="Sign out"
+              className={`${quietButton} disabled:opacity-50`}
             >
-              <LogOut size={15} />
-              <span className="hidden sm:inline">Sign out</span>
+              {loggingOut ? (
+                <Loader2 size={15} className="animate-spin" aria-hidden="true" />
+              ) : (
+                <LogOut size={15} aria-hidden="true" />
+              )}
+              <span className="hidden sm:inline" aria-hidden="true">Sign out</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="container-px py-10">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="display text-gradient text-[1.8rem] font-semibold sm:text-[2.2rem]">
-              Admin console
-            </h1>
-            <p className="mt-3 text-white/55">
-              Manage clients, review inbound leads, and open executive
-              intelligence.
-            </p>
+      <div className="mx-auto w-full max-w-app px-4 sm:px-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10 lg:px-8">
+        {/* Sidebar (desktop) */}
+        <nav aria-label="Admin sections" className="hidden lg:block">
+          <div className="sticky top-16 max-h-[calc(100dvh-4rem)] space-y-6 overflow-y-auto py-8 pr-1">
+            {groups.map((g) => (
+              <div key={g.label}>
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider text-white/55">
+                  {g.label}
+                </p>
+                <ul className="mt-2 space-y-0.5">
+                  {g.items.map((item) => {
+                    const active = tab === item.id;
+                    const Icon = item.icon;
+                    return (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          onClick={() => setTab(item.id)}
+                          aria-current={active ? "page" : undefined}
+                          className={`group relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light ${
+                            active
+                              ? "bg-white/[0.07] font-medium text-white"
+                              : "text-white/70 hover:bg-white/4 hover:text-white"
+                          }`}
+                        >
+                          {active && (
+                            <motion.span
+                              layoutId="admin-nav-indicator"
+                              aria-hidden="true"
+                              className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-crimson-light"
+                            />
+                          )}
+                          <Icon
+                            size={16}
+                            aria-hidden="true"
+                            className={active ? "text-crimson-light" : "text-white/55 group-hover:text-white/80"}
+                          />
+                          <span className="truncate">{item.label}</span>
+                          {navBadge(item.id, active)}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </div>
-          <Link
-            href="/dashboard"
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-crimson/30 bg-crimson/[0.08] px-4 py-2.5 text-sm text-crimson-light transition-colors hover:border-crimson/50 sm:hidden"
+        </nav>
+
+        <main id="admin-main" className="min-w-0 py-6 lg:py-8">
+          {/* Section rail (mobile / tablet) */}
+          <ScrollRail
+            as="nav"
+            aria-label="Admin sections"
+            activeKey={tab}
+            snap="start"
+            hideScrollbar
+            className="-mx-4 mb-6 flex gap-2 px-4 pb-1 sm:-mx-6 sm:px-6 lg:hidden"
           >
-            <LayoutDashboard size={15} />
-            Intelligence dashboard
-          </Link>
-        </div>
-
-        {mfaSetupRequired && tab !== "security" && (
-          <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-crimson/40 bg-crimson/[0.08] px-4 py-3 text-sm text-white/80">
-            <ShieldAlert size={16} className="text-crimson-light" />
-            <span>
-              Multifactor authentication is required for your role. Some actions
-              are blocked until you enroll.
-            </span>
-            <button
-              onClick={() => setTab("security")}
-              className="rounded-lg border border-crimson/40 px-3 py-1.5 text-xs font-medium text-crimson-light transition-colors hover:border-crimson/60"
-            >
-              Set up MFA
-            </button>
-          </div>
-        )}
-
-        {/* Tabs */}
-        <ScrollRail
-          role="tablist"
-          aria-label="Admin sections"
-          activeKey={tab}
-          keyboardTabs
-          className="mt-8 flex gap-2 border-b border-white/10"
-        >
-          {(
-            [
-              { id: "clients" as Tab, label: "Clients", icon: Users, count: clients.length, badge: 0 },
-              {
-                id: "lifecycle" as Tab,
-                label: "Client OS",
-                icon: Route,
-                count: null,
-                badge: 0,
-              },
-              {
-                id: "leads" as Tab,
-                label: "Leads",
-                icon: Inbox,
-                count: leads.length,
-                badge: newLeadCount,
-              },
-              {
-                id: "analytics" as Tab,
-                label: "Analytics",
-                icon: BarChart3,
-                count: analytics?.totalViews ?? 0,
-                badge: 0,
-              },
-              {
-                id: "scheduling" as Tab,
-                label: "Scheduling",
-                icon: Calendar,
-                count: null,
-                badge: 0,
-              },
-              {
-                id: "connect" as Tab,
-                label: "Connect Page",
-                icon: Link2,
-                count: null,
-                badge: 0,
-              },
-              {
-                id: "industries" as Tab,
-                label: "Industries",
-                icon: Building2,
-                count: null,
-                badge: 0,
-              },
-              {
-                id: "managed" as Tab,
-                label: "Managed Services",
-                icon: Wrench,
-                count: null,
-                badge: 0,
-              },
-              {
-                id: "private-ai" as Tab,
-                label: "Private AI",
-                icon: Cpu,
-                count: null,
-                badge: 0,
-              },
-              {
-                id: "security" as Tab,
-                label: "Security",
-                icon: ShieldCheck,
-                count: null,
-                badge: 0,
-              },
-              {
-                id: "brief" as Tab,
-                label: "Audit Brief",
-                icon: FileSearch,
-                count: null,
-                badge: 0,
-              },
-            ] as { id: Tab; label: string; icon: typeof Users; count: number | null; badge: number }[]
-          )
-            .filter((t) => availableTabs.includes(t.id))
-            .map((t) => {
-            const active = tab === t.id;
-            const Icon = t.icon;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setTab(t.id)}
-                className={`relative inline-flex shrink-0 items-center gap-2 px-4 py-3 text-sm transition-colors ${
-                  active ? "text-white" : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                <Icon size={15} />
-                {t.label}
-                {t.badge > 0 && (
-                  <span className="rounded-full bg-crimson px-2 py-0.5 font-mono text-[0.54rem] text-white">
-                    {t.badge} new
-                  </span>
-                )}
-                {t.count != null && t.badge === 0 && (
-                  <span className="rounded-full bg-white/[0.06] px-2 py-0.5 font-mono text-[0.54rem] text-white/50">
-                    {t.count}
-                  </span>
-                )}
-                {active && (
-                  <motion.span
-                    layoutId="admin-tab"
-                    className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-crimson shadow-glow-sm"
-                  />
-                )}
-              </button>
-            );
-          })}
-        </ScrollRail>
-
-        <div className="mt-8">
-          {tab === "clients" && caps.clients ? (
-            <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-              {/* Client list */}
-              <aside className="space-y-2">
+            {groups.flatMap((g) => g.items).map((item) => {
+              const active = tab === item.id;
+              const Icon = item.icon;
+              return (
                 <button
-                  onClick={() => setCreating(true)}
-                  className={`flex w-full items-center gap-3 rounded-xl border border-dashed p-3.5 text-left transition-colors ${
-                    creating
-                      ? "border-crimson/50 bg-crimson/[0.06] text-white"
-                      : "border-white/15 text-white/60 hover:border-white/35 hover:text-white"
+                  key={item.id}
+                  type="button"
+                  onClick={() => setTab(item.id)}
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light ${
+                    active
+                      ? "border-crimson/50 bg-crimson/12 font-medium text-white"
+                      : "border-white/12 bg-white/3 text-white/70 hover:border-white/30 hover:text-white"
                   }`}
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-crimson-light">
-                    <UserPlus size={15} />
-                  </span>
-                  <span className="text-sm font-medium">New client</span>
+                  <Icon size={15} aria-hidden="true" />
+                  {item.label}
+                  {navBadge(item.id, active)}
                 </button>
+              );
+            })}
+          </ScrollRail>
 
-                {clients.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => {
-                      setSelectedId(c.id);
-                      setCreating(false);
-                    }}
-                    className={`flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition-colors ${
-                      c.id === selectedId && !creating
-                        ? "border-crimson/40 bg-crimson/[0.06]"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/25"
-                    }`}
-                  >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-crimson-light">
-                      <Building2 size={15} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium text-white">
-                        {c.company}
-                      </span>
-                      <span className="block truncate font-mono text-[0.54rem] uppercase tracking-label text-white/40">
-                        {c.plan}
-                      </span>
-                    </span>
-                  </button>
-                ))}
-              </aside>
-
-              {/* Editor / create form */}
-              {creating ? (
-                <CreateClientForm onCreated={onCreated} onCancel={() => setCreating(false)} />
-              ) : selected ? (
-                <ClientEditor key={selected.id} client={selected} onSaved={onSaved} />
-              ) : (
-                <p className="text-white/50">
-                  No clients yet. Use “New client” to provision one.
+          {/* Section heading */}
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-6">
+            <div className="min-w-0">
+              {currentGroup && (
+                <p className="text-xs font-semibold uppercase tracking-wider text-crimson-light">
+                  {currentGroup.label}
+                </p>
+              )}
+              <h1
+                id="admin-section-title"
+                ref={headingRef}
+                tabIndex={-1}
+                className="display mt-1.5 text-[1.6rem] font-semibold text-white focus:outline-hidden sm:text-[1.9rem]"
+              >
+                {current?.label ?? "Admin console"}
+              </h1>
+              {current?.description && (
+                <p className="mt-2 max-w-2xl text-[0.95rem] leading-relaxed text-white/70">
+                  {current.description}
                 </p>
               )}
             </div>
-          ) : tab === "leads" && caps.leads ? (
-            <div className="space-y-10">
-              <LeadsTable leads={leads} onLeadsChange={setLeads} />
-              <SubscribersPanel subscribers={subscribers} />
+            <Link href="/dashboard" className={`${quietButton} sm:hidden`}>
+              <LayoutDashboard size={15} aria-hidden="true" />
+              Intelligence dashboard
+            </Link>
+          </div>
+
+          {mfaSetupRequired && tab !== "security" && (
+            <div
+              role="status"
+              className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-crimson/40 bg-crimson/8 px-4 py-3 text-sm text-white/85"
+            >
+              <ShieldAlert size={16} className="shrink-0 text-crimson-light" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                Multifactor authentication is required for your role. Some actions
+                are blocked until you enroll.
+              </span>
+              <button
+                type="button"
+                onClick={() => setTab("security")}
+                className="min-h-11 rounded-lg border border-crimson/50 px-3.5 text-sm font-medium text-crimson-light transition-colors hover:border-crimson-light hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light"
+              >
+                Set up MFA
+              </button>
             </div>
-          ) : tab === "analytics" && caps.analytics ? (
-            <AnalyticsPanel analytics={analytics} />
-          ) : tab === "connect" && caps.connect ? (
-            <ConnectAdminPanel />
-          ) : tab === "industries" && caps.connect ? (
-            <IndustriesAdminPanel />
-          ) : tab === "lifecycle" && (caps.leads || caps.clients) ? (
-            <LifecycleAdminPanel />
-          ) : tab === "managed" && caps.clients ? (
-            <ManagedServicesAdminPanel />
-          ) : tab === "scheduling" && caps.scheduling ? (
-            <SchedulingAdminPanel />
-          ) : tab === "private-ai" && caps.privateAi ? (
-            <PrivateAiAdminPanel />
-          ) : tab === "security" && caps.security ? (
-            <SecurityCenterPanel
-              mfaEnabled={mfaEnabled}
-              mfaSetupRequired={mfaSetupRequired}
-            />
-          ) : tab === "brief" && caps.brief ? (
-            <BriefPanel />
-          ) : (
-            <p className="text-white/50">
-              You don’t have access to this section.
-            </p>
           )}
-        </div>
-      </main>
+
+          <section aria-labelledby="admin-section-title" className="mt-8">
+            {tab === "clients" && caps.clients ? (
+              <div className="grid gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+                {/* Client list */}
+                <aside aria-label="Clients" className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setCreating(true)}
+                    aria-pressed={creating}
+                    className={`flex min-h-14 w-full items-center gap-3 rounded-xl border border-dashed p-3.5 text-left transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light ${
+                      creating
+                        ? "border-crimson/50 bg-crimson/6 text-white"
+                        : "border-white/20 text-white/75 hover:border-white/40 hover:text-white"
+                    }`}
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-crimson-light">
+                      <UserPlus size={15} aria-hidden="true" />
+                    </span>
+                    <span className="text-sm font-medium">New client</span>
+                  </button>
+
+                  <ul className="space-y-2">
+                    {clients.map((c) => {
+                      const active = c.id === selectedId && !creating;
+                      return (
+                        <li key={c.id}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedId(c.id);
+                              setCreating(false);
+                            }}
+                            aria-current={active ? "true" : undefined}
+                            className={`flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light ${
+                              active
+                                ? "border-crimson/40 bg-crimson/6"
+                                : "border-white/10 bg-white/2 hover:border-white/25 hover:bg-white/4"
+                            }`}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/4 text-sm font-semibold text-crimson-light"
+                            >
+                              {c.company.trim().charAt(0).toUpperCase() || "?"}
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block wrap-break-word text-sm font-medium text-white">
+                                {c.company}
+                              </span>
+                              <span className="block truncate text-xs text-white/60">
+                                {c.plan}
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </aside>
+
+                {/* Editor / create form */}
+                {creating ? (
+                  <CreateClientForm onCreated={onCreated} onCancel={() => setCreating(false)} />
+                ) : selected ? (
+                  <ClientEditor key={selected.id} client={selected} onSaved={onSaved} />
+                ) : (
+                  <EmptyState
+                    icon={Users}
+                    title="No clients yet"
+                    body="Use “New client” to provision a portal account."
+                  />
+                )}
+              </div>
+            ) : tab === "leads" && caps.leads ? (
+              <div className="space-y-10">
+                <LeadsTable leads={leads} onLeadsChange={setLeads} />
+                <SubscribersPanel subscribers={subscribers} />
+              </div>
+            ) : tab === "pocket" && caps.pocket ? (
+              <PocketAdminPanel leads={leads} />
+            ) : tab === "analytics" && caps.analytics ? (
+              <AnalyticsPanel analytics={analytics} />
+            ) : tab === "connect" && caps.connect ? (
+              <ConnectAdminPanel />
+            ) : tab === "industries" && caps.connect ? (
+              <IndustriesAdminPanel />
+            ) : tab === "lifecycle" && (caps.leads || caps.clients) ? (
+              <LifecycleAdminPanel />
+            ) : tab === "managed" && caps.clients ? (
+              <ManagedServicesAdminPanel />
+            ) : tab === "scheduling" && caps.scheduling ? (
+              <SchedulingAdminPanel />
+            ) : tab === "private-ai" && caps.privateAi ? (
+              <PrivateAiAdminPanel />
+            ) : tab === "security" && caps.security ? (
+              <SecurityCenterPanel
+                mfaEnabled={mfaEnabled}
+                mfaSetupRequired={mfaSetupRequired}
+              />
+            ) : tab === "brief" && caps.brief ? (
+              <BriefPanel />
+            ) : (
+              <EmptyState
+                icon={ShieldAlert}
+                title="No access"
+                body="Your role doesn’t include this section."
+              />
+            )}
+          </section>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+const quietButton =
+  "inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-3.5 text-sm text-white/80 transition-colors hover:border-white/35 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light";
+
+function EmptyState({
+  icon: Icon,
+  title,
+  body,
+  children,
+}: {
+  icon: typeof Users;
+  title: string;
+  body?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="card flex flex-col items-center px-6 py-12 text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/4 text-white/60">
+        <Icon size={22} aria-hidden="true" />
+      </span>
+      <p className="mt-4 font-medium text-white/90">{title}</p>
+      {body && <p className="mt-1.5 max-w-md text-sm text-white/65">{body}</p>}
+      {children}
     </div>
   );
 }
@@ -521,7 +747,7 @@ function CreateClientForm({
     <form onSubmit={submit} className="card space-y-5 p-6">
       <div>
         <h2 className="display text-xl text-white">New client</h2>
-        <p className="mt-1 text-sm text-white/50">
+        <p className="mt-1 text-sm text-white/65">
           Creates a portal account. Share the temporary password with the
           client; they sign in at /login.
         </p>
@@ -529,25 +755,25 @@ function CreateClientForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block font-mono text-[0.56rem] uppercase tracking-label text-white/55">
+          <span className="mb-1.5 block text-xs font-medium text-white/75">
             Contact name *
           </span>
           <input required value={form.name} onChange={set("name")} className={inputClass} placeholder="Full name" />
         </label>
         <label className="block">
-          <span className="mb-1.5 block font-mono text-[0.56rem] uppercase tracking-label text-white/55">
+          <span className="mb-1.5 block text-xs font-medium text-white/75">
             Business name *
           </span>
           <input required value={form.company} onChange={set("company")} className={inputClass} placeholder="Business name" />
         </label>
         <label className="block">
-          <span className="mb-1.5 block font-mono text-[0.56rem] uppercase tracking-label text-white/55">
+          <span className="mb-1.5 block text-xs font-medium text-white/75">
             Email *
           </span>
           <input required type="email" value={form.email} onChange={set("email")} className={inputClass} placeholder="Email address" />
         </label>
         <label className="block">
-          <span className="mb-1.5 block font-mono text-[0.56rem] uppercase tracking-label text-white/55">
+          <span className="mb-1.5 block text-xs font-medium text-white/75">
             Plan
           </span>
           <select value={form.plan} onChange={set("plan")} className={inputClass}>
@@ -557,7 +783,7 @@ function CreateClientForm({
           </select>
         </label>
         <label className="block sm:col-span-2">
-          <span className="mb-1.5 block font-mono text-[0.56rem] uppercase tracking-label text-white/55">
+          <span className="mb-1.5 block text-xs font-medium text-white/75">
             Temporary password *
           </span>
           <div className="flex gap-2">
@@ -588,7 +814,7 @@ function CreateClientForm({
           </div>
         </label>
         <label className="block">
-          <span className="mb-1.5 block font-mono text-[0.56rem] uppercase tracking-label text-white/55">
+          <span className="mb-1.5 block text-xs font-medium text-white/75">
             Client since
           </span>
           <input value={form.since} onChange={set("since")} className={inputClass} placeholder="Jul 2026" />
@@ -596,20 +822,20 @@ function CreateClientForm({
       </div>
 
       {error && (
-        <p className="rounded-lg border border-crimson/30 bg-crimson-soft px-3.5 py-2.5 text-sm text-crimson-light">
+        <p role="alert" className="rounded-lg border border-crimson/30 bg-crimson-soft px-3.5 py-2.5 text-sm text-crimson-light">
           {error}
         </p>
       )}
 
       <div className="flex items-center gap-3">
         <button type="submit" disabled={saving} className="btn-primary gap-2 disabled:cursor-not-allowed disabled:opacity-60">
-          {saving ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
+          {saving ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : <UserPlus size={15} aria-hidden="true" />}
           {saving ? "Creating…" : "Create client"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="text-sm text-white/50 transition-colors hover:text-white"
+          className="min-h-11 rounded-lg px-3 text-sm text-white/70 transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light"
         >
           Cancel
         </button>
@@ -623,23 +849,26 @@ function CreateClientForm({
 function AnalyticsPanel({ analytics }: { analytics?: AnalyticsSummary }) {
   if (!analytics || analytics.totalViews === 0) {
     return (
-      <div className="card p-10 text-center">
-        <BarChart3 size={28} className="mx-auto text-white/30" />
-        <p className="mt-4 text-white/55">No page views recorded yet.</p>
-        <p className="mt-1 text-sm text-white/35">
-          Views are counted for visitors who accept cookies on the marketing
-          site.
-        </p>
-      </div>
+      <EmptyState
+        icon={BarChart3}
+        title="No page views recorded yet"
+        body="Views are counted for visitors who accept cookies on the marketing site."
+      />
     );
   }
 
+  const maxPageViews = Math.max(1, ...analytics.topPages.map((p) => p.views));
+  const maxDayViews = Math.max(1, ...analytics.days.map((d) => d.views));
+
   return (
     <div className="space-y-8">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <dl className="grid gap-4 sm:grid-cols-3">
         {[
-          { label: `Views · ${analytics.windowDays}d`, value: analytics.totalViews },
-          { label: `Unique visitors · ${analytics.windowDays}d`, value: analytics.uniqueVisitors },
+          { label: `Views · last ${analytics.windowDays} days`, value: analytics.totalViews.toLocaleString() },
+          {
+            label: `Unique visitors · last ${analytics.windowDays} days`,
+            value: analytics.uniqueVisitors.toLocaleString(),
+          },
           {
             label: "Top page",
             value: analytics.topPages[0]?.path ?? "-",
@@ -647,67 +876,87 @@ function AnalyticsPanel({ analytics }: { analytics?: AnalyticsSummary }) {
           },
         ].map((s) => (
           <div key={s.label} className="card p-6">
-            <p className="font-mono text-[0.56rem] uppercase tracking-label text-white/40">
-              {s.label}
-            </p>
-            <p
-              className={`mt-3 font-display text-white ${
-                s.isText ? "truncate text-lg" : "text-3xl font-semibold"
+            <dt className="text-sm text-white/65">{s.label}</dt>
+            <dd
+              className={`mt-2 font-display text-white ${
+                s.isText ? "truncate text-lg" : "text-3xl font-semibold tabular-nums"
               }`}
+              title={s.isText ? String(s.value) : undefined}
             >
               {s.value}
-            </p>
+            </dd>
           </div>
         ))}
-      </div>
+      </dl>
 
-      <div>
-        <h2 className="text-sm font-medium text-white/80">Top pages</h2>
-        <div className="card mt-4 overflow-x-auto overscroll-x-contain">
-          <table className="w-full min-w-[28rem] text-left text-sm">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
-                <th className="px-4 py-3 font-normal">Path</th>
-                <th className="px-4 py-3 font-normal">Views</th>
-                <th className="px-4 py-3 font-normal">Visitors</th>
-              </tr>
-            </thead>
-            <tbody>
-              {analytics.topPages.map((p) => (
-                <tr key={p.path} className="border-b border-white/[0.06] last:border-0">
-                  <td className="px-4 py-3.5 text-white/85">{p.path}</td>
-                  <td className="px-4 py-3.5 text-white/60">{p.views}</td>
-                  <td className="px-4 py-3.5 text-white/60">{p.visitors}</td>
+      <div className="grid gap-8 xl:grid-cols-2">
+        <div>
+          <h2 className="text-base font-semibold text-white">Top pages</h2>
+          <div className="card mt-4 overflow-x-auto overscroll-x-contain">
+            <table className="w-full min-w-md text-left text-sm">
+              <caption className="sr-only">Most viewed pages</caption>
+              <thead>
+                <tr className="border-b border-white/10 bg-white/2 text-xs uppercase tracking-wider text-white/60">
+                  <th scope="col" className="px-4 py-3 font-medium">Path</th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">Views</th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">Visitors</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {analytics.topPages.map((p) => (
+                  <tr key={p.path} className="border-b border-white/6 last:border-0">
+                    <td className="px-4 py-3">
+                      <span className="block truncate text-white/90">{p.path}</span>
+                      <span aria-hidden="true" className="mt-1.5 block h-1 rounded-full bg-white/6">
+                        <span
+                          className="block h-full rounded-full bg-crimson-light/70"
+                          style={{ width: `${(p.views / maxPageViews) * 100}%` }}
+                        />
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-white/80">{p.views}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-white/70">{p.visitors}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <h2 className="text-sm font-medium text-white/80">Recent days</h2>
-        <div className="card mt-4 overflow-x-auto overscroll-x-contain">
-          <table className="w-full min-w-[28rem] text-left text-sm">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
-                <th className="px-4 py-3 font-normal">Date</th>
-                <th className="px-4 py-3 font-normal">Views</th>
-                <th className="px-4 py-3 font-normal">Visitors</th>
-              </tr>
-            </thead>
-            <tbody>
-              {analytics.days.map((d) => (
-                <tr key={d.date} className="border-b border-white/[0.06] last:border-0">
-                  <td className="px-4 py-3.5 font-mono text-[0.65rem] text-white/70">
-                    {d.date}
-                  </td>
-                  <td className="px-4 py-3.5 text-white/60">{d.views}</td>
-                  <td className="px-4 py-3.5 text-white/60">{d.visitors}</td>
+        <div>
+          <h2 className="text-base font-semibold text-white">Recent days</h2>
+          <div className="card mt-4 overflow-x-auto overscroll-x-contain">
+            <table className="w-full min-w-md text-left text-sm">
+              <caption className="sr-only">Daily views and visitors</caption>
+              <thead>
+                <tr className="border-b border-white/10 bg-white/2 text-xs uppercase tracking-wider text-white/60">
+                  <th scope="col" className="px-4 py-3 font-medium">Date</th>
+                  <th scope="col" className="w-2/5 px-4 py-3 font-medium">
+                    <span className="sr-only">Relative volume</span>
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">Views</th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">Visitors</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {analytics.days.map((d) => (
+                  <tr key={d.date} className="border-b border-white/6 last:border-0">
+                    <td className="whitespace-nowrap px-4 py-3 tabular-nums text-white/80">{d.date}</td>
+                    <td className="px-4 py-3" aria-hidden="true">
+                      <span className="block h-2 rounded-full bg-white/6">
+                        <span
+                          className="block h-full rounded-full bg-crimson-light/70"
+                          style={{ width: `${(d.views / maxDayViews) * 100}%` }}
+                        />
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-white/80">{d.views}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-white/70">{d.visitors}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -767,17 +1016,19 @@ function BriefPanel() {
   return (
     <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
       <div>
-        <h2 className="text-sm font-medium text-white/80">
+        <h2 className="text-base font-semibold text-white">
           Pre-call Business Systems Audit brief
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-white/45">
+        <p className="mt-2 text-sm leading-relaxed text-white/70">
           Runs the RSG research agent against a lead&rsquo;s website and
           produces a brief: snapshot, lead-capture review, conversion risks,
           quick wins, and talking points for the strategy call. Takes a few
           minutes.
         </p>
 
-        <form onSubmit={generate} className="mt-6 space-y-3">
+        <form onSubmit={generate} className="mt-6 space-y-4">
+          <label className="block">
+            <span className={fieldLabel}>Lead website *</span>
           <input
             type="url"
             required
@@ -787,21 +1038,28 @@ function BriefPanel() {
             className={inputClass}
             disabled={running}
           />
+          </label>
+          <label className="block">
+            <span className={fieldLabel}>Business name</span>
           <input
             value={business}
             onChange={(e) => setBusiness(e.target.value)}
-            placeholder="Business name (optional)"
+            placeholder="Optional"
             className={inputClass}
             disabled={running}
           />
+          </label>
+          <label className="block">
+            <span className={fieldLabel}>Context from the lead</span>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            placeholder="Context from the lead, e.g. their biggest problem (optional)"
+            placeholder="Optional, e.g. their biggest problem"
             className={`${inputClass} resize-none`}
             disabled={running}
           />
+          </label>
           <button
             type="submit"
             disabled={running || !url.trim()}
@@ -809,7 +1067,7 @@ function BriefPanel() {
           >
             {running ? (
               <>
-                <Loader2 size={15} className="animate-spin" />
+                <Loader2 size={15} className="animate-spin" aria-hidden="true" />
                 Researching…
               </>
             ) : (
@@ -817,29 +1075,36 @@ function BriefPanel() {
             )}
           </button>
           {error && (
-            <p className="border border-crimson/30 bg-crimson-soft px-3.5 py-2.5 text-sm text-crimson-light">
+            <p role="alert" className="rounded-lg border border-crimson/30 bg-crimson-soft px-3.5 py-2.5 text-sm text-crimson-light">
               {error}
             </p>
           )}
         </form>
       </div>
 
-      <div className="card relative min-h-[320px] p-6">
+      <div
+        className="card relative min-h-[320px] p-6"
+        aria-live="polite"
+        aria-busy={running}
+        aria-label="Generated brief"
+        role="region"
+      >
         {output ? (
           <>
             <button
+              type="button"
               onClick={copy}
-              className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs text-white/60 transition-colors hover:border-white/35 hover:text-white"
+              className="absolute right-4 top-4 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-white/15 px-3 text-xs text-white/75 transition-colors hover:border-white/35 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light"
             >
-              {copied ? <Check size={12} /> : <Copy size={12} />}
-              {copied ? "Copied" : "Copy"}
+              {copied ? <Check size={12} aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
+              {copied ? "Copied" : "Copy brief"}
             </button>
-            <div className="whitespace-pre-wrap pr-20 text-sm leading-relaxed text-white/75">
+            <div className="whitespace-pre-wrap pr-24 text-sm leading-relaxed text-white/85">
               {output}
             </div>
           </>
         ) : (
-          <p className="text-sm text-white/35">
+          <p className="text-sm text-white/60">
             {running
               ? "Starting the agent session…"
               : "The brief will appear here."}
@@ -855,14 +1120,14 @@ function BriefPanel() {
 function SubscribersPanel({ subscribers }: { subscribers: Subscriber[] }) {
   return (
     <div>
-      <h2 className="text-sm font-medium text-white/80">
+      <h2 className="text-base font-semibold text-white">
         Email subscribers
-        <span className="ml-2 rounded-full bg-white/[0.06] px-2 py-0.5 font-mono text-[0.54rem] text-white/50">
+        <span className="ml-2 rounded-full bg-white/8 px-2 py-0.5 text-xs font-normal tabular-nums text-white/70">
           {subscribers.length}
         </span>
       </h2>
       {subscribers.length === 0 ? (
-        <p className="mt-3 text-sm text-white/40">
+        <p className="mt-3 text-sm text-white/65">
           No marketing signups yet. Emails captured by the site popup will
           appear here.
         </p>
@@ -870,29 +1135,30 @@ function SubscribersPanel({ subscribers }: { subscribers: Subscriber[] }) {
         <div className="card mt-4 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
+              <caption className="sr-only">Email subscribers</caption>
               <thead>
-                <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
-                  <th className="px-4 py-3 font-normal">Email</th>
-                  <th className="px-4 py-3 font-normal">Source</th>
-                  <th className="px-4 py-3 font-normal">Subscribed</th>
+                <tr className="border-b border-white/10 bg-white/2 text-xs uppercase tracking-wider text-white/60">
+                  <th scope="col" className="px-4 py-3 font-medium">Email</th>
+                  <th scope="col" className="px-4 py-3 font-medium">Source</th>
+                  <th scope="col" className="px-4 py-3 font-medium">Subscribed</th>
                 </tr>
               </thead>
               <tbody>
                 {subscribers.map((s) => (
                   <tr
                     key={s.email}
-                    className={`border-b border-white/[0.06] last:border-0 ${s.unsubscribedAt ? "opacity-50" : ""}`}
+                    className="border-b border-white/6 last:border-0"
                   >
-                    <td className="px-4 py-3.5 text-white/85">
+                    <td className={`px-4 py-3.5 ${s.unsubscribedAt ? "text-white/60 line-through decoration-white/30" : "text-white/85"}`}>
                       {s.email}
                       {s.unsubscribedAt && (
-                        <span className="ml-2 rounded-full bg-white/[0.06] px-2 py-0.5 font-mono text-[0.52rem] uppercase tracking-label text-white/50">
+                        <span className="ml-2 inline-block rounded-full bg-white/8 px-2 py-0.5 text-xs text-white/70 no-underline">
                           Unsubscribed
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3.5 text-white/60">{s.source}</td>
-                    <td className="px-4 py-3.5 font-mono text-[0.6rem] uppercase tracking-label text-white/40">
+                    <td className="px-4 py-3.5 text-white/70">{s.source}</td>
+                    <td className="whitespace-nowrap px-4 py-3.5 tabular-nums text-white/70">
                       {new Date(s.subscribedAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -986,7 +1252,7 @@ function ClientEditor({
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {PROFILE_FIELDS.map((f) => (
             <label key={f.key} className="block">
-              <span className="mb-1.5 block font-mono text-[0.56rem] uppercase tracking-label text-white/55">
+              <span className="mb-1.5 block text-xs font-medium text-white/75">
                 {f.label}
               </span>
               <input
@@ -1006,17 +1272,17 @@ function ClientEditor({
         <h2 className="font-display text-lg font-semibold text-white">
           Reported metrics
         </h2>
-        <p className="mt-1 text-sm text-white/45">
+        <p className="mt-1 text-sm text-white/65">
           Values shown on the client&rsquo;s dashboard.
         </p>
         <div className="mt-5 space-y-3">
           {metrics.map((m, i) => (
             <div
               key={m.key}
-              className="grid items-end gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:grid-cols-[1.4fr_1fr_1fr]"
+              className="grid items-end gap-3 rounded-xl border border-white/10 bg-white/2 p-4 sm:grid-cols-[1.4fr_1fr_1fr]"
             >
               <label className="block">
-                <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/50">
+                <span className="mb-1.5 block text-xs font-medium text-white/75">
                   Label
                 </span>
                 <input
@@ -1030,7 +1296,7 @@ function ClientEditor({
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/50">
+                <span className="mb-1.5 block text-xs font-medium text-white/75">
                   Value ({m.format})
                 </span>
                 <input
@@ -1047,7 +1313,7 @@ function ClientEditor({
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/50">
+                <span className="mb-1.5 block text-xs font-medium text-white/75">
                   Delta
                 </span>
                 <input
@@ -1060,8 +1326,8 @@ function ClientEditor({
                   className={inputClass}
                 />
               </label>
-              <p className="font-mono text-[0.54rem] uppercase tracking-label text-white/35 sm:col-span-3">
-                Preview · {formatMetricValue(Number(m.value) || 0, m.format)}
+              <p className="text-xs text-white/60 sm:col-span-3">
+                Preview: <span className="font-medium text-white/85">{formatMetricValue(Number(m.value) || 0, m.format)}</span>
               </p>
             </div>
           ))}
@@ -1072,7 +1338,7 @@ function ClientEditor({
       <section className="card p-6">
         <h2 className="font-display text-lg font-semibold text-white">Access</h2>
         <label className="mt-4 block max-w-sm">
-          <span className="mb-1.5 block font-mono text-[0.56rem] uppercase tracking-label text-white/55">
+          <span className="mb-1.5 block text-xs font-medium text-white/75">
             Reset password (leave blank to keep)
           </span>
           <input
@@ -1087,7 +1353,7 @@ function ClientEditor({
 
       {/* Save bar */}
       <div className="sticky bottom-4 flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-base-800/90 p-4 backdrop-blur-xl">
-        <div className="min-h-[1.25rem] text-sm">
+        <div className="min-h-5 text-sm" role="status" aria-live="polite">
           <AnimatePresence mode="wait">
             {error ? (
               <motion.span
@@ -1107,21 +1373,22 @@ function ClientEditor({
                 exit={{ opacity: 0 }}
                 className="inline-flex items-center gap-1.5 text-emerald-300"
               >
-                <Check size={14} /> Saved to client record
+                <Check size={14} aria-hidden="true" /> Saved to client record
               </motion.span>
             ) : (
-              <span className="text-white/40">
+              <span className="text-white/65">
                 Editing {client.company}
               </span>
             )}
           </AnimatePresence>
         </div>
         <button
+          type="button"
           onClick={save}
           disabled={saving}
-          className="btn-primary disabled:cursor-not-allowed disabled:opacity-70"
+          className="btn-primary gap-2 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {saving ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Save size={16} aria-hidden="true" />}
           {saving ? "Saving…" : "Save changes"}
         </button>
       </div>
@@ -1155,6 +1422,33 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   converted: "Converted",
   closed: "Closed",
 };
+
+/** Pill colours by pipeline stage. Text always carries the status too, so
+ * colour is reinforcement, never the only signal. */
+function statusTone(status: LeadStatus): string {
+  switch (status) {
+    case "new":
+    case "submitted":
+    case "manual_review":
+    case "follow_up_required":
+      return "border-crimson/40 bg-crimson/[0.14] text-crimson-light";
+    case "qualified":
+    case "qualified_not_booked":
+    case "contacted":
+    case "intake_started":
+      return "border-amber-400/30 bg-amber-400/10 text-amber-200";
+    case "meeting_scheduled":
+    case "appointment_booked":
+    case "rescheduled":
+      return "border-sky-400/30 bg-sky-400/10 text-sky-200";
+    case "won":
+    case "converted":
+    case "completed":
+      return "border-emerald-400/30 bg-emerald-400/10 text-emerald-200";
+    default:
+      return "border-white/15 bg-white/5 text-white/70";
+  }
+}
 
 function LeadsTable({
   leads,
@@ -1217,22 +1511,21 @@ function LeadsTable({
 
   if (!leads.length) {
     return (
-      <div className="card p-10 text-center">
-        <Inbox size={28} className="mx-auto text-white/30" />
-        <p className="mt-4 text-white/55">No leads captured yet.</p>
-        <p className="mt-1 text-sm text-white/35">
-          Contact form and chat submissions appear here once stored.
-        </p>
+      <EmptyState
+        icon={Inbox}
+        title="No leads captured yet"
+        body="Contact form and chat submissions appear here once stored."
+      >
         <button
           type="button"
           onClick={refresh}
           disabled={refreshing}
-          className="mt-6 inline-flex items-center gap-2 rounded-lg border border-white/15 px-4 py-2 text-sm text-white/70 hover:text-white"
+          className={`${quietButton} mt-6 disabled:opacity-50`}
         >
-          <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-          Refresh
+          <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} aria-hidden="true" />
+          {refreshing ? "Refreshing…" : "Refresh"}
         </button>
-      </div>
+      </EmptyState>
     );
   }
 
@@ -1266,9 +1559,11 @@ function LeadsTable({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-white/45">
-          {leads.filter((l) => (l.status ?? "new") === "new").length} new ·{" "}
-          {visible.length} shown · {leads.length} total
+        <p className="text-sm text-white/70" role="status">
+          <span className="font-semibold text-white">
+            {leads.filter((l) => (l.status ?? "new") === "new").length} new
+          </span>{" "}
+          · {visible.length} shown · {leads.length} total
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <label className="sr-only" htmlFor="lead-source-filter">Filter by source</label>
@@ -1276,7 +1571,7 @@ function LeadsTable({
             id="lead-source-filter"
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value)}
-            className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm text-white/70 focus:border-crimson/60 focus:outline-none [&>option]:bg-base-900"
+            className="min-h-11 rounded-lg border border-white/15 bg-base-900 px-3 text-sm text-white/85 focus:border-crimson-light focus:outline-hidden focus:ring-2 focus:ring-crimson/30"
           >
             <option value="">All sources</option>
             <option value="interactive_demo">Interactive Demo</option>
@@ -1290,7 +1585,7 @@ function LeadsTable({
             id="lead-segment-filter"
             value={segmentFilter}
             onChange={(e) => setSegmentFilter(e.target.value)}
-            className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm text-white/70 focus:border-crimson/60 focus:outline-none [&>option]:bg-base-900"
+            className="min-h-11 rounded-lg border border-white/15 bg-base-900 px-3 text-sm text-white/85 focus:border-crimson-light focus:outline-hidden focus:ring-2 focus:ring-crimson/30"
           >
             <option value="">All leads</option>
             <option value="real-estate">Real estate leads</option>
@@ -1304,10 +1599,10 @@ function LeadsTable({
             type="button"
             onClick={refresh}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-2 text-sm text-white/70 hover:text-white disabled:opacity-50"
+            className={`${quietButton} disabled:opacity-50`}
           >
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-            Refresh
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} aria-hidden="true" />
+            {refreshing ? "Refreshing…" : "Refresh"}
           </button>
         </div>
       </div>
@@ -1320,7 +1615,7 @@ function LeadsTable({
 
       <div className="space-y-3">
         {visible.length === 0 && (
-          <p className="rounded-xl border border-white/10 bg-white/[0.02] p-6 text-center text-sm text-white/40">
+          <p className="rounded-xl border border-white/10 bg-white/2 p-6 text-center text-sm text-white/65">
             No leads match these filters.
           </p>
         )}
@@ -1328,60 +1623,73 @@ function LeadsTable({
           const rowId = l.id ?? `local-${i}`;
           const open = expandedId === rowId;
           const status = (l.status ?? "new") as LeadStatus;
+          const panelId = `lead-panel-${rowId}`;
+          const score = l.score;
           return (
             <div
               key={rowId}
               className={`rounded-xl border transition-colors ${
                 status === "new"
-                  ? "border-crimson/35 bg-crimson/[0.04]"
-                  : "border-white/10 bg-white/[0.02]"
+                  ? "border-crimson/35 bg-crimson/4"
+                  : "border-white/10 bg-white/2"
               }`}
             >
               <button
                 type="button"
                 onClick={() => setExpandedId(open ? null : rowId)}
-                className="flex w-full flex-wrap items-start gap-3 p-4 text-left sm:items-center"
+                aria-expanded={open}
+                aria-controls={panelId}
+                className="flex w-full flex-wrap items-center gap-3 rounded-xl p-4 text-left transition-colors hover:bg-white/2 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light"
               >
                 <span
-                  className={`font-mono text-[0.7rem] ${
-                    (l.score ?? 0) >= 60
-                      ? "text-crimson-light"
-                      : (l.score ?? 0) >= 30
-                        ? "text-white/80"
-                        : "text-white/40"
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums ${
+                    (score ?? 0) >= 60
+                      ? "border-crimson/40 bg-crimson/12 text-crimson-light"
+                      : (score ?? 0) >= 30
+                        ? "border-white/15 bg-white/5 text-white/90"
+                        : "border-white/10 text-white/60"
                   }`}
+                  title="Lead score"
                 >
-                  {l.score ?? "-"}
+                  <span className="sr-only">Score </span>
+                  {score ?? "–"}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-white">
+                  <span className="block wrap-break-word text-sm font-medium text-white">
                     {l.name}
                     {l.company ? (
-                      <span className="text-white/45"> · {l.company}</span>
+                      <span className="font-normal text-white/65"> · {l.company}</span>
                     ) : null}
                   </span>
-                  <span className="mt-1 block text-sm text-white/50">
+                  <span className="mt-0.5 block break-all text-sm text-white/65 sm:wrap-break-word">
                     {l.email}
                     {l.phone ? ` · ${l.phone}` : ""}
                   </span>
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 font-mono text-[0.54rem] uppercase tracking-label text-white/55">
-                  {STATUS_LABELS[status] ?? status}
-                </span>
-                <span className="font-mono text-[0.58rem] uppercase tracking-label text-white/35">
-                  {new Date(l.submittedAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                <ChevronDown
+                  size={16}
+                  aria-hidden="true"
+                  className={`shrink-0 text-white/60 transition-transform sm:order-last ${open ? "rotate-180" : ""}`}
+                />
+                <span className="flex w-full items-center gap-3 pl-13 sm:w-auto sm:pl-0">
+                  <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${statusTone(status)}`}>
+                    {STATUS_LABELS[status] ?? status}
+                  </span>
+                  <span className="whitespace-nowrap text-xs tabular-nums text-white/60">
+                    {new Date(l.submittedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
                 </span>
               </button>
 
               {open && (
-                <div className="space-y-4 border-t border-white/10 p-4">
+                <div id={panelId} className="space-y-4 border-t border-white/10 p-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <p className="font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                      <p className="text-xs font-medium text-white/60">
                         Biggest problem
                       </p>
                       <p className="mt-1.5 text-sm leading-relaxed text-white/75">
@@ -1389,7 +1697,7 @@ function LeadsTable({
                       </p>
                     </div>
                     <div>
-                      <p className="font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                      <p className="text-xs font-medium text-white/60">
                         Wants to improve
                       </p>
                       <p className="mt-1.5 text-sm leading-relaxed text-white/75">
@@ -1399,41 +1707,41 @@ function LeadsTable({
                   </div>
 
                   {l.demo && (
-                    <div className="rounded-lg border border-crimson/25 bg-crimson/[0.05] p-3.5">
-                      <p className="font-mono text-[0.54rem] uppercase tracking-label text-crimson-light">
+                    <div className="rounded-lg border border-crimson/25 bg-crimson/5 p-3.5">
+                      <p className="text-xs font-semibold text-crimson-light">
                         Interactive demo request: {l.demo.system}
                       </p>
                       <div className="mt-2.5 grid gap-3 sm:grid-cols-2">
                         <div>
-                          <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/40">
+                          <p className="text-xs font-medium text-white/60">
                             Features explored in demo
                           </p>
                           {l.demo.featuresExplored.length ? (
                             <div className="mt-1.5 flex flex-wrap gap-1.5">
                               {l.demo.featuresExplored.map((f) => (
-                                <span key={f} className="rounded border border-white/10 bg-white/[0.04] px-2 py-0.5 text-xs text-white/65">
+                                <span key={f} className="rounded-sm border border-white/10 bg-white/4 px-2 py-0.5 text-xs text-white/65">
                                   {f}
                                 </span>
                               ))}
                             </div>
                           ) : (
-                            <p className="mt-1.5 text-sm text-white/45">-</p>
+                            <p className="mt-1.5 text-sm text-white/65">-</p>
                           )}
                         </div>
                         <div>
-                          <p className="font-mono text-[0.52rem] uppercase tracking-label text-white/40">
+                          <p className="text-xs font-medium text-white/60">
                             Services requested
                           </p>
                           {l.demo.featuresRequested.length ? (
                             <div className="mt-1.5 flex flex-wrap gap-1.5">
                               {l.demo.featuresRequested.map((f) => (
-                                <span key={f} className="rounded border border-crimson/30 bg-crimson/10 px-2 py-0.5 text-xs text-white/80">
+                                <span key={f} className="rounded-sm border border-crimson/30 bg-crimson/10 px-2 py-0.5 text-xs text-white/80">
                                   {f}
                                 </span>
                               ))}
                             </div>
                           ) : (
-                            <p className="mt-1.5 text-sm text-white/45">-</p>
+                            <p className="mt-1.5 text-sm text-white/65">-</p>
                           )}
                         </div>
                       </div>
@@ -1474,6 +1782,47 @@ function LeadsTable({
                     ) : null}
                   </div>
 
+                  {(l.firstTouch || l.journey?.length) && (
+                    <div className="rounded-lg border border-white/10 bg-white/2 p-3.5">
+                      {l.firstTouch && (
+                        <>
+                          <p className="text-xs font-medium text-white/60">
+                            First visit
+                          </p>
+                          <p className="mt-1.5 text-sm text-white/65">
+                            {[
+                              new Date(l.firstTouch.at).toLocaleDateString(),
+                              l.firstTouch.utmSource &&
+                                `${l.firstTouch.utmSource}${l.firstTouch.utmMedium ? ` / ${l.firstTouch.utmMedium}` : ""}`,
+                              l.firstTouch.utmCampaign && `campaign: ${l.firstTouch.utmCampaign}`,
+                              l.firstTouch.referrer ? `from ${l.firstTouch.referrer}` : !l.firstTouch.utmSource && "direct",
+                              l.firstTouch.landingPage && `landed on ${l.firstTouch.landingPage}`,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        </>
+                      )}
+                      {l.journey?.length ? (
+                        <>
+                          <p className={`text-xs font-medium text-white/60 ${l.firstTouch ? "mt-3" : ""}`}>
+                            Pages viewed before contacting ({l.journey.length})
+                          </p>
+                          <ol className="mt-1.5 space-y-0.5 text-xs text-white/55">
+                            {l.journey.map((v, i) => (
+                              <li key={`${v.at}-${i}`} className="flex gap-3">
+                                <span className="shrink-0 tabular-nums text-white/60">
+                                  {new Date(v.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                                </span>
+                                <span className="min-w-0 truncate">{v.path}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </>
+                      ) : null}
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap gap-2">
                     <a
                       href={`mailto:${encodeURIComponent(l.email)}`}
@@ -1501,13 +1850,13 @@ function LeadsTable({
                     const leadId = l.id;
                     return (
                     <>
-                    <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3.5">
-                      <p className="font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                    <div className="rounded-lg border border-white/10 bg-white/2 p-3.5">
+                      <p className="text-xs font-medium text-white/60">
                         Recommended plan
                       </p>
                       {l.servicePlanAnswers &&
                         Object.keys(l.servicePlanAnswers).length > 0 && (
-                          <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+                          <p className="mt-1.5 text-xs leading-relaxed text-white/65">
                             {Object.entries(l.servicePlanAnswers)
                               .map(
                                 ([k, v]) =>
@@ -1535,7 +1884,7 @@ function LeadsTable({
                     </div>
                     <div className="grid gap-3 sm:grid-cols-[220px_1fr_auto]">
                       <label className="block">
-                        <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                        <span className="mb-1.5 block text-xs font-medium text-white/75">
                           Status
                         </span>
                         <select
@@ -1556,7 +1905,7 @@ function LeadsTable({
                         </select>
                       </label>
                       <label className="block">
-                        <span className="mb-1.5 block font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                        <span className="mb-1.5 block text-xs font-medium text-white/75">
                           Notes
                         </span>
                         <textarea
@@ -1581,7 +1930,7 @@ function LeadsTable({
                               notes: notesDraft[leadId] ?? l.notes ?? "",
                             })
                           }
-                          className="btn-primary disabled:opacity-70"
+                          className="btn-primary gap-2 disabled:opacity-70"
                         >
                           {savingId === leadId ? (
                             <Loader2 size={15} className="animate-spin" />
@@ -1595,7 +1944,7 @@ function LeadsTable({
                     </>
                     );
                   })() : (
-                    <p className="text-sm text-white/40">
+                    <p className="text-sm text-white/60">
                       This lead is file-store only. Run the Supabase leads
                       migration for status updates and durable storage.
                     </p>
@@ -1610,5 +1959,7 @@ function LeadsTable({
   );
 }
 
+const fieldLabel = "mb-1.5 block text-xs font-medium text-white/75";
+
 const inputClass =
-  "w-full rounded-lg border border-white/12 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none focus:ring-2 focus:ring-crimson/20";
+  "w-full rounded-lg border border-white/35 bg-white/3 px-3.5 py-2.5 text-sm text-white placeholder:text-white/45 transition-colors focus:border-crimson focus:outline-hidden focus:ring-2 focus:ring-crimson/20";

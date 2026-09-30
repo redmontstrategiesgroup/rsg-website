@@ -76,14 +76,14 @@ export function AuditView() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className={labelClass}>Audit log</p>
-          <p className="mt-1 max-w-2xl text-xs text-white/45">
+          <p className="mt-1 max-w-2xl text-xs text-white/65">
             Who performed an action, what happened, when, and which record was
             affected. Secrets and passwords are never written to the log.
           </p>
         </div>
         <a
           href={csvHref}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30"
+          className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30"
         >
           <Download size={14} /> Export CSV
         </a>
@@ -98,7 +98,7 @@ export function AuditView() {
             className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
               prefix === p.prefix
                 ? "border-crimson/45 bg-crimson/10 text-white"
-                : "border-white/12 bg-white/[0.02] text-white/55 hover:border-white/25"
+                : "border-white/12 bg-white/2 text-white/55 hover:border-white/25"
             }`}
           >
             {p.label}
@@ -135,11 +135,11 @@ export function AuditView() {
       {error && <p className="text-sm text-crimson-light">{error}</p>}
 
       {loading ? (
-        <div className="flex items-center gap-2 py-10 text-white/50">
+        <div className="flex items-center gap-2 py-10 text-white/65">
           <Loader2 size={16} className="animate-spin" /> Loading…
         </div>
       ) : rows.length === 0 ? (
-        <div className="card p-6 text-sm text-white/50">
+        <div className="card p-6 text-sm text-white/65">
           No audit events match. Real events are recorded as admins act, sign in,
           change records, decide AI approvals; and appear here.
         </div>
@@ -147,7 +147,7 @@ export function AuditView() {
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <th className="px-4 py-3">Time</th>
                 <th className="px-4 py-3">Actor</th>
                 <th className="px-4 py-3">Action</th>
@@ -158,11 +158,11 @@ export function AuditView() {
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={r.id ?? i} className="border-b border-white/[0.06] last:border-0">
+                <tr key={r.id ?? i} className="border-b border-white/6 last:border-0">
                   <td className="whitespace-nowrap px-4 py-3 text-white/60">{formatDate(r.created_at)}</td>
                   <td className="px-4 py-3">
                     <span className="text-white/80">{r.actor_email ?? r.actor_id ?? "-"}</span>
-                    <span className="ml-2 font-mono text-[0.56rem] uppercase tracking-label text-white/35">
+                    <span className="ml-2 text-xs font-medium uppercase tracking-wide text-white/60">
                       {r.actor_type}
                     </span>
                   </td>
@@ -172,10 +172,10 @@ export function AuditView() {
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${
+                      className={`rounded-full border px-2 py-0.5 text-xs ${
                         aiOnly(r)
                           ? "border-crimson/40 bg-crimson/10 text-crimson-light"
-                          : "border-white/12 bg-white/[0.03] text-white/45"
+                          : "border-white/12 bg-white/3 text-white/65"
                       }`}
                     >
                       {aiOnly(r) ? "AI-related" : "Human/system"}
@@ -216,15 +216,15 @@ export function AuditView() {
                 ["Entity id", detail.entity_id ?? "-"],
                 ["IP", detail.ip ?? "-"],
               ].map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-white/[0.06] pb-2">
-                  <dt className="text-white/40">{k}</dt>
+                <div key={k} className="flex justify-between gap-4 border-b border-white/6 pb-2">
+                  <dt className="text-white/60">{k}</dt>
                   <dd className="text-right text-white/80">{v}</dd>
                 </div>
               ))}
             </dl>
             {detail.metadata && Object.keys(detail.metadata).length > 0 && (
               <div className="mt-4">
-                <p className="text-xs text-white/40">Metadata (no secrets)</p>
+                <p className="text-xs text-white/60">Metadata (no secrets)</p>
                 <pre className="mt-2 overflow-auto rounded-lg border border-white/10 bg-black/40 p-3 text-[0.7rem] text-white/70">
                   {JSON.stringify(detail.metadata, null, 2)}
                 </pre>

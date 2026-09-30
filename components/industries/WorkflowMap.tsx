@@ -101,7 +101,7 @@ export function WorkflowMap({
                     <li key={s.id} className="relative">
                       <span
                         aria-hidden
-                        className={`absolute -left-[23px] top-1/2 h-2 w-2 -translate-y-1/2 rounded-full transition-colors ${
+                        className={`absolute left-[-23px] top-1/2 h-2 w-2 -translate-y-1/2 rounded-full transition-colors ${
                           s.id === active.id
                             ? "bg-crimson-light shadow-glow-sm"
                             : i <= activeIndex
@@ -162,7 +162,7 @@ export function WorkflowMap({
               className={variant === "journey" ? "lg:col-span-8" : ""}
             >
               <div className="overflow-hidden rounded-xl border border-white/10 bg-base-900/70 sm:max-h-[calc(100dvh-22rem)] sm:overflow-y-auto">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] px-6 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 px-6 py-4">
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full border border-crimson/40 bg-crimson/10 font-mono text-[0.72rem] sm:text-[0.62rem] text-crimson-light">
                       {activeIndex + 1}
@@ -174,7 +174,7 @@ export function WorkflowMap({
                   </span>
                 </div>
 
-                <div className="grid gap-px bg-white/[0.06] lg:grid-cols-2">
+                <div className="grid gap-px bg-white/6 lg:grid-cols-2">
                   <DetailCell icon={<WorkflowIcon size={13} aria-hidden />} title="What happens here">
                     <p className="text-sm leading-relaxed text-white/60">{active.happens}</p>
                   </DetailCell>
@@ -193,7 +193,7 @@ export function WorkflowMap({
                     </ul>
                   </DetailCell>
                   <DetailCell icon={<Cpu size={13} aria-hidden />} title="RSG system responsible" wide>
-                    <p className="inline-flex items-center gap-2 rounded-lg border border-crimson/30 bg-crimson/[0.08] px-3 py-2 text-sm text-white/85">
+                    <p className="inline-flex items-center gap-2 rounded-lg border border-crimson/30 bg-crimson/8 px-3 py-2 text-sm text-white/85">
                       {active.system}
                     </p>
                     <p className="mt-3 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
@@ -234,7 +234,7 @@ function StageButton({
   shape: "node" | "row" | "tile";
 }) {
   const base =
-    "transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson";
+    "transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson";
   if (shape === "row") {
     return (
       <button
@@ -244,7 +244,7 @@ function StageButton({
         aria-controls={panelId}
         onClick={onSelect}
         className={`${base} block w-full rounded-lg px-3 py-2.5 text-left ${
-          active ? "bg-crimson/[0.08] text-white" : "text-white/45 hover:bg-white/[0.03] hover:text-white/75"
+          active ? "bg-crimson/8 text-white" : "text-white/45 hover:bg-white/3 hover:text-white/75"
         }`}
       >
         <span className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
@@ -264,8 +264,8 @@ function StageButton({
         onClick={onSelect}
         className={`${base} flex h-full w-full flex-col rounded-lg border px-3 py-3 text-left ${
           active
-            ? "border-crimson/50 bg-crimson/[0.08]"
-            : "border-white/10 bg-white/[0.02] hover:border-white/25"
+            ? "border-crimson/50 bg-crimson/8"
+            : "border-white/10 bg-white/2 hover:border-white/25"
         }`}
       >
         <span className={`font-mono text-[0.7rem] sm:text-[0.55rem] ${active ? "text-crimson-light" : "text-white/30"}`}>
@@ -292,13 +292,13 @@ function StageButton({
         className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-[0.72rem] sm:text-[0.62rem] transition-colors ${
           active
             ? "border-crimson bg-crimson/15 text-crimson-light shadow-glow-sm"
-            : "border-white/15 bg-white/[0.03] text-white/45"
+            : "border-white/15 bg-white/3 text-white/45"
         }`}
       >
         {index + 1}
       </span>
       <span
-        className={`max-w-[6.5rem] text-center text-[0.72rem] sm:text-[0.62rem] leading-tight ${
+        className={`max-w-26 text-center text-[0.72rem] sm:text-[0.62rem] leading-tight ${
           active ? "text-white" : "text-white/45"
         }`}
       >

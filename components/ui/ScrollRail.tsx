@@ -3,7 +3,6 @@
 import {
   createElement,
   useCallback,
-  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -54,18 +53,12 @@ const INSET: Record<NonNullable<Props["inset"]>, string> = {
 };
 
 const SNAP: Record<NonNullable<Props["snap"]>, string> = {
-  start: "snap-x snap-mandatory [&>*]:snap-start",
-  center: "snap-x snap-mandatory [&>*]:snap-center",
+  start: "snap-x snap-mandatory *:snap-start",
+  center: "snap-x snap-mandatory *:snap-center",
   none: "",
 };
 
 const FADE = 28; // px of edge fade
-/*
-  The prev/next buttons sit on the rail's edge, so when they are shown the
-  fade has to be at least as wide as one of them — otherwise the button lands
-  on fully-opaque content and reads as an overlay stuck on top of a card.
-*/
-const FADE_WITH_ARROWS = 44;
 
 /**
  * Horizontal scroll container with the three things every hand-rolled rail
@@ -90,7 +83,7 @@ export function ScrollRail({
   ...rest
 }: Props) {
   const ref = useRef<HTMLElement>(null);
-  const [edges, setEdges] = useState({ left: false, right: false });
+  const [edges, setEdges] = useState({ left: false, right: false, overflow: false });
 
   /*
     Edge-fade state: which sides still have content beyond them.
@@ -111,10 +104,18 @@ export function ScrollRail({
     const end = last ? last.getBoundingClientRect().right - box.left + el.scrollLeft - el.clientLeft : el.scrollWidth;
     const left = el.scrollLeft > Math.min(start, max) + 2;
     const right = el.scrollLeft + el.clientWidth < Math.max(end, el.clientWidth) - 2 && max - el.scrollLeft > 2;
-    setEdges((prev) => (prev.left === left && prev.right === right ? prev : { left, right }));
+    const overflow = max > 2;
+    setEdges((prev) =>
+      prev.left === left && prev.right === right && prev.overflow === overflow ? prev : { left, right, overflow }
+    );
   }, []);
 
-  useEffect(() => {
+  /*
+    Layout effect, not a plain effect: the first measure has to land before
+    paint. Otherwise a freshly mounted rail (e.g. the builder remounting per
+    industry) paints one frame with no arrow columns or fade, then jumps.
+  */
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     measure();
@@ -178,10 +179,9 @@ export function ScrollRail({
     [keyboardTabs, onKeyDown]
   );
 
-  const fade = arrows ? FADE_WITH_ARROWS : FADE;
   const mask =
     edges.left || edges.right
-      ? `linear-gradient(to right, ${edges.left ? "transparent" : "black"} 0, black ${fade}px, black calc(100% - ${fade}px), ${
+      ? `linear-gradient(to right, ${edges.left ? "transparent" : "black"} 0, black ${FADE}px, black calc(100% - ${FADE}px), ${
           edges.right ? "transparent" : "black"
         } 100%)`
       : undefined;
@@ -190,7 +190,7 @@ export function ScrollRail({
     as,
     {
       ref,
-      className: `min-w-0 max-w-full overflow-x-auto overscroll-x-contain ${SNAP[snap]} ${INSET[inset]} ${
+      className: `min-w-0 max-w-full ${arrows ? "flex-1" : ""} overflow-x-auto overscroll-x-contain ${SNAP[snap]} ${INSET[inset]} ${
         hideScrollbar ? "no-scrollbar" : ""
       } ${className}`,
       style: mask ? { maskImage: mask, WebkitMaskImage: mask } : undefined,
@@ -202,27 +202,31 @@ export function ScrollRail({
 
   if (!arrows) return rail;
 
+  /*
+    The buttons get their own columns beside the scroller instead of floating
+    over it: an overlaid button always covers whatever card is at the edge,
+    and on a rail of labelled pills that meant text hidden behind a chevron.
+    The columns only exist while the content overflows (and only on hover
+    devices), and a button at its end goes invisible rather than unmounting,
+    so scrolling never shifts the layout.
+  */
+  const arrowSlot = edges.overflow ? "hidden [@media(hover:hover)]:flex" : "hidden";
+  const arrowClass =
+    "rounded-full border border-white/15 bg-base-900/90 text-white/70 hover:text-white disabled:invisible";
+
   return (
-    <div className="relative">
-      {rail}
-      {edges.left && (
-        <IconButton
-          aria-label="Scroll left"
-          onClick={() => page(-1)}
-          className="absolute left-0 top-1/2 hidden -translate-y-1/2 rounded-full border border-white/15 bg-base-900/90 text-white/70 backdrop-blur hover:text-white [@media(hover:hover)]:inline-flex"
-        >
+    <div className="flex min-w-0 max-w-full items-center gap-1">
+      <div className={`${arrowSlot} shrink-0`}>
+        <IconButton aria-label="Scroll left" onClick={() => page(-1)} disabled={!edges.left} className={arrowClass}>
           <ChevronLeft size={18} />
         </IconButton>
-      )}
-      {edges.right && (
-        <IconButton
-          aria-label="Scroll right"
-          onClick={() => page(1)}
-          className="absolute right-0 top-1/2 hidden -translate-y-1/2 rounded-full border border-white/15 bg-base-900/90 text-white/70 backdrop-blur hover:text-white [@media(hover:hover)]:inline-flex"
-        >
+      </div>
+      {rail}
+      <div className={`${arrowSlot} shrink-0`}>
+        <IconButton aria-label="Scroll right" onClick={() => page(1)} disabled={!edges.right} className={arrowClass}>
           <ChevronRight size={18} />
         </IconButton>
-      )}
+      </div>
     </div>
   );
 }

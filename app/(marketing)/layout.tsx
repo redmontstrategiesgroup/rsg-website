@@ -21,7 +21,7 @@ export default function MarketingLayout({
         the jump moves focus, not just scroll position; without it, the next
         Tab would return to the top of the nav in most browsers.
       */}
-      <div id="main-content" tabIndex={-1} className="focus:outline-none">
+      <div id="main-content" tabIndex={-1} className="focus:outline-hidden">
         {children}
       </div>
       <Footer />
