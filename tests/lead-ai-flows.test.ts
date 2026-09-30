@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { analyzeLead, type AnalyzeDeps, type GenerateResult } from "../lib/lead-ai/analyze.ts";
-import type { NewInsight } from "../lib/lead-ai/types.ts";
+import type { LeadInsight, NewInsight } from "../lib/lead-ai/types.ts";
 import type { Lead } from "../lib/types.ts";
+import { sendLeadReply, type ReplyDeps, type ReplyEmail } from "../lib/lead-ai/reply.ts";
 
 function baseLead(overrides: Partial<Lead> = {}): Lead {
   return {
@@ -201,4 +202,122 @@ test("generate resolves undefined → returns failed result without rejecting", 
   assert.equal(inserted.length, 1);
   assert.equal(inserted[0].status, "failed");
   assert.equal(inserted[0].error, "AI returned no result");
+});
+
+function insight(over: Partial<LeadInsight> = {}): LeadInsight {
+  return {
+    id: "ins-1", leadId: "lead-1", createdAt: "2026-09-30T12:00:00Z",
+    model: "claude-sonnet-5", promptVersion: "lead-ai-v1", status: "ok", error: null,
+    aiFitScore: 80, adjustment: 10, rationale: "r", signals: { positive: [], negative: [] },
+    redFlags: [], draftSubject: "Hi", draftBody: "Draft", sentAt: null, sentBy: null,
+    sentSubject: null, sentBody: null, inputTokens: 1, outputTokens: 1,
+    ...over,
+  };
+}
+
+function replyDeps(over: Partial<ReplyDeps> = {}) {
+  const calls = { claimed: 0, released: 0, completed: [] as string[][], emails: [] as ReplyEmail[], contacted: [] as string[] };
+  const deps: ReplyDeps = {
+    getLead: async () => baseLead(),
+    getInsight: async () => insight(),
+    claimSend: async () => {
+      calls.claimed += 1;
+      return calls.claimed === 1; // a second claim loses, like the DB guard
+    },
+    releaseSend: async () => {
+      calls.released += 1;
+    },
+    completeSend: async (_id, subject, body) => {
+      calls.completed.push([subject, body]);
+    },
+    sendEmail: async (msg) => {
+      calls.emails.push(msg);
+    },
+    markContacted: async (id) => {
+      calls.contacted.push(id);
+    },
+    ...over,
+  };
+  return { deps, calls };
+}
+
+const input = { leadId: "lead-1", insightId: "ins-1", subject: "  Your calls ", body: "Hi <Dana>\n\nThanks", adminId: "admin-1" };
+
+test("sendLeadReply sends once, records it, and marks a new lead contacted", async () => {
+  const { deps, calls } = replyDeps();
+  const r = await sendLeadReply(input, deps);
+  assert.equal(r.ok, true);
+  assert.equal(calls.emails.length, 1);
+  assert.equal(calls.emails[0].to, "dana@example.com");
+  assert.equal(calls.emails[0].subject, "Your calls");
+  assert.equal(calls.emails[0].text, "Hi <Dana>\n\nThanks");
+  assert.match(calls.emails[0].html, /Hi &lt;Dana&gt;/);
+  assert.deepEqual(calls.completed, [["Your calls", "Hi <Dana>\n\nThanks"]]);
+  assert.deepEqual(calls.contacted, ["lead-1"]);
+  if (r.ok) {
+    assert.ok(r.insight.sentAt);
+    assert.equal(r.insight.sentBy, "admin-1");
+    assert.equal(r.insight.sentBody, "Hi <Dana>\n\nThanks");
+  }
+});
+
+test("a second send attempt gets 409 and sends nothing", async () => {
+  const { deps, calls } = replyDeps();
+  await sendLeadReply(input, deps);
+  const second = await sendLeadReply(input, deps);
+  assert.deepEqual(second, { ok: false, status: 409, error: "This reply was already sent." });
+  assert.equal(calls.emails.length, 1);
+});
+
+test("a failed email releases the claim so it can be retried", async () => {
+  const { deps, calls } = replyDeps({
+    sendEmail: async () => {
+      throw new Error("Resend 500");
+    },
+  });
+  const r = await sendLeadReply(input, deps);
+  assert.deepEqual(r, { ok: false, status: 502, error: "Resend 500" });
+  assert.equal(calls.released, 1);
+  assert.equal(calls.completed.length, 0);
+  assert.equal(calls.contacted.length, 0);
+});
+
+test("a lead past 'new' keeps its status", async () => {
+  const { deps, calls } = replyDeps({ getLead: async () => baseLead({ status: "qualified" }) });
+  assert.equal((await sendLeadReply(input, deps)).ok, true);
+  assert.equal(calls.contacted.length, 0);
+});
+
+test("reply guards: missing lead, foreign insight, no email, empty text", async () => {
+  const cases: [Partial<ReplyDeps>, typeof input, number][] = [
+    [{ getLead: async () => null }, input, 404],
+    [{ getInsight: async () => null }, input, 404],
+    [{ getInsight: async () => insight({ leadId: "other" }) }, input, 404],
+    [{ getLead: async () => baseLead({ email: "" }) }, input, 422],
+    [{}, { ...input, subject: "   " }, 422],
+    [{}, { ...input, body: "\n \n" }, 422],
+  ];
+  for (const [over, inp, status] of cases) {
+    const { deps, calls } = replyDeps(over);
+    const r = await sendLeadReply(inp, deps);
+    assert.equal(r.ok, false);
+    if (!r.ok) assert.equal(r.status, status);
+    assert.equal(calls.emails.length, 0);
+    assert.equal(calls.claimed, 0);
+  }
+});
+
+test("markContacted or completeSend failing after a real send still reports success", async () => {
+  const { deps, calls } = replyDeps({
+    completeSend: async () => {
+      throw new Error("db down");
+    },
+    markContacted: async () => {
+      throw new Error("db down");
+    },
+  });
+  const r = await sendLeadReply(input, deps);
+  assert.equal(r.ok, true);
+  assert.equal(calls.emails.length, 1);
+  assert.equal(calls.released, 0); // the email went out: never release after sending
 });

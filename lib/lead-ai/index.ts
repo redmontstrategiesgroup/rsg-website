@@ -1,9 +1,13 @@
+import { Resend } from "resend";
 import { generateStructured, type StructuredSchema } from "@/lib/ai/proxy";
+import { callProvider } from "@/lib/integration-log";
 import { siteUrl } from "@/lib/lifecycle/core";
-import { getLeadById } from "@/lib/store";
+import { DEFAULT_OWNER_NOTIFY_EMAIL } from "@/lib/notify-emails";
+import { getLeadById, updateLead } from "@/lib/store";
 import { analyzeLead, type AnalyzeDeps, type AnalyzeResult } from "./analyze.ts";
 import { resolveSignature } from "./compose.ts";
-import { insertInsight, updateLeadAi } from "./db.ts";
+import { claimSend, completeSend, getInsight, insertInsight, releaseSend, updateLeadAi } from "./db.ts";
+import { sendLeadReply, type ReplyEmail, type ReplyInput, type ReplyResult } from "./reply.ts";
 import { LEAD_AI_TOOL } from "./schema.ts";
 
 /**
@@ -51,4 +55,49 @@ function analyzeDeps(): AnalyzeDeps {
 
 export function runLeadAnalysis(leadId: string): Promise<AnalyzeResult> {
   return analyzeLead(leadId, analyzeDeps());
+}
+
+function replyFrom(): string {
+  return (
+    process.env.LEAD_REPLY_FROM_EMAIL ??
+    process.env.CONTACT_FROM_EMAIL ??
+    "RSG Website <onboarding@resend.dev>"
+  );
+}
+
+async function sendReplyEmail(msg: ReplyEmail): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error("Email is not configured: RESEND_API_KEY is missing.");
+  const resend = new Resend(apiKey);
+  await callProvider({ provider: "resend", operation: "email.send.lead_reply" }, async () => {
+    const { data, error } = await resend.emails.send({
+      from: replyFrom(),
+      to: msg.to,
+      replyTo: DEFAULT_OWNER_NOTIFY_EMAIL,
+      subject: msg.subject,
+      text: msg.text,
+      html: msg.html,
+    });
+    if (error) {
+      throw Object.assign(new Error(error.message), {
+        name: error.name,
+        status: (error as { statusCode?: number }).statusCode,
+      });
+    }
+    return data;
+  });
+}
+
+export function sendReply(input: ReplyInput): Promise<ReplyResult> {
+  return sendLeadReply(input, {
+    getLead: getLeadById,
+    getInsight,
+    claimSend,
+    releaseSend,
+    completeSend,
+    sendEmail: sendReplyEmail,
+    markContacted: async (leadId) => {
+      await updateLead(leadId, { status: "contacted" });
+    },
+  });
 }
