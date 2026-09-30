@@ -11,6 +11,9 @@ export const DEFAULT_SIGNATURE = "Joseph\nRedmont Strategies Group";
 // Stops before trailing punctuation so "www.x.com, or" keeps its comma.
 const URL_RE = /\b(?:https?:\/\/|www\.)(?:[^\s)>\]]*[^\s)>\].,;:!?])/gi;
 const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/g;
+// Strips bare domains with allowed TLDs, keeping trailing punctuation outside.
+// Matches optional paths after domain.
+const BARE_DOMAIN_RE = /\b[a-z0-9-]+\.(?:com|net|org|io|co|ly|me|app|biz|info|xyz|us|ai|dev)(?:\/[^\s)>\]]*[^\s)>\].,;:!?])?/gi;
 
 export function composeDraft(
   body: string,
@@ -20,6 +23,7 @@ export function composeDraft(
     .replace(/\r\n/g, "\n")
     .replace(URL_RE, "")
     .replace(EMAIL_RE, "")
+    .replace(BARE_DOMAIN_RE, "")
     .split(BOOKING_TOKEN)
     .join(opts.bookingUrl)
     .replace(/[ \t]{2,}/g, " ")

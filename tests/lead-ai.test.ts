@@ -180,3 +180,17 @@ test("lead fields are length-capped", () => {
   const line = msg.split("\n").find((l) => l.startsWith("Biggest problem: "))!;
   assert.equal(line.length, "Biggest problem: ".length + 1500);
 });
+
+test("composeDraft strips bare domains with allowed TLDs and preserves sentence punctuation", () => {
+  const out = composeDraft("Pay at evil.com/pay today, or bit.ly/x.", opts);
+  assert.doesNotMatch(out, /evil\.com|bit\.ly/);
+  assert.match(out, /\./); // period survives
+  assert.match(out, /today/);
+});
+
+test("composeDraft leaves words like e.g., Node.js, and 24/7 unchanged", () => {
+  const out = composeDraft("Note this e.g. or Node.js and 24/7 for you.", opts);
+  assert.match(out, /e\.g\./);
+  assert.match(out, /Node\.js/);
+  assert.match(out, /24\/7/);
+});
