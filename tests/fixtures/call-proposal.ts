@@ -1,5 +1,42 @@
 /** Shared fixtures for the call-proposal tests. */
 
+import type { CallInput } from "../../lib/call-proposal/types.ts";
+import type { Lead } from "../../lib/types.ts";
+
+export const calls: CallInput[] = [
+  {
+    recordingId: "r1",
+    title: "Discovery",
+    recordedAt: "2026-09-20T15:00:00Z",
+    transcript: "",
+    segments: [
+      { speaker: "Joseph", text: "What's going wrong?" },
+      { speaker: "Dana", text: "Honestly we miss every call after six." },
+      { speaker: "Dana", text: "We use Jobber for scheduling." },
+    ],
+  },
+  {
+    recordingId: "r2",
+    title: "Follow-up",
+    recordedAt: "2026-09-27T15:00:00Z",
+    transcript: "I want jobs booked without me. Budget is maybe five to eight grand.",
+    segments: [],
+  },
+];
+
+export const lead: Lead = {
+  id: "lead-1",
+  name: "Dana Ruiz",
+  company: "Glow Home Services",
+  email: "dana@example.com",
+  phone: "555-0100",
+  website: "",
+  industry: "Home services",
+  problem: "We miss calls after 6pm.",
+  improve: "After-hours booking.",
+  submittedAt: "2026-09-19T12:00:00.000Z",
+};
+
 export const extractOut = {
   pain_points: [
     { text: "Misses after-hours calls", evidence: { quote: "we miss every call after six", call: 1 } },
