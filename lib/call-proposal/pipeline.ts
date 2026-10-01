@@ -50,6 +50,8 @@ export type PipelineDeps = {
   insertBrief: (row: { leadId: string; createdBy: string; promptVersion: string }) => Promise<string>;
   updateBrief: (id: string, patch: BriefPatch) => Promise<void>;
   getBrief: (id: string) => Promise<CallBriefRecord | null>;
+  /** The current sections of an existing proposal, or null if it no longer exists. */
+  loadProposalSections: (proposalId: string) => Promise<ProposalSection[] | null>;
   /** failed@draft -> drafting, atomically. False if not in that state; RunInProgressError if another run is active. */
   claimRetry: (id: string) => Promise<boolean>;
   createDraftProposal: (input: {
@@ -132,11 +134,12 @@ export async function runCallProposal(
     throw err;
   }
 
-  const block = buildCallsBlock(calls);
+  let block: ReturnType<typeof buildCallsBlock>;
   let brief: CallBrief;
   let tokens: Tokens;
   let warnings: BriefWarning[];
   try {
+    block = buildCallsBlock(calls);
     const res = await deps.generate({
       stage: "extract",
       system: buildExtractSystem(deps.templates),
@@ -183,6 +186,7 @@ async function draftStage(
     tokens: Tokens;
     warnings: BriefWarning[];
     createdBy: string;
+    existingProposalId?: string | null;
   },
 ): Promise<RunResult> {
   const { briefId, brief } = ctx;
@@ -217,16 +221,23 @@ async function draftStage(
       throw new Error(parsed.error);
     }
 
-    const proposal = await deps.createDraftProposal({
-      leadId: ctx.leadId,
-      briefId,
-      templateKey,
-      title: parsed.value.title,
-      businessName,
-      challenges: brief.pain_points.map((p) => p.text).slice(0, 10),
-      outcomes: brief.goals.map((g) => g.text).slice(0, 10),
-      createdBy: ctx.createdBy,
-    });
+    // A retry after a late failure reuses the proposal the first attempt created.
+    const existing = ctx.existingProposalId
+      ? await deps.loadProposalSections(ctx.existingProposalId)
+      : null;
+    const proposal =
+      ctx.existingProposalId && existing
+        ? { id: ctx.existingProposalId, sections: existing }
+        : await deps.createDraftProposal({
+            leadId: ctx.leadId,
+            briefId,
+            templateKey,
+            title: parsed.value.title,
+            businessName,
+            challenges: brief.pain_points.map((p) => p.text).slice(0, 10),
+            outcomes: brief.goals.map((g) => g.text).slice(0, 10),
+            createdBy: ctx.createdBy,
+          });
     // Linked before anything else can fail, so a later failure never orphans it.
     await deps.updateBrief(briefId, {
       proposalId: proposal.id,
@@ -279,5 +290,6 @@ export async function retryDraft(briefId: string, deps: PipelineDeps): Promise<R
     tokens: { model: rec.model, inputTokens: rec.inputTokens, outputTokens: rec.outputTokens },
     warnings: rec.warnings,
     createdBy: rec.createdBy,
+    existingProposalId: rec.proposalId,
   });
 }

@@ -18,6 +18,7 @@ function harness(over: Partial<PipelineDeps> = {}, outputs: Partial<Outputs> = {
   const briefs = new Map<string, CallBriefRecord>();
   const created: Parameters<PipelineDeps["createDraftProposal"]>[0][] = [];
   const saved: { id: string; sections: ProposalSection[] }[] = [];
+  const proposals = new Map<string, ProposalSection[]>();
   let n = 0;
   const deps: PipelineDeps = {
     loadLead: async (id) => (id === "lead-1" ? lead : null),
@@ -52,6 +53,7 @@ function harness(over: Partial<PipelineDeps> = {}, outputs: Partial<Outputs> = {
       for (const [k, v] of Object.entries(patch)) if (v !== undefined) (b as Record<string, unknown>)[k] = v;
     },
     getBrief: async (id) => briefs.get(id) ?? null,
+    loadProposalSections: async (id) => proposals.get(id) ?? null,
     claimRetry: async (id) => {
       const b = briefs.get(id);
       if (!b || b.status !== "failed" || b.failedStage !== "draft") return false;
@@ -60,7 +62,9 @@ function harness(over: Partial<PipelineDeps> = {}, outputs: Partial<Outputs> = {
     },
     createDraftProposal: async (input) => {
       created.push(input);
-      return { id: `p${created.length}`, sections: structuredClone(baseSections) };
+      const id = `p${created.length}`;
+      proposals.set(id, structuredClone(baseSections));
+      return { id, sections: structuredClone(baseSections) };
     },
     saveProposalSections: async (id, sections) => {
       saved.push({ id, sections });
@@ -194,4 +198,57 @@ test("pipeline: result status mapping", () => {
     runResultStatus({ ok: false, reason: "failed", briefId: "b", stage: "draft", error: "boom" }),
     { status: 502, error: "boom" },
   );
+});
+
+test("pipeline: retry after a late save failure reuses the existing proposal", async () => {
+  let failSave = true;
+  const h = harness({
+    saveProposalSections: async (id, sections) => {
+      if (failSave) throw new Error("db down");
+      h.saved.push({ id, sections });
+    },
+  });
+  const first = await runCallProposal("lead-1", "j", h.deps);
+  assert.equal(first.ok, false);
+  assert.equal(h.briefs.get("b1")!.failedStage, "draft");
+  assert.equal(h.briefs.get("b1")!.proposalId, "p1");
+  failSave = false;
+  const second = await retryDraft("b1", h.deps);
+  assert.deepEqual(second, { ok: true, briefId: "b1", proposalId: "p1" });
+  assert.equal(h.created.length, 1);
+  assert.equal(h.briefs.get("b1")!.proposalId, "p1");
+  assert.equal(h.saved.length, 1);
+  assert.equal(h.saved[0].id, "p1");
+});
+
+test("pipeline: retry creates a new proposal if the first one was deleted", async () => {
+  let failSave = true;
+  const h = harness({
+    saveProposalSections: async (id, sections) => {
+      if (failSave) throw new Error("db down");
+      h.saved.push({ id, sections });
+    },
+    loadProposalSections: async () => null,
+  });
+  await runCallProposal("lead-1", "j", h.deps);
+  failSave = false;
+  const second = await retryDraft("b1", h.deps);
+  assert.deepEqual(second, { ok: true, briefId: "b1", proposalId: "p2" });
+  assert.equal(h.created.length, 2);
+  assert.equal(h.briefs.get("b1")!.proposalId, "p2");
+  assert.equal(h.saved[0].id, "p2");
+});
+
+test("pipeline: a crash building the transcript block fails the brief at extract", async () => {
+  const bad = { ...calls[1] };
+  Object.defineProperty(bad, "segments", {
+    get() {
+      throw new Error("segments exploded");
+    },
+  });
+  const h = harness({ loadCalls: async () => [bad] });
+  const r = await runCallProposal("lead-1", "j", h.deps);
+  assert.equal(r.ok === false && r.reason === "failed" && r.stage, "extract");
+  assert.equal(h.briefs.get("b1")!.status, "failed");
+  assert.equal(h.briefs.get("b1")!.failedStage, "extract");
 });
