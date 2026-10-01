@@ -46,6 +46,7 @@ import { ManagedServicesAdminPanel } from "@/components/admin/ManagedServicesAdm
 import { LifecycleAdminPanel } from "@/components/admin/LifecycleAdminPanel";
 import { PocketAdminPanel } from "@/components/admin/PocketAdminPanel";
 import { LeadAiPanel } from "@/components/admin/LeadAiPanel";
+import { CallProposalPanel } from "@/components/admin/CallProposalPanel";
 import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Tab =
@@ -1896,6 +1897,7 @@ function LeadsTable({
                         )
                       }
                     />
+                    <CallProposalPanel leadId={leadId} />
                     <div className="rounded-lg border border-white/10 bg-white/2 p-3.5">
                       <p className="text-xs font-medium text-white/60">
                         Recommended plan

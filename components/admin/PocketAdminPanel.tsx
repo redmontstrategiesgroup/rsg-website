@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { getCsrfToken, patchJson, postJson } from "@/lib/api";
 import type { Lead } from "@/lib/types";
+import { proposalHref } from "@/components/admin/CallProposalPanel";
 import {
   AUDIO_EXTENSIONS,
   formatDuration,
@@ -689,6 +690,7 @@ function RecordingDetail({
           </select>
         </label>
       </div>
+      <DraftFromCall leadId={rec.leadId} />
 
       <label className="block text-sm">
         <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
@@ -777,6 +779,62 @@ function RecordingDetail({
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+function DraftFromCall({ leadId }: { leadId: string | null }) {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [proposalId, setProposalId] = useState<string | null>(null);
+
+  if (!leadId) {
+    return (
+      <p className="text-xs text-white/60">
+        Link this call to a lead above to draft a proposal from it.
+      </p>
+    );
+  }
+
+  async function draft() {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await postJson(`/api/admin/leads/${leadId}/draft-proposal`, {});
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body.proposalId) {
+        setProposalId(body.proposalId);
+        setMessage("Draft ready. It used every call linked to this lead.");
+      } else {
+        setMessage(body.error ?? "Drafting failed.");
+      }
+    } catch {
+      setMessage("Network error: the draft may still be running. Check the lead in a minute.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        onClick={() => void draft()}
+        disabled={busy}
+        className="inline-flex items-center gap-2 rounded-lg bg-crimson px-3 py-2 text-sm font-medium text-white hover:bg-crimson-light disabled:opacity-50"
+      >
+        {busy ? "Reading calls and drafting…" : "Draft proposal"}
+      </button>
+      {proposalId && (
+        <a className="text-sm text-white/70 underline underline-offset-4 hover:text-white" href={proposalHref(proposalId)}>
+          Open draft proposal
+        </a>
+      )}
+      {message && (
+        <p role="status" className="w-full text-xs text-white/65">
+          {message}
+        </p>
+      )}
     </div>
   );
 }
