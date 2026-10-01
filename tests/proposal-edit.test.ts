@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   parseSectionsInput,
   refreshPricePhrases,
@@ -61,4 +62,17 @@ test("price phrases: summary and next-steps sentences follow the new price", () 
   assert.equal(out[0].body, "The total investment is $9,000, paid against milestones and beginning with a $3,000 deposit.");
   assert.equal(out[1].items![0].detail, "The $3,000 deposit reserves your build slot.");
   assert.equal(out[2].body, "a $500 ad budget");
+});
+
+test("template wording that refreshPricePhrases relies on is still present", () => {
+  const raw = readFileSync(new URL("../lib/lifecycle/proposal-templates.ts", import.meta.url), "utf8");
+  // Phrases may be split across concatenated string literals; join them first.
+  const text = raw.replace(/"\s*\+\s*"/g, "");
+  for (const phrase of [
+    "total investment is {{investment}}",
+    "with a {{deposit}} deposit",
+    "The {{deposit}} deposit reserves",
+  ]) {
+    assert.ok(text.includes(phrase), `template text lost "${phrase}": refreshPricePhrases regexes must be updated to match`);
+  }
 });

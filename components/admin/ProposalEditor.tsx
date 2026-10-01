@@ -7,7 +7,7 @@ import { Banner, Button, Modal } from "@/components/portal/ui";
 import { inputClass } from "@/components/booking/ui";
 import { formatCents, type Proposal, type ProposalSection } from "@/lib/lifecycle/types";
 import { sectionsWithCurrency } from "@/lib/call-proposal/sections";
-import type { CallBriefRecord } from "@/lib/call-proposal/types";
+import type { CallBriefRecord, CallSummary } from "@/lib/call-proposal/types";
 import { BriefFacts } from "@/components/admin/CallProposalPanel";
 
 const EDITABLE = ["draft", "sent", "viewed", "revision_requested"];
@@ -15,9 +15,9 @@ const PRICE_KEYS = new Set(["investment", "payment_schedule"]);
 type Item = NonNullable<ProposalSection["items"]>[number];
 
 function dollarsToCents(v: string): number | null {
-  if (!v.trim()) return 0;
-  const n = Number(v);
-  return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) : null;
+  const t = v.replace(/\s+/g, "").replace(/^\$/, "").replace(/,/g, "");
+  if (!t) return 0;
+  return /^\d+(\.\d{1,2})?$/.test(t) ? Math.round(Number(t) * 100) : null;
 }
 
 export function ProposalEditor({
@@ -31,6 +31,7 @@ export function ProposalEditor({
 }) {
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [brief, setBrief] = useState<CallBriefRecord | null>(null);
+  const [calls, setCalls] = useState<CallSummary[]>([]);
   const [title, setTitle] = useState("");
   const [sections, setSections] = useState<ProposalSection[]>([]);
   const [total, setTotal] = useState("");
@@ -56,6 +57,7 @@ export function ProposalEditor({
         const p = json.proposal as Proposal;
         setProposal(p);
         setBrief((json.callBrief as CallBriefRecord | null) ?? null);
+        setCalls((json.callSummaries as CallSummary[] | undefined) ?? []);
         setTitle(p.title);
         setSections(p.sections);
         setTotal(p.total_cents ? String(p.total_cents / 100) : "");
@@ -98,6 +100,14 @@ export function ProposalEditor({
       setError("Enter the total and deposit as dollar amounts.");
       return;
     }
+    // Send only what changed: a sent proposal bumps its version on any content write.
+    const sectionsChanged = JSON.stringify(sections) !== JSON.stringify(proposal?.sections);
+    const titleChanged = title !== proposal?.title;
+    if (!sectionsChanged && !titleChanged && !priceChanged) {
+      setError(null);
+      setSaved(true);
+      return;
+    }
     setSaving(true);
     setError(null);
     setSaved(false);
@@ -105,8 +115,8 @@ export function ProposalEditor({
       const res = await postJson("/api/admin/lifecycle", {
         action: "update_proposal",
         id,
-        title,
-        sections,
+        ...(titleChanged ? { title } : {}),
+        ...(sectionsChanged ? { sections } : {}),
         ...(priceChanged ? { totalCents, depositCents } : {}),
       });
       const json = await res.json().catch(() => ({}));
@@ -266,7 +276,7 @@ export function ProposalEditor({
           <aside className="space-y-3">
             <p className="text-xs font-medium text-white/60">From the call brief</p>
             {brief?.extraction ? (
-              <BriefFacts brief={brief.extraction} calls={[]} recordingIds={brief.recordingIds} />
+              <BriefFacts brief={brief.extraction} calls={calls} recordingIds={brief.recordingIds} />
             ) : (
               <p className="text-sm text-white/50">This proposal wasn&apos;t drafted from a call.</p>
             )}

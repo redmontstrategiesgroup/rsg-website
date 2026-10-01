@@ -22,7 +22,7 @@ import {
 } from "@/lib/lifecycle/proposals";
 import { parseSectionsInput, validatePrice } from "@/lib/lifecycle/proposal-edit";
 import { buildSowVars } from "@/lib/call-proposal/sow";
-import { getBrief } from "@/lib/call-proposal";
+import { getBrief, listCallSummaries } from "@/lib/call-proposal";
 import {
   countersignContract,
   createContract,
@@ -311,7 +311,8 @@ export async function GET(request: Request) {
         const callBrief = loaded.proposal.call_brief_id
           ? await getBrief(loaded.proposal.call_brief_id).catch(() => null)
           : null;
-        return NextResponse.json({ ...loaded, events, callBrief });
+        const callSummaries = callBrief ? await listCallSummaries(callBrief.leadId).catch(() => []) : [];
+        return NextResponse.json({ ...loaded, events, callBrief, callSummaries });
       }
       case "contracts": {
         const contracts = await listContracts({ limit: 200 });
@@ -489,15 +490,19 @@ export async function POST(request: Request) {
 
   const adminName = ctx.admin.name || ctx.admin.email;
 
-  await writeAuditEvent({
-    actorType: "admin",
-    actorId: ctx.admin.id,
-    actorEmail: ctx.admin.email,
-    action: `lifecycle.${action}`,
-    entityType: "lifecycle",
-    entityId: typeof raw.id === "string" ? raw.id : undefined,
-    metadata: { action },
-  });
+  // A SOW preview writes nothing, so it leaves no audit trail either.
+  if (!(action === "create_sow" && raw.preview === true)) {
+    const entityKey = action === "create_sow" ? raw.proposalId : raw.id;
+    await writeAuditEvent({
+      actorType: "admin",
+      actorId: ctx.admin.id,
+      actorEmail: ctx.admin.email,
+      action: `lifecycle.${action}`,
+      entityType: "lifecycle",
+      entityId: typeof entityKey === "string" ? entityKey : undefined,
+      metadata: { action },
+    });
+  }
 
   const str = (key: string, max = 10_000): string =>
     typeof raw[key] === "string" ? (raw[key] as string).trim().slice(0, max) : "";
@@ -666,6 +671,12 @@ export async function POST(request: Request) {
         const loaded = await getProposal(str("proposalId"));
         if (!loaded) return NextResponse.json({ error: "Proposal not found." }, { status: 404 });
         const p = loaded.proposal;
+        if (p.status !== "draft" && p.status !== "approved") {
+          return NextResponse.json(
+            { error: "Only a draft or approved proposal can become a SOW." },
+            { status: 400 },
+          );
+        }
         if (p.total_cents <= 0) {
           return NextResponse.json(
             { error: "Set the proposal's price before creating a SOW." },
@@ -688,6 +699,17 @@ export async function POST(request: Request) {
           termLength,
         );
         if (bool("preview")) return NextResponse.json({ ok: true, vars });
+        const { data: existingSows, error: sowErr } = await requireSupabase()
+          .from("contracts")
+          .select("id")
+          .eq("proposal_id", p.id)
+          .eq("kind", "sow")
+          .not("status", "in", "(voided,declined,expired)")
+          .limit(1);
+        if (sowErr) throw new Error(`create_sow lookup failed: ${sowErr.message}`);
+        if ((existingSows ?? []).length > 0) {
+          return NextResponse.json({ error: "A SOW already exists for this proposal." }, { status: 409 });
+        }
         const { contract, signatures } = await createContract({
           kind: "sow",
           opportunityId: p.opportunity_id ?? undefined,
