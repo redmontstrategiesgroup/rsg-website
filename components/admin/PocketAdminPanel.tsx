@@ -690,7 +690,7 @@ function RecordingDetail({
           </select>
         </label>
       </div>
-      <DraftFromCall leadId={rec.leadId} />
+      <DraftFromCall key={rec.id} leadId={rec.leadId} />
 
       <label className="block text-sm">
         <span className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-white/60">
@@ -821,7 +821,7 @@ function DraftFromCall({ leadId }: { leadId: string | null }) {
         type="button"
         onClick={() => void draft()}
         disabled={busy}
-        className="inline-flex items-center gap-2 rounded-lg bg-crimson px-3 py-2 text-sm font-medium text-white hover:bg-crimson-light disabled:opacity-50"
+        className="inline-flex items-center gap-2 rounded-lg bg-crimson px-3 py-2 text-sm font-medium text-white hover:bg-crimson-light disabled:opacity-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light"
       >
         {busy ? "Reading calls and drafting…" : "Draft proposal"}
       </button>

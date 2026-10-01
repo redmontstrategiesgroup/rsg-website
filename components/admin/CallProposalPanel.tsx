@@ -28,6 +28,17 @@ export function proposalHref(proposalId: string): string {
   return `/admin?section=proposals&proposal=${encodeURIComponent(proposalId)}#lifecycle`;
 }
 
+async function fetchListing(leadId: string): Promise<{ listing: Listing; error?: undefined } | { listing: null; error: string }> {
+  try {
+    const res = await fetch(`/api/admin/leads/${leadId}/call-briefs`, { cache: "no-store" });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) return { listing: null, error: body.error ?? "Could not load call briefs." };
+    return { listing: body as Listing };
+  } catch {
+    return { listing: null, error: "Network error: could not load call briefs." };
+  }
+}
+
 function fmt(iso: string | null): string {
   if (!iso) return "";
   return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -175,20 +186,40 @@ export function CallProposalPanel({ leadId }: { leadId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState<"draft" | "retry" | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/admin/leads/${leadId}/call-briefs`, { cache: "no-store" });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) setError(body.error ?? "Could not load call briefs.");
-      else setData(body as Listing);
-    } catch {
-      setError("Network error: could not load call briefs.");
-    }
+  const reload = useCallback(async () => {
+    const r = await fetchListing(leadId);
+    if (r.listing) setData(r.listing);
+    else setError(r.error);
   }, [leadId]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    (async () => {
+      const r = await fetchListing(leadId);
+      if (cancelled) return;
+      if (r.listing) setData(r.listing);
+      else setError(r.error);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [leadId]);
+
+  // A run started before this panel mounted (or by another tab) has no local request to
+  // wait on, so poll until it settles. The GET also sweeps dead runs.
+  const inFlight = data?.briefs[0]?.status === "extracting" || data?.briefs[0]?.status === "drafting";
+  useEffect(() => {
+    if (!inFlight || running !== null) return;
+    let cancelled = false;
+    const timer = setInterval(async () => {
+      const r = await fetchListing(leadId);
+      if (!cancelled && r.listing) setData(r.listing);
+    }, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [inFlight, running, leadId]);
 
   async function start(kind: "draft" | "retry", url: string) {
     setRunning(kind);
@@ -200,7 +231,7 @@ export function CallProposalPanel({ leadId }: { leadId: string }) {
       if (!res.ok) setError(body.error ?? "Drafting failed.");
     } catch {
       setError("Network error: the draft may still be running. Refresh in a minute.");
-      void load();
+      void reload();
     } finally {
       setRunning(null);
     }
