@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import { randomUUID } from "node:crypto";
 import { requireSupabase, adminTimezone, siteUrl } from "./db";
+import { withKnownMarker } from "@/lib/known-visitor";
 import { createSecureToken, createIcalUid } from "./tokens";
 import { getAppointmentTypeById, getDefaultTeamMember } from "./catalog";
 import { isSlotAvailable } from "./slots";
@@ -298,7 +299,7 @@ export async function createBooking(input: {
     qualification_score: session.qualification_score ?? "",
     qualification_outcome: session.qualification_outcome ?? "",
     lead_source: "website_booking_funnel",
-    book_url: `${siteUrl()}/book`,
+    book_url: withKnownMarker(`${siteUrl()}/book`),
   };
 
   if (email) {
@@ -664,7 +665,7 @@ export async function cancelBooking(input: {
     full_name: lead?.name ?? "",
     business_name: lead?.business_name ?? "",
     appointment_type: type?.name ?? "Consultation",
-    book_url: `${siteUrl()}/book`,
+    book_url: withKnownMarker(`${siteUrl()}/book`),
     manage_url: manageUrl,
     appointment_time_admin: formatInZone(
       booking.starts_at,

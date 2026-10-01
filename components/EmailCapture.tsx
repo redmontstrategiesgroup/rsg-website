@@ -6,14 +6,16 @@ import { X, Loader2 } from "lucide-react";
 import { postJson } from "@/lib/api";
 import { Dialog } from "@/components/ui/Dialog";
 import { IconButton } from "@/components/ui/IconButton";
+import { EMAIL_CAPTURE_KEY, markKnownVisitor } from "@/lib/known-visitor";
 
 /**
  * One-time email capture for the marketing list. Appears once per visitor
  * (after a delay or meaningful scroll), never on the booking funnel, and stays
- * gone once subscribed or dismissed (30-day snooze on dismiss).
+ * gone once subscribed or dismissed (30-day snooze on dismiss). Visitors who
+ * gave their email elsewhere are suppressed too, see lib/known-visitor.ts.
  */
 
-const STORAGE_KEY = "rsg_email_capture";
+const STORAGE_KEY = EMAIL_CAPTURE_KEY;
 const DISMISS_DAYS = 30;
 const DELAY_MS = 14_000;
 const SCROLL_TRIGGER = 0.35;
@@ -57,6 +59,12 @@ export function EmailCapture() {
     const tryOpen = () => {
       if (firedRef.current) return;
       if (!consentDecided()) return; // don't stack on the cookie banner
+      // Re-check: a form, the chat, or an email link may have marked this
+      // visitor as known since mount.
+      if (isSuppressed()) {
+        firedRef.current = true;
+        return;
+      }
       firedRef.current = true;
       setOpen(true);
     };
@@ -109,11 +117,7 @@ export function EmailCapture() {
         return;
       }
       setDone(true);
-      try {
-        localStorage.setItem(STORAGE_KEY, "subscribed");
-      } catch {
-        /* storage unavailable */
-      }
+      markKnownVisitor();
     } catch {
       setError("Network error. Please try again.");
     } finally {

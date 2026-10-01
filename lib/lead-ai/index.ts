@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { generateStructured, type StructuredSchema } from "@/lib/ai/proxy";
 import { enqueueEmailJob } from "@/lib/email-jobs";
 import { callProvider, redact } from "@/lib/integration-log";
+import { withKnownMarker } from "@/lib/known-visitor";
 import { siteUrl } from "@/lib/lifecycle/core";
 import { contactNotifyEmails, DEFAULT_OWNER_NOTIFY_EMAIL } from "@/lib/notify-emails";
 import { getLeadById, updateLead } from "@/lib/store";
@@ -77,7 +78,8 @@ Review and send the drafted reply: ${siteUrl()}/admin`;
       }
     },
     model: LEAD_AI_MODEL,
-    bookingUrl: `${siteUrl()}/book`,
+    // Tagged so the lead's other devices skip the newsletter popup.
+    bookingUrl: withKnownMarker(`${siteUrl()}/book`),
     signature: replySignature(),
   };
 }

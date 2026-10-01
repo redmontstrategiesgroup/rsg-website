@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FormFlow } from "@/components/lifecycle/FormFlow";
 import { QUALIFICATION_SECTIONS } from "@/lib/lifecycle/qualification-content";
 import { postJson } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 
 
 type Outcome = {
@@ -61,6 +62,7 @@ export function StartFlow() {
         if (!res.ok || !data.url) {
           throw new Error(data.error || "Something went wrong. Please try again.");
         }
+        markKnownVisitor();
         setOutcome({
           next: data.next === "assessment" ? "assessment" : "book",
           url: data.url,

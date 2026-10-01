@@ -1,4 +1,5 @@
 import { firstNameOf, links, nowIso, requireSupabase } from "@/lib/lifecycle/core";
+import { withKnownMarker } from "@/lib/known-visitor";
 import type {
   Assessment,
   Contract,
@@ -209,11 +210,13 @@ export async function onQualificationSubmitted(input: {
   bookSlug?: string;
 }): Promise<void> {
   const first = firstNameOf(input.lead.name);
+  // Book links are tagged so the lead's other devices skip the newsletter
+  // popup; the assessment page marks visitors on its own.
   const nextStepUrl = input.qualified
     ? input.assessmentToken
       ? links.assessment(input.assessmentToken)
-      : links.book(input.bookSlug)
-    : `${links.book()}`;
+      : withKnownMarker(links.book(input.bookSlug))
+    : withKnownMarker(links.book());
   const nextStepLabel = input.qualified
     ? input.assessmentToken
       ? "Start your Business Systems Assessment"

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { RevealObserver } from "@/components/RevealObserver";
+import { KnownVisitorMarker } from "@/components/KnownVisitorMarker";
 import { PHONE_TEL, SITE_URL } from "@/lib/site";
 
 // Body / UI
@@ -139,6 +140,7 @@ export default function RootLayout({
         />
         {children}
         <RevealObserver />
+        <KnownVisitorMarker />
       </body>
     </html>
   );

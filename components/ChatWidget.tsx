@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { IconButton } from "@/components/ui/IconButton";
 import { postJson } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 import { trackEvent } from "@/lib/events";
 import { clampViewportHeight } from "@/lib/mobile";
 
@@ -155,6 +156,7 @@ export function ChatWidget() {
         if (!chunk) continue;
         if (chunk.includes(QUALIFIED_LEAD_SENTINEL)) {
           trackEvent("chatbot_qualified_lead");
+          markKnownVisitor();
           chunk = chunk.replaceAll(QUALIFIED_LEAD_SENTINEL, "");
           if (!chunk) continue;
         }

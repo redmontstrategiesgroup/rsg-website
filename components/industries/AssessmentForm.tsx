@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, ClipboardList, Loader2 } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { postJson } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 import { trackEvent } from "@/lib/events";
 import { recommendSystem } from "@/lib/industries/recommend";
 import type { IndustryVertical } from "@/lib/industries/types";
@@ -67,6 +68,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
         return;
       }
       trackEvent("assessment_complete", { form: "industry_assessment", vertical: vertical.slug });
+      markKnownVisitor();
       setStep(3);
     } catch {
       setError("Something went wrong: please check your connection and try again.");

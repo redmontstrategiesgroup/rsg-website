@@ -12,6 +12,7 @@ import { ArrowLeft, ArrowRight, Calendar, Clock, Loader2, AlertCircle } from "lu
 import { ScrollRail } from "@/components/ui/ScrollRail";
 import Link from "next/link";
 import { postJson, patchJson, getCsrfToken } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 import { Turnstile } from "@/components/Turnstile";
 import { trackEvent } from "@/lib/events";
 import {
@@ -690,6 +691,7 @@ export function BookingFunnel({
       completedRef.current = true;
       track("booking_completed");
       trackEvent("booking_complete");
+      markKnownVisitor();
       try {
         sessionStorage.removeItem(STORAGE_KEY);
       } catch {

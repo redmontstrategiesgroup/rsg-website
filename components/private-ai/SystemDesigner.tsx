@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { postJson } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 import { buildSimulatedArchitecture } from "@/lib/private-ai/architecture";
 import {
   DEPLOYMENT_OPTIONS,
@@ -199,6 +200,7 @@ export function SystemDesigner() {
 
     if (data.architecture) setArchitecture(data.architecture);
     saveLocal();
+    markKnownVisitor();
     setSubmitState("success");
   }
 
