@@ -227,8 +227,10 @@ export function CallProposalPanel({ leadId }: { leadId: string }) {
     try {
       const res = await postJson(url, {});
       const body = await res.json().catch(() => ({}));
+      if (typeof body.error === "string" && body.error) setError(body.error);
+      else if (!res.ok) setError("Drafting failed.");
       if (Array.isArray(body.briefs)) setData(body as Listing);
-      if (!res.ok) setError(body.error ?? "Drafting failed.");
+      else void reload();
     } catch {
       setError("Network error: the draft may still be running. Refresh in a minute.");
       void reload();

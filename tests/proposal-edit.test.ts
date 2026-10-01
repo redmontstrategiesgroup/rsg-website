@@ -70,7 +70,7 @@ test("template wording that refreshPricePhrases relies on is still present", () 
   const text = raw.replace(/"\s*\+\s*"/g, "");
   for (const phrase of [
     "total investment is {{investment}}",
-    "with a {{deposit}} deposit",
+    "beginning with a {{deposit}} deposit",
     "The {{deposit}} deposit reserves",
   ]) {
     assert.ok(text.includes(phrase), `template text lost "${phrase}": refreshPricePhrases regexes must be updated to match`);
