@@ -42,6 +42,7 @@ export type Provider =
   | "pocket"
   | "supabase"
   | "twilio"
+  | "cal"
   // Not a third party: our own scheduled work. A cron that stopped firing
   // takes the email queue, reminders, and lifecycle jobs down with it and
   // reports nothing, so it needs the same staleness alerting as a provider.

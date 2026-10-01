@@ -1,0 +1,19 @@
+-- Replay guard for inbound provider webhooks (Cal.com today).
+--
+-- Providers deliver at least once. A handler with side effects that are not
+-- naturally idempotent (creating a lead, notifying the owner) claims
+-- (provider, event_id) first; the primary key makes the second claim fail
+-- with 23505, which the handler treats as "already processed".
+
+create table if not exists public.inbound_webhook_events (
+  provider text not null,
+  event_id text not null,
+  received_at timestamptz not null default now(),
+  primary key (provider, event_id)
+);
+
+-- Server-only table: the service role bypasses RLS; nobody else may read it.
+alter table public.inbound_webhook_events enable row level security;
+
+create index if not exists inbound_webhook_events_received_idx
+  on public.inbound_webhook_events (received_at);

@@ -176,6 +176,11 @@ async function handle(request: NextRequest, correlationId: string) {
     if (pathname === "/api/pocket/webhook") {
       return forward();
     }
+    // Resend (Svix signature) and Cal.com (HMAC signature) delivery webhooks
+    // are server-to-server, verified in their route handlers.
+    if (pathname === "/api/resend/webhook" || pathname === "/api/cal/webhook") {
+      return forward();
+    }
     // Health checks are GET-only; nothing to exempt here for mutating.
 
     // 1. Reject obvious scripted clients.
