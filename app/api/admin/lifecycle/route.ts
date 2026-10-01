@@ -8,16 +8,21 @@ import { requireSupabase, links, periodMonth } from "@/lib/lifecycle/core";
 import { listAssessments, markAssessmentReviewed } from "@/lib/lifecycle/assessments";
 import { listQuestionnaires, waiveQuestionnaire } from "@/lib/lifecycle/questionnaires";
 import {
+  ProposalInputError,
   addProposalComment,
   createProposal,
   getProposal,
   listProposalEvents,
   listProposals,
   markProposalSent,
+  repriceProposal,
   replaceOptions,
   updateProposalContent,
   withdrawProposal,
 } from "@/lib/lifecycle/proposals";
+import { parseSectionsInput, validatePrice } from "@/lib/lifecycle/proposal-edit";
+import { buildSowVars } from "@/lib/call-proposal/sow";
+import { getBrief } from "@/lib/call-proposal";
 import {
   countersignContract,
   createContract,
@@ -109,7 +114,7 @@ import {
 } from "@/lib/lifecycle/orchestrate";
 import { periodLabel } from "@/lib/lifecycle/core";
 import { getClientById, getClients } from "@/lib/store";
-import type { Contract, Milestone } from "@/lib/lifecycle/types";
+import type { Contract, Milestone, ProposalSection } from "@/lib/lifecycle/types";
 
 export const runtime = "nodejs";
 
@@ -152,6 +157,7 @@ const ACTION_PERMISSION: Record<string, SchedulingPermission> = {
   withdraw_proposal: "manage_proposals",
   reply_proposal_comment: "manage_proposals",
   create_contract: "manage_proposals",
+  create_sow: "manage_proposals",
   send_contract: "manage_proposals",
   countersign_contract: "manage_proposals",
   void_contract: "manage_proposals",
@@ -302,7 +308,10 @@ export async function GET(request: Request) {
         const loaded = await getProposal(id);
         if (!loaded) return NextResponse.json({ error: "Not found" }, { status: 404 });
         const events = await listProposalEvents(id, 100);
-        return NextResponse.json({ ...loaded, events });
+        const callBrief = loaded.proposal.call_brief_id
+          ? await getBrief(loaded.proposal.call_brief_id).catch(() => null)
+          : null;
+        return NextResponse.json({ ...loaded, events, callBrief });
       }
       case "contracts": {
         const contracts = await listContracts({ limit: 200 });
@@ -545,13 +554,29 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: true, ...created });
       }
       case "update_proposal": {
-        const updated = await updateProposalContent(str("id"), {
+        let sections: ProposalSection[] | undefined;
+        if (raw.sections !== undefined) {
+          const parsed = parseSectionsInput(raw.sections);
+          if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+          sections = parsed.sections;
+        }
+        const content = {
           title: str("title") || undefined,
-          sections: Array.isArray(raw.sections) ? (raw.sections as never) : undefined,
-          totalCents: num("totalCents"),
-          depositCents: num("depositCents"),
+          sections,
           expiresAt: str("expiresAt") || undefined,
-        });
+        };
+        const totalCents = num("totalCents");
+        const depositCents = num("depositCents");
+        if (totalCents === undefined && depositCents === undefined) {
+          return NextResponse.json({ ok: true, proposal: await updateProposalContent(str("id"), content) });
+        }
+        const current = await getProposal(str("id"));
+        if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
+        const total = totalCents ?? current.proposal.total_cents;
+        const deposit = depositCents ?? current.proposal.deposit_cents;
+        const bad = validatePrice(total, deposit);
+        if (bad) return NextResponse.json({ error: bad }, { status: 400 });
+        const updated = await repriceProposal(str("id"), { ...content, totalCents: total, depositCents: deposit });
         return NextResponse.json({ ok: true, proposal: updated });
       }
       case "replace_options": {
@@ -625,6 +650,45 @@ export async function POST(request: Request) {
               .join("; "),
             term_length: str("termLength") || "the project duration",
           },
+          signerName: contact.name,
+          signerEmail: contact.email,
+          createdBy: adminName,
+        });
+        return NextResponse.json({ ok: true, contract, signatures });
+      }
+      case "create_sow": {
+        const loaded = await getProposal(str("proposalId"));
+        if (!loaded) return NextResponse.json({ error: "Proposal not found." }, { status: 404 });
+        const p = loaded.proposal;
+        if (p.total_cents <= 0) {
+          return NextResponse.json(
+            { error: "Set the proposal's price before creating a SOW." },
+            { status: 400 },
+          );
+        }
+        const contact = await clientContactFor(p.client_id, p.lead_id);
+        if (!contact?.email) {
+          return NextResponse.json(
+            { error: "Add the lead's email before creating a SOW." },
+            { status: 400 },
+          );
+        }
+        const brief = p.call_brief_id ? await getBrief(p.call_brief_id).catch(() => null) : null;
+        const termLength = str("termLength", 120) || brief?.termLength || "";
+        const vars = buildSowVars(
+          p,
+          { name: contact.name, company: contact.company ?? "" },
+          new Date().toISOString().slice(0, 10),
+          termLength,
+        );
+        if (bool("preview")) return NextResponse.json({ ok: true, vars });
+        const { contract, signatures } = await createContract({
+          kind: "sow",
+          opportunityId: p.opportunity_id ?? undefined,
+          proposalId: p.id,
+          clientId: p.client_id ?? undefined,
+          leadId: p.lead_id ?? undefined,
+          vars,
           signerName: contact.name,
           signerEmail: contact.email,
           createdBy: adminName,
@@ -1070,7 +1134,7 @@ export async function POST(request: Request) {
     console.error(`[admin/lifecycle] ${action} failed`, error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Action failed." },
-      { status: 500 },
+      { status: error instanceof ProposalInputError ? 400 : 500 },
     );
   }
 }

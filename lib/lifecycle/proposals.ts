@@ -12,6 +12,7 @@ import {
   PROPOSAL_TEMPLATES,
   buildProposalSections,
 } from "@/lib/lifecycle/proposal-templates";
+import { refreshPriceSections, validatePrice } from "@/lib/lifecycle/proposal-edit";
 
 /**
  * Proposals: data access, tracking, and approval workflow.
@@ -241,6 +242,54 @@ export async function updateProposalContent(
     throw new Error(`Failed to update proposal: ${error?.message ?? "no row returned"}`);
   }
   return data as Proposal;
+}
+
+/** Bad admin input (safe to show as-is; the route answers 400). */
+export class ProposalInputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProposalInputError";
+  }
+}
+
+/**
+ * Change the price of a proposal. The payment schedule is rebuilt with the
+ * template's own builder, and the investment / payment-schedule section text
+ * (which embeds the amounts at creation) is regenerated to match.
+ */
+export async function repriceProposal(
+  id: string,
+  patch: {
+    title?: string;
+    sections?: ProposalSection[];
+    totalCents: number;
+    depositCents: number;
+    expiresAt?: string;
+  },
+): Promise<Proposal> {
+  const bad = validatePrice(patch.totalCents, patch.depositCents);
+  if (bad) throw new ProposalInputError(bad);
+  const loaded = await getProposal(id);
+  if (!loaded) throw new Error(`Proposal ${id} not found`);
+
+  const key = loaded.proposal.created_from_template_key;
+  const template = key ? PROPOSAL_TEMPLATES[key] : undefined;
+  const base = patch.sections ?? loaded.proposal.sections;
+  if (!key || !template) {
+    return updateProposalContent(id, { ...patch, sections: base });
+  }
+  const fresh = buildProposalSections(key, {
+    businessName: "",
+    challenges: [],
+    outcomes: [],
+    totalCents: patch.totalCents,
+    depositCents: patch.depositCents,
+  });
+  return updateProposalContent(id, {
+    ...patch,
+    sections: refreshPriceSections(base, fresh),
+    paymentSchedule: template.buildSchedule(patch.totalCents, patch.depositCents),
+  });
 }
 
 export async function replaceOptions(
