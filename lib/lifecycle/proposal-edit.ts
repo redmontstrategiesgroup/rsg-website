@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { formatCents } from "./types.ts";
 import type { ProposalSection } from "./types.ts";
 
 /**
@@ -60,4 +61,38 @@ export function parseSectionsInput(
   if (r.success) return { ok: true, sections: r.data };
   const issue = r.error.issues[0];
   return { ok: false, error: `Invalid sections: ${issue.path.join(".") || "(root)"} ${issue.message}` };
+}
+
+const MONEY = String.raw`\$\d(?:[\d,]*\d)?(?:\.\d{2})?`;
+
+/**
+ * Rewrite the template sentences that bake in the price (executive summary,
+ * next-steps deposit line) without regenerating any section, so edits survive.
+ */
+export function refreshPricePhrases(
+  sections: ProposalSection[],
+  totalCents: number,
+  depositCents: number,
+): ProposalSection[] {
+  const total = formatCents(totalCents);
+  const deposit = formatCents(depositCents);
+  const fix = (t: string): string =>
+    t
+      .replace(new RegExp(`total investment is ${MONEY}`, "g"), () => `total investment is ${total}`)
+      .replace(new RegExp(`beginning with a ${MONEY} deposit`, "g"), () => `beginning with a ${deposit} deposit`)
+      .replace(new RegExp(`The ${MONEY} deposit reserves`, "g"), () => `The ${deposit} deposit reserves`);
+  return sections.map((s) => ({
+    ...s,
+    body: fix(s.body),
+    ...(s.items
+      ? {
+          items: s.items.map((i) => ({
+            ...i,
+            title: fix(i.title),
+            ...(i.detail !== undefined ? { detail: fix(i.detail) } : {}),
+            ...(i.meta !== undefined ? { meta: fix(i.meta) } : {}),
+          })),
+        }
+      : {}),
+  }));
 }

@@ -12,7 +12,7 @@ import {
   PROPOSAL_TEMPLATES,
   buildProposalSections,
 } from "@/lib/lifecycle/proposal-templates";
-import { refreshPriceSections, validatePrice } from "@/lib/lifecycle/proposal-edit";
+import { refreshPricePhrases, refreshPriceSections, validatePrice } from "@/lib/lifecycle/proposal-edit";
 
 /**
  * Proposals: data access, tracking, and approval workflow.
@@ -276,7 +276,10 @@ export async function repriceProposal(
   const template = key ? PROPOSAL_TEMPLATES[key] : undefined;
   const base = patch.sections ?? loaded.proposal.sections;
   if (!key || !template) {
-    return updateProposalContent(id, { ...patch, sections: base });
+    return updateProposalContent(id, {
+      ...patch,
+      sections: refreshPricePhrases(base, patch.totalCents, patch.depositCents),
+    });
   }
   const fresh = buildProposalSections(key, {
     businessName: "",
@@ -287,7 +290,7 @@ export async function repriceProposal(
   });
   return updateProposalContent(id, {
     ...patch,
-    sections: refreshPriceSections(base, fresh),
+    sections: refreshPricePhrases(refreshPriceSections(base, fresh), patch.totalCents, patch.depositCents),
     paymentSchedule: template.buildSchedule(patch.totalCents, patch.depositCents),
   });
 }

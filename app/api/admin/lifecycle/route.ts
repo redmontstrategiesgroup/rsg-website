@@ -567,6 +567,12 @@ export async function POST(request: Request) {
         };
         const totalCents = num("totalCents");
         const depositCents = num("depositCents");
+        if (raw.totalCents !== undefined && totalCents === undefined) {
+          return NextResponse.json({ error: "Total must be a number of cents." }, { status: 400 });
+        }
+        if (raw.depositCents !== undefined && depositCents === undefined) {
+          return NextResponse.json({ error: "Deposit must be a number of cents." }, { status: 400 });
+        }
         if (totalCents === undefined && depositCents === undefined) {
           return NextResponse.json({ ok: true, proposal: await updateProposalContent(str("id"), content) });
         }
