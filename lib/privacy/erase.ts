@@ -87,6 +87,7 @@ export async function exportDataSubject(
   leads: unknown[];
   bookings: unknown[];
   aiInsights: unknown[];
+  callBriefs: unknown[];
   subscriber: unknown[];
   clientAccount: unknown[];
   clientUsers: unknown[];
@@ -121,6 +122,19 @@ export async function exportDataSubject(
     }
   }
 
+  let callBriefs: unknown[] = [];
+  if (leadIds.length) {
+    try {
+      const { data } = await sb
+        .from("call_briefs")
+        .select("id, lead_id, created_at, status, extraction, recording_ids, proposal_id, term_length")
+        .in("lead_id", leadIds);
+      callBriefs = data ?? [];
+    } catch {
+      callBriefs = [];
+    }
+  }
+
   // Client account is returned WITHOUT the password hash.
   const clientAccount = await selectWhere(
     sb,
@@ -143,6 +157,7 @@ export async function exportDataSubject(
     leads,
     bookings,
     aiInsights,
+    callBriefs,
     subscriber,
     clientAccount,
     clientUsers,

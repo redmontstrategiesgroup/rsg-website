@@ -91,6 +91,7 @@ describe("exportDataSubject", () => {
       leads: { data: [{ id: "l1", email: "p@x.com" }], error: null },
       bookings: { data: [{ id: "b1", lead_id: "l1" }], error: null },
       lead_ai_insights: { data: [{ id: "i1", lead_id: "l1" }], error: null },
+      call_briefs: { data: [{ id: "cb1", lead_id: "l1" }], error: null },
       subscribers: { data: [{ id: "s1" }], error: null },
       clients: { data: [{ id: "c1", email: "p@x.com" }], error: null },
       client_users: { data: [], error: null },
@@ -101,6 +102,7 @@ describe("exportDataSubject", () => {
     assert.equal(out.leads.length, 1);
     assert.equal(out.bookings.length, 1);
     assert.equal(out.aiInsights.length, 1);
+    assert.equal(out.callBriefs.length, 1);
     assert.equal(out.clientAccount.length, 1);
     assert.ok(out.exportedAt);
   });
