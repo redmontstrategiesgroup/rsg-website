@@ -26,8 +26,10 @@ function readyCallsQuery(leadId: string, columns: string) {
     .eq("lead_id", leadId)
     .eq("status", "ready")
     .is("dismissed_at", null)
-    .order("recorded_at", { ascending: true, nullsFirst: true })
-    .order("created_at", { ascending: true })
+    .neq("transcript", "")
+    // Newest 20 (the cap must drop the oldest); callers reverse to oldest-first.
+    .order("recorded_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
     .limit(20);
 }
 
@@ -45,7 +47,7 @@ export async function loadCalls(leadId: string): Promise<CallInput[]> {
     "id, title, recorded_at, transcript, transcript_segments",
   );
   if (error) throw new Error(`call-proposal.loadCalls: ${error.message}`);
-  return ((data ?? []) as unknown as RecordingRow[]).map((r) => ({
+  return ((data ?? []) as unknown as RecordingRow[]).reverse().map((r) => ({
     recordingId: r.id,
     title: r.title ?? "",
     recordedAt: r.recorded_at,
@@ -61,7 +63,7 @@ export async function loadCalls(leadId: string): Promise<CallInput[]> {
 export async function listCallSummaries(leadId: string): Promise<CallSummary[]> {
   const { data, error } = await readyCallsQuery(leadId, "id, title, recorded_at");
   if (error) throw new Error(`call-proposal.listCallSummaries: ${error.message}`);
-  return ((data ?? []) as unknown as RecordingRow[]).map((r) => ({
+  return ((data ?? []) as unknown as RecordingRow[]).reverse().map((r) => ({
     id: r.id,
     title: r.title ?? "",
     recordedAt: r.recorded_at,
@@ -147,12 +149,21 @@ export async function claimRetry(id: string): Promise<boolean> {
   return (data ?? []).length > 0;
 }
 
-export async function linkProposalToBrief(proposalId: string, briefId: string): Promise<void> {
-  const { error } = await db()
+/** The draft proposal already created for this brief, if any (makes creation idempotent). */
+export async function findDraftProposalForBrief(
+  briefId: string,
+): Promise<{ id: string; sections: ProposalSection[] } | null> {
+  const { data, error } = await db()
     .from("lifecycle_proposals")
-    .update({ call_brief_id: briefId })
-    .eq("id", proposalId);
-  if (error) throw new Error(`call-proposal.linkProposalToBrief: ${error.message}`);
+    .select("id, sections")
+    .eq("call_brief_id", briefId)
+    .eq("status", "draft")
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(`call-proposal.findDraftProposalForBrief: ${error.message}`);
+  const row = data as { id: string; sections?: unknown } | null;
+  if (!row) return null;
+  return { id: row.id, sections: Array.isArray(row.sections) ? (row.sections as ProposalSection[]) : [] };
 }
 
 /** Sections of a proposal that is still a draft; null if missing or past draft. */

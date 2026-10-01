@@ -5,9 +5,9 @@ import { getLeadById } from "@/lib/store";
 import {
   claimRetry,
   failStaleRuns,
+  findDraftProposalForBrief,
   getBrief,
   insertBrief,
-  linkProposalToBrief,
   listBriefs,
   listCallSummaries,
   loadCalls,
@@ -75,6 +75,9 @@ function deps(): PipelineDeps {
     loadProposalSections: loadDraftProposalSections,
     claimRetry,
     createDraftProposal: async (input) => {
+      // Idempotent per brief: a retry after a partial failure reuses the existing draft.
+      const existing = await findDraftProposalForBrief(input.briefId);
+      if (existing) return existing;
       const { proposal } = await createProposal({
         leadId: input.leadId,
         templateKey: input.templateKey,
@@ -86,8 +89,8 @@ function deps(): PipelineDeps {
         depositCents: 0,
         expiresInDays: 30,
         createdBy: input.createdBy,
+        callBriefId: input.briefId,
       });
-      await linkProposalToBrief(proposal.id, input.briefId);
       return { id: proposal.id, sections: proposal.sections };
     },
     saveProposalSections: async (proposalId, sections) => {
@@ -118,4 +121,4 @@ export async function briefListing(leadId: string): Promise<BriefListing> {
   return { briefs, calls, readyCalls: calls.length, enabled: callProposalEnabled() };
 }
 
-export { getBrief };
+export { getBrief, listCallSummaries };

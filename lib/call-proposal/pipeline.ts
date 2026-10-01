@@ -75,14 +75,26 @@ export type RunResult =
 type Tokens = { model: string; inputTokens: number; outputTokens: number };
 
 export function stageErrorMessage(err: unknown): string {
-  const e = (err ?? {}) as { name?: string; code?: string; message?: string; userMessage?: string };
-  if (e.name === "AiError" && e.code === "refused") {
-    return "Claude declined this request. Try again, or write the proposal by hand.";
+  const e = (err ?? {}) as { name?: string; code?: string; message?: string };
+  if (e.name === "AiError") {
+    switch (e.code) {
+      case "refused":
+        return "Claude declined this request. Try again, or write the proposal by hand.";
+      case "not_configured":
+        return "ANTHROPIC_API_KEY isn't configured: add it to the environment first.";
+      case "rate_limited":
+        return "Claude is rate-limited right now. Try again in a few minutes.";
+      case "paused":
+        return "AI features are paused.";
+      default:
+        return "Claude couldn't complete this step. Try again.";
+    }
   }
-  if (e.name === "AiError" && e.code === "not_configured") {
-    return "ANTHROPIC_API_KEY isn't configured: add it to the environment first.";
+  // Parser messages are ours and say what was wrong with the answer.
+  if (typeof e.message === "string" && e.message.startsWith("Invalid model output")) {
+    return `Claude returned an unexpected answer. ${e.message}`.slice(0, 500);
   }
-  return (e.userMessage || e.message || "Unknown error.").slice(0, 500);
+  return "Something went wrong while drafting. Try again.";
 }
 
 export function runResultStatus(r: RunResult): { status: number; error: string | null } {
@@ -103,6 +115,7 @@ export function runResultStatus(r: RunResult): { status: number; error: string |
 
 async function fail(deps: PipelineDeps, briefId: string, stage: Stage, err: unknown): Promise<RunResult> {
   const error = stageErrorMessage(err);
+  console.error("[call-proposal]", stage, "stage failed", briefId, err);
   try {
     await deps.updateBrief(briefId, { status: "failed", failedStage: stage, error });
   } catch (writeErr) {

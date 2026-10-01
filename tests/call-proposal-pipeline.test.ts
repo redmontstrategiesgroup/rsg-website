@@ -1,4 +1,4 @@
-import test from "node:test";
+import test, { mock } from "node:test";
 import assert from "node:assert/strict";
 import {
   retryDraft,
@@ -112,6 +112,9 @@ test("pipeline: a second run while one is active is refused", async () => {
   assert.deepEqual(await runCallProposal("lead-1", "j", h.deps), { ok: false, reason: "in_progress" });
 });
 
+// Failures are logged for operators; keep test output clean.
+mock.method(console, "error", () => {});
+
 test("pipeline: stale runs are failed before inserting", async () => {
   const seen: [string, number][] = [];
   const h = harness({ failStaleRuns: async (id, ms) => void seen.push([id, ms]) });
@@ -125,7 +128,8 @@ test("pipeline: extract failure records stage and creates no proposal", async ()
   assert.equal(r.ok, false);
   assert.equal(h.briefs.get("b1")!.status, "failed");
   assert.equal(h.briefs.get("b1")!.failedStage, "extract");
-  assert.match(h.briefs.get("b1")!.error, /upstream 529/);
+  assert.equal(h.briefs.get("b1")!.error, "Something went wrong while drafting. Try again.");
+  assert.doesNotMatch(h.briefs.get("b1")!.error, /upstream 529/);
   assert.equal(h.created.length, 0);
 });
 
@@ -133,7 +137,7 @@ test("pipeline: invalid extract output fails with a readable error", async () =>
   const h = harness({}, { extract: { nope: true } });
   const r = await runCallProposal("lead-1", "j", h.deps);
   assert.equal(r.ok === false && r.reason === "failed" && r.stage, "extract");
-  assert.match(h.briefs.get("b1")!.error, /^Invalid model output/);
+  assert.match(h.briefs.get("b1")!.error, /^Claude returned an unexpected answer\. Invalid model output/);
 });
 
 test("pipeline: a refusal reads as a plain sentence", async () => {
@@ -141,6 +145,21 @@ test("pipeline: a refusal reads as a plain sentence", async () => {
   const h = harness({}, { draft: () => { throw refusal; } });
   await runCallProposal("lead-1", "j", h.deps);
   assert.match(h.briefs.get("b1")!.error, /Claude declined/);
+});
+
+test("pipeline: provider errors map to plain copy and never leak raw text", async () => {
+  const cases: [string, RegExp][] = [
+    ["rate_limited", /rate-limited/],
+    ["paused", /paused/],
+    ["upstream", /couldn't complete this step/],
+  ];
+  for (const [code, re] of cases) {
+    const err = Object.assign(new Error("raw sdk 529 detail"), { name: "AiError", code });
+    const h = harness({}, { extract: () => { throw err; } });
+    await runCallProposal("lead-1", "j", h.deps);
+    assert.match(h.briefs.get("b1")!.error, re);
+    assert.doesNotMatch(h.briefs.get("b1")!.error, /raw sdk/);
+  }
 });
 
 test("pipeline: draft failure keeps the extraction; retry drafts from it", async () => {

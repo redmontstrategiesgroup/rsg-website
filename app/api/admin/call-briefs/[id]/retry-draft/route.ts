@@ -69,6 +69,14 @@ export async function POST(request: Request, context: Ctx) {
       { status },
     );
   } catch {
-    return NextResponse.json({ error: error ?? "Could not load call briefs." }, { status: status === 200 ? 500 : status });
+    return NextResponse.json(
+      {
+        ok: result.ok,
+        error: error ?? "Draft created, but the panel couldn't refresh.",
+        briefId: id,
+        proposalId: result.ok ? result.proposalId : null,
+      },
+      { status },
+    );
   }
 }

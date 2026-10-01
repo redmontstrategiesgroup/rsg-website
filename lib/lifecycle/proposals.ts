@@ -39,6 +39,8 @@ export async function createProposal(input: {
   depositCents: number;
   expiresInDays?: number;
   createdBy?: string;
+  /** Call → Proposal brief this draft came from; written in the same insert so it can't orphan. */
+  callBriefId?: string | null;
 }): Promise<{ proposal: Proposal; options: ProposalOption[] }> {
   const sb = requireSupabase();
   const template = PROPOSAL_TEMPLATES[input.templateKey];
@@ -69,6 +71,7 @@ export async function createProposal(input: {
       created_from_template_key: input.templateKey,
       expires_at: new Date(Date.now() + expiresInDays * 86_400_000).toISOString(),
       created_by: input.createdBy ?? null,
+      call_brief_id: input.callBriefId ?? null,
       updated_at: nowIso(),
     })
     .select("*")
