@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { unsubscribeSubscriber } from "@/lib/store";
+import { emitEvent } from "@/lib/webhooks/emit";
 import { decodeEmailParam, verifyUnsubscribeToken } from "@/lib/unsubscribe";
 import { rateLimit, rateLimitResponse, clientIp } from "@/lib/security";
 
@@ -24,6 +25,14 @@ async function handle(request: Request): Promise<{ ok: boolean; status: number }
     return { ok: false, status: 400 };
   }
   const written = await unsubscribeSubscriber(email);
+  if (written) {
+    await emitEvent(
+      "subscriber.suppressed",
+      { email, reason: "unsubscribe" },
+      // Repeat clicks of the same link are one event per day at most.
+      { eventId: `subscriber.suppressed:${email}:unsubscribe:${new Date().toISOString().slice(0, 10)}` }
+    );
+  }
   return { ok: written, status: written ? 200 : 500 };
 }
 

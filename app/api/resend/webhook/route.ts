@@ -4,6 +4,7 @@ import { recordInboundEvent } from "@/lib/integration-log";
 import { unsubscribeSubscriber } from "@/lib/store";
 import { verifySvixSignature } from "@/lib/webhooks/inbound/verify";
 import { resendAction } from "@/lib/webhooks/inbound/parse";
+import { emitEvent } from "@/lib/webhooks/emit";
 
 export const runtime = "nodejs";
 
@@ -60,6 +61,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Suppression failed." }, { status: 500 });
     }
     console.warn("[/api/resend/webhook] suppressed", { reason: action.reason, count: action.emails.length });
+    const svixId = request.headers.get("svix-id") ?? "";
+    for (const email of action.emails) {
+      await emitEvent(
+        "subscriber.suppressed",
+        { email, reason: action.reason },
+        { eventId: `subscriber.suppressed:${email}:${svixId}` }
+      );
+    }
   } else if (action.kind === "log") {
     console.warn("[/api/resend/webhook] delivery problem", { reason: action.reason });
   }

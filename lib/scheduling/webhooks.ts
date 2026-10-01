@@ -1,4 +1,6 @@
-import { deliverBatch, enqueue } from "@/lib/webhooks/outbox";
+import { deliverBatch } from "@/lib/webhooks/outbox";
+import { emitEvent } from "@/lib/webhooks/emit";
+import type { EventType } from "@/lib/webhooks/catalog";
 
 /**
  * Scheduling webhooks: now a thin adapter over the shared outbox
@@ -32,12 +34,9 @@ export async function enqueueWebhook(
   payload: Record<string, unknown>,
   opts?: { eventId?: string }
 ): Promise<void> {
-  await enqueue({
-    eventType,
-    eventId: opts?.eventId,
-    payload,
-    kind: "client",
-  });
+  // Routed through emitEvent so scheduling events also reach Slack and are
+  // delivered immediately rather than at the next cron tick.
+  await emitEvent(eventType as EventType, payload, opts);
 }
 
 /**

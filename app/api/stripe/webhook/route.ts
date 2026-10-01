@@ -58,6 +58,8 @@ import {
   onPaymentFailed,
 } from "@/lib/lifecycle/orchestrate";
 
+import { emitEvent } from "@/lib/webhooks/emit";
+
 export const runtime = "nodejs";
 
 // ---------------------------------------------------------------------------
@@ -380,6 +382,18 @@ async function handleInvoiceEvent(event: Stripe.Event): Promise<void> {
       description: `Invoice ${inv.number ?? stripeInvoiceId} paid: ${formatCents(inv.amount_paid ?? 0)}.`,
       actor: "stripe",
     });
+    await emitEvent(
+      "invoice.paid",
+      {
+        invoiceId: stripeInvoiceId,
+        clientId: ourSub.clientId,
+        subscriptionId: ourSub.id,
+        amountCents: inv.amount_paid ?? 0,
+        currency: inv.currency ?? "usd",
+        payerEmail: inv.customer_email ?? null,
+      },
+      { eventId: `invoice.paid:${stripeInvoiceId}` }
+    );
   }
 
   if (event.type === "invoice.payment_failed" && ourSub) {
@@ -395,6 +409,18 @@ async function handleInvoiceEvent(event: Stripe.Event): Promise<void> {
       description: `Payment failed for invoice ${inv.number ?? stripeInvoiceId}: ${formatCents(inv.amount_due ?? 0)}.`,
       actor: "stripe",
     });
+    await emitEvent(
+      "payment.failed",
+      {
+        invoiceId: stripeInvoiceId,
+        clientId: ourSub.clientId,
+        subscriptionId: ourSub.id,
+        amountCents: inv.amount_due ?? 0,
+        payerEmail: inv.customer_email ?? null,
+        reason: `Subscription charge failed (attempt ${ourSub.failedPaymentCount + 1}).`,
+      },
+      { eventId: `payment.failed:${event.id}` }
+    );
 
     const client = await getClientById(ourSub.clientId);
     if (client?.email) {
@@ -484,6 +510,17 @@ async function handleSubscriptionUpdated(event: Stripe.Event): Promise<void> {
     }.`,
     actor: "stripe",
   });
+  await emitEvent(
+    "subscription.changed",
+    {
+      subscriptionId: ourSub.id,
+      clientId: ourSub.clientId,
+      plan: ourSub.planName ?? ourSub.planKey ?? null,
+      status: status ?? ourSub.status,
+      cancelAtPeriodEnd: Boolean(s.cancel_at_period_end),
+    },
+    { eventId: `subscription.changed:${event.id}` }
+  );
 }
 
 async function handleSubscriptionDeleted(event: Stripe.Event): Promise<void> {
@@ -505,6 +542,16 @@ async function handleSubscriptionDeleted(event: Stripe.Event): Promise<void> {
     description: "Stripe subscription cancelled: managed services ended.",
     actor: "stripe",
   });
+  await emitEvent(
+    "subscription.ended",
+    {
+      subscriptionId: ourSub.id,
+      clientId: ourSub.clientId,
+      plan: ourSub.planName ?? ourSub.planKey ?? null,
+      endedAt: now,
+    },
+    { eventId: `subscription.ended:${ourSub.id}` }
+  );
 
   const { html, text } = detailEmail("Managed services subscription ended", [
     ["Client ID", ourSub.clientId],

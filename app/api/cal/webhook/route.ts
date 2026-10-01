@@ -5,6 +5,7 @@ import { processLead } from "@/lib/leads";
 import { verifyCalSignature } from "@/lib/webhooks/inbound/verify";
 import { calEvent } from "@/lib/webhooks/inbound/parse";
 import { claimInboundEvent, releaseInboundEvent } from "@/lib/webhooks/inbound/claim";
+import { emitEvent } from "@/lib/webhooks/emit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -66,7 +67,11 @@ export async function POST(request: Request) {
   if (claim === "error") return NextResponse.json({ error: "Storage unavailable." }, { status: 500 });
 
   if (event.kind === "booking_changed") {
-    console.info("[/api/cal/webhook] booking changed", { trigger: event.trigger });
+    await emitEvent(
+      event.trigger === "BOOKING_CANCELLED" ? "cal.booking_cancelled" : "cal.booking_rescheduled",
+      { bookingUid: event.bookingUid, startsAt: event.startsAt },
+      { eventId: `cal:${event.eventId}` }
+    );
     return NextResponse.json({ received: true });
   }
 
@@ -75,6 +80,18 @@ export async function POST(request: Request) {
     if (!result.storedInDatabase && !result.duplicate) {
       throw new Error("lead not stored");
     }
+    await emitEvent(
+      "cal.booking_created",
+      {
+        bookingUid: event.bookingUid,
+        leadId: result.leadId ?? null,
+        name: event.lead.name,
+        email: event.lead.email,
+        title: event.title,
+        startsAt: event.startsAt,
+      },
+      { eventId: `cal:${event.eventId}` }
+    );
     return NextResponse.json({ received: true, leadId: result.leadId ?? null });
   } catch (err) {
     await releaseInboundEvent("cal", event.eventId);

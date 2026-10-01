@@ -14,6 +14,7 @@ import { randomUUID } from "node:crypto";
 import { FILES_BUCKET, nowIso, requireSupabase } from "@/lib/lifecycle/core";
 import { sanitizeFileName } from "@/lib/lifecycle/files";
 import { callProvider } from "@/lib/integration-log";
+import { emitEvent } from "@/lib/webhooks/emit";
 import { generateStructured } from "@/lib/ai/proxy";
 import {
   cleanStringList,
@@ -553,7 +554,15 @@ async function upsertParsed(
 export async function syncOne(pocketId: string): Promise<"imported" | "updated" | "skipped"> {
   const parsed = parsePocketRecording(await getPocketRecording(pocketId));
   if (!parsed) return "skipped";
-  return (await upsertParsed(parsed, { allowAiSummary: true })).outcome;
+  const { outcome } = await upsertParsed(parsed, { allowAiSummary: true });
+  if (outcome !== "skipped") {
+    await emitEvent(
+      "recording.synced",
+      { pocketId, result: outcome },
+      { eventId: `recording.synced:${pocketId}:${parsed.updatedAt ?? Date.now()}` }
+    );
+  }
+  return outcome;
 }
 
 /**

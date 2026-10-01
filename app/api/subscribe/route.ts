@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { saveSubscriber } from "@/lib/store";
+import { emitEvent } from "@/lib/webhooks/emit";
 import { isEmail, toStr, LIMITS } from "@/lib/validate";
 import { rateLimit, rateLimitResponse, clientIp } from "@/lib/security";
 import { contactNotifyEmails } from "@/lib/notify-emails";
@@ -73,6 +74,13 @@ export async function POST(request: Request) {
   };
 
   const result = await saveSubscriber(sub);
+  if (result === "created") {
+    await emitEvent(
+      "subscriber.added",
+      { email: sub.email.toLowerCase(), source: sub.source },
+      { eventId: `subscriber.added:${sub.email.toLowerCase()}:${sub.subscribedAt}` }
+    );
+  }
 
   // Notify on a new signup, and also when storage failed: the address is then
   // only recoverable from the notification, so it must go out before we

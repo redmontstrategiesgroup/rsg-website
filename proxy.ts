@@ -181,6 +181,16 @@ async function handle(request: NextRequest, correlationId: string) {
     if (pathname === "/api/resend/webhook" || pathname === "/api/cal/webhook") {
       return forward();
     }
+    // Twilio SMS / voice webhooks authenticate via X-Twilio-Signature,
+    // verified in lib/twilio/request.ts. Exact paths only.
+    if (
+      pathname === "/api/twilio/sms" ||
+      pathname === "/api/twilio/voice" ||
+      pathname === "/api/twilio/voice/status" ||
+      pathname === "/api/twilio/voice/recording"
+    ) {
+      return forward();
+    }
     // Health checks are GET-only; nothing to exempt here for mutating.
 
     // 1. Reject obvious scripted clients.

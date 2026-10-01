@@ -8,6 +8,9 @@ import {
   type ErrorClass,
 } from "@/lib/integration-log";
 import { SIGNATURE_HEADER, TIMESTAMP_HEADER, signPayload } from "./sign";
+import { SLACK_DEFAULT_EVENTS } from "./catalog";
+import { slackMessage } from "./slack";
+import { siteUrl } from "@/lib/lifecycle/core";
 
 /**
  * Hardened outbound webhook outbox.
@@ -49,7 +52,7 @@ export type EnqueueInput = {
   eventId?: string;
   payload: Record<string, unknown>;
   /** Which destination class to fan out to. Defaults to subscriber endpoints. */
-  kind?: "client" | "registry";
+  kind?: "client" | "registry" | "slack";
   /** Restrict to specific endpoints; defaults to all enabled ones that subscribe. */
   endpointIds?: string[];
 };
@@ -145,7 +148,10 @@ export async function enqueue(input: EnqueueInput): Promise<{ queued: number }> 
     let queued = 0;
 
     for (const ep of endpoints) {
-      const subscribed = (ep.events as string[]) ?? [];
+      let subscribed = (ep.events as string[]) ?? [];
+      // A Slack endpoint with no explicit list gets the curated defaults, not
+      // every event: a channel that pings on every reminder gets muted.
+      if (kind === "slack" && !subscribed.length) subscribed = [...SLACK_DEFAULT_EVENTS];
       if (
         subscribed.length &&
         !subscribed.includes(input.eventType) &&
@@ -269,7 +275,16 @@ export async function deliverBatch(limit = 20): Promise<DeliveryResult> {
 async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying" | "dead"> {
   const sb = requireSupabase();
   const attempt = row.attempts + 1;
-  const rawBody = JSON.stringify(row.payload);
+  const isSlack = row.kind === "slack";
+  const rawBody = isSlack
+    ? JSON.stringify(
+        slackMessage(
+          row.event_type,
+          ((row.payload as { data?: Record<string, unknown> }).data ?? {}) as Record<string, unknown>,
+          `${siteUrl()}/admin`
+        )
+      )
+    : JSON.stringify(row.payload);
   const { signature, timestamp } = signPayload(row.secret, rawBody);
 
   let status: number | null = null;
@@ -279,7 +294,11 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
   try {
     const res = await fetch(row.url, {
       method: "POST",
-      headers: {
+      // Slack authenticates by URL and rejects unknown payload shapes; it
+      // gets the formatted message only, no RSG signature headers.
+      headers: isSlack
+        ? { "Content-Type": "application/json" }
+        : {
         "Content-Type": "application/json",
         [SIGNATURE_HEADER]: signature,
         [TIMESTAMP_HEADER]: String(timestamp),
@@ -289,7 +308,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
         // The receiver's dedupe key. Stable across every retry of this event;
         // that is the entire contract that makes at-least-once tolerable.
         "Idempotency-Key": row.idempotency_key,
-      },
+          },
       body: rawBody,
       signal: AbortSignal.timeout(10_000),
     });

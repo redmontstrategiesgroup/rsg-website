@@ -387,6 +387,26 @@ export async function processLead(lead: Lead): Promise<ProcessLeadResult> {
   const stored = await storeInSupabase(prepared);
   const storedInDatabase = stored.ok;
 
+  // 2a. Outbound event (n8n / Zapier / Slack). Never throws.
+  if (storedInDatabase && stored.id) {
+    const { emitEvent } = await import("./webhooks/emit.ts");
+    await emitEvent(
+      "lead.created",
+      {
+        leadId: stored.id,
+        name: prepared.name,
+        email: prepared.email,
+        phone: prepared.phone,
+        company: prepared.company,
+        source: prepared.source ?? "website_contact_form",
+        score: prepared.score ?? null,
+        status: prepared.status ?? "new",
+        message: (prepared.problem || prepared.improve || "").slice(0, 2000),
+      },
+      { eventId: `lead.created:${stored.id}` }
+    );
+  }
+
   // 2b. Claude analysis (score adjustment + drafted reply) runs after the
   //     response; it can never delay or fail the visitor's submission.
   try {

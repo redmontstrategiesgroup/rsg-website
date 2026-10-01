@@ -71,8 +71,8 @@ export function resendAction(payload: unknown): ResendAction {
 // ---------------------------------------------------------------------------
 
 export type CalEvent =
-  | { kind: "booking_created"; eventId: string; lead: Lead }
-  | { kind: "booking_changed"; eventId: string; trigger: string }
+  | { kind: "booking_created"; eventId: string; bookingUid: string; title: string; startsAt: string; lead: Lead }
+  | { kind: "booking_changed"; eventId: string; trigger: string; bookingUid: string; startsAt: string }
   | { kind: "ping" }
   | { kind: "ignore" };
 
@@ -99,7 +99,8 @@ export function calEvent(payload: unknown, receivedAt = new Date().toISOString()
   if (trigger === "BOOKING_RESCHEDULED" || trigger === "BOOKING_CANCELLED") {
     // A booking can be rescheduled repeatedly; the new start time keeps each
     // occurrence distinct while still collapsing retries of the same delivery.
-    return { kind: "booking_changed", trigger, eventId: `${trigger}:${uid}:${str(body.startTime, 50)}` };
+    const startsAt = str(body.startTime, 50);
+    return { kind: "booking_changed", trigger, bookingUid: uid, startsAt, eventId: `${trigger}:${uid}:${startsAt}` };
   }
   if (trigger !== "BOOKING_CREATED") return { kind: "ignore" };
 
@@ -116,6 +117,9 @@ export function calEvent(payload: unknown, receivedAt = new Date().toISOString()
   return {
     kind: "booking_created",
     eventId: `BOOKING_CREATED:${uid}`,
+    bookingUid: uid,
+    title,
+    startsAt: start,
     lead: {
       name,
       company: response(responses, "company"),

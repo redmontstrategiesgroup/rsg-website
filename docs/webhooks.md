@@ -1,20 +1,168 @@
 # Webhooks
 
-Everything RSG sends outbound goes through one pipeline: `lib/webhooks/outbox.ts`.
-Two kinds of destination use it, differing only in payload and endpoint:
-
-| kind | destination | producer |
-|---|---|---|
-| `client` | a subscriber's URL in `webhook_endpoints` | `enqueueWebhook()` from booking / qualification / reminders |
-| `registry` | a per-app Supabase project's `registry-sync` function | `lib/webhooks/registry-sync.ts` |
-
-Inbound webhooks we *receive* (Stripe) are separate, see
-`app/api/stripe/webhook/route.ts`, which is already replay-guarded by
-`claimStripeEvent(event.id)` before any processing.
+The complete list of every webhook the site receives and every event it sends,
+and how to set each one up. The event list in section 3 is checked against
+`lib/webhooks/catalog.ts` by `tests/outbound-events.test.ts`, so it cannot
+drift from the code.
 
 ---
 
-## 1. What a receiver gets
+## 1. At a glance
+
+### Incoming: other services call us
+
+| Endpoint | From | What it does | Secret env var | Set up in |
+|---|---|---|---|---|
+| `POST /api/stripe/webhook` | Stripe | Payments, invoices, subscriptions for project billing and managed services | `STRIPE_WEBHOOK_SECRET` | Stripe → Developers → Webhooks (events listed in `.env.example`) |
+| `POST /api/pocket/webhook` | Pocket recorder | Imports new or updated recordings, transcripts, summaries | `POCKET_WEBHOOK_SECRET` | Pocket app → Integrations → Webhooks |
+| `POST /api/resend/webhook` | Resend | Hard bounce, spam complaint or Resend suppression → address suppressed; soft bounces and failures logged | `RESEND_WEBHOOK_SECRET` (`whsec_…`) | Resend → Webhooks: `email.bounced`, `email.complained`, `email.suppressed`, `email.failed`, `email.delivery_delayed` |
+| `POST /api/cal/webhook` | Cal.com | New public-page booking → lead (owner notified, Claude analysis); reschedules and cancellations become events | `CAL_WEBHOOK_SECRET` | Cal.com → Settings → Developer → Webhooks: Booking Created, Rescheduled, Cancelled |
+| `POST /api/twilio/sms` | Twilio | Incoming text → `sms.received`; STOP/START → `sms.opted_out`; optional auto-reply | `TWILIO_AUTH_TOKEN` | Twilio number → Messaging → "A message comes in" |
+| `POST /api/twilio/voice` | Twilio | Incoming call → rings `TWILIO_FORWARD_TO`, else voicemail | `TWILIO_AUTH_TOKEN` | Twilio number → Voice → "A call comes in" |
+| `POST /api/twilio/voice/status` | Twilio | Unanswered forwarded call → `call.missed` + voicemail | `TWILIO_AUTH_TOKEN` | Automatic (set by our TwiML) |
+| `POST /api/twilio/voice/recording` | Twilio | Voicemail recorded → `voicemail.received` | `TWILIO_AUTH_TOKEN` | Automatic (set by our TwiML) |
+| `POST /api/briefs/ingest` | n8n / Zapier / scripts | Pushes a call brief in (bearer secret + `Idempotency-Key`) | `BRIEF_INGESTION_SECRET` | Whatever sends briefs: `Authorization: Bearer <secret>` |
+| `GET /api/cron/scheduling`, `/api/cron/registry` | Vercel Cron | Reminders, outbox retries, registry reconcile | `CRON_SECRET` | Automatic once the env var exists (Vercel sends it) |
+
+Every incoming route verifies a signature (or bearer secret) in constant time,
+returns 503 when its secret is not set, is rate-limited, and is exempt from
+browser CSRF checks in `proxy.ts` by exact path only.
+
+**Twilio URLs must use exactly `NEXT_PUBLIC_SITE_URL` as the host** (same
+`www.` or not). Twilio signs the URL it calls; a different host fails every
+signature check with 401.
+
+### Outgoing: we call other services
+
+| Destination | What gets sent | Configure with |
+|---|---|---|
+| Subscriber endpoints (`kind = 'client'`) | Every event in section 3 the endpoint subscribes to, as a signed JSON envelope (section 4) | Admin console → Scheduling → Webhooks (URL + event list; empty list = all events) |
+| Slack (`kind = 'slack'`) | The events marked "Slack" in section 3, formatted as Slack messages | `SLACK_WEBHOOK_URL` (an incoming-webhook URL). The site registers it as an endpoint on first use. To change which events post, edit that endpoint's `events` list |
+| n8n lead capture | Every new lead, plain JSON to `/webhook/rsg-lead-capture` | `N8N_WEBHOOK_URL` |
+| Per-app registry sync (`kind = 'registry'`) | Client name/status changes | `registerAppDestination()` (section 6). Currently unused |
+
+---
+
+## 2. How events are produced
+
+All outgoing events go through one function, `emitEvent(type, data, { eventId })`
+in `lib/webhooks/emit.ts`:
+
+1. It queues one row per subscribed endpoint in `webhook_deliveries`
+   (subscriber endpoints and Slack endpoints).
+2. It starts delivery immediately, after the response is sent.
+3. It never throws. An event that cannot be queued is logged and the booking,
+   payment or form submission that caused it still succeeds.
+
+`eventId` is the identity of the *domain* event (for example
+`lead.created:<leadId>`). The same id queued twice for the same endpoint
+collapses into one delivery, and subscribers dedupe on it
+(`Idempotency-Key`).
+
+To add an event: add it to `EVENT_CATALOG`, call `emitEvent` where it
+happens, then run the test suite. It fails until this file lists the new event.
+
+---
+
+## 3. Event catalog
+
+All payloads arrive as `{ id, type, sequence, created_at, data }`; the columns
+below describe `data`. "Slack" marks the events posted to Slack by default.
+
+### Leads
+
+| event | fires when | `data` fields | Slack |
+|---|---|---|---|
+| `lead.created` | A lead was stored from any source (contact form, chat, assessment, demo request, connect, private AI, qualification, Cal.com). | `leadId`, `name`, `email`, `phone`, `company`, `source`, `score`, `status`, `message` | yes |
+| `lead.status_changed` | An admin changed a lead's pipeline status. | `leadId`, `name`, `email`, `status` |  |
+| `lead.analyzed` | Claude finished scoring a lead and drafting a first reply. | `leadId`, `insightId` |  |
+| `lead.hot` | Claude's analysis raised a lead into the hot band. | `leadId`, `name`, `email`, `company`, `scoreBefore`, `scoreAfter`, `rationale` | yes |
+| `lead.reply_sent` | The drafted first reply was sent to the lead. | `leadId`, `insightId`, `subject` |  |
+| `lead.submitted` | Qualification flow: a visitor submitted the qualifier. | `leadId`, `outcome` |  |
+| `lead.qualified` | Qualification flow: the visitor qualified for a booking. | `leadId`, `score` |  |
+| `lead.disqualified` | Qualification flow: the visitor did not qualify. | `leadId`, `score` |  |
+| `lead.manual_review` | Qualification flow: the answers need a human decision. | `leadId`, `score` |  |
+| `lead.qualified_abandoned` | A qualified visitor did not finish booking. | `sessionId`, `leadId` |  |
+
+### Bookings
+
+| event | fires when | `data` fields | Slack |
+|---|---|---|---|
+| `booking.created` | A call was booked through the site's own scheduler. | `bookingId`, `leadId`, `startsAt` | yes |
+| `booking.rescheduled` | A site booking moved to a new time. | `bookingId`, `startsAt` | yes |
+| `booking.cancelled` | A site booking was cancelled. | `bookingId` | yes |
+| `reminder.due` | A booking reminder came due. | `bookingId`, `templateKey` |  |
+| `cal.booking_created` | A call was booked on the public Cal.com page (also creates a lead). | `bookingUid`, `leadId`, `name`, `email`, `title`, `startsAt` | yes |
+| `cal.booking_rescheduled` | A Cal.com booking moved. | `bookingUid`, `startsAt` |  |
+| `cal.booking_cancelled` | A Cal.com booking was cancelled. | `bookingUid`, `startsAt` | yes |
+
+### Sales pipeline
+
+| event | fires when | `data` fields | Slack |
+|---|---|---|---|
+| `assessment.submitted` | A prospect completed the assessment. | `assessmentId`, `leadId`, `serviceCategory` |  |
+| `questionnaire.submitted` | A prospect completed the pre-call questionnaire. | `questionnaireId`, `bookingId`, `leadId`, `name`, `businessName` |  |
+| `proposal.sent` | A proposal was sent to a prospect. | `proposalId`, `opportunityId`, `title`, `totalCents`, `email`, `name` |  |
+| `proposal.approved` | The prospect approved a proposal. | `proposalId`, `opportunityId`, `title`, `totalCents`, `approvedBy` | yes |
+| `contract.sent` | A contract was sent for signature. | `contractId`, `opportunityId`, `title`, `version`, `email`, `name` |  |
+| `contract.signed` | A contract was fully executed. | `contractId`, `opportunityId`, `title`, `signerEmail`, `signerName` | yes |
+
+### Billing
+
+| event | fires when | `data` fields | Slack |
+|---|---|---|---|
+| `invoice.paid` | An invoice was paid in Stripe: project invoices (deposits, milestones) and managed-services subscription invoices (subscriptionId set). | `invoiceId`, `clientId`, `subscriptionId`, `amountCents`, `currency`, `payerEmail` | yes |
+| `payment.failed` | A payment attempt failed in Stripe (project invoice or subscription charge). | `invoiceId`, `clientId`, `subscriptionId`, `amountCents`, `payerEmail`, `reason` | yes |
+| `subscription.changed` | A managed-services subscription changed status in Stripe (including scheduled cancellation). | `subscriptionId`, `clientId`, `plan`, `status`, `cancelAtPeriodEnd` |  |
+| `subscription.ended` | A managed-services subscription ended. | `subscriptionId`, `clientId`, `plan`, `endedAt` | yes |
+
+### Client delivery
+
+| event | fires when | `data` fields | Slack |
+|---|---|---|---|
+| `milestone.status_changed` | A project milestone changed status. | `milestoneId`, `projectName`, `clientId`, `status`, `previousStatus` |  |
+| `ticket.created` | A client opened a support ticket. | `ticketId`, `number`, `clientId`, `subject`, `priority` | yes |
+| `ticket.resolved` | A support ticket was resolved. | `ticketId`, `number`, `clientId`, `subject` |  |
+| `report.published` | A monthly client report was published. | `reportId`, `clientId`, `period` |  |
+
+### Recordings
+
+| event | fires when | `data` fields | Slack |
+|---|---|---|---|
+| `recording.synced` | A Pocket recording was imported or updated. | `pocketId`, `result` |  |
+
+### Email list
+
+| event | fires when | `data` fields | Slack |
+|---|---|---|---|
+| `subscriber.added` | Someone joined the mailing list. | `email`, `source` |  |
+| `subscriber.suppressed` | An address was suppressed: unsubscribe link, hard bounce, spam complaint, or Resend suppression. | `email`, `reason` |  |
+
+### Phone (Twilio)
+
+| event | fires when | `data` fields | Slack |
+|---|---|---|---|
+| `sms.received` | A text message arrived on the business number. | `messageSid`, `from`, `to`, `body` | yes |
+| `sms.opted_out` | A texter replied STOP (or opted back in with START). | `from`, `optOutType` |  |
+| `call.received` | A call came in to the business number. | `callSid`, `from`, `to` |  |
+| `call.missed` | A forwarded call was not answered. | `callSid`, `from`, `dialStatus` | yes |
+| `voicemail.received` | A caller left a voicemail. | `callSid`, `recordingSid`, `from`, `recordingUrl`, `durationSeconds` | yes |
+
+
+### Payload notes
+
+- Lead, booking, SMS and voicemail events carry personal data (name, email,
+  phone, message). Only add endpoints you control, over HTTPS.
+- `voicemail.received.recordingUrl` is a Twilio media URL. With "HTTP Basic
+  authentication for media" on (recommended), fetching it needs the Twilio
+  Account SID and Auth Token.
+- `invoice.paid` and `payment.failed` fire from both billing systems: project
+  invoices (`invoiceId` is our id) and managed-services subscriptions
+  (`invoiceId` is the Stripe id and `subscriptionId` is set).
+
+---
+
+## 4. What a subscriber receives
 
 ```http
 POST /your/endpoint
@@ -94,7 +242,7 @@ hour between attempts. Roughly 2s → 4s → 8s → … → 1h, randomised.
 
 ---
 
-## 2. Operating it
+## 5. Operating the outbox
 
 ### When an endpoint has been broken
 
@@ -123,18 +271,25 @@ Dead letters are also reported through `recordDeadLettered()` into the
 integration log, so they surface alongside every other provider failure rather
 than only in this table.
 
-### Delivery is driven by cron
+### When delivery happens
 
-- `/api/cron/scheduling` every 5 minutes: claims and delivers a batch, releases
-  claims orphaned by workers that died mid-flight, and drains client tombstones.
+- **Immediately.** `emitEvent()` queues the event and then delivers a batch
+  right after the response is sent (`after()`), so n8n and Slack see events in
+  seconds.
+- **Retries ride the cron.** `/api/cron/scheduling` (daily at 03:00 in
+  `vercel.json`) delivers whatever is still pending, releases claims orphaned
+  by workers that died mid-flight, and drains client tombstones. A failed
+  delivery's backoff can be short, but the next attempt only happens on the
+  next emit or cron run, so a broken endpoint is retried roughly daily.
 - `/api/cron/registry` daily at 03:17: reconciles the client registry.
 
-If the cron stops firing, nothing delivers and nothing errors. That is why the
-scheduling route records a heartbeat *before* doing any work.
+Both crons require `CRON_SECRET`. Without it they return 503 and nothing
+retries. If the cron stops firing, nothing errors; that is why the scheduling
+route records a heartbeat *before* doing any work.
 
 ---
 
-## 3. Registry sync specifics
+## 6. Registry sync specifics
 
 The website is the source of truth for who a client is; each app project keeps a
 read-only mirror. See `docs/per-app-supabase.md` §2 for the topology.

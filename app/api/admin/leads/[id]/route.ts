@@ -8,6 +8,7 @@ import {
 import { updateLead } from "@/lib/store";
 import { writeAuditEvent } from "@/lib/audit";
 import { clientIp } from "@/lib/security";
+import { emitEvent } from "@/lib/webhooks/emit";
 
 export const runtime = "nodejs";
 
@@ -81,6 +82,14 @@ export async function PATCH(
     metadata: parsed.data,
     ip: clientIp(request),
   });
+
+  if (parsed.data.status) {
+    await emitEvent(
+      "lead.status_changed",
+      { leadId: id, name: lead.name, email: lead.email, status: parsed.data.status },
+      { eventId: `lead.status_changed:${id}:${parsed.data.status}:${Date.now()}` }
+    );
+  }
 
   return NextResponse.json({ lead });
 }

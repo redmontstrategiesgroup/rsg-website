@@ -5,6 +5,7 @@ import { callProvider, redact } from "@/lib/integration-log";
 import { siteUrl } from "@/lib/lifecycle/core";
 import { contactNotifyEmails, DEFAULT_OWNER_NOTIFY_EMAIL } from "@/lib/notify-emails";
 import { getLeadById, updateLead } from "@/lib/store";
+import { emitEvent } from "@/lib/webhooks/emit";
 import { analyzeLead, type AnalyzeDeps, type AnalyzeResult } from "./analyze.ts";
 import { resolveSignature, toReplyHtml } from "./compose.ts";
 import { claimSend, completeSend, getInsight, insertInsight, releaseSend, updateLeadAi } from "./db.ts";
@@ -59,6 +60,19 @@ ${rationale}
 
 Review and send the drafted reply: ${siteUrl()}/admin`;
       const html = toReplyHtml(text);
+      await emitEvent(
+        "lead.hot",
+        {
+          leadId: lead.id,
+          name: lead.name,
+          email: lead.email,
+          company: lead.company,
+          scoreBefore: before,
+          scoreAfter: after,
+          rationale,
+        },
+        { eventId: `lead.hot:${lead.id}:${after}` }
+      );
       const apiKey = process.env.RESEND_API_KEY;
       try {
         if (!apiKey) throw new Error("RESEND_API_KEY missing");
@@ -82,8 +96,16 @@ Review and send the drafted reply: ${siteUrl()}/admin`;
   };
 }
 
-export function runLeadAnalysis(leadId: string): Promise<AnalyzeResult> {
-  return analyzeLead(leadId, analyzeDeps());
+export async function runLeadAnalysis(leadId: string): Promise<AnalyzeResult> {
+  const result = await analyzeLead(leadId, analyzeDeps());
+  if (result.ok) {
+    await emitEvent(
+      "lead.analyzed",
+      { leadId, insightId: result.insightId },
+      { eventId: `lead.analyzed:${result.insightId}` }
+    );
+  }
+  return result;
 }
 
 function replyFrom(): string {
@@ -120,8 +142,8 @@ async function sendReplyEmail(msg: ReplyEmail): Promise<void> {
   });
 }
 
-export function sendReply(input: ReplyInput): Promise<ReplyResult> {
-  return sendLeadReply(input, {
+export async function sendReply(input: ReplyInput): Promise<ReplyResult> {
+  const result = await sendLeadReply(input, {
     getLead: getLeadById,
     getInsight,
     claimSend,
@@ -132,4 +154,12 @@ export function sendReply(input: ReplyInput): Promise<ReplyResult> {
       await updateLead(leadId, { status: "contacted" });
     },
   });
+  if (result.ok) {
+    await emitEvent(
+      "lead.reply_sent",
+      { leadId: input.leadId, insightId: result.insight.id, subject: input.subject.trim() },
+      { eventId: `lead.reply_sent:${result.insight.id}` }
+    );
+  }
+  return result;
 }

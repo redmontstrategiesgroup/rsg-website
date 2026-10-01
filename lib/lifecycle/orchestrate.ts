@@ -52,6 +52,7 @@ import { findInactiveTickets } from "@/lib/lifecycle/support";
 import { processDueAutomationRuns } from "@/lib/lifecycle/automations";
 import { sendInternalNotification, sendTemplatedEmail } from "@/lib/scheduling/notifications";
 import { updateLeadStatus } from "@/lib/scheduling/leads";
+import { emitEvent } from "@/lib/webhooks/emit";
 
 /**
  * Cross-stage orchestration. Each on* handler is called at the mutation site
@@ -308,6 +309,11 @@ export async function onAssessmentSubmitted(
   assessment: Assessment,
   lead: { id: string; name: string; businessName: string; email: string } | null,
 ): Promise<SalesOpportunity | null> {
+  await emitEvent(
+    "assessment.submitted",
+    { assessmentId: assessment.id, leadId: lead?.id ?? assessment.lead_id ?? null, serviceCategory: assessment.recommended_service_category ?? null },
+    { eventId: `assessment.submitted:${assessment.id}` },
+  );
   let opportunity: SalesOpportunity | null = null;
   if (lead) {
     opportunity = await ensureOpportunityForLead({
@@ -416,6 +422,17 @@ export async function onQuestionnaireSubmitted(
   questionnaire: Questionnaire,
   contact: { name?: string; businessName?: string; appointmentTimeAdmin?: string },
 ): Promise<void> {
+  await emitEvent(
+    "questionnaire.submitted",
+    {
+      questionnaireId: questionnaire.id,
+      bookingId: questionnaire.booking_id ?? null,
+      leadId: questionnaire.lead_id ?? null,
+      name: contact.name ?? null,
+      businessName: contact.businessName ?? null,
+    },
+    { eventId: `questionnaire.submitted:${questionnaire.id}` },
+  );
   await fireAutomation({
     key: "prep_brief_internal",
     dedupeKey: `prep_brief_internal:${questionnaire.id}`,
@@ -456,6 +473,18 @@ export async function onProposalSent(
   proposal: Proposal,
   recipient: { email: string; name: string },
 ): Promise<void> {
+  await emitEvent(
+    "proposal.sent",
+    {
+      proposalId: proposal.id,
+      opportunityId: proposal.opportunity_id ?? null,
+      title: proposal.title,
+      totalCents: proposal.total_cents,
+      email: recipient.email,
+      name: recipient.name,
+    },
+    { eventId: `proposal.sent:${proposal.id}:v${proposal.version}` },
+  );
   if (proposal.opportunity_id) {
     await updateOpportunity(proposal.opportunity_id, {
       stage: "proposal",
@@ -503,6 +532,17 @@ export async function onProposalSent(
 }
 
 export async function onProposalApproved(proposal: Proposal): Promise<void> {
+  await emitEvent(
+    "proposal.approved",
+    {
+      proposalId: proposal.id,
+      opportunityId: proposal.opportunity_id ?? null,
+      title: proposal.title,
+      totalCents: proposal.total_cents,
+      approvedBy: proposal.approved_by_name ?? null,
+    },
+    { eventId: `proposal.approved:${proposal.id}` },
+  );
   if (proposal.opportunity_id) {
     await updateOpportunity(proposal.opportunity_id, {
       stage: "contract",
@@ -539,6 +579,18 @@ export async function onContractSent(
   contract: Contract,
   recipient: { email: string; name: string },
 ): Promise<void> {
+  await emitEvent(
+    "contract.sent",
+    {
+      contractId: contract.id,
+      opportunityId: contract.opportunity_id ?? null,
+      title: contract.title,
+      version: contract.version,
+      email: recipient.email,
+      name: recipient.name,
+    },
+    { eventId: `contract.sent:${contract.id}:v${contract.version}` },
+  );
   await fireAutomation({
     key: "contract_delivery",
     dedupeKey: `contract_delivery:${contract.id}:v${contract.version}`,
@@ -564,6 +616,17 @@ export async function onContractExecuted(
   contract: Contract,
   signer: { email: string; name: string },
 ): Promise<{ invoice: Invoice | null }> {
+  await emitEvent(
+    "contract.signed",
+    {
+      contractId: contract.id,
+      opportunityId: contract.opportunity_id ?? null,
+      title: contract.title,
+      signerEmail: signer.email,
+      signerName: signer.name,
+    },
+    { eventId: `contract.signed:${contract.id}:v${contract.version}` },
+  );
   if (contract.opportunity_id) {
     await updateOpportunity(contract.opportunity_id, {
       stage: "deposit",
@@ -676,6 +739,17 @@ export async function onInvoicePaid(
   invoice: Invoice,
   payer: { email: string; name: string },
 ): Promise<{ clientId: string | null; projectId: string | null }> {
+  await emitEvent(
+    "invoice.paid",
+    {
+      invoiceId: invoice.id,
+      clientId: invoice.client_id ?? null,
+      amountCents: invoice.amount_paid_cents || invoice.total_cents,
+      currency: invoice.currency,
+      payerEmail: payer.email,
+    },
+    { eventId: `invoice.paid:${invoice.id}` },
+  );
   // Receipts go out for every paid invoice.
   await fireAutomation({
     key: "payment_receipt",
@@ -824,6 +898,18 @@ export async function onPaymentFailed(
   payer: { email: string; name: string },
   reason: string,
 ): Promise<void> {
+  await emitEvent(
+    "payment.failed",
+    {
+      invoiceId: invoice.id,
+      clientId: invoice.client_id ?? null,
+      amountCents: invoice.total_cents,
+      payerEmail: payer.email,
+      reason,
+    },
+    // Each failed attempt is its own event (Stripe retries the charge).
+    { eventId: `payment.failed:${invoice.id}:${Date.now()}` },
+  );
   await fireAutomation({
     key: "payment_failed",
     dedupeKey: `payment_failed:${invoice.id}:${Date.now() >> 16}`,
@@ -857,6 +943,19 @@ export async function onMilestoneStatusChanged(input: {
   client: { id: string; email: string; name: string } | null;
   note?: string;
 }): Promise<void> {
+  if (input.milestone.status !== input.previousStatus) {
+    await emitEvent(
+      "milestone.status_changed",
+      {
+        milestoneId: input.milestone.id,
+        projectName: input.projectName,
+        clientId: input.client?.id ?? null,
+        status: input.milestone.status,
+        previousStatus: input.previousStatus,
+      },
+      { eventId: `milestone.status_changed:${input.milestone.id}:${input.milestone.status}:${Date.now()}` },
+    );
+  }
   const { milestone, client } = input;
   if (!client || milestone.status === input.previousStatus) return;
   const statusLabel = MILESTONE_STATUS_LABELS[milestone.status] ?? milestone.status;
@@ -940,6 +1039,11 @@ export async function onTicketCreated(
   ticket: Ticket,
   client: { id: string; name: string; email: string; businessName: string },
 ): Promise<void> {
+  await emitEvent(
+    "ticket.created",
+    { ticketId: ticket.id, number: ticket.number, clientId: client.id, subject: ticket.subject, priority: ticket.priority },
+    { eventId: `ticket.created:${ticket.id}` },
+  );
   const slaLine = ticket.target_response_minutes
     ? `We aim to respond within ${
         ticket.target_response_minutes >= 60
@@ -1013,6 +1117,11 @@ export async function onTicketResolved(
   ticket: Ticket,
   client: { id: string; name: string; email: string },
 ): Promise<void> {
+  await emitEvent(
+    "ticket.resolved",
+    { ticketId: ticket.id, number: ticket.number, clientId: client.id, subject: ticket.subject },
+    { eventId: `ticket.resolved:${ticket.id}:${ticket.resolved_at ?? ""}` },
+  );
   await fireAutomation({
     key: "ticket_resolved",
     dedupeKey: `ticket_resolved:${ticket.id}:${ticket.resolved_at ?? ""}`,
@@ -1042,6 +1151,11 @@ export async function onReportPublished(
   client: { id: string; name: string; email: string },
   periodLabelText: string,
 ): Promise<void> {
+  await emitEvent(
+    "report.published",
+    { reportId: report.id, clientId: client.id, period: periodLabelText },
+    { eventId: `report.published:${report.id}` },
+  );
   await fireAutomation({
     key: "report_published",
     dedupeKey: `report_published:${report.id}`,
