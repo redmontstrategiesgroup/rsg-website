@@ -634,6 +634,7 @@ function Proposals() {
         </div>
       </Modal>
       <ProposalEditor
+        key={editingId ?? "none"}
         id={editingId}
         onClose={() => {
           setEditingId(null);

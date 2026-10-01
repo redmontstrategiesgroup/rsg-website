@@ -36,6 +36,8 @@ export function ProposalEditor({
   const [total, setTotal] = useState("");
   const [deposit, setDeposit] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<"load" | "save">("load");
+  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -59,7 +61,10 @@ export function ProposalEditor({
         setTotal(p.total_cents ? String(p.total_cents / 100) : "");
         setDeposit(p.deposit_cents ? String(p.deposit_cents / 100) : "");
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load.");
+        if (!cancelled) {
+          setErrorKind("load");
+          setError(e instanceof Error ? e.message : "Failed to load.");
+        }
       }
     })();
     return () => {
@@ -75,21 +80,27 @@ export function ProposalEditor({
     totalCents != null &&
     depositCents != null &&
     (totalCents !== proposal.total_cents || depositCents !== proposal.deposit_cents);
+  const openQuestions = brief?.extraction?.open_questions ?? [];
   const currency = sectionsWithCurrency(sections);
 
-  const patch = (i: number, next: Partial<ProposalSection>) =>
+  const patch = (i: number, next: Partial<ProposalSection>) => {
+    setSaved(false);
     setSections((prev) => prev.map((s, j) => (j === i ? { ...s, ...next } : s)));
+  };
   const setItems = (i: number, items: Item[]) => patch(i, { items });
   const items = (i: number) => sections[i].items ?? [];
 
   async function save() {
     if (!id) return;
     if (totalCents == null || depositCents == null) {
+      setErrorKind("save");
+      setSaved(false);
       setError("Enter the total and deposit as dollar amounts.");
       return;
     }
     setSaving(true);
     setError(null);
+    setSaved(false);
     try {
       const res = await postJson("/api/admin/lifecycle", {
         action: "update_proposal",
@@ -102,8 +113,11 @@ export function ProposalEditor({
       if (!res.ok) throw new Error(json.error || "Save failed.");
       setProposal(json.proposal);
       setSections(json.proposal.sections);
+      setError(null);
+      setSaved(true);
       onSaved();
     } catch (e) {
+      setErrorKind("save");
       setError(e instanceof Error ? e.message : "Save failed.");
     } finally {
       setSaving(false);
@@ -118,15 +132,22 @@ export function ProposalEditor({
       wide
       footer={
         editable ? (
-          <Button onClick={() => void save()} disabled={saving}>
-            {saving ? "Saving…" : "Save"}
-          </Button>
+          <div className="flex items-center gap-3">
+            {saved && (
+              <span role="status" className="text-sm text-emerald-300">
+                Saved
+              </span>
+            )}
+            <Button onClick={() => void save()} disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          </div>
         ) : undefined
       }
     >
       {!proposal && !error && <p className="py-6 text-center text-sm text-white/60">Loading…</p>}
       {error && (
-        <Banner tone="danger" title="Couldn't save">
+        <Banner tone="danger" title={errorKind === "load" ? "Couldn't load" : "Couldn't save"}>
           {error}
         </Banner>
       )}
@@ -143,6 +164,17 @@ export function ProposalEditor({
                 Set the total and deposit before sending.
               </Banner>
             )}
+            {openQuestions.length > 0 && (
+              <Banner tone="warning" title="Open questions from the call">
+                {openQuestions.length} {openQuestions.length === 1 ? "thing wasn't" : "things weren't"} covered
+                on the call; check {openQuestions.length === 1 ? "it" : "them"} before pricing.
+                <ul className="mt-1.5 list-disc space-y-0.5 pl-5">
+                  {openQuestions.map((q, i) => (
+                    <li key={i}>{q}</li>
+                  ))}
+                </ul>
+              </Banner>
+            )}
             {currency.length > 0 && (
               <Banner tone="warning" title="Amounts in the text">
                 Check for prices written into: {currency.join(", ")}.
@@ -152,19 +184,19 @@ export function ProposalEditor({
             <label className="block text-sm">
               <span className="mb-1.5 block text-xs font-medium text-white/60">Title</span>
               <input className={inputClass(false)} value={title} disabled={!editable}
-                onChange={(e) => setTitle(e.target.value)} />
+                onChange={(e) => { setSaved(false); setTitle(e.target.value); }} />
             </label>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block text-sm">
                 <span className="mb-1.5 block text-xs font-medium text-white/60">Total ($)</span>
                 <input className={inputClass(totalCents == null)} inputMode="decimal" value={total}
-                  disabled={!editable} onChange={(e) => setTotal(e.target.value)} />
+                  disabled={!editable} onChange={(e) => { setSaved(false); setTotal(e.target.value); }} />
               </label>
               <label className="block text-sm">
                 <span className="mb-1.5 block text-xs font-medium text-white/60">Deposit ($)</span>
                 <input className={inputClass(depositCents == null)} inputMode="decimal" value={deposit}
-                  disabled={!editable} onChange={(e) => setDeposit(e.target.value)} />
+                  disabled={!editable} onChange={(e) => { setSaved(false); setDeposit(e.target.value); }} />
               </label>
             </div>
             <p className="text-xs text-white/55">
@@ -175,6 +207,7 @@ export function ProposalEditor({
 
             {sections.map((s, i) => (
               <fieldset key={`${s.key}-${i}`} className="space-y-2 rounded-lg border border-white/10 p-3.5">
+                <legend className="sr-only">{s.title}</legend>
                 <div className="flex flex-wrap items-center gap-3">
                   <input className={`${inputClass(false)} flex-1`} value={s.title} disabled={!editable}
                     aria-label={`Section ${i + 1} title`}
@@ -193,11 +226,11 @@ export function ProposalEditor({
                   onChange={(e) => patch(i, { body: e.target.value })} />
                 {items(i).map((it, k) => (
                   <div key={k} className="grid gap-2 rounded border border-white/10 p-2 sm:grid-cols-[1fr_1fr_8rem_auto]">
-                    <input className={inputClass(false)} placeholder="Title" value={it.title} disabled={!editable}
+                    <input className={inputClass(false)} aria-label={`${s.title} item ${k + 1} title`} placeholder="Title" value={it.title} disabled={!editable}
                       onChange={(e) => setItems(i, items(i).map((x, j) => (j === k ? { ...x, title: e.target.value } : x)))} />
-                    <input className={inputClass(false)} placeholder="Detail" value={it.detail ?? ""} disabled={!editable}
+                    <input className={inputClass(false)} aria-label={`${s.title} item ${k + 1} detail`} placeholder="Detail" value={it.detail ?? ""} disabled={!editable}
                       onChange={(e) => setItems(i, items(i).map((x, j) => (j === k ? { ...x, detail: e.target.value } : x)))} />
-                    <input className={inputClass(false)} placeholder="Meta" value={it.meta ?? ""} disabled={!editable}
+                    <input className={inputClass(false)} aria-label={`${s.title} item ${k + 1} meta`} placeholder="Meta" value={it.meta ?? ""} disabled={!editable}
                       onChange={(e) => setItems(i, items(i).map((x, j) => (j === k ? { ...x, meta: e.target.value } : x)))} />
                     {editable && (
                       <div className="flex items-center gap-1">
