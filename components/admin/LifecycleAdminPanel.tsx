@@ -28,6 +28,7 @@ import {
 } from "@/lib/lifecycle/types";
 import { formatInvoiceNumber } from "@/lib/lifecycle/billing-shared";
 import { ScrollRail } from "@/components/ui/ScrollRail";
+import { ProposalEditor } from "@/components/admin/ProposalEditor";
 
 type Section =
   | "overview"
@@ -469,6 +470,10 @@ function Proposals() {
     challenges: "",
     outcomes: "",
   });
+  const [editingId, setEditingId] = useState<string | null>(() =>
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("proposal") : null,
+  );
+  const [sowFor, setSowFor] = useState<AnyRecord | null>(null);
   if (loading || error || !data) return <Loading error={error} />;
 
   return (
@@ -492,6 +497,22 @@ function Proposals() {
               : "-",
             fmtDate(p.expires_at),
             <div key="a" className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                className="whitespace-nowrap text-xs text-crimson-light underline decoration-crimson/40 underline-offset-4 transition hover:text-white"
+                onClick={() => setEditingId(p.id)}
+              >
+                {["draft", "sent", "viewed", "revision_requested"].includes(p.status) ? "Edit" : "View"}
+              </button>
+              {["draft", "approved"].includes(p.status) && p.total_cents > 0 && (
+                <button
+                  type="button"
+                  className="whitespace-nowrap text-xs text-crimson-light underline decoration-crimson/40 underline-offset-4 transition hover:text-white"
+                  onClick={() => setSowFor(p)}
+                >
+                  Create SOW
+                </button>
+              )}
               {p.status === "draft" && (
                 <Act
                   label="Send"
@@ -612,7 +633,118 @@ function Proposals() {
           </Field>
         </div>
       </Modal>
+      <ProposalEditor
+        id={editingId}
+        onClose={() => {
+          setEditingId(null);
+          if (new URLSearchParams(window.location.search).has("proposal")) {
+            window.history.replaceState(null, "", `/admin?section=proposals${window.location.hash}`);
+          }
+        }}
+        onSaved={reload}
+      />
+      <SowDialog proposal={sowFor} onClose={() => setSowFor(null)} onDone={reload} />
     </div>
+  );
+}
+
+function SowDialog({
+  proposal,
+  onClose,
+  onDone,
+}: {
+  proposal: AnyRecord | null;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [vars, setVars] = useState<Record<string, string> | null>(null);
+  const [termLength, setTermLength] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const proposalId = proposal?.id as string | undefined;
+
+  useEffect(() => {
+    if (!proposalId) return;
+    let cancelled = false;
+    (async () => {
+      setVars(null);
+      setError(null);
+      try {
+        const json = await run("create_sow", { proposalId, preview: true });
+        if (cancelled) return;
+        setVars(json.vars);
+        setTermLength(json.vars.term_length ?? "");
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to prepare the SOW.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [proposalId]);
+
+  return (
+    <Modal
+      open={proposal !== null}
+      onClose={onClose}
+      title="Create Statement of Work"
+      wide
+      footer={
+        <Button
+          disabled={!vars || busy}
+          onClick={async () => {
+            setBusy(true);
+            setError(null);
+            try {
+              await run("create_sow", { proposalId, termLength });
+              onClose();
+              onDone();
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "Failed to create the SOW.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? "Creating…" : "Create draft SOW"}
+        </Button>
+      }
+    >
+      <div className="space-y-4">
+        {error && (
+          <Banner tone="danger" title="Couldn't create the SOW">
+            {error}
+          </Banner>
+        )}
+        {!vars && !error && <p className="text-sm text-white/60">Preparing…</p>}
+        {vars && (
+          <>
+            <p className="text-sm text-white/70">
+              The SOW is fixed once created (it is hashed for signing). It goes to the Agreements list
+              as a draft; nothing is sent.
+            </p>
+            <Field label='Engagement length ("planned to run for …")'>
+              {(props) => (
+                <input {...props} className={inputClass(false)} value={termLength}
+                  onChange={(e) => setTermLength(e.target.value)} />
+              )}
+            </Field>
+            <div className="grid gap-2 text-sm text-white/75 sm:grid-cols-2">
+              <p>Client: {vars.client_business}</p>
+              <p>Signer: {vars.client_name}</p>
+              <p>Total: {vars.total_investment}</p>
+              <p>Deposit: {vars.deposit}</p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-medium text-white/60">Scope and deliverables</p>
+              <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-lg border border-white/10 p-3 text-xs text-white/70">
+                {vars.scope_summary}
+              </pre>
+            </div>
+          </>
+        )}
+      </div>
+    </Modal>
   );
 }
 
