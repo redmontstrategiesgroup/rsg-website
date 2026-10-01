@@ -360,6 +360,8 @@ export type Proposal = {
   payment_schedule: PaymentScheduleEntry[];
   sections: ProposalSection[];
   created_from_template_key: string | null;
+  /** Call brief this draft was generated from (Call → Proposal), if any. */
+  call_brief_id: string | null;
   expires_at: string | null;
   sent_at: string | null;
   first_viewed_at: string | null;
