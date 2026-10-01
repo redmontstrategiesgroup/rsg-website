@@ -2,6 +2,7 @@
 
 import type { CallInput } from "../../lib/call-proposal/types.ts";
 import type { Lead } from "../../lib/types.ts";
+import type { ProposalSection } from "../../lib/lifecycle/types.ts";
 
 export const calls: CallInput[] = [
   {
@@ -79,3 +80,10 @@ export const draftOut = {
     { key: "made_up", body: "x" },
   ],
 };
+
+export const baseSections: ProposalSection[] = [
+  { key: "executive_summary", title: "Executive Summary", body: "old summary" },
+  { key: "scope", title: "Scope", body: "old scope", items: [{ title: "old item" }] },
+  { key: "timeline", title: "Timeline", body: "old timeline" },
+  { key: "investment", title: "Investment", body: "The total investment is $0." },
+];

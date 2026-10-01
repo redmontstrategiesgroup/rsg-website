@@ -16,7 +16,12 @@ import {
   clean,
 } from "../lib/call-proposal/prompt.ts";
 import type { CallBrief, CallInput } from "../lib/call-proposal/types.ts";
-import { calls, draftOut, extractOut, lead } from "./fixtures/call-proposal.ts";
+import { normalizeForMatch, resolveTemplateKey, verifyBrief } from "../lib/call-proposal/verify.ts";
+import { mergeDraftSections, sectionsWithCurrency } from "../lib/call-proposal/sections.ts";
+import { SOW_TERM_FALLBACK, buildSowVars } from "../lib/call-proposal/sow.ts";
+import { briefFromRow, patchToRow } from "../lib/call-proposal/row.ts";
+import type { ExtractOutput } from "../lib/call-proposal/schema.ts";
+import { baseSections, calls, draftOut, extractOut, lead } from "./fixtures/call-proposal.ts";
 
 test("schema: valid extract output parses", () => {
   const r = parseExtractOutput(extractOut);
@@ -119,4 +124,124 @@ test("prompt: draft message carries the brief and sections without raw tags insi
   assert.equal(inner.includes("<"), false);
   assert.match(msg, /<template_sections>/);
   assert.match(msg, /"key": "scope"/);
+});
+
+test("verify: quotes found in their call (ignoring case/punctuation) are verified", () => {
+  const texts = buildCallsBlock(calls).texts;
+  const { brief, unverified } = verifyBrief(extractOut as ExtractOutput, texts);
+  assert.equal(brief.pain_points[0].evidence.verified, true);
+  assert.equal(brief.current_tools[0].evidence.verified, true);
+  assert.equal(brief.budget?.evidence.verified, true);
+  assert.equal(brief.timeline?.evidence.verified, false);
+  assert.equal(unverified, 1);
+});
+
+test("verify: reversed budget range is put in order", () => {
+  const { brief } = verifyBrief(extractOut as ExtractOutput, buildCallsBlock(calls).texts);
+  assert.equal(brief.budget?.low_cents, 500000);
+  assert.equal(brief.budget?.high_cents, 800000);
+});
+
+test("verify: out-of-range call number is clamped, quote still searched in all calls", () => {
+  const raw = {
+    ...extractOut,
+    pain_points: [{ text: "x", evidence: { quote: "We use Jobber", call: 9 } }],
+  } as ExtractOutput;
+  const { brief } = verifyBrief(raw, buildCallsBlock(calls).texts);
+  assert.equal(brief.pain_points[0].evidence.call, 1);
+  assert.equal(brief.pain_points[0].evidence.verified, true);
+});
+
+test("verify: normalizeForMatch folds case, quotes and punctuation", () => {
+  assert.equal(normalizeForMatch("We DON’T  text, ever!"), "we dont text ever");
+});
+
+test("verify: unknown template key falls back to business_systems", () => {
+  assert.equal(resolveTemplateKey("growth_systems", ["growth_systems", "business_systems"]), "growth_systems");
+  assert.equal(resolveTemplateKey("nope", ["growth_systems", "business_systems"]), "business_systems");
+  assert.equal(resolveTemplateKey("nope", ["growth_systems"]), "growth_systems");
+});
+
+test("sections: only tailored keys are merged; investment and unknown keys ignored", () => {
+  const merged = mergeDraftSections(baseSections, draftOut.sections);
+  const by = Object.fromEntries(merged.map((s) => [s.key, s]));
+  assert.equal(by.scope.body, "We will set up after-hours booking.");
+  assert.deepEqual(by.scope.items, [{ title: "Missed-call text back" }]);
+  assert.equal(by.scope.title, "Scope");
+  assert.equal(by.timeline.body, "Six weeks, starting in October.");
+  assert.equal(by.investment.body, "The total investment is $0.");
+  assert.equal(by.executive_summary.body, "old summary");
+  assert.equal(merged.length, baseSections.length);
+});
+
+test("sections: empty drafted items remove the template items; empty body keeps template body", () => {
+  const merged = mergeDraftSections(baseSections, [{ key: "scope", body: "", items: [] }]);
+  const scope = merged.find((s) => s.key === "scope")!;
+  assert.equal(scope.body, "old scope");
+  assert.equal(scope.items, undefined);
+});
+
+test("sections: currency scan flags tailored sections only", () => {
+  const flagged = sectionsWithCurrency([
+    { key: "scope", title: "Scope", body: "Budget of $5,000 covers it." },
+    { key: "phases", title: "Phases", body: "x", items: [{ title: "Build", detail: "about 8k" }] },
+    { key: "timeline", title: "Timeline", body: "Six weeks." },
+    { key: "investment", title: "Investment", body: "$9,000" },
+  ]);
+  assert.deepEqual(flagged, ["Scope", "Phases"]);
+});
+
+test("sow: vars come from visible scope + deliverables and the proposal totals", () => {
+  const vars = buildSowVars(
+    {
+      title: "Glow proposal",
+      total_cents: 900000,
+      deposit_cents: 300000,
+      payment_schedule: [{ label: "Deposit", amount_cents: 300000, due: "On approval" }],
+      sections: [
+        { key: "scope", title: "Scope", body: "Set up booking.", items: [{ title: "Text back", detail: "Missed calls get a text" }] },
+        { key: "deliverables", title: "Deliverables", body: "", items: [{ title: "Booking page" }] },
+        { key: "exclusions", title: "Exclusions", body: "Not this" },
+      ],
+    },
+    { name: "Dana Ruiz", company: "Glow Home Services" },
+    "2026-10-01",
+    "approximately six weeks",
+  );
+  assert.equal(vars.scope_summary, "Set up booking.\n- Text back: Missed calls get a text\n\n- Booking page");
+  assert.equal(vars.total_investment, "$9,000");
+  assert.equal(vars.deposit, "$3,000");
+  assert.equal(vars.payment_schedule, "Deposit: $3,000 (On approval)");
+  assert.equal(vars.term_length, "approximately six weeks");
+  assert.equal(vars.client_business, "Glow Home Services");
+  assert.equal(vars.effective_date, "2026-10-01");
+});
+
+test("sow: empty term length and hidden scope fall back", () => {
+  const vars = buildSowVars(
+    { title: "T", total_cents: 100, deposit_cents: 0, payment_schedule: [], sections: [{ key: "scope", title: "Scope", body: "x", hidden: true }] },
+    { name: "Dana", company: "" },
+    "2026-10-01",
+    "  ",
+  );
+  assert.equal(vars.scope_summary, "T");
+  assert.equal(vars.term_length, SOW_TERM_FALLBACK);
+  assert.equal(vars.client_business, "Dana");
+});
+
+test("row: patchToRow maps camelCase to columns and skips undefined", () => {
+  const row = patchToRow({ status: "failed", failedStage: "draft", error: "x", proposalId: undefined }, "2026-10-01T00:00:00.000Z");
+  assert.deepEqual(row, { updated_at: "2026-10-01T00:00:00.000Z", status: "failed", failed_stage: "draft", error: "x" });
+});
+
+test("row: briefFromRow tolerates null jsonb and coerces numbers", () => {
+  const rec = briefFromRow({
+    id: "b1", lead_id: "l1", recording_ids: null, status: "ready", failed_stage: null, error: "",
+    extraction: null, truncated: false, template_key: null, term_length: "", proposal_id: null,
+    warnings: null, model: "m", input_tokens: "12", output_tokens: 3, prompt_version: "v",
+    created_by: "", created_at: "c", updated_at: "u",
+  });
+  assert.deepEqual(rec.recordingIds, []);
+  assert.deepEqual(rec.warnings, []);
+  assert.equal(rec.inputTokens, 12);
 });
