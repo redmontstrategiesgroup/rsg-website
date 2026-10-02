@@ -162,6 +162,7 @@ export async function POST(request: Request, ctx: Ctx) {
         to,
         visitorTimezone: tz,
         teamMemberId: booking.team_member_id,
+        excludeBookingId: booking.id,
       });
       return NextResponse.json({ slots, from, to });
     }

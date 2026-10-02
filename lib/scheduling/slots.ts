@@ -10,6 +10,8 @@ export async function getAvailableSlots(input: {
   to: string;
   visitorTimezone: string;
   teamMemberId?: string;
+  /** Ignore this booking (the one being rescheduled) when checking conflicts. */
+  excludeBookingId?: string;
 }): Promise<{ start: string; end: string; label: string }[]> {
   const settings = await getSettings();
   if (settings.bookings_paused) return [];
@@ -61,13 +63,17 @@ export async function getAvailableSlots(input: {
     .lt("starts_at", rangeEnd.toUTC().toISO()!)
     .gt("ends_at", rangeStart.toUTC().toISO()!);
 
-  const { data: existing } = await sb
+  let existingQuery = sb
     .from("bookings")
     .select("starts_at, ends_at, status")
     .eq("team_member_id", memberId)
     .in("status", ["confirmed", "rescheduled"])
     .lt("starts_at", rangeEnd.toUTC().toISO()!)
     .gt("ends_at", rangeStart.toUTC().toISO()!);
+  if (input.excludeBookingId) {
+    existingQuery = existingQuery.neq("id", input.excludeBookingId);
+  }
+  const { data: existing } = await existingQuery;
 
   return generateSlots({
     rangeStart: rangeStart.toJSDate(),
@@ -98,6 +104,7 @@ export async function isSlotAvailable(input: {
   teamMemberId: string;
   startsAt: string;
   endsAt: string;
+  excludeBookingId?: string;
 }): Promise<boolean> {
   const type = await getAppointmentTypeById(input.appointmentTypeId);
   if (!type) return false;
@@ -110,6 +117,7 @@ export async function isSlotAvailable(input: {
     to: day,
     visitorTimezone: visitorTz,
     teamMemberId: input.teamMemberId,
+    excludeBookingId: input.excludeBookingId,
   });
 
   return slots.some((s) => {

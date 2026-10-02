@@ -11,8 +11,19 @@ import {
 } from "lucide-react";
 import { postJson } from "@/lib/api";
 import { INTEGRATION_PLACEHOLDERS } from "@/lib/scheduling/integrations/types";
+import { BOOKING_POLICY } from "@/lib/scheduling/policy";
 import { ScrollRail } from "@/components/ui/ScrollRail";
 import { Dialog } from "@/components/ui/Dialog";
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** "16:00" → "4pm", "09:30" → "9:30am" */
+function formatPolicyTime(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  const suffix = h >= 12 ? "pm" : "am";
+  const hour = h % 12 || 12;
+  return m ? `${hour}:${String(m).padStart(2, "0")}${suffix}` : `${hour}${suffix}`;
+}
 
 type SubTab =
   | "dashboard"
@@ -615,17 +626,46 @@ export function SchedulingAdminPanel() {
                     ?.admin_timezone || "America/New_York"}
                 </span>
               </div>
+              <div className="border border-white/10 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-white/60 mb-2">Booking rules</p>
+                <ul className="space-y-1 text-sm text-white/70">
+                  <li>
+                    {BOOKING_POLICY.allowedDays.map((d) => WEEKDAYS[d]).join(", ")} only,{" "}
+                    {formatPolicyTime(BOOKING_POLICY.dayStart)}–
+                    {formatPolicyTime(BOOKING_POLICY.dayEnd)}
+                  </li>
+                  <li>Max {BOOKING_POLICY.maxPerDay} bookings per day</li>
+                  <li>At least {BOOKING_POLICY.minGapMinutes / 60} hour between bookings</li>
+                  <li>
+                    At least {BOOKING_POLICY.minNoticeMinutes / 60} hours notice, no same-day
+                    bookings
+                  </li>
+                </ul>
+                <p className="mt-2 text-xs text-white/60">
+                  These apply to every appointment type. Weekly windows below can
+                  narrow them but not extend them.
+                </p>
+              </div>
               <p className="text-xs font-medium uppercase tracking-wide text-white/60">Weekly windows</p>
               <ul className="space-y-2 text-sm text-white/70">
-                {((config.windows as unknown[]) || []).map((w) => {
-                  const row = w as {
+                {(
+                  (config.windows as {
                     id: string;
                     day_of_week: number | null;
                     specific_date: string | null;
                     start_time: string;
                     end_time: string;
-                  };
-                  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                  }[]) || []
+                )
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      (a.specific_date ?? "").localeCompare(b.specific_date ?? "") ||
+                      (a.day_of_week ?? 0) - (b.day_of_week ?? 0) ||
+                      String(a.start_time).localeCompare(String(b.start_time))
+                  )
+                  .map((row) => {
+                  const days = WEEKDAYS;
                   return (
                     <li key={row.id} className="border border-white/10 px-3 py-2">
                       {row.specific_date || days[row.day_of_week ?? 0]} ·{" "}

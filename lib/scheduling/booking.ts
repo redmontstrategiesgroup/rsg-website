@@ -175,7 +175,7 @@ export async function createBooking(input: {
       const existing = await findBookingByIdempotencyKey(input.idempotencyKey);
       if (existing) return { ok: true, ...existing };
     }
-    if (/bookings_no_overlap|exclusion|23P01/i.test(insertError.message)) {
+    if (/bookings_no_overlap|bookings_daily_limit|bookings_min_gap|exclusion|23P01/i.test(insertError.message)) {
       return {
         ok: false,
         error: "That time was just booked. Please choose another slot.",
@@ -438,41 +438,21 @@ export async function rescheduleBooking(input: {
   const startsISO = starts.toUTC().toISO()!;
   const endsISO = ends.toUTC().toISO()!;
 
+  // Exclude this booking so it doesn't conflict with (or count against the
+  // daily cap for) its own new time; every booking rule still applies.
   const available = await isSlotAvailable({
     appointmentTypeId: type.id,
     teamMemberId: booking.team_member_id,
     startsAt: startsISO,
     endsAt: endsISO,
+    excludeBookingId: booking.id,
   });
-  // Current booking occupies its own slot, check excluding self
-  const sbCheck = requireSupabase();
-  const { data: conflicts } = await sbCheck
-    .from("bookings")
-    .select("id")
-    .eq("team_member_id", booking.team_member_id)
-    .in("status", ["confirmed", "rescheduled"])
-    .neq("id", booking.id)
-    .lt("starts_at", endsISO)
-    .gt("ends_at", startsISO);
-
-  if ((conflicts?.length ?? 0) > 0 && !available) {
-    // If the only conflict is ourselves filtered out, allow; else reject
-  }
-  if (conflicts && conflicts.length > 0) {
+  if (!available) {
     return {
       ok: false,
       error: "That time is no longer available.",
       code: "conflict",
     };
-  }
-
-  // Also verify against generated slots OR empty conflicts
-  if (!available) {
-    // Slot generator counts this booking; verify no other conflict already done
-    const stillOk = !(conflicts && conflicts.length > 0);
-    if (!stillOk) {
-      return { ok: false, error: "That time is no longer available.", code: "conflict" };
-    }
   }
 
   const before = { starts_at: booking.starts_at, ends_at: booking.ends_at };
@@ -490,7 +470,7 @@ export async function rescheduleBooking(input: {
     .eq("id", booking.id);
 
   if (error) {
-    if (/bookings_no_overlap|exclusion|23P01/i.test(error.message)) {
+    if (/bookings_no_overlap|bookings_daily_limit|bookings_min_gap|exclusion|23P01/i.test(error.message)) {
       return { ok: false, error: "That time is no longer available.", code: "conflict" };
     }
     return { ok: false, error: "Unable to reschedule.", code: "db" };

@@ -44,6 +44,14 @@ calendar when they qualify.
 | `/booking/noteligible` | Not eligible outcome |
 | `/booking/manage/[token]` | Secure reschedule / cancel |
 
+## Booking rules
+
+`lib/scheduling/policy.ts` sets hard rules for every appointment type, in
+the schedule timezone: Tue–Thu only, meetings within 9am–4pm, max 2 bookings
+per day, at least 1 hour between bookings, 24 hours minimum notice, and no
+same-day bookings. Admin availability windows, notice, and caps can make these
+stricter, never looser. The same rules apply when a visitor reschedules.
+
 ## Security notes
 
 - Qualification scoring and slot booking run only on the server.
