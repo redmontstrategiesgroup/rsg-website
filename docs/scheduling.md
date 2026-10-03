@@ -49,8 +49,12 @@ calendar when they qualify.
 `lib/scheduling/policy.ts` sets hard rules for every appointment type, in
 the schedule timezone: Tue–Thu only, meetings within 9am–4pm, max 2 bookings
 per day, at least 1 hour between bookings, 24 hours minimum notice, and no
-same-day bookings. Admin availability windows, notice, and caps can make these
+same-day bookings. Start times fall every 30 minutes (:00 and :30), whatever
+the meeting length. Admin availability windows, notice, and caps can make these
 stricter, never looser. The same rules apply when a visitor reschedules.
+
+The booking page's day picker lists every weekday (Mon–Fri) in the open weeks;
+days with no times, Monday and Friday included, show as disabled.
 
 ## Security notes
 

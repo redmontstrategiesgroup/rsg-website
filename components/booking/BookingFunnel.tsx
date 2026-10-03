@@ -250,16 +250,29 @@ function localDayKey(isoUtc: string, timeZone: string): string {
   }
 }
 
-function dayLabel(dayKey: string, isoUtc: string, timeZone: string) {
-  try {
-    const d = new Date(isoUtc);
-    return {
-      weekday: new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short" }).format(d),
-      date: new Intl.DateTimeFormat("en-US", { timeZone, month: "short", day: "numeric" }).format(d),
-    };
-  } catch {
-    return { weekday: "", date: dayKey };
+/** Mon–Fri day keys from the Monday of the first key's week to the Friday of the last's. */
+function weekdaysSpanning(dayKeys: string[]): string[] {
+  if (!dayKeys.length) return [];
+  const at = (key: string) => new Date(`${key}T12:00:00Z`);
+  const cursor = at(dayKeys[0]);
+  cursor.setUTCDate(cursor.getUTCDate() - ((cursor.getUTCDay() + 6) % 7));
+  const end = at(dayKeys[dayKeys.length - 1]);
+  end.setUTCDate(end.getUTCDate() + ((5 - end.getUTCDay() + 7) % 7));
+  const out: string[] = [];
+  for (; cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+    const dow = cursor.getUTCDay();
+    if (dow >= 1 && dow <= 5) out.push(cursor.toISOString().slice(0, 10));
   }
+  return out;
+}
+
+/** Weekday/date label for a YYYY-MM-DD key (no slot needed). */
+function dayKeyLabel(dayKey: string) {
+  const d = new Date(`${dayKey}T12:00:00Z`);
+  return {
+    weekday: new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short" }).format(d),
+    date: new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric" }).format(d),
+  };
 }
 
 function formatSelectedSlot(isoUtc: string, timeZone: string): string {
@@ -556,6 +569,10 @@ export function BookingFunnel({
   }, [slots, timezone]);
 
   const availableDays = useMemo(() => [...slotsByDay.keys()].sort(), [slotsByDay]);
+
+  // Every weekday (Mon–Fri) from the first open week to the last, so days we
+  // don't take calls (Mon, Fri, or fully booked) still show, disabled.
+  const pickerDays = useMemo(() => weekdaysSpanning(availableDays), [availableDays]);
 
   useEffect(() => {
     if (step !== 2) return;
@@ -882,15 +899,18 @@ export function BookingFunnel({
                     activeKey={selectedDay}
                     className="-mx-1 flex gap-2 px-1 pb-2 scroll-px-1"
                   >
-                    {availableDays.map((day) => {
-                      const first = slotsByDay.get(day)![0];
-                      const { weekday, date } = dayLabel(day, first.start, timezone);
-                      const active = selectedDay === day;
+                    {pickerDays.map((day) => {
+                      const { weekday, date } = dayKeyLabel(day);
+                      const open = slotsByDay.has(day);
+                      const active = open && selectedDay === day;
                       return (
                         <button
                           key={day}
                           type="button"
+                          disabled={!open}
                           aria-pressed={active}
+                          aria-label={open ? undefined : `${weekday} ${date}, unavailable`}
+                          title={open ? undefined : "Unavailable"}
                           data-active={active ? "true" : undefined}
                           onClick={() => {
                             setSelectedDay(day);
@@ -898,15 +918,21 @@ export function BookingFunnel({
                             track("date_selected");
                           }}
                           className={`min-w-[76px] shrink-0 border px-3 py-3 text-center transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
-                            active
-                              ? "border-crimson/70 bg-crimson/10"
-                              : "border-white/10 bg-white/2 hover:border-white/30"
+                            !open
+                              ? "cursor-not-allowed border-white/5 bg-transparent opacity-40"
+                              : active
+                                ? "border-crimson/70 bg-crimson/10"
+                                : "border-white/10 bg-white/2 hover:border-white/30"
                           }`}
                         >
                           <span className="block text-[0.7rem] uppercase tracking-wider text-white/45 sm:text-[0.65rem]">
                             {weekday}
                           </span>
-                          <span className="mt-1 block text-sm font-medium text-white">
+                          <span
+                            className={`mt-1 block text-sm font-medium ${
+                              open ? "text-white" : "text-white/60 line-through"
+                            }`}
+                          >
                             {date}
                           </span>
                         </button>
