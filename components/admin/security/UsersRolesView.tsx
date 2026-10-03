@@ -13,11 +13,15 @@ import { MfaSetup } from "@/components/admin/security/MfaSetup";
  */
 const ROLE_SUMMARY: Record<AdminRole, string> = {
   owner: "Full access to every area, including team management and all security controls.",
+  founder: "Full access to every area, including team management and all security controls.",
+  cofounder: "Full access to every area, including team management and all security controls.",
+  head_programmer: "Platform config, automations, projects, support, audit logs, and all security controls.",
   administrator: "All areas except team management; full security controls.",
   manager: "Leads, scheduling, analytics, incidents, and AI approvals.",
   scheduler: "Appointments, availability, qualification, and leads.",
   consultant: "Appointments and qualification, including private notes.",
   sales: "Leads, appointments, qualification, and analytics.",
+  wholesale_real_estate: "Wholesale real-estate leads, appointments, qualification, proposals, and analytics.",
   employee: "Day-to-day appointments, qualification, and leads.",
   contractor: "Limited: view appointments and qualification only.",
   security_reviewer: "Security Center, audit logs, incidents, vendors, retention, and tests.",
@@ -199,7 +203,11 @@ function roleGrid(role: AdminRole): Record<string, boolean> {
   const F = (v: boolean) => v;
   switch (role) {
     case "owner":
+    case "founder":
+    case "cofounder":
       return { view: true, create: true, edit: true, delete: true, export: true, approve: true, logs: true, security: true, config: true };
+    case "head_programmer":
+      return { view: true, create: true, edit: true, delete: F(false), export: true, approve: true, logs: true, security: true, config: true };
     case "administrator":
       return { view: true, create: true, edit: true, delete: true, export: true, approve: true, logs: true, security: true, config: true };
     case "manager":
@@ -209,6 +217,7 @@ function roleGrid(role: AdminRole): Record<string, boolean> {
     case "consultant":
       return { view: true, create: F(false), edit: true, delete: F(false), export: F(false), approve: F(false), logs: F(false), security: F(false), config: F(false) };
     case "sales":
+    case "wholesale_real_estate":
       return { view: true, create: true, edit: true, delete: F(false), export: F(false), approve: F(false), logs: F(false), security: F(false), config: F(false) };
     case "employee":
       return { view: true, create: true, edit: true, delete: F(false), export: F(false), approve: F(false), logs: F(false), security: F(false), config: F(false) };

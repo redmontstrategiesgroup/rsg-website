@@ -74,6 +74,31 @@ const ALL: SchedulingPermission[] = [
 
 const ROLE_PERMISSIONS: Record<SchedulingRole, SchedulingPermission[]> = {
   owner: ALL,
+  founder: ALL,
+  cofounder: ALL,
+  // Runs the platform: config, automations, integrations' security side and
+  // incident response. No team, billing, client or lead/proposal management,
+  // and no private consult notes.
+  head_programmer: [
+    "view_appointments",
+    "view_qualification",
+    "edit_qualification_rules",
+    "edit_availability",
+    "edit_notification_templates",
+    "view_analytics",
+    "view_audit",
+    "manage_mfa",
+    "view_security",
+    "manage_incidents",
+    "manage_vendors",
+    "manage_retention",
+    "approve_ai_actions",
+    "manage_security_tests",
+    "manage_security_settings",
+    "manage_projects",
+    "manage_support",
+    "manage_automations",
+  ],
   administrator: ALL.filter((p) => p !== "manage_team"),
   manager: [
     "view_appointments",
@@ -109,6 +134,16 @@ const ROLE_PERMISSIONS: Record<SchedulingRole, SchedulingPermission[]> = {
   ],
   sales: [
     "view_appointments",
+    "view_qualification",
+    "override_qualification",
+    "view_analytics",
+    "manage_leads",
+    "manage_proposals",
+  ],
+  // Works wholesale real-estate leads: sellers/buyers in, qualify, book, propose.
+  wholesale_real_estate: [
+    "view_appointments",
+    "edit_appointments",
     "view_qualification",
     "override_qualification",
     "view_analytics",

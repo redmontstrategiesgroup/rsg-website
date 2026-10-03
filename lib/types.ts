@@ -78,11 +78,15 @@ export type ClientRecord = ClientPublic & {
 
 export type AdminRole =
   | "owner"
+  | "founder"
+  | "cofounder"
+  | "head_programmer"
   | "administrator"
   | "manager"
   | "scheduler"
   | "consultant"
   | "sales"
+  | "wholesale_real_estate"
   | "employee"
   | "contractor"
   | "security_reviewer"
@@ -90,11 +94,15 @@ export type AdminRole =
 
 export const ADMIN_ROLES: AdminRole[] = [
   "owner",
+  "founder",
+  "cofounder",
+  "head_programmer",
   "administrator",
   "manager",
   "scheduler",
   "consultant",
   "sales",
+  "wholesale_real_estate",
   "employee",
   "contractor",
   "security_reviewer",
@@ -103,11 +111,15 @@ export const ADMIN_ROLES: AdminRole[] = [
 
 export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
   owner: "Owner",
+  founder: "Founder",
+  cofounder: "Co-founder",
+  head_programmer: "Head Programmer",
   administrator: "Administrator",
   manager: "Manager",
   scheduler: "Scheduler",
   consultant: "Consultant",
   sales: "Sales",
+  wholesale_real_estate: "Wholesale Real Estate",
   employee: "Employee",
   contractor: "Contractor",
   security_reviewer: "Security Reviewer",
