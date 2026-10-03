@@ -23,7 +23,7 @@ import type {
   SecurityStatusLevel,
 } from "./types";
 
-const PRIVILEGED_ROLES = new Set(["owner", "administrator"]);
+const PRIVILEGED_ROLES = new Set(["owner", "founder", "cofounder", "administrator"]);
 
 /** Roughly 12 months, for vendor-review staleness. */
 const VENDOR_REVIEW_MAX_AGE_MS = 365 * 24 * 3600_000;
@@ -223,7 +223,7 @@ export async function buildSecurityOverview(): Promise<SecurityOverview> {
       key: "admins",
       label: "Active administrators",
       value: String(admins.length),
-      detail: `${admins.filter((a) => PRIVILEGED_ROLES.has(a.role)).length} with owner/administrator privileges.`,
+      detail: `${admins.filter((a) => PRIVILEGED_ROLES.has(a.role)).length} with full admin privileges (owner, founder, co-founder, administrator).`,
       status: "secure",
     },
     {
