@@ -130,7 +130,7 @@ export function SupportView({
               </p>
             )}
             {t.resolution_notes && (
-              <p className="mt-3 border border-emerald-400/20 bg-emerald-400/[0.05] px-3 py-2 text-xs leading-relaxed text-emerald-200/80">
+              <p className="mt-3 border border-emerald-400/20 bg-emerald-400/5 px-3 py-2 text-xs leading-relaxed text-emerald-200/80">
                 Resolution: {t.resolution_notes}
               </p>
             )}
@@ -140,8 +140,8 @@ export function SupportView({
                   key={m.id}
                   className={`max-w-[85%] border px-3.5 py-2.5 ${
                     m.author_type === "client"
-                      ? "ml-auto border-crimson/25 bg-crimson/[0.06]"
-                      : "border-white/10 bg-white/[0.02]"
+                      ? "ml-auto border-crimson/25 bg-crimson/6"
+                      : "border-white/10 bg-white/2"
                   }`}
                 >
                   <p className="text-[0.65rem] text-white/35">
@@ -160,14 +160,14 @@ export function SupportView({
             {t.status === "resolved" && (
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button busy={busy} onClick={() => void act({ action: "confirm_close", ticketId: t.id })}>
-                  Everything works — close it
+                  Everything works: close it
                 </Button>
                 <Button
                   variant="ghost"
                   busy={busy}
                   onClick={() => void act({ action: "reopen", ticketId: t.id })}
                 >
-                  Still not right — reopen
+                  Still not right: reopen
                 </Button>
               </div>
             )}
@@ -176,7 +176,7 @@ export function SupportView({
               <div className="mt-4 flex gap-2">
                 <input
                   type="text"
-                  className={`${inputClass(false)} !py-2.5 text-sm`}
+                  className={`${inputClass(false)} py-2.5! text-sm`}
                   placeholder="Add a reply…"
                   value={reply[t.id] ?? ""}
                   onChange={(e) => setReply((prev) => ({ ...prev, [t.id]: e.target.value }))}
@@ -226,7 +226,7 @@ export function SupportView({
         <div className="card">
           <EmptyState
             title="No support tickets"
-            description="If anything ever misbehaves — an automation, the website, a report — open a ticket and it's tracked from first report to confirmed fix."
+            description="If anything ever misbehaves (an automation, the website, a report) open a ticket and it's tracked from first report to confirmed fix."
             action={<Button onClick={() => setCreating(true)}>Open your first ticket</Button>}
           />
         </div>
@@ -296,11 +296,11 @@ export function SupportView({
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                 >
-                  <option value="low">Low — no rush</option>
+                  <option value="low">Low, no rush</option>
                   <option value="normal">Normal</option>
-                  <option value="high">High — impacting our work</option>
-                  <option value="urgent">Urgent — major disruption</option>
-                  <option value="critical">Critical — business is down</option>
+                  <option value="high">High: impacting our work</option>
+                  <option value="urgent">Urgent: major disruption</option>
+                  <option value="critical">Critical: business is down</option>
                 </select>
               )}
             </Field>

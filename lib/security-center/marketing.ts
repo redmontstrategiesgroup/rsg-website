@@ -1,7 +1,7 @@
 /**
  * Marketing copy for the RSG Secure Systems Standard (the /security page and
  * the homepage security section). All language is careful: RSG is "informed by"
- * NIST and OWASP guidance — never certified, audited, or compliant with any
+ * NIST and OWASP guidance, never certified, audited, or compliant with any
  * framework unless independently verified. No fabricated statistics or badges.
  */
 
@@ -52,7 +52,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
     id: "identity",
     icon: KeyRound,
     eyebrow: "Identity & access",
-    title: "The right people, the right access — and nothing more",
+    title: "The right people, the right access; and nothing more",
     intro:
       "Employees, administrators, customers, contractors, and vendors should only reach the information and functions their role requires. Access is designed before the system is built, not bolted on afterward.",
     controls: [
@@ -65,7 +65,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
       "Administrative access restrictions",
       "Optional single sign-on for eligible projects",
     ],
-    note: "Permissions are enforced on the server and, for databases, at the data layer — hiding a button is never treated as the control.",
+    note: "Permissions are enforced on the server and, for databases, at the data layer, hiding a button is never treated as the control.",
   },
   {
     id: "data",
@@ -73,7 +73,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
     eyebrow: "Data protection",
     title: "Sensitive data is protected and never over-collected",
     intro:
-      "RSG protects data in transit and, where the selected infrastructure supports it, at rest — and avoids collecting or keeping information a system does not actually need.",
+      "RSG protects data in transit and, where the selected infrastructure supports it, at rest; and avoids collecting or keeping information a system does not actually need.",
     controls: [
       "Encryption in transit",
       "Encryption at rest when supported by the infrastructure",
@@ -93,7 +93,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
     eyebrow: "Secrets management",
     title: "Credentials stay out of the browser and out of source control",
     intro:
-      "API keys and credentials belong in managed secret storage — never in frontend code, never committed to the repository, and never shared across environments.",
+      "API keys and credentials belong in managed secret storage, never in frontend code, never committed to the repository, and never shared across environments.",
     controls: [
       "No exposed API keys in frontend code",
       "No credentials committed to source control",
@@ -145,7 +145,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
     eyebrow: "Logging & accountability",
     title: "A clear record of who did what, when, and to which record",
     intro:
-      "Important administrative, customer-data, and AI actions are logged so a business can understand what happened and who authorized it — without ever writing passwords, keys, or full payment details into the logs.",
+      "Important administrative, customer-data, and AI actions are logged so a business can understand what happened and who authorized it; without ever writing passwords, keys, or full payment details into the logs.",
     controls: [
       "Activity logs",
       "Administrative audit logs",
@@ -163,7 +163,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
     eyebrow: "Responsible AI controls",
     title: "AI should not have unlimited authority",
     intro:
-      "For systems that generate content, make recommendations, access business data, or communicate with customers, RSG can require a human to approve high-risk actions before anything happens — and keeps untrusted input separate from instructions.",
+      "For systems that generate content, make recommendations, access business data, or communicate with customers, RSG can require a human to approve high-risk actions before anything happens; and keeps untrusted input separate from instructions.",
     controls: [
       "Human approval for high-risk actions",
       "Permission-aware document access",
@@ -176,7 +176,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
       "Audit trails for AI actions",
       "Emergency disable controls",
     ],
-    note: "High-risk actions — sending contracts, issuing refunds, changing pricing, deleting records, sharing confidential documents — do not execute automatically without deliberate authorization.",
+    note: "High-risk actions (sending contracts, issuing refunds, changing pricing, deleting records, sharing confidential documents) do not execute automatically without deliberate authorization.",
   },
   {
     id: "vendors",
@@ -184,7 +184,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
     eyebrow: "Vendor management",
     title: "Know where your data goes",
     intro:
-      "RSG documents the third-party platforms involved in each system — hosting, databases, email, SMS, payments, analytics, AI models, storage, and authentication — what they are used for, and what categories of information they may process.",
+      "RSG documents the third-party platforms involved in each system (hosting, databases, email, SMS, payments, analytics, AI models, storage, and authentication), what they are used for, and what categories of information they may process.",
     controls: [
       "Vendor name and service",
       "Business purpose and data handled",
@@ -203,7 +203,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
     eyebrow: "Incident response",
     title: "A plan for when something goes wrong",
     intro:
-      "Every qualified project includes an incident-response procedure sized to its risk — how an incident is detected, who is responsible, how access is contained, how credentials are rotated, how systems are isolated, how services are restored, and how affected clients are notified.",
+      "Every qualified project includes an incident-response procedure sized to its risk, how an incident is detected, who is responsible, how access is contained, how credentials are rotated, how systems are isolated, how services are restored, and how affected clients are notified.",
     controls: [
       "Detection and ownership",
       "Access containment",
@@ -221,7 +221,7 @@ export const SECURITY_PILLARS: SecurityPillar[] = [
     eyebrow: "Testing & maintenance",
     title: "Security is verified, then maintained",
     intro:
-      "AI-enabled projects are tested against an internal checklist — prompt injection, sensitive-information disclosure, permission bypass, data leakage, excessive agency, and more — with results, severity, evidence, and retest status recorded.",
+      "AI-enabled projects are tested against an internal checklist (prompt injection, sensitive-information disclosure, permission bypass, data leakage, excessive agency, and more) with results, severity, evidence, and retest status recorded.",
     controls: [
       "Prompt-injection and indirect-injection testing",
       "Sensitive-information disclosure testing",
@@ -297,7 +297,7 @@ export const FRAMEWORK_STAGES: FrameworkStage[] = [
 export const OWASP_AI_RISKS: { risk: string; how: string }[] = [
   { risk: "Prompt injection", how: "Untrusted input is kept separate from instructions and tested against injection." },
   { risk: "Sensitive-information disclosure", how: "The assistant is scoped so it cannot reveal data beyond a user's permissions." },
-  { risk: "Improper output handling", how: "AI output is treated as untrusted — escaped when displayed, validated before any action." },
+  { risk: "Improper output handling", how: "AI output is treated as untrusted, escaped when displayed, validated before any action." },
   { risk: "Excessive agency", how: "Tool access is restricted and high-risk actions require human approval." },
   { risk: "Insecure integrations", how: "Third-party connections are documented, scoped, and reviewed." },
   { risk: "Unauthorized access", how: "Authorization is enforced server-side and, for databases, at the data layer." },
@@ -325,7 +325,7 @@ export const SECURITY_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How does RSG keep AI from doing something it shouldn't?",
-    a: "High-risk AI actions — sending contracts, issuing refunds, changing pricing, deleting records, sharing confidential documents, making financial commitments — do not execute automatically. They enter an approval queue where a human can approve, reject, edit, or escalate before anything happens, and every AI action can be logged.",
+    a: "High-risk AI actions (sending contracts, issuing refunds, changing pricing, deleting records, sharing confidential documents, making financial commitments) do not execute automatically. They enter an approval queue where a human can approve, reject, edit, or escalate before anything happens, and every AI action can be logged.",
   },
   {
     q: "What happens to my data, and where does it go?",
@@ -333,11 +333,11 @@ export const SECURITY_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Are backups real, or just a checkbox?",
-    a: "RSG documents what is backed up, how often, how long it is retained, and how a restoration would be performed — and restoration is tested rather than assumed. Backup status shown in the admin console reflects real infrastructure or is clearly marked when it cannot be verified from the console.",
+    a: "RSG documents what is backed up, how often, how long it is retained, and how a restoration would be performed; and restoration is tested rather than assumed. Backup status shown in the admin console reflects real infrastructure or is clearly marked when it cannot be verified from the console.",
   },
   {
     q: "What if there's a security incident?",
-    a: "Every qualified project includes an incident-response procedure sized to its risk: how an incident is detected, who is responsible, how access is contained, how credentials are rotated, how systems are isolated, how logs are preserved, how services are restored, and how affected clients are notified — with lessons and corrective actions documented.",
+    a: "Every qualified project includes an incident-response procedure sized to its risk: how an incident is detected, who is responsible, how access is contained, how credentials are rotated, how systems are isolated, how logs are preserved, how services are restored, and how affected clients are notified; with lessons and corrective actions documented.",
   },
 ];
 

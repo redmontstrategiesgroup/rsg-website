@@ -9,7 +9,7 @@ export function ReportActions() {
     <div className="report-actions flex flex-wrap items-center gap-4 print:hidden">
       <Link
         href="/portal"
-        className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
+        className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
       >
         <ArrowLeft size={15} />
         Back to portal

@@ -21,7 +21,7 @@ export default async function InvitePage({
   const invite = isSupabaseConfigured() ? await getInviteByToken(token) : null;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-base px-6 py-16">
+    <main className="flex min-h-dvh items-center justify-center bg-base px-6 py-16">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
           <Logo />
@@ -37,7 +37,7 @@ export default async function InvitePage({
           <div className="card px-6 py-8 text-center">
             <p className="text-sm leading-relaxed text-white/60">
               This invitation link is invalid or has expired. Ask your account
-              owner to send a fresh one — invitations are valid for 7 days.
+              owner to send a fresh one, invitations are valid for 7 days.
             </p>
           </div>
         )}

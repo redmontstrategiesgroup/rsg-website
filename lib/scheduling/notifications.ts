@@ -1,5 +1,9 @@
 import { Resend } from "resend";
-import { DEFAULT_CONTACT_TO_EMAIL } from "@/lib/lead-score";
+import {
+  contactNotifyEmails,
+  parseEmailList,
+  primaryContactEmail,
+} from "@/lib/notify-emails";
 import { requireSupabase, siteUrl } from "./db";
 import { buildIcs } from "./ics";
 import { callProvider, recordSkipped } from "@/lib/integration-log";
@@ -24,9 +28,9 @@ export async function getSettings() {
     data ?? {
       id: "default",
       admin_timezone: "America/New_York",
-      internal_notification_emails: [DEFAULT_CONTACT_TO_EMAIL],
+      internal_notification_emails: contactNotifyEmails(),
       sender_name: "Redmont Strategies Group",
-      reply_to: DEFAULT_CONTACT_TO_EMAIL,
+      reply_to: primaryContactEmail(),
       bookings_paused: false,
       abandon_hours: 24,
       max_follow_ups: 1,
@@ -204,7 +208,7 @@ export async function sendTemplatedEmail(input: {
     });
     // The internal-failure notice is itself an email sent through this same
     // function. When Resend is what's broken, every notice fails and notifies
-    // about its own failure — unbounded recursion precisely during an outage.
+    // about its own failure: unbounded recursion precisely during an outage.
     // Break the cycle at the one template that closes it.
     if (input.templateKey !== "internal_email_failed") {
       await sendInternalFailure(message, input.leadId, input.bookingId);
@@ -222,7 +226,7 @@ async function sendInternalFailure(
     const settings = await getSettings();
     const to =
       (settings.internal_notification_emails as string[])?.[0] ||
-      DEFAULT_CONTACT_TO_EMAIL;
+      primaryContactEmail();
     await sendTemplatedEmail({
       templateKey: "internal_email_failed",
       to,
@@ -241,10 +245,15 @@ export async function sendInternalNotification(
   opts?: { leadId?: string; bookingId?: string }
 ) {
   const settings = await getSettings();
-  const emails =
-    (settings.internal_notification_emails as string[])?.length
-      ? (settings.internal_notification_emails as string[])
-      : [DEFAULT_CONTACT_TO_EMAIL];
+  // Union, not override: scheduling_settings rows predate the shared notify
+  // list, so a stale row must not be able to drop the owner off booking
+  // notifications. parseEmailList dedupes case-insensitively.
+  const emails = parseEmailList(
+    [
+      ...((settings.internal_notification_emails as string[]) ?? []),
+      ...contactNotifyEmails(),
+    ].join(",")
+  );
   return sendTemplatedEmail({
     templateKey,
     to: emails,
@@ -281,7 +290,7 @@ export function buildBookingIcsAttachment(input: {
     location: input.location,
     startsAt: input.startsAt,
     endsAt: input.endsAt,
-    organizerEmail: DEFAULT_CONTACT_TO_EMAIL,
+    organizerEmail: primaryContactEmail(),
     organizerName: "Redmont Strategies Group",
     attendeeEmail: input.attendeeEmail,
     attendeeName: input.attendeeName,

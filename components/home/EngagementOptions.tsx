@@ -62,7 +62,7 @@ export function EngagementOptions() {
         <div className="mt-10 sm:mt-24">
           {ENGAGEMENTS.map((e, i) => (
             <Reveal key={e.name} y={12} delay={i * 0.06}>
-              <article className="grid gap-8 border-t border-white/[0.08] py-14 last:border-b sm:py-16 lg:grid-cols-12 lg:gap-8">
+              <article className="grid gap-8 border-t border-white/8 py-14 last:border-b sm:py-16 lg:grid-cols-12 lg:gap-8">
                 <div className="lg:col-span-4">
                   <h3 className="display max-w-xs text-2xl text-white">
                     {e.name}

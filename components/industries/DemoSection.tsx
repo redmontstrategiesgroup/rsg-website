@@ -9,7 +9,7 @@ import { trackEvent } from "@/lib/events";
 import type { IndustryVertical } from "@/lib/industries/types";
 
 /**
- * Entry point to the vertical's own interactive demo — what the simulated
+ * Entry point to the vertical's own interactive demo, what the simulated
  * system contains, what a visitor can run, and the honesty banner. Links out
  * to the full DemoOS at /demos/[slug]; nothing here touches real data.
  */
@@ -62,7 +62,7 @@ export function DemoSection({ vertical }: { vertical: IndustryVertical }) {
               </div>
             </Reveal>
             <Reveal y={12} delay={0.26}>
-              <p className="mt-8 flex items-start gap-2.5 rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 text-[0.78rem] leading-relaxed text-white/45">
+              <p className="mt-8 flex items-start gap-2.5 rounded-lg border border-white/10 bg-white/2 px-4 py-3 text-[0.78rem] leading-relaxed text-white/45">
                 <ShieldCheck size={15} aria-hidden className="mt-0.5 shrink-0 text-white/35" />
                 {vertical.demo.disclaimer}
               </p>
@@ -87,7 +87,7 @@ export function DemoSection({ vertical }: { vertical: IndustryVertical }) {
                 </div>
               </Reveal>
               <Reveal y={14} delay={0.18} className="h-full">
-                <div className="h-full rounded-xl border border-crimson/25 bg-crimson/[0.04] p-6">
+                <div className="h-full rounded-xl border border-crimson/25 bg-crimson/4 p-6">
                   <p className="flex items-center gap-2 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light">
                     <PlayCircle size={13} aria-hidden />
                     Run these yourself

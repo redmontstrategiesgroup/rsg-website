@@ -15,7 +15,7 @@ import { CATEGORY_APPOINTMENT_SLUGS, type ServiceCategory } from "@/lib/lifecycl
 /**
  * Pure computation of the client-facing journey. Given whatever artifacts
  * exist for an opportunity, produce the ordered step list with status,
- * next action, responsible party, deadline, and deep link. Unit-testable —
+ * next action, responsible party, deadline, and deep link. Unit-testable;
  * no I/O.
  */
 

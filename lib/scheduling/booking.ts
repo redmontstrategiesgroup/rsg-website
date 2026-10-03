@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import { randomUUID } from "node:crypto";
 import { requireSupabase, adminTimezone, siteUrl } from "./db";
+import { withKnownMarker } from "@/lib/known-visitor";
 import { createSecureToken, createIcalUid } from "./tokens";
 import { getAppointmentTypeById, getDefaultTeamMember } from "./catalog";
 import { isSlotAvailable } from "./slots";
@@ -20,7 +21,20 @@ import {
   outlookCalendarUrl,
   office365CalendarUrl,
 } from "./ics";
-import type { MeetingFormat } from "./types";
+import type { BookingStatus, MeetingFormat } from "./types";
+
+/** The booking a previous submit with this idempotency key already created. */
+export async function findBookingByIdempotencyKey(
+  idempotencyKey: string
+): Promise<{ bookingId: string; manageToken: string } | null> {
+  const sb = requireSupabase();
+  const { data } = await sb
+    .from("bookings")
+    .select("id, manage_token")
+    .eq("idempotency_key", idempotencyKey)
+    .maybeSingle();
+  return data ? { bookingId: data.id, manageToken: data.manage_token } : null;
+}
 
 export async function createBooking(input: {
   sessionId: string;
@@ -42,18 +56,8 @@ export async function createBooking(input: {
   }
 
   if (input.idempotencyKey) {
-    const { data: existing } = await sb
-      .from("bookings")
-      .select("id, manage_token")
-      .eq("idempotency_key", input.idempotencyKey)
-      .maybeSingle();
-    if (existing) {
-      return {
-        ok: true,
-        bookingId: existing.id,
-        manageToken: existing.manage_token,
-      };
-    }
+    const existing = await findBookingByIdempotencyKey(input.idempotencyKey);
+    if (existing) return { ok: true, ...existing };
   }
 
   const { data: session } = await sb
@@ -163,25 +167,15 @@ export async function createBooking(input: {
 
   if (insertError) {
     // Concurrent duplicate submit (double-click): the other request already
-    // created this booking — return it instead of failing.
+    // created this booking: return it instead of failing.
     if (
       input.idempotencyKey &&
       /bookings_idempotency_uidx/i.test(insertError.message)
     ) {
-      const { data: existing } = await sb
-        .from("bookings")
-        .select("id, manage_token")
-        .eq("idempotency_key", input.idempotencyKey)
-        .maybeSingle();
-      if (existing) {
-        return {
-          ok: true,
-          bookingId: existing.id,
-          manageToken: existing.manage_token,
-        };
-      }
+      const existing = await findBookingByIdempotencyKey(input.idempotencyKey);
+      if (existing) return { ok: true, ...existing };
     }
-    if (/bookings_no_overlap|exclusion|23P01/i.test(insertError.message)) {
+    if (/bookings_no_overlap|bookings_daily_limit|bookings_min_gap|exclusion|23P01/i.test(insertError.message)) {
       return {
         ok: false,
         error: "That time was just booked. Please choose another slot.",
@@ -260,7 +254,7 @@ export async function createBooking(input: {
   const ics = buildBookingIcsAttachment({
     uid: icalUid,
     sequence: 0,
-    title: `${type.name} — Redmont Strategies Group`,
+    title: `${type.name}: Redmont Strategies Group`,
     description: type.public_description || type.name,
     location: input.meetingFormat,
     startsAt: startsISO,
@@ -305,7 +299,7 @@ export async function createBooking(input: {
     qualification_score: session.qualification_score ?? "",
     qualification_outcome: session.qualification_outcome ?? "",
     lead_source: "website_booking_funnel",
-    book_url: `${siteUrl()}/book`,
+    book_url: withKnownMarker(`${siteUrl()}/book`),
   };
 
   if (email) {
@@ -345,6 +339,71 @@ export async function getBookingByManageToken(token: string) {
   return booking;
 }
 
+/** Client-portal-safe summary of a booking: no lead PII beyond what the
+ * booking itself carries. */
+export type PortalBookingSummary = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  status: BookingStatus;
+  meeting_format: MeetingFormat;
+  manage_token: string;
+  appointment_type_name: string | null;
+  team_member_name: string | null;
+};
+
+type PortalBookingRow = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  status: BookingStatus;
+  meeting_format: MeetingFormat;
+  manage_token: string;
+  appointment_types: { name: string } | { name: string }[] | null;
+  team_members: { name: string } | { name: string }[] | null;
+};
+
+/** Pure row → summary mapping, unit-testable without Supabase. Supabase
+ * returns the joined side as an object for a to-one FK, but normalizes to an
+ * array in some query shapes, so both are accepted. */
+export function toPortalBookingSummary(row: PortalBookingRow): PortalBookingSummary {
+  const type = Array.isArray(row.appointment_types) ? row.appointment_types[0] : row.appointment_types;
+  const member = Array.isArray(row.team_members) ? row.team_members[0] : row.team_members;
+  return {
+    id: row.id,
+    starts_at: row.starts_at,
+    ends_at: row.ends_at,
+    status: row.status,
+    meeting_format: row.meeting_format,
+    manage_token: row.manage_token,
+    appointment_type_name: type?.name ?? null,
+    team_member_name: member?.name ?? null,
+  };
+}
+
+/**
+ * The client portal's own consultation, resolved through clients.lead_id
+ * (set by provisionClientForOpportunity when the portal account was
+ * created). Most recent booking on that lead wins, so a reschedule still
+ * shows the current appointment.
+ */
+export async function getBookingForLead(
+  leadId: string
+): Promise<PortalBookingSummary | null> {
+  const sb = requireSupabase();
+  const { data } = await sb
+    .from("bookings")
+    .select(
+      "id, starts_at, ends_at, status, meeting_format, manage_token, appointment_types(name), team_members(name)"
+    )
+    .eq("lead_id", leadId)
+    .eq("is_test", false)
+    .order("starts_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ? toPortalBookingSummary(data as unknown as PortalBookingRow) : null;
+}
+
 export async function rescheduleBooking(input: {
   manageToken: string;
   startsAt: string;
@@ -379,41 +438,21 @@ export async function rescheduleBooking(input: {
   const startsISO = starts.toUTC().toISO()!;
   const endsISO = ends.toUTC().toISO()!;
 
+  // Exclude this booking so it doesn't conflict with (or count against the
+  // daily cap for) its own new time; every booking rule still applies.
   const available = await isSlotAvailable({
     appointmentTypeId: type.id,
     teamMemberId: booking.team_member_id,
     startsAt: startsISO,
     endsAt: endsISO,
+    excludeBookingId: booking.id,
   });
-  // Current booking occupies its own slot — check excluding self
-  const sbCheck = requireSupabase();
-  const { data: conflicts } = await sbCheck
-    .from("bookings")
-    .select("id")
-    .eq("team_member_id", booking.team_member_id)
-    .in("status", ["confirmed", "rescheduled"])
-    .neq("id", booking.id)
-    .lt("starts_at", endsISO)
-    .gt("ends_at", startsISO);
-
-  if ((conflicts?.length ?? 0) > 0 && !available) {
-    // If the only conflict is ourselves filtered out, allow; else reject
-  }
-  if (conflicts && conflicts.length > 0) {
+  if (!available) {
     return {
       ok: false,
       error: "That time is no longer available.",
       code: "conflict",
     };
-  }
-
-  // Also verify against generated slots OR empty conflicts
-  if (!available) {
-    // Slot generator counts this booking; verify no other conflict already done
-    const stillOk = !(conflicts && conflicts.length > 0);
-    if (!stillOk) {
-      return { ok: false, error: "That time is no longer available.", code: "conflict" };
-    }
   }
 
   const before = { starts_at: booking.starts_at, ends_at: booking.ends_at };
@@ -431,7 +470,7 @@ export async function rescheduleBooking(input: {
     .eq("id", booking.id);
 
   if (error) {
-    if (/bookings_no_overlap|exclusion|23P01/i.test(error.message)) {
+    if (/bookings_no_overlap|bookings_daily_limit|bookings_min_gap|exclusion|23P01/i.test(error.message)) {
       return { ok: false, error: "That time is no longer available.", code: "conflict" };
     }
     return { ok: false, error: "Unable to reschedule.", code: "db" };
@@ -480,7 +519,7 @@ export async function rescheduleBooking(input: {
   const ics = buildBookingIcsAttachment({
     uid: booking.ical_uid,
     sequence: (booking.ical_sequence ?? 0) + 1,
-    title: `${type.name} — Redmont Strategies Group`,
+    title: `${type.name}: Redmont Strategies Group`,
     description: type.public_description || type.name,
     startsAt: startsISO,
     endsAt: endsISO,
@@ -567,9 +606,37 @@ export async function cancelBooking(input: {
     .eq("booking_id", booking.id)
     .eq("status", "pending");
 
+  // The preparation questionnaire belongs to this meeting. Waive it so the
+  // 48h reminder sweep (which picks up pending/in_progress) stops nudging,
+  // and skip the already-queued invite: otherwise a visitor who cancels gets
+  // "prepare for your consultation" ten minutes later.
+  await sb
+    .from("questionnaires")
+    .update({ status: "waived", updated_at: new Date().toISOString() })
+    .eq("booking_id", booking.id)
+    .in("status", ["pending", "in_progress"]);
+  await sb
+    .from("automation_runs")
+    .update({
+      status: "skipped",
+      executed_at: new Date().toISOString(),
+      error: "Booking cancelled before execution",
+    })
+    .eq("status", "pending")
+    .eq("payload->email->>bookingId", booking.id);
+
   if (booking.lead_id) {
     await updateLeadStatus(booking.lead_id, "cancelled");
   }
+
+  await trackSchedulingEvent({
+    eventType: "cancel",
+    bookingId: booking.id,
+    leadId: booking.lead_id ?? undefined,
+    appointmentTypeId: booking.appointment_type_id ?? undefined,
+    isTest: booking.is_test ?? false,
+    meta: { actor: input.actor ?? "visitor" },
+  });
 
   const lead = booking.leads as Record<string, string> | null;
   const manageUrl = `${siteUrl()}/booking/manage/${booking.manage_token}`;
@@ -578,7 +645,7 @@ export async function cancelBooking(input: {
     full_name: lead?.name ?? "",
     business_name: lead?.business_name ?? "",
     appointment_type: type?.name ?? "Consultation",
-    book_url: `${siteUrl()}/book`,
+    book_url: withKnownMarker(`${siteUrl()}/book`),
     manage_url: manageUrl,
     appointment_time_admin: formatInZone(
       booking.starts_at,
@@ -590,7 +657,7 @@ export async function cancelBooking(input: {
     const ics = buildBookingIcsAttachment({
       uid: booking.ical_uid,
       sequence: (booking.ical_sequence ?? 0) + 1,
-      title: `${type.name} — Redmont Strategies Group`,
+      title: `${type.name}: Redmont Strategies Group`,
       description: "Cancelled",
       startsAt: booking.starts_at,
       endsAt: booking.ends_at,
@@ -616,7 +683,7 @@ export async function cancelBooking(input: {
   await enqueueWebhook(
     "booking.cancelled",
     { bookingId: booking.id },
-    // Cancellation is terminal — it happens at most once per booking.
+    // Cancellation is terminal: it happens at most once per booking.
     { eventId: `booking.cancelled:${booking.id}` }
   );
 
@@ -629,7 +696,7 @@ export function calendarLinksForBooking(booking: {
   meeting_format?: string;
   appointment_types?: { name?: string; public_description?: string } | null;
 }) {
-  const title = `${booking.appointment_types?.name ?? "Consultation"} — Redmont Strategies Group`;
+  const title = `${booking.appointment_types?.name ?? "Consultation"}, Redmont Strategies Group`;
   const description =
     booking.appointment_types?.public_description ??
     "Redmont Strategies Group consultation";

@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { BOOKING_POLICY, type BookingPolicy } from "./policy";
 
 export type AvailabilityWindowRow = {
   day_of_week: number | null;
@@ -27,6 +28,13 @@ function parseTimeOnDate(
   return DateTime.fromISO(`${dateISO}T${t}`, { zone });
 }
 
+/** Round up to the next multiple of `stepMinutes` after local midnight. */
+function alignUp(t: DateTime, stepMinutes: number): DateTime {
+  const minutes = t.diff(t.startOf("day"), "minutes").minutes;
+  const aligned = Math.ceil(minutes / stepMinutes) * stepMinutes;
+  return t.startOf("day").plus({ minutes: aligned });
+}
+
 /**
  * Generate available UTC slot starts for a date range in the schedule timezone,
  * then convert labels to the visitor timezone.
@@ -47,10 +55,24 @@ export function generateSlots(input: {
   maxPerDay?: number | null;
   maxPerWeek?: number | null;
   now?: Date;
+  policy?: BookingPolicy;
 }): { start: string; end: string; label: string }[] {
+  const policy = input.policy ?? BOOKING_POLICY;
   const now = DateTime.fromJSDate(input.now ?? new Date()).toUTC();
-  const minStart = now.plus({ minutes: input.minNoticeMinutes });
+  const minStart = now.plus({
+    minutes: Math.max(input.minNoticeMinutes, policy.minNoticeMinutes),
+  });
   const maxStart = now.plus({ days: input.maxAdvanceDays });
+  const today = now.setZone(input.scheduleTimezone).toISODate()!;
+  const maxPerDay =
+    input.maxPerDay == null
+      ? policy.maxPerDay
+      : Math.min(input.maxPerDay, policy.maxPerDay);
+  // Gap kept clear on either side of an existing booking.
+  const gapBefore = Math.max(input.bufferBeforeMinutes, policy.minGapMinutes);
+  const gapAfter = Math.max(input.bufferAfterMinutes, policy.minGapMinutes);
+  // Offered start times are spaced on a fixed grid, independent of duration.
+  const step = policy.slotIntervalMinutes;
 
   const rangeStart = DateTime.fromJSDate(input.rangeStart).setZone(input.scheduleTimezone).startOf("day");
   const rangeEnd = DateTime.fromJSDate(input.rangeEnd).setZone(input.scheduleTimezone).endOf("day");
@@ -74,6 +96,16 @@ export function generateSlots(input: {
     const dateISO = cursor.toISODate()!;
     const dow = cursor.weekday % 7; // luxon: Mon=1..Sun=7 → convert to 0=Sun
 
+    if (
+      !policy.allowedDays.includes(dow) ||
+      (policy.noSameDay && dateISO <= today)
+    ) {
+      cursor = cursor.plus({ days: 1 }).startOf("day");
+      continue;
+    }
+    const policyStart = parseTimeOnDate(dateISO, policy.dayStart, input.scheduleTimezone);
+    const policyEnd = parseTimeOnDate(dateISO, policy.dayEnd, input.scheduleTimezone);
+
     const dayWindows = input.windows.filter((w) => {
       if (w.specific_date) return w.specific_date === dateISO;
       return w.day_of_week === dow;
@@ -84,8 +116,17 @@ export function generateSlots(input: {
     const applicable = specific.length > 0 ? specific : dayWindows.filter((w) => w.day_of_week != null);
 
     for (const win of applicable) {
-      let slotStart = parseTimeOnDate(dateISO, win.start_time, input.scheduleTimezone);
-      const winEnd = parseTimeOnDate(dateISO, win.end_time, input.scheduleTimezone);
+      let slotStart = alignUp(
+        DateTime.max(
+          parseTimeOnDate(dateISO, win.start_time, input.scheduleTimezone),
+          policyStart
+        ),
+        step
+      );
+      const winEnd = DateTime.min(
+        parseTimeOnDate(dateISO, win.end_time, input.scheduleTimezone),
+        policyEnd
+      );
 
       while (
         slotStart.plus({ minutes: input.durationMinutes }) <= winEnd
@@ -96,7 +137,7 @@ export function generateSlots(input: {
 
         const startUTC = slotStart.toUTC();
         if (startUTC < minStart || startUTC > maxStart) {
-          slotStart = slotStart.plus({ minutes: input.durationMinutes });
+          slotStart = slotStart.plus({ minutes: step });
           continue;
         }
 
@@ -110,15 +151,17 @@ export function generateSlots(input: {
           if (b.status === "cancelled") return false;
           const bs = DateTime.fromISO(b.starts_at);
           const be = DateTime.fromISO(b.ends_at);
-          return occupiedStart < be && occupiedEnd > bs;
+          return (
+            slotStart.minus({ minutes: gapBefore }) < be &&
+            slotEnd.plus({ minutes: gapAfter }) > bs
+          );
         });
 
         const dayKey = dateISO;
         const weekKey = `${slotStart.weekYear}-W${slotStart.weekNumber}`;
         const dayCount = dayCounts.get(dayKey) ?? 0;
         const weekCount = weekCounts.get(weekKey) ?? 0;
-        const dayOk =
-          input.maxPerDay == null || dayCount < input.maxPerDay;
+        const dayOk = dayCount < maxPerDay;
         const weekOk =
           input.maxPerWeek == null || weekCount < input.maxPerWeek;
 
@@ -129,11 +172,9 @@ export function generateSlots(input: {
             end: slotEnd.toUTC().toISO()!,
             label: visitorLocal.toFormat("h:mm a"),
           });
-          dayCounts.set(dayKey, dayCount + 1);
-          weekCounts.set(weekKey, weekCount + 1);
         }
 
-        slotStart = slotStart.plus({ minutes: input.durationMinutes });
+        slotStart = slotStart.plus({ minutes: step });
       }
     }
 

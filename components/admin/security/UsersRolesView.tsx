@@ -9,15 +9,19 @@ import { MfaSetup } from "@/components/admin/security/MfaSetup";
 
 /**
  * A readable map of what each role can do. Mirrors ROLE_PERMISSIONS but is
- * presentation-only — the server is always the source of truth on enforcement.
+ * presentation-only: the server is always the source of truth on enforcement.
  */
 const ROLE_SUMMARY: Record<AdminRole, string> = {
   owner: "Full access to every area, including team management and all security controls.",
+  founder: "Full access to every area, including team management and all security controls.",
+  cofounder: "Full access to every area, including team management and all security controls.",
+  head_programmer: "Platform config, automations, projects, support, audit logs, and all security controls.",
   administrator: "All areas except team management; full security controls.",
   manager: "Leads, scheduling, analytics, incidents, and AI approvals.",
   scheduler: "Appointments, availability, qualification, and leads.",
   consultant: "Appointments and qualification, including private notes.",
   sales: "Leads, appointments, qualification, and analytics.",
+  wholesale_real_estate: "Wholesale real-estate leads, appointments, qualification, proposals, and analytics.",
   employee: "Day-to-day appointments, qualification, and leads.",
   contractor: "Limited: view appointments and qualification only.",
   security_reviewer: "Security Center, audit logs, incidents, vendors, retention, and tests.",
@@ -76,7 +80,7 @@ export function UsersRolesView({
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">Role</th>
@@ -85,11 +89,11 @@ export function UsersRolesView({
             </thead>
             <tbody>
               {admins.map((a) => (
-                <tr key={a.id} className="border-b border-white/[0.06] last:border-0">
+                <tr key={a.id} className="border-b border-white/6 last:border-0">
                   <td className="px-4 py-3.5 text-white">{a.name}</td>
                   <td className="px-4 py-3.5 text-white/60">{a.email}</td>
                   <td className="px-4 py-3.5">
-                    <span className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-0.5 text-xs text-white/70">
+                    <span className="rounded-full border border-white/12 bg-white/4 px-2.5 py-0.5 text-xs text-white/70">
                       {a.roleLabel}
                     </span>
                   </td>
@@ -99,7 +103,7 @@ export function UsersRolesView({
                         <ShieldCheck size={13} /> Enabled
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-xs text-white/45">
+                      <span className="inline-flex items-center gap-1.5 text-xs text-white/65">
                         <ShieldOff size={13} /> Not set
                       </span>
                     )}
@@ -109,7 +113,7 @@ export function UsersRolesView({
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-white/40">
+        <p className="text-xs text-white/60">
           Admin accounts are provisioned in the database. MFA is enrolled by
           each admin from their own account panel above.
           {!canManageMfa && " Your role cannot manage other admins' MFA."}
@@ -121,9 +125,9 @@ export function UsersRolesView({
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <p className={labelClass}>Roles & permissions</p>
-            <p className="mt-1 max-w-2xl text-xs text-white/45">
+            <p className="mt-1 max-w-2xl text-xs text-white/65">
               Permissions are enforced server-side on every API route and, for
-              Supabase tables, by Row Level Security — hiding a button is never
+              Supabase tables, by Row Level Security, hiding a button is never
               the control. This matrix summarizes each role.
             </p>
           </div>
@@ -131,7 +135,7 @@ export function UsersRolesView({
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <th className="px-4 py-3">Role</th>
                 {PERMISSION_COLUMNS.map((c) => (
                   <th key={c.key} className="px-3 py-3 text-center">
@@ -145,17 +149,17 @@ export function UsersRolesView({
               {ADMIN_ROLES.map((role) => {
                 const grid = roleGrid(role);
                 return (
-                  <tr key={role} className="border-b border-white/[0.06] last:border-0 align-top">
+                  <tr key={role} className="border-b border-white/6 last:border-0 align-top">
                     <td className="px-4 py-3.5">
                       <p className="font-medium text-white">{ADMIN_ROLE_LABELS[role]}</p>
-                      <p className="mt-1 max-w-xs text-xs text-white/40">{ROLE_SUMMARY[role]}</p>
+                      <p className="mt-1 max-w-xs text-xs text-white/60">{ROLE_SUMMARY[role]}</p>
                     </td>
                     {PERMISSION_COLUMNS.map((c) => (
                       <td key={c.key} className="px-3 py-3.5 text-center">
                         {grid[c.key] ? (
                           <span className="text-emerald-300">●</span>
                         ) : (
-                          <span className="text-white/15">—</span>
+                          <span className="text-white/60">-</span>
                         )}
                       </td>
                     ))}
@@ -176,13 +180,13 @@ export function UsersRolesView({
           </table>
         </div>
         {canManageSettings ? (
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-white/60">
             Requiring MFA for a role blocks that role&apos;s permission-gated
             actions server-side until the admin enrolls (the owner bootstrap
             account is exempt so recovery is always possible).
           </p>
         ) : (
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-white/60">
             Your role can view this matrix but not change MFA enforcement.
           </p>
         )}
@@ -199,7 +203,11 @@ function roleGrid(role: AdminRole): Record<string, boolean> {
   const F = (v: boolean) => v;
   switch (role) {
     case "owner":
+    case "founder":
+    case "cofounder":
       return { view: true, create: true, edit: true, delete: true, export: true, approve: true, logs: true, security: true, config: true };
+    case "head_programmer":
+      return { view: true, create: true, edit: true, delete: F(false), export: true, approve: true, logs: true, security: true, config: true };
     case "administrator":
       return { view: true, create: true, edit: true, delete: true, export: true, approve: true, logs: true, security: true, config: true };
     case "manager":
@@ -209,6 +217,7 @@ function roleGrid(role: AdminRole): Record<string, boolean> {
     case "consultant":
       return { view: true, create: F(false), edit: true, delete: F(false), export: F(false), approve: F(false), logs: F(false), security: F(false), config: F(false) };
     case "sales":
+    case "wholesale_real_estate":
       return { view: true, create: true, edit: true, delete: F(false), export: F(false), approve: F(false), logs: F(false), security: F(false), config: F(false) };
     case "employee":
       return { view: true, create: true, edit: true, delete: F(false), export: F(false), approve: F(false), logs: F(false), security: F(false), config: F(false) };

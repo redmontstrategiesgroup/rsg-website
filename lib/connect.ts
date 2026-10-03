@@ -93,7 +93,7 @@ export async function getConnectSettings(): Promise<ConnectSettings> {
       const row = data?.[0] as Record<string, unknown> | undefined;
       if (row) return mergeConnectSettings(rowToSettings(row), defaults);
     } catch (err) {
-      console.warn("[connect] settings read failed — using file/defaults.", err);
+      console.warn("[connect] settings read failed: using file/defaults.", err);
     }
   }
   const file = await readJson<ConnectSettings | null>(SETTINGS_FILE, null);
@@ -194,7 +194,7 @@ export async function getConnectLinks(): Promise<ConnectLink[]> {
         if (links.length) return links;
       }
     } catch (err) {
-      console.warn("[connect] links read failed — using file/defaults.", err);
+      console.warn("[connect] links read failed: using file/defaults.", err);
     }
   }
   const file = await readJson<ConnectLink[] | null>(LINKS_FILE, null);

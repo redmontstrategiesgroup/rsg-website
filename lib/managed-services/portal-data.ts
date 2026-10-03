@@ -3,7 +3,7 @@
  *
  * Gathers everything the "Plan & Services" portal tab needs in one call so
  * the page loader can pass a single serializable payload to the client
- * component. Never import from client components — this pulls in node:fs
+ * component. Never import from client components, this pulls in node:fs
  * via the store.
  */
 
@@ -98,7 +98,7 @@ export async function getPortalManagedData(
     );
 
   return {
-    // adminNotes are internal commentary — never serialize them to clients.
+    // adminNotes are internal commentary, never serialize them to clients.
     subscription: subscription ? { ...subscription, adminNotes: "" } : null,
     plan,
     availablePlans,

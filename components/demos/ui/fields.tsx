@@ -5,7 +5,7 @@ import { useId, type ReactNode } from "react";
 /** Small labelled form primitives shared across the demo OS dialogs. */
 
 const inputClass =
-  "w-full rounded border border-white/12 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none focus:ring-1 focus:ring-crimson/40";
+  "w-full rounded-sm border border-white/35 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-hidden focus:ring-1 focus:ring-crimson/40";
 
 export function Field({
   label,
@@ -40,6 +40,8 @@ export function TextInput({
   required,
   helper,
   type = "text",
+  autoComplete,
+  inputMode,
   error,
 }: {
   label: string;
@@ -49,6 +51,9 @@ export function TextInput({
   required?: boolean;
   helper?: string;
   type?: string;
+  /** Browser autofill token; the request dialog is the demo's conversion form. */
+  autoComplete?: string;
+  inputMode?: "text" | "numeric" | "tel" | "email" | "decimal" | "url";
   error?: string;
 }) {
   const id = useId();
@@ -59,6 +64,8 @@ export function TextInput({
         type={type}
         value={value}
         required={required}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-invalid={error ? true : undefined}
@@ -158,7 +165,7 @@ export function CheckboxInput({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-base-900 accent-[#b3243a]"
+        className="mt-0.5 h-4 w-4 rounded-sm border-white/20 bg-base-900 accent-crimson"
       />
       <label htmlFor={id} className="text-xs text-white/70">
         {label}
@@ -193,7 +200,7 @@ export function SmallButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-[0.68rem] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson disabled:cursor-not-allowed disabled:opacity-40 ${styles[tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1.5 text-[0.68rem] transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson disabled:cursor-not-allowed disabled:opacity-40 ${styles[tone]}`}
     >
       {children}
     </button>

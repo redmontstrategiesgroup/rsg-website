@@ -7,7 +7,6 @@ import {
   SystemsGrid,
   SecuritySection,
   ModelOptionsSection,
-  IntegrationsSection,
   IndustryUseCases,
   ProcessSection,
   PrivateAiFaq,
@@ -34,7 +33,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Custom Private AI Systems | Redmont Strategies Group",
     description:
-      "Custom AI built around your business—not the other way around. Local, on-premise, private cloud, hybrid, or managed.",
+      "Custom AI built around your business, not the other way around. Local, on-premise, private cloud, hybrid, or managed.",
   },
   robots: { index: true, follow: true },
 };
@@ -45,7 +44,7 @@ export default function CustomPrivateAiSystemsPage() {
     "@type": "Service",
     name: "Custom Private AI Systems",
     description:
-      "Design, build, deploy, and maintain custom AI systems tailored to a company’s workflows, data, security requirements, and existing technology—with local, on-premise, private cloud, hybrid, and managed deployment options.",
+      "Design, build, deploy, and maintain custom AI systems tailored to a company’s workflows, data, security requirements, and existing technology; with local, on-premise, private cloud, hybrid, and managed deployment options.",
     serviceType: "Custom private AI systems",
     provider: {
       "@type": "Organization",
@@ -108,7 +107,6 @@ export default function CustomPrivateAiSystemsPage() {
       <SystemsGrid />
       <SecuritySection />
       <ModelOptionsSection />
-      <IntegrationsSection />
       <IndustryUseCases />
       <SystemDesigner />
       <ProcessSection />

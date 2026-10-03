@@ -17,7 +17,7 @@ const schemas = {
 
 export async function POST(request: Request, context: { params: Promise<{ entity: string }> }) {
   // Dashboard writes (create/approve/dismiss records) require an elevated
-  // permission — not just any authenticated admin — so viewer/consultant/
+  // permission, not just any authenticated admin, so viewer/consultant/
   // contractor roles can't mutate executive-intelligence records.
   const ctx = await requireAdmin("manage_leads");
   if (!isAdminContext(ctx)) return ctx;

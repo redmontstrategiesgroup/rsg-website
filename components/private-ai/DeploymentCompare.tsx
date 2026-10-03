@@ -25,7 +25,7 @@ export function DeploymentCompare() {
     DEPLOYMENT_OPTIONS.find((d) => d.id === active) ?? DEPLOYMENT_OPTIONS[2]!;
 
   return (
-    <section id="deployment" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="deployment" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <Reveal y={12}>
           <p className="label">Deployment options</p>
@@ -54,7 +54,7 @@ export function DeploymentCompare() {
                 role="tab"
                 aria-selected={selected}
                 onClick={() => setActive(opt.id)}
-                className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 lg:min-h-0 ${
+                className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/50 lg:min-h-0 ${
                   selected
                     ? "border-crimson/45 bg-crimson/10 text-white"
                     : "border-white/10 text-white/50 hover:border-white/25 hover:text-white"
@@ -69,7 +69,7 @@ export function DeploymentCompare() {
         <Reveal y={12} delay={0.08} className="mt-8">
           <div
             role="tabpanel"
-            className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8"
+            className="rounded-2xl border border-white/10 bg-white/2 p-6 sm:p-8"
           >
             <h3 className="display text-2xl text-white">{current.name}</h3>
             <p className="mt-3 max-w-3xl text-[0.98rem] leading-relaxed text-white/55">
@@ -83,7 +83,7 @@ export function DeploymentCompare() {
                 <ul className="mt-3 space-y-2">
                   {current.suitable.map((item) => (
                     <li key={item} className="text-sm text-white/65">
-                      <span className="mr-2 text-crimson-light">—</span>
+                      <span className="mr-2 text-crimson-light">-</span>
                       {item}
                     </li>
                   ))}
@@ -93,7 +93,7 @@ export function DeploymentCompare() {
                 {COMPARE_ROWS.map((row) => (
                   <div
                     key={row.key}
-                    className="grid gap-1 border-b border-white/[0.06] pb-3 sm:grid-cols-[180px_1fr] sm:gap-4"
+                    className="grid gap-1 border-b border-white/6 pb-3 sm:grid-cols-[180px_1fr] sm:gap-4"
                   >
                     <dt className="text-xs uppercase tracking-[0.14em] text-white/35">
                       {row.label}

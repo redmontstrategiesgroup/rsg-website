@@ -66,7 +66,7 @@ const CONFIDENTIALITY: ContractSection = {
   title: "Confidentiality",
   body:
     "While working together, each Party may learn non-public information " +
-    "about the other's business — including customers, pricing, finances, " +
+    "about the other's business, including customers, pricing, finances, " +
     "processes, systems, and plans. Each Party agrees to use the other's " +
     "confidential information only for this engagement, to protect it with " +
     "at least reasonable care, and not to share it with anyone who does not " +
@@ -118,9 +118,9 @@ const TERMINATION: ContractSection = {
     "delivers all completed, paid-for work product. Either Party may end " +
     "this Agreement immediately if the other materially breaches it and " +
     "does not fix the breach within ten (10) days of written notice. " +
-    "Sections that by their nature should continue — payment obligations, " +
-    "confidentiality, intellectual property, and limitations of liability " +
-    "— survive termination.",
+    "Sections that by their nature should continue (payment obligations, " +
+    "confidentiality, intellectual property, and limitations of liability) " +
+    "survive termination.",
 };
 
 const GOVERNING_LAW: ContractSection = {
@@ -147,11 +147,11 @@ const ELECTRONIC_SIGNATURE: ContractSection = {
 
 const ATTORNEY_REVIEW_NOTE: ContractSection = {
   key: "attorney_review_note",
-  title: "Important Note — Attorney Review",
+  title: "Important Note: Attorney Review",
   body:
     "This document was generated from a standard Redmont Strategies Group " +
-    "template. It is offered as a practical, plain-English starting point " +
-    "— not as legal advice, and RSG is not a law firm. Every business " +
+    "template. It is offered as a practical, plain-English starting point, " +
+    "not as legal advice, and RSG is not a law firm. Every business " +
     "situation is different, and {{client_business}} is encouraged to have " +
     "this Agreement reviewed by its own attorney before signing. RSG will " +
     "consider reasonable revision requests in good faith.",
@@ -284,9 +284,9 @@ export const CONTRACT_TEMPLATES: Record<ContractKind, ContractTemplate> = {
         body:
           "This Statement of Work is issued under, and governed by, the " +
           "Master Service Agreement between the Parties. The Master " +
-          "Service Agreement's terms — including confidentiality, " +
-          "intellectual property, warranties, and limitations of liability " +
-          "— apply to this Statement of Work. If the two documents " +
+          "Service Agreement's terms (including confidentiality, " +
+          "intellectual property, warranties, and limitations of liability) " +
+          "apply to this Statement of Work. If the two documents " +
           "conflict, this Statement of Work controls for this project only.",
       },
       {
@@ -330,7 +330,7 @@ export const CONTRACT_TEMPLATES: Record<ContractKind, ContractTemplate> = {
           "RSG delivered, and reasonable support requests submitted " +
           "through the client portal. It does not include new feature " +
           "development, redesigns, or third-party outages beyond RSG's " +
-          "control — those are quoted separately through a change order or " +
+          "control: those are quoted separately through a change order or " +
           "new Statement of Work.",
       },
       {
@@ -434,7 +434,7 @@ export const CONTRACT_TEMPLATES: Record<ContractKind, ContractTemplate> = {
         title: "What Counts as Confidential",
         body:
           "Confidential information means non-public information one " +
-          "Party shares with the other — in any form — including business " +
+          "Party shares with the other, in any form, including business " +
           "plans, financials, customer and supplier lists, pricing, " +
           "processes, systems, data, and technical details. It does not " +
           "include information that is already public through no fault of " +
@@ -471,7 +471,7 @@ export const CONTRACT_TEMPLATES: Record<ContractKind, ContractTemplate> = {
           "On written request, each Party will promptly return or destroy " +
           "the other's confidential information and confirm it has done " +
           "so, except for copies retained automatically in routine backups " +
-          "or as required by law — which remain protected under this " +
+          "or as required by law, which remain protected under this " +
           "Agreement.",
       },
       {
@@ -556,7 +556,7 @@ export const CONTRACT_TEMPLATES: Record<ContractKind, ContractTemplate> = {
           "personal data for the Client under the underlying services " +
           "agreement. When the services end, RSG will return or delete the " +
           "Client's personal data at the Client's choice, except for " +
-          "copies retained in routine backups or as required by law — " +
+          "copies retained in routine backups or as required by law, " +
           "which remain protected until deleted.",
       },
       {
@@ -587,9 +587,9 @@ export const CONTRACT_TEMPLATES: Record<ContractKind, ContractTemplate> = {
         body:
           "This Change Order modifies the existing agreement between RSG " +
           "and {{client_business}} covering the current engagement. Except " +
-          "as expressly changed below, all terms of that agreement — " +
+          "as expressly changed below, all terms of that agreement, " +
           "including confidentiality, intellectual property, warranties, " +
-          "limitations of liability, and governing law — remain in full " +
+          "limitations of liability, and governing law; remain in full " +
           "effect.",
       },
       {

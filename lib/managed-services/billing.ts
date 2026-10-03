@@ -2,7 +2,7 @@
  * Stripe billing integration (server-only).
  *
  * Everything here is gated on STRIPE_SECRET_KEY. When Stripe is not
- * configured the rest of the managed-services system still works — plans,
+ * configured the rest of the managed-services system still works, plans,
  * subscriptions, requests, and reporting run on manual/invoiced billing and
  * the UI hides online-payment actions.
  *
@@ -18,7 +18,7 @@ let cachedStripe: Stripe | null = null;
 
 /**
  * Instrumented Stripe call. Use for anything whose failure changes what a
- * client sees or is charged — every such call belongs in the log with its
+ * client sees or is charged: every such call belongs in the log with its
  * Stripe request id, because that id is the first thing Stripe support asks
  * for and it is unrecoverable after the fact.
  */
@@ -74,7 +74,7 @@ export async function ensureStripeCustomer(input: {
       );
       if (customer && !customer.deleted) return customer.id;
     } catch {
-      // Fall through and create a fresh customer. Recorded by stripeCall —
+      // Fall through and create a fresh customer. Recorded by stripeCall,
       // previously this swallowed an auth failure as silently as a genuinely
       // missing customer, and the two need very different responses.
     }
@@ -112,7 +112,7 @@ async function ensurePlanProduct(
     });
     if (found.data[0]) return found.data[0].id;
   } catch {
-    // Search unavailable on some accounts — fall back to list + filter.
+    // Search unavailable on some accounts: fall back to list + filter.
     try {
       const all = await stripe.products.list({ limit: 100, active: true });
       const match = all.data.find((p) => p.metadata?.rsg_plan_key === planKey);
@@ -122,7 +122,7 @@ async function ensurePlanProduct(
     }
   }
   const product = await stripe.products.create({
-    name: `RSG Managed Services — ${planName}`,
+    name: `RSG Managed Services: ${planName}`,
     metadata: { rsg_plan_key: planKey },
   });
   return product.id;
@@ -174,7 +174,7 @@ export async function createSubscriptionCheckout(
       quantity: 1,
       price_data: {
         currency: "usd",
-        product_data: { name: `${input.plan.name} — onboarding & setup` },
+        product_data: { name: `${input.plan.name}: onboarding & setup` },
         unit_amount: input.setupFeeCents,
       },
     });
@@ -248,7 +248,7 @@ let cachedPortalConfigId: string | null = null;
 /**
  * Find or create a restricted billing-portal configuration: payment-method
  * updates and invoice history only. Cancellation and plan changes are
- * deliberately disabled — those flow through our own portal actions, which
+ * deliberately disabled: those flow through our own portal actions, which
  * enforce the business-critical managed-transition guard. The account's
  * default portal configuration may allow self-serve cancellation, which
  * would bypass that guard.
@@ -270,7 +270,7 @@ async function ensureRestrictedPortalConfiguration(
     }
     const created = await stripe.billingPortal.configurations.create({
       business_profile: {
-        headline: "Redmont Strategies Group — managed services billing",
+        headline: "Redmont Strategies Group: managed services billing",
       },
       features: {
         payment_method_update: { enabled: true },
@@ -284,7 +284,7 @@ async function ensureRestrictedPortalConfiguration(
     return created.id;
   } catch (err) {
     console.warn(
-      "[billing] restricted portal configuration unavailable — falling back to the account default.",
+      "[billing] restricted portal configuration unavailable: falling back to the account default.",
       err
     );
     return null;

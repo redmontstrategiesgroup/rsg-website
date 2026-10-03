@@ -1,7 +1,7 @@
 /**
  * Managed-services domain types (safe to import from client & server).
  *
- * Pricing is stored in the database (admin-editable) — components must never
+ * Pricing is stored in the database (admin-editable), components must never
  * hard-code plan pricing. `lib/managed-services/content.ts` carries the seed
  * defaults used when Supabase is unavailable in local development.
  */
@@ -334,7 +334,7 @@ export type MaintenanceLog = {
 
 export type ReportKind = "monthly" | "health" | "baseline" | "quarterly";
 
-/** Structured report body. All sections optional — render what exists. */
+/** Structured report body. All sections optional, render what exists. */
 export type ServiceReportData = {
   systemsMonitored?: string[];
   uptimePct?: number;

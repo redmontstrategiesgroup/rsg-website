@@ -29,6 +29,34 @@ describe("scheduling permissions", () => {
     );
   });
 
+  it("founder and cofounder have full access, including team management", () => {
+    for (const role of ["founder", "cofounder"] as const) {
+      assert.equal(can("manage_team", role), true);
+      assert.equal(can("manage_billing", role), true);
+      assert.equal(can("manage_security_settings", role), true);
+    }
+  });
+
+  it("head programmer runs platform + security but not team, billing or leads", () => {
+    assert.equal(can("manage_automations", "head_programmer"), true);
+    assert.equal(can("manage_security_settings", "head_programmer"), true);
+    assert.equal(can("view_audit", "head_programmer"), true);
+    assert.equal(can("edit_qualification_rules", "head_programmer"), true);
+    assert.equal(can("manage_team", "head_programmer"), false);
+    assert.equal(can("manage_billing", "head_programmer"), false);
+    assert.equal(can("manage_leads", "head_programmer"), false);
+    assert.equal(can("view_private_notes", "head_programmer"), false);
+  });
+
+  it("wholesale real estate works leads and proposals but not team or billing", () => {
+    assert.equal(can("manage_leads", "wholesale_real_estate"), true);
+    assert.equal(can("manage_proposals", "wholesale_real_estate"), true);
+    assert.equal(can("edit_appointments", "wholesale_real_estate"), true);
+    assert.equal(can("manage_team", "wholesale_real_estate"), false);
+    assert.equal(can("manage_billing", "wholesale_real_estate"), false);
+    assert.equal(can("edit_qualification_rules", "wholesale_real_estate"), false);
+  });
+
   it("defaults missing role to owner", () => {
     assert.equal(getAdminRole(), "owner");
   });

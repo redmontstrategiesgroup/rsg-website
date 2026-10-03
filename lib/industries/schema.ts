@@ -96,7 +96,6 @@ export const verticalSchema = z.object({
   status: z.enum(["draft", "published"]),
   name: shortReq,
   shortName: shortReq,
-  audience: z.array(short).min(1).max(12),
   terminology: z.object({
     customer: shortReq,
     customers: shortReq,
@@ -108,7 +107,7 @@ export const verticalSchema = z.object({
     eyebrow: shortReq,
     headline: mediumReq,
     subheadline: long.min(1),
-    primaryCta: ctaSchema,
+    primaryCta: ctaSchema.optional(),
     demoCta: ctaSchema,
     designedFor: long.min(1),
   }),

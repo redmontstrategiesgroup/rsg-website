@@ -164,9 +164,9 @@ export function SubscriptionsView({
       {/* Assign plan */}
       <form
         onSubmit={submitAssign}
-        className="rounded-xl border border-white/10 bg-white/[0.02] p-5"
+        className="rounded-xl border border-white/10 bg-white/2 p-5"
       >
-        <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+        <p className="text-xs font-medium uppercase tracking-wide text-white/65">
           Assign plan to client
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -197,7 +197,7 @@ export function SubscriptionsView({
                 .filter((p) => p.active)
                 .map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} — {formatMonthlyPrice(p)}
+                    {p.name}: {formatMonthlyPrice(p)}
                     {p.clientId ? " (custom)" : ""}
                   </option>
                 ))}
@@ -284,7 +284,7 @@ export function SubscriptionsView({
       {/* Subscriptions table */}
       <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[880px] text-left text-sm">
-          <thead className="bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+          <thead className="bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
             <tr className="border-b border-white/10">
               <th className="px-4 py-3 font-normal">Client</th>
               <th className="px-4 py-3 font-normal">Plan</th>
@@ -300,8 +300,8 @@ export function SubscriptionsView({
               <tr
                 key={s.id}
                 onClick={() => select(s)}
-                className={`cursor-pointer border-b border-white/5 last:border-0 hover:bg-white/[0.02] ${
-                  selectedId === s.id ? "bg-crimson/[0.06]" : ""
+                className={`cursor-pointer border-b border-white/5 last:border-0 hover:bg-white/2 ${
+                  selectedId === s.id ? "bg-crimson/6" : ""
                 }`}
               >
                 <td className="px-4 py-3 text-white/85">
@@ -313,7 +313,7 @@ export function SubscriptionsView({
                 <td className="px-4 py-3">
                   <StatusPill value={s.status} />
                   {s.cancelAtPeriodEnd && s.status !== "cancelled" ? (
-                    <span className="ml-2 text-[0.6rem] text-amber-200/80">
+                    <span className="ml-2 text-xs text-amber-200/80">
                       ends at period end
                     </span>
                   ) : null}
@@ -321,7 +321,7 @@ export function SubscriptionsView({
                 <td className="px-4 py-3 text-white/70">
                   {formatCents(normalizedMonthly(s))}
                   {s.billingFrequency === "annual" ? (
-                    <span className="ml-1 text-xs text-white/35">(annual)</span>
+                    <span className="ml-1 text-xs text-white/60">(annual)</span>
                   ) : null}
                 </td>
                 <td className="px-4 py-3 text-white/60">
@@ -335,7 +335,7 @@ export function SubscriptionsView({
                   )}
                 </td>
                 <td className="px-4 py-3 text-white/60">
-                  {s.accountManager || "—"}
+                  {s.accountManager || "-"}
                 </td>
               </tr>
             ))}
@@ -357,18 +357,18 @@ export function SubscriptionsView({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm text-white/85">
-                {clientLabel(clients, selected.clientId)} —{" "}
+                {clientLabel(clients, selected.clientId)}, {" "}
                 {selected.planName ?? "plan"}
               </p>
-              <p className="mt-1 text-xs text-white/40">
+              <p className="mt-1 text-xs text-white/60">
                 Started {fmtDate(selected.startedAt)} · Commitment ends{" "}
                 {fmtDate(selected.commitmentEndsAt)} · Payment method{" "}
-                {selected.paymentMethodSummary || "—"}
+                {selected.paymentMethodSummary || "-"}
               </p>
             </div>
             <button
               type="button"
-              className="text-xs text-white/45 hover:text-white"
+              className="text-xs text-white/65 hover:text-white"
               onClick={() => {
                 setSelectedId("");
                 setDraft(null);
@@ -559,7 +559,7 @@ export function SubscriptionsView({
               Save subscription
             </button>
 
-            <div className="flex flex-wrap items-end gap-3 rounded-lg border border-red-400/20 bg-red-400/[0.04] p-3">
+            <div className="flex flex-wrap items-end gap-3 rounded-lg border border-red-400/20 bg-red-400/4 p-3">
               <Field label="Cancellation reason (optional)">
                 <input
                   className={`${inputClass} min-w-[240px]`}

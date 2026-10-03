@@ -1,5 +1,5 @@
 /**
- * Public tokenized proposal page — a standalone document (outside the
+ * Public tokenized proposal page: a standalone document (outside the
  * marketing layout group, so no Navbar/Footer). Everything shown here is
  * resolved server-side from the proposal and plan rows; the client component
  * only collects the acceptance.
@@ -38,8 +38,8 @@ export async function generateMetadata({
   return {
     title:
       proposal && proposal.status !== "draft"
-        ? `${proposal.title} — Redmont Strategies Group`
-        : "Proposal — Redmont Strategies Group",
+        ? `${proposal.title}: Redmont Strategies Group`
+        : "Proposal: Redmont Strategies Group",
     robots: { index: false, follow: false },
   };
 }
@@ -82,8 +82,8 @@ function PlanCard({
     <div
       className={`border p-6 ${
         recommended
-          ? "border-white/25 bg-white/[0.04]"
-          : "border-white/10 bg-white/[0.02]"
+          ? "border-white/25 bg-white/4"
+          : "border-white/10 bg-white/2"
       }`}
     >
       <div className="flex items-baseline justify-between gap-3">
@@ -104,7 +104,7 @@ function PlanCard({
         {plan.features.slice(0, 6).map((feature) => (
           <li key={feature} className="flex gap-2 text-sm text-white/55">
             <span aria-hidden className="text-white/30">
-              —
+              -
             </span>
             {feature}
           </li>
@@ -176,7 +176,7 @@ export default async function ProposalPage({
   const impl = proposal.implementation;
   const isCompletion = proposal.kind === "project_completion";
 
-  // Recurring pricing summary — proposal-level overrides win.
+  // Recurring pricing summary: proposal-level overrides win.
   const monthlyDisplay = proposal.monthlyPriceCents ?? primary?.monthlyPriceCents ?? null;
   const annualDisplay =
     proposal.annualPriceCents ??
@@ -210,7 +210,7 @@ export default async function ProposalPage({
             "Annual option",
             `${formatCents(annualDisplay)} / year${
               annualSavings != null && annualSavings > 0
-                ? ` — save ${formatCents(annualSavings)}`
+                ? ` (save ${formatCents(annualSavings)})`
                 : ""
             }`,
           ],
@@ -228,7 +228,7 @@ export default async function ProposalPage({
   ];
 
   return (
-    <div className="min-h-screen bg-base text-white">
+    <div className="min-h-dvh bg-base text-white">
       {/* Minimal standalone top bar */}
       <header className="border-b border-white/10">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-6 py-5 sm:px-10">
@@ -252,7 +252,7 @@ export default async function ProposalPage({
         ) : null}
 
         {expired ? (
-          <p className="mt-6 border border-amber-500/25 bg-amber-500/[0.06] px-4 py-3 text-sm text-amber-200/90">
+          <p className="mt-6 border border-amber-500/25 bg-amber-500/6 px-4 py-3 text-sm text-amber-200/90">
             This proposal expired
             {proposal.validUntil ? ` on ${formatDate(proposal.validUntil)}` : ""}.
             Contact us for an updated version.
@@ -281,7 +281,7 @@ export default async function ProposalPage({
                 {(isCompletion ? impl.delivered! : impl.items!).map((item) => (
                   <div
                     key={item.title}
-                    className="border border-white/10 bg-white/[0.02] p-5"
+                    className="border border-white/10 bg-white/2 p-5"
                   >
                     <h3 className="text-sm font-medium text-white">{item.title}</h3>
                     {item.detail ? (
@@ -296,7 +296,7 @@ export default async function ProposalPage({
 
             {!isCompletion && impl.timeline ? (
               <p className="mt-6 text-sm text-white/55">
-                <span className="text-white/40">Timeline — </span>
+                <span className="text-white/40">Timeline: </span>
                 {impl.timeline}
               </p>
             ) : null}
@@ -316,7 +316,7 @@ export default async function ProposalPage({
                 <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/55">
                   Without an active management plan, software updates, security
                   patching, backups, uptime monitoring, and ongoing improvements
-                  become your responsibility. Systems age without them —
+                  become your responsibility. Systems age without them,
                   dependencies fall behind, integrations drift, and small issues
                   compound over time into outages and rework.
                 </p>
@@ -324,7 +324,7 @@ export default async function ProposalPage({
             ) : null}
 
             {(impl.costCents ?? 0) > 0 || (impl.depositCents ?? 0) > 0 ? (
-              <dl className="mt-10 divide-y divide-white/10 border border-white/10 bg-white/[0.02]">
+              <dl className="mt-10 divide-y divide-white/10 border border-white/10 bg-white/2">
                 {(impl.costCents ?? 0) > 0 ? (
                   <div className="flex items-baseline justify-between gap-4 px-5 py-4">
                     <dt className="text-xs uppercase tracking-[0.14em] text-white/40">
@@ -363,7 +363,7 @@ export default async function ProposalPage({
               ))}
             </div>
 
-            <dl className="mt-8 divide-y divide-white/10 border border-white/10 bg-white/[0.02]">
+            <dl className="mt-8 divide-y divide-white/10 border border-white/10 bg-white/2">
               {pricingRows.map(([label, value]) => (
                 <div
                   key={label}
@@ -384,7 +384,7 @@ export default async function ProposalPage({
                   {proposal.addons.map((addon) => (
                     <li
                       key={addon.key || addon.name}
-                      className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border border-white/10 bg-white/[0.02] px-5 py-4"
+                      className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border border-white/10 bg-white/2 px-5 py-4"
                     >
                       <div>
                         <p className="text-sm text-white">{addon.name}</p>

@@ -3,7 +3,7 @@
  *
  * Turns the booking funnel's ongoing-support answers into a consultative
  * plan recommendation. The result is stored on the lead and is always
- * editable by an RSG administrator — this is a starting point for the
+ * editable by an RSG administrator: this is a starting point for the
  * conversation, never a binding quote.
  */
 
@@ -87,7 +87,7 @@ export function recommendPlan(
 
   const alternative = alternativeFor(plan);
   const reason = reasons.length
-    ? `Based on your answers — ${dedupe(reasons).slice(0, 3).join("; ")}.`
+    ? `Based on your answers: ${dedupe(reasons).slice(0, 3).join("; ")}.`
     : "Based on your answers.";
 
   return { planKey: plan, alternativeKey: alternative, reason };

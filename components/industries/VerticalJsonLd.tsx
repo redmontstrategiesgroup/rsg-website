@@ -1,5 +1,6 @@
 import { PHONE_TEL, SITE_URL } from "@/lib/site";
 import type { IndustryVertical } from "@/lib/industries/types";
+import { VERTICAL_ROUTES } from "@/lib/industries/types";
 
 /**
  * Structured data for a vertical page: Service, BreadcrumbList, and FAQPage.
@@ -7,12 +8,13 @@ import type { IndustryVertical } from "@/lib/industries/types";
  * never drift from what a visitor sees.
  */
 export function VerticalJsonLd({ vertical }: { vertical: IndustryVertical }) {
-  const pageUrl = `${SITE_URL}/industries/${vertical.slug}`;
+  // Route, not slug: the two differ and the slug form 301s (VERTICAL_ROUTES).
+  const pageUrl = `${SITE_URL}${VERTICAL_ROUTES[vertical.slug]}`;
 
   const serviceLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: `${vertical.name} — Systems, Automation & AI`,
+    name: `${vertical.name}: Systems, Automation & AI`,
     description: vertical.seo.description,
     serviceType: "Business systems, automation, and AI implementation",
     url: pageUrl,

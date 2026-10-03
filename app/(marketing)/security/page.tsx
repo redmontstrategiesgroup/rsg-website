@@ -9,12 +9,12 @@ const PATH = "/security";
 export const metadata: Metadata = {
   title: "The RSG Secure Systems Standard | Redmont Strategies Group",
   description:
-    "How RSG builds secure, production-ready business systems: identity and access, data protection, responsible-AI controls, backups, audit logs, vendor documentation, and incident response — informed by NIST and OWASP guidance.",
+    "How RSG builds secure, production-ready business systems: identity and access, data protection, responsible-AI controls, backups, audit logs, vendor documentation, and incident response, informed by NIST and OWASP guidance.",
   alternates: { canonical: `${SITE_URL}${PATH}` },
   openGraph: {
     title: "The RSG Secure Systems Standard | Redmont Strategies Group",
     description:
-      "Security, responsible AI, and operational control designed into every system from the beginning — not added after the automation is running.",
+      "Security, responsible AI, and operational control designed into every system from the beginning; not added after the automation is running.",
     url: `${SITE_URL}${PATH}`,
     siteName: "Redmont Strategies Group",
     type: "website",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "The RSG Secure Systems Standard",
     description:
-      "Permissions, approvals, backups, logs, testing, and recovery — built in from the start.",
+      "Permissions, approvals, backups, logs, testing, and recovery, built in from the start.",
   },
   robots: { index: true, follow: true },
 };

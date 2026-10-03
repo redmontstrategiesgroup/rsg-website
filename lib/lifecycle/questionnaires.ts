@@ -3,7 +3,7 @@ import type { Questionnaire, QuestionnaireStatus } from "@/lib/lifecycle/types";
 import { buildPrepBrief } from "@/lib/lifecycle/questionnaire-content";
 
 /**
- * Post-booking preparation questionnaires — data access.
+ * Post-booking preparation questionnaires: data access.
  * Templates and prep-brief generation live in questionnaire-content.ts.
  */
 
@@ -16,7 +16,7 @@ export async function createQuestionnaire(input: {
 }): Promise<Questionnaire> {
   const sb = requireSupabase();
 
-  // One active questionnaire per booking — re-sending a link must not fork
+  // One active questionnaire per booking: re-sending a link must not fork
   // the client's saved answers.
   if (input.bookingId) {
     const { data: existing } = await sb

@@ -1,7 +1,7 @@
 /**
  * ai/usage tests: the pure cost-estimate logic and cap default. DB round-trips
  * (recordAiUsage / tenantUsageThisMonth) require Supabase and are exercised via
- * the app routes once a database is reachable — not unit-tested here.
+ * the app routes once a database is reachable, not unit-tested here.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";

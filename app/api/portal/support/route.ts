@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, ticket });
   }
 
-  // All remaining actions target an existing ticket — ownership first.
+  // All remaining actions target an existing ticket, ownership first.
   const ticket = await getTicket(body.ticketId);
   if (!ticket || ticket.client_id !== ctx.client.id) {
     return NextResponse.json({ error: "Ticket not found." }, { status: 404 });
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     case "reply": {
       if (ticket.status === "closed") {
         return NextResponse.json(
-          { error: "This ticket is closed — open a new one and reference it." },
+          { error: "This ticket is closed: open a new one and reference it." },
           { status: 409 },
         );
       }

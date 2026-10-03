@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function SupportPage() {
   const ctx = await requirePortalPage();
-  // Tolerate a not-yet-migrated database — render calm empty states.
+  // Tolerate a not-yet-migrated database: render calm empty states.
   const tickets = await listTicketsForClient(ctx.client.id, { limit: 100 }).catch(
     () => [],
   );

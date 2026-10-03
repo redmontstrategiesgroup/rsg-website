@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Shared server-side Supabase client (service-role key — bypasses RLS).
+ * Shared server-side Supabase client (service-role key, bypasses RLS).
  * Returns null when Supabase isn't configured, so callers can fall back to
  * the local file store. Never import this into client components.
  */

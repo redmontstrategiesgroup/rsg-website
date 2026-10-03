@@ -41,6 +41,7 @@ import { AuditView } from "@/components/admin/security/AuditView";
 import { UsersRolesView } from "@/components/admin/security/UsersRolesView";
 import { PoliciesView } from "@/components/admin/security/PoliciesView";
 import { MfaSetup } from "@/components/admin/security/MfaSetup";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 export type SecurityCapabilities = {
   manageIncidents: boolean;
@@ -151,7 +152,7 @@ export function SecurityCenterPanel({
         await load();
         return true;
       } catch {
-        setError("Network error — please try again.");
+        setError("Network error: please try again.");
         return false;
       } finally {
         setBusy(false);
@@ -162,7 +163,7 @@ export function SecurityCenterPanel({
 
   if (loading) {
     return (
-      <div className="flex items-center gap-3 py-16 text-white/50">
+      <div className="flex items-center gap-3 py-16 text-white/65">
         <Loader2 className="animate-spin" size={18} />
         Loading Security Center…
       </div>
@@ -188,26 +189,18 @@ export function SecurityCenterPanel({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 className="display text-xl text-white">RSG Security Center</h2>
-          <p className="mt-2 max-w-2xl text-sm text-white/55">
-            The RSG Secure Systems Standard, operationalized: identity, data,
-            AI approvals, vendors, retention, incidents, and testing — backed by
-            real system data.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-4">
         <button
           onClick={load}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 disabled:opacity-50"
         >
           <RefreshCw size={14} className={busy ? "animate-spin" : ""} /> Refresh
         </button>
       </div>
 
       {data.overview.usingDemoData && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-400/[0.06] px-4 py-3 text-sm text-amber-200/90">
+        <div className="flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-400/6 px-4 py-3 text-sm text-amber-200/90">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <span>
             Demo data is enabled in this environment. Some metrics may reflect
@@ -217,7 +210,7 @@ export function SecurityCenterPanel({
       )}
 
       {error && (
-        <div className="rounded-xl border border-crimson/40 bg-crimson/[0.08] px-4 py-3 text-sm text-crimson-light">
+        <div className="rounded-xl border border-crimson/40 bg-crimson/8 px-4 py-3 text-sm text-crimson-light">
           {error}
         </div>
       )}
@@ -227,18 +220,21 @@ export function SecurityCenterPanel({
       )}
 
       {/* Sub-nav */}
-      <div className="flex gap-1 overflow-x-auto border-b border-white/10 pb-px">
+      <ScrollRail role="tablist" activeKey={section} keyboardTabs className="flex gap-1 border-b border-white/10 pb-px">
         {SECTIONS.map((s) => {
           const active = section === s.id;
           const Icon = s.icon;
           return (
             <button
               key={s.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
               onClick={() => setSection(s.id)}
               className={`relative inline-flex shrink-0 items-center gap-2 rounded-t-lg px-3.5 py-2.5 text-sm transition-colors ${
                 active
-                  ? "bg-white/[0.04] text-white"
-                  : "text-white/50 hover:text-white/80"
+                  ? "bg-white/4 text-white"
+                  : "text-white/65 hover:text-white/80"
               }`}
             >
               <Icon size={14} />
@@ -246,7 +242,7 @@ export function SecurityCenterPanel({
             </button>
           );
         })}
-      </div>
+      </ScrollRail>
 
       <div>
         {section === "overview" && <OverviewView overview={data.overview} />}
@@ -335,12 +331,12 @@ function OverviewView({ overview }: { overview: SecurityOverview }) {
         {overview.indicators.map((ind) => (
           <div
             key={ind.key}
-            className="rounded-xl border border-white/10 bg-white/[0.02] p-4"
+            className="rounded-xl border border-white/10 bg-white/2 p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <p className={labelClass}>{ind.label}</p>
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[0.6rem] font-medium ${statusPill(
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium ${statusPill(
                   ind.status
                 )}`}
               >
@@ -350,7 +346,7 @@ function OverviewView({ overview }: { overview: SecurityOverview }) {
             </div>
             <p className="mt-3 text-lg font-medium text-white">{ind.value}</p>
             {ind.detail && (
-              <p className="mt-1.5 text-xs leading-relaxed text-white/45">
+              <p className="mt-1.5 text-xs leading-relaxed text-white/65">
                 {ind.detail}
               </p>
             )}
@@ -365,10 +361,10 @@ function OverviewView({ overview }: { overview: SecurityOverview }) {
             {overview.counts.recentHighRiskAiActions.map((a) => (
               <li
                 key={a.id}
-                className="flex items-center justify-between gap-3 border-b border-white/[0.06] pb-2 text-sm text-white/70 last:border-0"
+                className="flex items-center justify-between gap-3 border-b border-white/6 pb-2 text-sm text-white/70 last:border-0"
               >
                 <span className="truncate">{a.title}</span>
-                <span className="shrink-0 font-mono text-[0.6rem] uppercase tracking-label text-white/40">
+                <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-white/60">
                   {a.riskLevel} · {a.status.replace(/_/g, " ")}
                 </span>
               </li>
@@ -377,7 +373,7 @@ function OverviewView({ overview }: { overview: SecurityOverview }) {
         </div>
       )}
 
-      <p className="text-xs text-white/35">
+      <p className="text-xs text-white/60">
         Generated {new Date(overview.generatedAt).toLocaleString("en-US", { timeZone: "America/New_York" })} ·
         every figure is measured from live system state or marked unavailable.
       </p>
@@ -394,11 +390,11 @@ function EnvironmentView({ overview }: { overview: SecurityOverview }) {
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         {overview.environment.map((c) => (
-          <div key={c.key} className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+          <div key={c.key} className="rounded-xl border border-white/10 bg-white/2 p-4">
             <div className="flex items-start justify-between gap-3">
               <p className={labelClass}>{c.label}</p>
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[0.6rem] font-medium ${statusPill(
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium ${statusPill(
                   c.status
                 )}`}
               >
@@ -408,7 +404,7 @@ function EnvironmentView({ overview }: { overview: SecurityOverview }) {
             </div>
             <p className="mt-2.5 text-sm font-medium text-white">{c.value}</p>
             {c.detail && (
-              <p className="mt-1.5 text-xs leading-relaxed text-white/45">{c.detail}</p>
+              <p className="mt-1.5 text-xs leading-relaxed text-white/65">{c.detail}</p>
             )}
           </div>
         ))}
@@ -429,11 +425,11 @@ function BackupsView({ overview }: { overview: SecurityOverview }) {
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         {[backup, restore].filter(Boolean).map((ind) => (
-          <div key={ind!.key} className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+          <div key={ind!.key} className="rounded-xl border border-white/10 bg-white/2 p-5">
             <div className="flex items-start justify-between gap-3">
               <p className={labelClass}>{ind!.label}</p>
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[0.6rem] font-medium ${statusPill(
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium ${statusPill(
                   ind!.status
                 )}`}
               >
@@ -443,7 +439,7 @@ function BackupsView({ overview }: { overview: SecurityOverview }) {
             </div>
             <p className="mt-3 text-base font-medium text-white">{ind!.value}</p>
             {ind!.detail && (
-              <p className="mt-1.5 text-xs leading-relaxed text-white/45">{ind!.detail}</p>
+              <p className="mt-1.5 text-xs leading-relaxed text-white/65">{ind!.detail}</p>
             )}
           </div>
         ))}
@@ -455,7 +451,7 @@ function BackupsView({ overview }: { overview: SecurityOverview }) {
             "What is backed up (database, uploaded files, configuration).",
             "How often backups run and how long they are retained.",
             "How a restoration would be performed and who is responsible.",
-            "Recovery testing — restore a backup into an isolated environment and verify integrity (logged in Security Tests).",
+            "Recovery testing: restore a backup into an isolated environment and verify integrity (logged in Security Tests).",
           ].map((t) => (
             <li key={t} className="flex gap-2">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-crimson-light" />

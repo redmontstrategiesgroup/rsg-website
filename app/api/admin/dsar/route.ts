@@ -16,7 +16,7 @@ const RequestSchema = z.object({
   email: z.string().email().max(320),
   action: z.enum(["export", "delete"]),
   // Erasure of a live portal client account (and its cascade of sessions,
-  // subscriptions, roadmaps, service records) is destructive — require an
+  // subscriptions, roadmaps, service records) is destructive, require an
   // explicit opt-in rather than wiping an account as a side effect.
   includeClientAccount: z.boolean().optional(),
 });
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
     email,
     deleted,
     // Surface, rather than silently ignore, a portal account that was left in
-    // place — so the admin can consciously re-run with includeClientAccount.
+    // place, so the admin can consciously re-run with includeClientAccount.
     clientAccountPresent,
     clientAccountErased: parsed.data.includeClientAccount === true && clientAccountPresent,
     skipped: skipped.map((o) => o.table),

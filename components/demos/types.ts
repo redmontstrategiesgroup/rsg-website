@@ -5,7 +5,7 @@
  * driven entirely by an IndustryConfig. All interactions mutate one serializable
  * DemoState through a pure reducer (engine.ts), persisted per-visitor in
  * localStorage (storage.ts). Nothing here ever touches production data, and no
- * real messages, appointments, or payments are created — every external action
+ * real messages, appointments, or payments are created, every external action
  * is an explicitly labeled simulation.
  */
 
@@ -16,14 +16,14 @@ export type NavId =
   | "conversations"
   | "receptionist"
   | "quotes"
-  | "loyalty"
-  | "inventory"
   | "automations"
   | "tasks"
   | "calendar"
   | "reviews"
   | "campaigns"
   | "analytics"
+  | "boundaries"
+  | "recovered"
   | "settings";
 
 export type Channel = "sms" | "instagram" | "facebook" | "phone" | "email" | "web";
@@ -73,7 +73,7 @@ export type Message = {
   time: string;
   /** Small caption under the bubble, e.g. "Automated · Missed-call text-back". */
   meta?: string;
-  /** Staff-only internal note — never "sent" to the contact. */
+  /** Staff-only internal note, never "sent" to the contact. */
   internal?: boolean;
 };
 
@@ -179,7 +179,7 @@ export type Automation = {
   steps: string[];
   runsThisMonth: number;
   status: "active" | "paused";
-  /** Editable in the demo — e.g. "2 days", "10 minutes". */
+  /** Editable in the demo: e.g. "2 days", "10 minutes". */
   delayLabel?: string;
   /** Editable first outbound message for this workflow, if it sends one. */
   message?: string;
@@ -191,7 +191,7 @@ export type WorkflowRun = {
   name: string;
   detail: string;
   time: string;
-  /** Always true — demo runs never contact real people. */
+  /** Always true: demo runs never contact real people. */
   simulated: true;
 };
 
@@ -230,93 +230,8 @@ export type QuoteConfig = {
   /** Stage a linked lead moves to when its quote is accepted (if the stage exists). */
   acceptedStageId?: string;
   disclaimer: string;
-};
-
-/* ------------------------------------------------------------------ */
-/* Loyalty module (industries that sell to repeat customers)           */
-/* ------------------------------------------------------------------ */
-
-export type LoyaltyTier = {
-  id: string;
-  label: string;
-  /** Points needed to reach the tier. */
-  threshold: number;
-  perks: string;
-};
-
-export type LoyaltyReward = {
-  id: string;
-  label: string;
-  /** Points required to redeem. */
-  cost: number;
-  redeemedThisMonth: number;
-};
-
-export type LoyaltyMember = {
-  id: string;
-  name: string;
-  /** LoyaltyTier id. */
-  tierId: string;
-  points: number;
-  visits: number;
-  joined: string;
-  lastActivity: string;
-};
-
-export type LoyaltyActivityItem = {
-  id: string;
-  member: string;
-  action: string;
-  time: string;
-};
-
-/** Config for the loyalty & referral module (rendered when nav includes "loyalty"). */
-export type LoyaltyConfig = {
-  programName: string;
-  description: string;
-  pointsPerDollar: number;
-  /** Baseline program stats shown alongside live session counts. */
-  baseline: { issued: number; redeemed: number; members: number; referrals: number };
-  tiers: LoyaltyTier[];
-  rewards: LoyaltyReward[];
-  members: LoyaltyMember[];
-  activity: LoyaltyActivityItem[];
-  /** Reward-notification template previewed in the demo ({first_name}, {reward}, {points}). */
-  notificationPreview: string;
-};
-
-/* ------------------------------------------------------------------ */
-/* Inventory module (product-based industries)                         */
-/* ------------------------------------------------------------------ */
-
-export type ProductStatus =
-  | "in-stock"
-  | "low-stock"
-  | "reorder"
-  | "overstocked"
-  | "out-of-stock"
-  | "slow-moving";
-
-export type Product = {
-  id: string;
-  sku: string;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  reorderPoint: number;
-  /** Average units sold per week. */
-  velocity: number;
-  status: ProductStatus;
-  supplier: string;
-  lastReorder: string;
-};
-
-/** Config for the inventory module (rendered when nav includes "inventory"). */
-export type InventoryConfig = {
-  title: string;
-  description: string;
-  products: Product[];
+  /** Label for the computed total, e.g. "Estimated net proceeds". Defaults to "Estimated total". */
+  totalLabel?: string;
 };
 
 /** One turn in the scripted AI receptionist conversation. */
@@ -334,7 +249,7 @@ export type ReceptionistNode = {
 
 /** Config for the interactive AI receptionist simulation. */
 export type ReceptionistConfig = {
-  /** e.g. "After-hours call — burst pipe" */
+  /** e.g. "After-hours call: burst pipe" */
   scenarioLabel: string;
   description: string;
   /** Who the visitor role-plays, e.g. "a homeowner calling after hours". */
@@ -392,9 +307,72 @@ export type IntakeField = {
 
 export type AppointmentType = { id: string; label: string; duration: number };
 
-export type WidgetId = "metrics" | "activity" | "schedule" | "tasks" | "pipeline";
+export type WidgetId = "metrics" | "activity" | "schedule" | "tasks" | "pipeline" | "recovered";
 
 export type WidgetPref = { id: WidgetId; visible: boolean };
+
+/* ------------------------------------------------------------------ */
+/* Boundaries: what the AI refuses, verifies, discloses, or routes      */
+/* ------------------------------------------------------------------ */
+
+export type BoundaryKind = "never" | "always" | "route";
+export type BoundaryOutcome = "declined" | "routed" | "verified" | "disclosed";
+export type BoundarySource = "receptionist" | "automation" | "conversation" | "scenario";
+
+export type BoundaryRule = {
+  id: string;
+  label: string;
+  kind: BoundaryKind;
+  detail: string;
+  /** Staff id the matter is routed to (kind "route"). */
+  routesTo?: string;
+};
+
+export type BoundaryEvent = {
+  id: string;
+  ruleId: string;
+  at: string;
+  summary: string;
+  outcome: BoundaryOutcome;
+  source: BoundarySource;
+};
+
+export type BoundariesConfig = { intro: string; rules: BoundaryRule[]; seed: BoundaryEvent[] };
+
+/* ------------------------------------------------------------------ */
+/* Recovered: revenue that would have died in silence                  */
+/* ------------------------------------------------------------------ */
+
+export type RecoveryTrigger =
+  | "quote-followup"
+  | "missed-call"
+  | "no-show"
+  | "reactivation"
+  | "deadline"
+  | "after-hours"
+  | "referral";
+
+export type RecoveryEvent = {
+  id: string;
+  at: string;
+  contact: string;
+  amount: number;
+  /** How long the contact had been quiet before the automated touch, e.g. "5 days". */
+  silentFor: string;
+  trigger: RecoveryTrigger;
+  summary: string;
+  automationId?: string;
+  leadId?: string;
+};
+
+export type RecoveredConfig = { intro: string; attributionRule: string; seed: RecoveryEvent[] };
+
+/* ------------------------------------------------------------------ */
+/* Fresh-entity tracking for the tour spotlight                        */
+/* ------------------------------------------------------------------ */
+
+export type FreshKind = "record" | "message" | "task" | "calendar" | "metric" | "boundary" | "recovery";
+export type FreshEntry = { kind: FreshKind; at: number; parent?: string };
 
 /** A single state mutation applied by the reducer. */
 export type Effect =
@@ -417,15 +395,9 @@ export type Effect =
   | { kind: "workflowRun"; run: WorkflowRun }
   | { kind: "quote"; quote: QuoteRecord }
   | { kind: "quoteStatus"; quoteId: string; status: QuoteRecord["status"] }
-  /* loyalty module */
-  | { kind: "loyaltyPoints"; memberId: string; delta: number; reason: string }
-  | { kind: "loyaltyRedeem"; memberId: string; rewardId: string }
-  | { kind: "loyaltyTier"; memberId: string; tierId: string }
-  | { kind: "loyaltyReward"; reward: LoyaltyReward }
-  | { kind: "loyaltyActivity"; item: LoyaltyActivityItem }
-  /* inventory module */
-  | { kind: "stock"; productId: string; delta: number }
-  | { kind: "notify"; notification: DemoNotification };
+  | { kind: "notify"; notification: DemoNotification }
+  | { kind: "boundary"; ruleId: string; summary: string; outcome: BoundaryOutcome; source?: BoundarySource }
+  | { kind: "recovery"; event: Omit<RecoveryEvent, "id" | "at"> };
 
 export type ScenarioStep = {
   id: string;
@@ -471,11 +443,11 @@ export type Terminology = {
 
 export type IndustryConfig = {
   slug: string;
-  /** e.g. "Med Spas & Aesthetic Clinics" */
+  /** e.g. "Health & Wellness Practices" */
   industry: string;
-  /** e.g. "RSG Med Spa Growth System" */
+  /** e.g. "RSG Health & Wellness Front Desk System" */
   systemName: string;
-  /** Short name shown in the OS chrome, e.g. "Med Spa Growth System". */
+  /** Short name shown in the OS chrome, e.g. "Wellness Front Desk System". */
   osName: string;
   /** Fictional demo business the sample data belongs to. */
   businessName: string;
@@ -508,10 +480,6 @@ export type IndustryConfig = {
   quote: QuoteConfig;
   /** Interactive AI receptionist conversation for this industry. */
   receptionist: ReceptionistConfig;
-  /** Loyalty & referral module (only rendered when nav includes "loyalty"). */
-  loyalty?: LoyaltyConfig;
-  /** Inventory module (only rendered when nav includes "inventory"). */
-  inventory?: InventoryConfig;
   appointmentTypes: AppointmentType[];
   /** Bookable day options for the demo scheduler. */
   scheduleDays: { day: string; date: string }[];
@@ -537,12 +505,16 @@ export type IndustryConfig = {
    */
   requestServices?: string[];
   /**
-   * Extra qualification questions on the request form (e.g. retail asks for
-   * business type, locations, channels). Rendered as selects; answers travel
-   * with the lead as demo metadata.
+   * Extra qualification questions on the request form (e.g. real estate asks
+   * for brokerage type, agent count, transaction volume). Rendered as selects;
+   * answers travel with the lead as demo metadata.
    */
   requestExtras?: { id: string; label: string; options: string[]; helper?: string }[];
   breakdown: BreakdownConfig;
+  /** Guardrails the AI enforces, plus a few historical events so the tab isn't empty. */
+  boundaries?: BoundariesConfig;
+  /** Counterfactual attribution ledger seed. */
+  recovered?: RecoveredConfig;
   cta: { headline: string; button: string };
   seo: { title: string; description: string };
 };

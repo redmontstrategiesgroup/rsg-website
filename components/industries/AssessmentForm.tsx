@@ -5,8 +5,10 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, ClipboardList, Loader2 } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { postJson } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 import { trackEvent } from "@/lib/events";
-import type { IndustryVertical, RsgSystem } from "@/lib/industries/types";
+import { recommendSystem } from "@/lib/industries/recommend";
+import type { IndustryVertical } from "@/lib/industries/types";
 
 /**
  * Vertical-specific assessment. Questions adapt to the industry, answers
@@ -62,20 +64,21 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!res.ok || !data.ok) {
-        setError(data.error || "Something went wrong — please try again or email us directly.");
+        setError(data.error || "Something went wrong: please try again or email us directly.");
         return;
       }
       trackEvent("assessment_complete", { form: "industry_assessment", vertical: vertical.slug });
+      markKnownVisitor();
       setStep(3);
     } catch {
-      setError("Something went wrong — please check your connection and try again.");
+      setError("Something went wrong: please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <section id="assessment" className="scroll-mt-24 border-y border-white/[0.08] bg-base-900">
+    <section id="assessment" className="scroll-mt-24 border-y border-white/8 bg-base-900">
       <div className="container-px section-y">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
           <div className="lg:col-span-4">
@@ -125,7 +128,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                 {step <= 1 && (
                   <fieldset>
                     <legend className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
-                      {step === 0 ? "Part 1 — your operation" : "Part 2 — your current systems"}
+                      {step === 0 ? "Part 1: your operation" : "Part 2: your current systems"}
                     </legend>
                     <div className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
                       {pages[step].map((q) => (
@@ -142,7 +145,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                               id={`aq-${vertical.slug}-${q.id}`}
                               value={answers[q.id] ?? ""}
                               onChange={(e) => setAnswer(q.id, e.target.value)}
-                              className="mt-2 w-full rounded-lg border border-white/12 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white/85 focus:border-crimson/60 focus:outline-none"
+                              className="mt-2 w-full rounded-lg border border-white/35 bg-white/3 px-3.5 py-2.5 text-sm text-white/85 focus:border-crimson/60 focus:outline-hidden"
                             >
                               <option value="" disabled>
                                 Select…
@@ -162,7 +165,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                               placeholder={q.placeholder}
                               maxLength={300}
                               onChange={(e) => setAnswer(q.id, e.target.value)}
-                              className="mt-2 w-full rounded-lg border border-white/12 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none"
+                              className="mt-2 w-full rounded-lg border border-white/35 bg-white/3 px-3.5 py-2.5 text-sm text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-hidden"
                             />
                           )}
                           {q.helper && (
@@ -177,7 +180,7 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                 {step === 2 && (
                   <fieldset>
                     <legend className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
-                      Part 3 — where to send the assessment
+                      Part 3: where to send the assessment
                     </legend>
                     <p className="mt-4 text-sm leading-relaxed text-white/50">
                       Based on your answers we&apos;ll show your recommended starting point immediately,
@@ -185,24 +188,24 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                     </p>
                     <div className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
                       <ContactField
-                        label="Your name" required value={contact.name}
+                        label="Your name" required autoComplete="name" value={contact.name}
                         onChange={(v) => setContact((c) => ({ ...c, name: v }))}
                       />
                       <ContactField
-                        label="Business name" value={contact.company}
+                        label="Business name" autoComplete="organization" value={contact.company}
                         onChange={(v) => setContact((c) => ({ ...c, company: v }))}
                       />
                       <ContactField
-                        label="Email" type="email" required value={contact.email}
+                        label="Email" type="email" autoComplete="email" inputMode="email" required value={contact.email}
                         onChange={(v) => setContact((c) => ({ ...c, email: v }))}
                       />
                       <ContactField
-                        label="Phone" type="tel" value={contact.phone}
+                        label="Phone" type="tel" autoComplete="tel" inputMode="tel" value={contact.phone}
                         onChange={(v) => setContact((c) => ({ ...c, phone: v }))}
                       />
                     </div>
-                    {/* Honeypot — invisible to humans */}
-                    <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
+                    {/* Honeypot: invisible to humans */}
+                    <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden">
                       <label>
                         Leave this field empty
                         <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
@@ -253,16 +256,19 @@ export function AssessmentForm({ vertical }: { vertical: IndustryVertical }) {
                 )}
 
                 {step < 3 && (
-                  <div className="mt-9 flex items-center justify-between border-t border-white/[0.08] pt-6">
-                    <button
-                      type="button"
-                      onClick={() => setStep((s) => Math.max(0, s - 1))}
-                      disabled={step === 0}
-                      className="inline-flex min-h-11 items-center gap-2 text-sm text-white/45 transition-colors hover:text-white disabled:invisible lg:min-h-0"
-                    >
-                      <ArrowLeft size={14} aria-hidden />
-                      Back
-                    </button>
+                  <div className="mt-9 flex items-center justify-between border-t border-white/8 pt-6">
+                    {step > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setStep((s) => Math.max(0, s - 1))}
+                        className="inline-flex min-h-11 items-center gap-2 text-sm text-white/45 transition-colors hover:text-white lg:min-h-0"
+                      >
+                        <ArrowLeft size={14} aria-hidden />
+                        Back
+                      </button>
+                    ) : (
+                      <span />
+                    )}
                     {step < 2 ? (
                       <button
                         type="button"
@@ -310,12 +316,17 @@ function ContactField({
   onChange,
   type = "text",
   required,
+  autoComplete,
+  inputMode,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
   required?: boolean;
+  /** Browser autofill token so a phone can fill name/email/tel in one tap. */
+  autoComplete?: string;
+  inputMode?: "text" | "numeric" | "tel" | "email";
 }) {
   const id = `assess-${label.toLowerCase().replace(/\s+/g, "-")}`;
   return (
@@ -329,28 +340,14 @@ function ContactField({
         type={type}
         value={value}
         required={required}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
         maxLength={200}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-lg border border-white/12 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white/85 focus:border-crimson/60 focus:outline-none"
+        className="mt-2 w-full rounded-lg border border-white/35 bg-white/3 px-3.5 py-2.5 text-sm text-white/85 focus:border-crimson/60 focus:outline-hidden"
       />
     </div>
   );
 }
 
-/** Keyword-match the visitor's answers against the vertical's rules. */
-export function recommendSystem(
-  vertical: IndustryVertical,
-  answers: Record<string, string>
-): RsgSystem {
-  const haystack = Object.values(answers).join(" ").toLowerCase();
-  for (const rule of vertical.assessment.recommendations) {
-    if (rule.keywords.some((k) => haystack.includes(k.toLowerCase()))) {
-      const system = vertical.systems.find((s) => s.id === rule.systemId);
-      if (system) return system;
-    }
-  }
-  return (
-    vertical.systems.find((s) => s.id === vertical.assessment.fallbackSystemId) ??
-    vertical.systems[0]
-  );
-}
+export { recommendSystem };

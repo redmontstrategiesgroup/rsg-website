@@ -9,8 +9,10 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Calendar, Clock, Loader2, AlertCircle } from "lucide-react";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import Link from "next/link";
 import { postJson, patchJson, getCsrfToken } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 import { Turnstile } from "@/components/Turnstile";
 import { trackEvent } from "@/lib/events";
 import {
@@ -248,16 +250,29 @@ function localDayKey(isoUtc: string, timeZone: string): string {
   }
 }
 
-function dayLabel(dayKey: string, isoUtc: string, timeZone: string) {
-  try {
-    const d = new Date(isoUtc);
-    return {
-      weekday: new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short" }).format(d),
-      date: new Intl.DateTimeFormat("en-US", { timeZone, month: "short", day: "numeric" }).format(d),
-    };
-  } catch {
-    return { weekday: "", date: dayKey };
+/** Mon–Fri day keys from the Monday of the first key's week to the Friday of the last's. */
+function weekdaysSpanning(dayKeys: string[]): string[] {
+  if (!dayKeys.length) return [];
+  const at = (key: string) => new Date(`${key}T12:00:00Z`);
+  const cursor = at(dayKeys[0]);
+  cursor.setUTCDate(cursor.getUTCDate() - ((cursor.getUTCDay() + 6) % 7));
+  const end = at(dayKeys[dayKeys.length - 1]);
+  end.setUTCDate(end.getUTCDate() + ((5 - end.getUTCDay() + 7) % 7));
+  const out: string[] = [];
+  for (; cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+    const dow = cursor.getUTCDay();
+    if (dow >= 1 && dow <= 5) out.push(cursor.toISOString().slice(0, 10));
   }
+  return out;
+}
+
+/** Weekday/date label for a YYYY-MM-DD key (no slot needed). */
+function dayKeyLabel(dayKey: string) {
+  const d = new Date(`${dayKey}T12:00:00Z`);
+  return {
+    weekday: new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short" }).format(d),
+    date: new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric" }).format(d),
+  };
 }
 
 function formatSelectedSlot(isoUtc: string, timeZone: string): string {
@@ -408,7 +423,7 @@ export function BookingFunnel({
       if (saved.notes) setNotes(saved.notes);
       if (saved.step && saved.serviceId) setStep(saved.step);
     } catch {
-      /* corrupted storage — start fresh */
+      /* corrupted storage: start fresh */
     }
   }, []);
 
@@ -555,6 +570,10 @@ export function BookingFunnel({
 
   const availableDays = useMemo(() => [...slotsByDay.keys()].sort(), [slotsByDay]);
 
+  // Every weekday (Mon–Fri) from the first open week to the last, so days we
+  // don't take calls (Mon, Fri, or fully booked) still show, disabled.
+  const pickerDays = useMemo(() => weekdaysSpanning(availableDays), [availableDays]);
+
   useEffect(() => {
     if (step !== 2) return;
     if (availableDays.length === 0) return;
@@ -570,7 +589,7 @@ export function BookingFunnel({
 
   async function continueFromCategory() {
     if (!serviceId || !config) {
-      setErrors({ service: "Choose the option closest to what you need — “I’m not sure yet” is fine." });
+      setErrors({ service: "Choose the option closest to what you need; “I’m not sure yet” is fine." });
       track("validation_error", { step: "1" });
       return;
     }
@@ -626,7 +645,7 @@ export function BookingFunnel({
   }
 
   async function submitBooking() {
-    // Ref guard runs synchronously — a double-click can land before React
+    // Ref guard runs synchronously: a double-click can land before React
     // re-renders the disabled state.
     if (submittingRef.current || completedRef.current) return;
     if (!validateDetails()) return;
@@ -671,7 +690,7 @@ export function BookingFunnel({
           setSelectedSlot(null);
           setStep(2);
           setFormError(
-            "That time was just booked by someone else. Please pick another time — everything else you entered is saved."
+            "That time was just booked by someone else. Please pick another time; everything else you entered is saved."
           );
           void loadSlots(timezone);
           return;
@@ -689,6 +708,7 @@ export function BookingFunnel({
       completedRef.current = true;
       track("booking_completed");
       trackEvent("booking_complete");
+      markKnownVisitor();
       try {
         sessionStorage.removeItem(STORAGE_KEY);
       } catch {
@@ -696,7 +716,7 @@ export function BookingFunnel({
       }
       router.push(data.confirmedUrl || `/booking/confirmed?token=${data.manageToken}`);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Something went wrong. Your details are saved — please try again.");
+      setFormError(err instanceof Error ? err.message : "Something went wrong. Your details are saved, please try again.");
     } finally {
       submittingRef.current = false;
       setBusy(false);
@@ -715,7 +735,7 @@ export function BookingFunnel({
 
   if (fatalError && !config) {
     return (
-      <div className="border border-white/10 bg-white/[0.02] p-8 text-center">
+      <div className="border border-white/10 bg-white/2 p-8 text-center">
         <AlertCircle className="mx-auto mb-4 h-8 w-8 text-crimson" />
         <p className="text-white/70">{fatalError}</p>
         <Link href="/connect" className="link-underline mt-6 inline-block">
@@ -735,7 +755,7 @@ export function BookingFunnel({
 
   if (config.bookingsPaused) {
     return (
-      <div className="border border-white/10 bg-white/[0.02] p-8 text-center">
+      <div className="border border-white/10 bg-white/2 p-8 text-center">
         <p className="text-lg text-white">Online booking is temporarily paused.</p>
         <p className="mt-3 text-sm text-white/55">
           Please email{" "}
@@ -772,7 +792,7 @@ export function BookingFunnel({
             What would you like help with?
           </h2>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/55">
-            Pick whatever is closest. You don’t need to know the right service —
+            Pick whatever is closest. You don’t need to know the right service,
             that’s our job.
           </p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -790,7 +810,7 @@ export function BookingFunnel({
             ))}
           </div>
           {notSureSelected && (
-            <p className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-white/70">
+            <p className="mt-4 border border-white/10 bg-white/3 px-4 py-3 text-sm leading-relaxed text-white/70">
               That’s completely fine. You’ll book a general strategy consultation
               and we’ll help identify the best opportunities for your business.
             </p>
@@ -835,12 +855,12 @@ export function BookingFunnel({
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-white/55">
             {appointmentType
-              ? `${appointmentType.name} — ${appointmentType.durationMinutes} minutes, free.`
+              ? `${appointmentType.name}: ${appointmentType.durationMinutes} minutes, free.`
               : "Free consultation."}
           </p>
 
           <div className="mt-8 space-y-7">
-            <Field label="Your time zone" hint="Detected automatically — change it if it’s wrong. All times below are shown in this time zone.">
+            <Field label="Your time zone" hint="Detected automatically: change it if it’s wrong. All times below are shown in this time zone.">
               {(props) => (
                 <TimezoneSelect
                   id={props.id}
@@ -860,7 +880,7 @@ export function BookingFunnel({
                 <span className="text-sm">Loading available times…</span>
               </div>
             ) : availableDays.length === 0 ? (
-              <div className="border border-white/10 bg-white/[0.02] p-6 text-sm text-white/60">
+              <div className="border border-white/10 bg-white/2 p-6 text-sm text-white/60">
                 No online times are open in the next four weeks. Email{" "}
                 <a className="underline" href="mailto:contact@redmontstrategiesgroup.com">
                   contact@redmontstrategiesgroup.com
@@ -873,41 +893,52 @@ export function BookingFunnel({
                   <p className="mb-3 flex items-center gap-2 text-sm text-white/60">
                     <Calendar className="h-4 w-4" aria-hidden="true" /> Pick a day
                   </p>
-                  <div
+                  <ScrollRail
                     role="group"
                     aria-label="Available days"
-                    className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-2"
+                    activeKey={selectedDay}
+                    className="-mx-1 flex gap-2 px-1 pb-2 scroll-px-1"
                   >
-                    {availableDays.map((day) => {
-                      const first = slotsByDay.get(day)![0];
-                      const { weekday, date } = dayLabel(day, first.start, timezone);
-                      const active = selectedDay === day;
+                    {pickerDays.map((day) => {
+                      const { weekday, date } = dayKeyLabel(day);
+                      const open = slotsByDay.has(day);
+                      const active = open && selectedDay === day;
                       return (
                         <button
                           key={day}
                           type="button"
+                          disabled={!open}
                           aria-pressed={active}
+                          aria-label={open ? undefined : `${weekday} ${date}, unavailable`}
+                          title={open ? undefined : "Unavailable"}
+                          data-active={active ? "true" : undefined}
                           onClick={() => {
                             setSelectedDay(day);
                             setSelectedSlot(null);
                             track("date_selected");
                           }}
-                          className={`min-w-[76px] shrink-0 border px-3 py-3 text-center transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
-                            active
-                              ? "border-crimson/70 bg-crimson/10"
-                              : "border-white/10 bg-white/[0.02] hover:border-white/30"
+                          className={`min-w-[76px] shrink-0 border px-3 py-3 text-center transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+                            !open
+                              ? "cursor-not-allowed border-white/5 bg-transparent opacity-40"
+                              : active
+                                ? "border-crimson/70 bg-crimson/10"
+                                : "border-white/10 bg-white/2 hover:border-white/30"
                           }`}
                         >
-                          <span className="block text-[0.65rem] uppercase tracking-wider text-white/45">
+                          <span className="block text-[0.7rem] uppercase tracking-wider text-white/45 sm:text-[0.65rem]">
                             {weekday}
                           </span>
-                          <span className="mt-1 block text-sm font-medium text-white">
+                          <span
+                            className={`mt-1 block text-sm font-medium ${
+                              open ? "text-white" : "text-white/60 line-through"
+                            }`}
+                          >
                             {date}
                           </span>
                         </button>
                       );
                     })}
-                  </div>
+                  </ScrollRail>
                 </div>
 
                 <div>
@@ -931,10 +962,10 @@ export function BookingFunnel({
                             setSelectedSlot(s.start);
                             track("time_selected");
                           }}
-                          className={`min-h-[48px] border px-2 py-3 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/60 ${
+                          className={`min-h-[48px] border px-2 py-3 text-sm transition focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/60 ${
                             active
                               ? "border-crimson bg-crimson text-white"
-                              : "border-white/10 bg-white/[0.02] text-white/80 hover:border-white/30"
+                              : "border-white/10 bg-white/2 text-white/80 hover:border-white/30"
                           }`}
                         >
                           {s.label}
@@ -944,13 +975,13 @@ export function BookingFunnel({
                   </div>
                   {!daySlots.length && (
                     <p className="mt-2 text-sm text-white/40">
-                      No times left on this day — pick another day above.
+                      No times left on this day, pick another day above.
                     </p>
                   )}
                 </div>
 
                 {selectedSlot && (
-                  <p className="border border-crimson/30 bg-crimson/[0.06] px-4 py-3 text-sm text-white/80">
+                  <p className="border border-crimson/30 bg-crimson/6 px-4 py-3 text-sm text-white/80">
                     Selected: <strong>{formatSelectedSlot(selectedSlot, timezone)}</strong>
                   </p>
                 )}
@@ -994,7 +1025,7 @@ export function BookingFunnel({
             Tell us about your business
           </h2>
           {selectedSlot && (
-            <p className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/75">
+            <p className="mt-4 border border-white/10 bg-white/3 px-4 py-3 text-sm text-white/75">
               <Calendar className="mr-2 inline h-4 w-4 text-crimson" aria-hidden="true" />
               {formatSelectedSlot(selectedSlot, timezone)}
               {appointmentType ? ` · ${appointmentType.durationMinutes} min · Free` : ""}
@@ -1088,7 +1119,7 @@ export function BookingFunnel({
                   <input
                     {...props}
                     className={inputClass()}
-                    placeholder="e.g. Contractor, retail store, dental office, gym"
+                    placeholder="e.g. Real estate team, contractor, med spa, gym"
                     value={contact.industry}
                     onChange={(e) =>
                       setContact((c) => ({ ...c, industry: e.target.value }))
@@ -1345,7 +1376,7 @@ export function BookingFunnel({
               <label className="flex items-start gap-3 text-sm leading-relaxed text-white/60">
                 <input
                   type="checkbox"
-                  className="mt-1 h-4 w-4 shrink-0 accent-[#b3243a]"
+                  className="mt-1 h-4 w-4 shrink-0 accent-crimson"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
                   aria-invalid={errors.consent ? true : undefined}

@@ -21,7 +21,7 @@ export const runtime = "nodejs";
 
 const schema = z.object({
   answers: z.record(z.string(), z.unknown()),
-  // Honeypot — real users never fill this.
+  // Honeypot: real users never fill this.
   company_fax: z.string().optional(),
   attribution: z
     .object({
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
   const bookUrl = `/book/${bookSlug}`;
 
   // Without Supabase (dev without env), the lead is stored locally and the
-  // visitor is routed straight to booking — nothing else is possible.
+  // visitor is routed straight to booking, nothing else is possible.
   if (!isSupabaseConfigured() || !result.leadId) {
     return NextResponse.json({ ok: true, next: "book", url: bookUrl });
   }

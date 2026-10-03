@@ -225,7 +225,7 @@ export type SecurityStatusLevel =
 export type SecurityIndicator = {
   key: string;
   label: string;
-  /** Real measured value, or a clear "unavailable" marker — never fabricated. */
+  /** Real measured value, or a clear "unavailable" marker, never fabricated. */
   value: string;
   detail?: string;
   status: SecurityStatusLevel;

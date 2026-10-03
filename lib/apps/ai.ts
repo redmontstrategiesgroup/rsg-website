@@ -3,7 +3,7 @@ import { AiError, generateStructured, streamText, type StructuredSchema } from "
 import { isTenantOverAiCap, recordAiUsage } from "@/lib/ai/usage";
 
 /**
- * App-facing AI helpers — the single entry point every mounted app route uses.
+ * App-facing AI helpers: the single entry point every mounted app route uses.
  * They wrap lib/ai/proxy with the two things a tenant-scoped app must never
  * forget: a monthly spend CAP check and per-tenant usage METERING. Going
  * through here means an individual route cannot accidentally ship an uncapped,

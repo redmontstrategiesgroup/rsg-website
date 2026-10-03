@@ -18,6 +18,9 @@ import { EmptyState, PanelHeading, SampleDataTag, StatusPill, TempBadge } from "
 import { Modal } from "./Modal";
 import { CheckboxInput, SelectInput, SmallButton, TextArea, TextInput } from "./fields";
 import { applyNow, type ViewProps } from "./shared";
+import { ScrollRail } from "@/components/ui/ScrollRail";
+import { IconButton } from "@/components/ui/IconButton";
+import { FreshPill, Spotlight, isFresh } from "./Spotlight";
 
 /* ------------------------------------------------------------------ */
 /* Intake form (creates real demo records + triggers the workflow)     */
@@ -93,7 +96,7 @@ export function IntakeFormModal({
   return (
     <Modal
       title={title ?? `New ${config.terminology.record}`}
-      subtitle="This is your live intake form — submitting creates a demo record and triggers the intake workflow."
+      subtitle="This is your live intake form, submitting creates a demo record and triggers the intake workflow."
       onClose={onClose}
     >
       <form onSubmit={submit} className="space-y-3" noValidate>
@@ -173,12 +176,12 @@ function LeadDrawer({
           <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
             {(
               [
-                ["Stage", state.stages.find((s) => s.id === lead.stageId)?.label ?? "—"],
-                ["Value", lead.value ? `$${lead.value.toLocaleString()}` : "—"],
-                ["Priority", lead.temp ?? "—"],
+                ["Stage", state.stages.find((s) => s.id === lead.stageId)?.label ?? "-"],
+                ["Value", lead.value ? `$${lead.value.toLocaleString()}` : "-"],
+                ["Priority", lead.temp ?? "-"],
                 ["Assigned to", lead.assignee ?? "Unassigned"],
-                ["Phone", lead.phone ?? "—"],
-                ["Email", lead.email ?? "—"],
+                ["Phone", lead.phone ?? "-"],
+                ["Email", lead.email ?? "-"],
                 ["Last activity", lead.lastActivity],
                 ["Created", lead.createdAt ?? "Earlier"],
               ] as const
@@ -196,15 +199,15 @@ function LeadDrawer({
             ))}
           </div>
           {lead.note && (
-            <div className="rounded border border-white/[0.08] bg-white/[0.03] px-3 py-2.5">
+            <div className="rounded-sm border border-white/8 bg-white/3 px-3 py-2.5">
               <p className="text-[0.6rem] uppercase tracking-wider text-white/35">Staff note</p>
               <p className="mt-1 text-xs leading-relaxed text-white/70">{lead.note}</p>
             </div>
           )}
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded border border-white/[0.08]">
-              <p className="border-b border-white/[0.08] px-3 py-2 text-[0.6rem] uppercase tracking-wider text-white/40">
+            <div className="rounded-sm border border-white/8">
+              <p className="border-b border-white/8 px-3 py-2 text-[0.6rem] uppercase tracking-wider text-white/40">
                 Conversation
               </p>
               <div className="max-h-32 overflow-y-auto p-3 no-scrollbar">
@@ -221,15 +224,15 @@ function LeadDrawer({
                 )}
               </div>
             </div>
-            <div className="rounded border border-white/[0.08]">
-              <p className="border-b border-white/[0.08] px-3 py-2 text-[0.6rem] uppercase tracking-wider text-white/40">
+            <div className="rounded-sm border border-white/8">
+              <p className="border-b border-white/8 px-3 py-2 text-[0.6rem] uppercase tracking-wider text-white/40">
                 {config.terminology.appointments}
               </p>
               <div className="max-h-32 overflow-y-auto p-3 no-scrollbar">
                 {appts.length ? (
                   appts.map((e) => (
                     <p key={e.id} className="mb-1.5 text-[0.66rem] text-white/60">
-                      {e.day} {e.time} — {e.status ?? "scheduled"}
+                      {e.day} {e.time}: {e.status ?? "scheduled"}
                     </p>
                   ))
                 ) : (
@@ -237,8 +240,8 @@ function LeadDrawer({
                 )}
               </div>
             </div>
-            <div className="rounded border border-white/[0.08]">
-              <p className="border-b border-white/[0.08] px-3 py-2 text-[0.6rem] uppercase tracking-wider text-white/40">
+            <div className="rounded-sm border border-white/8">
+              <p className="border-b border-white/8 px-3 py-2 text-[0.6rem] uppercase tracking-wider text-white/40">
                 Tasks
               </p>
               <div className="max-h-32 overflow-y-auto p-3 no-scrollbar">
@@ -255,7 +258,7 @@ function LeadDrawer({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-white/[0.06] pt-3">
+          <div className="flex justify-end gap-2 border-t border-white/6 pt-3">
             <SmallButton onClick={() => setEdit(true)}>
               <Pencil size={11} aria-hidden /> Edit record
             </SmallButton>
@@ -338,7 +341,7 @@ export function LeadsView(props: ViewProps) {
   const selectedLead = state.leads.find((l) => l.id === selected);
 
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+    <div className="rounded-lg border border-white/[0.07] bg-white/2">
       <PanelHeading
         title={`${config.leadsLabel} · ${filtered.length} of ${state.leads.length}`}
         right={
@@ -351,7 +354,7 @@ export function LeadsView(props: ViewProps) {
         }
       />
       <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.07] px-4 py-2.5">
-        <div className="relative min-w-[10rem] flex-1">
+        <div className="relative min-w-40 flex-1">
           <Search size={12} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" aria-hidden />
           <input
             type="search"
@@ -362,14 +365,14 @@ export function LeadsView(props: ViewProps) {
             }}
             placeholder={`Search ${config.terminology.records.toLowerCase()}…`}
             aria-label={`Search ${config.terminology.records}`}
-            className="w-full rounded border border-white/10 bg-base-900 py-1.5 pl-8 pr-3 text-xs text-white/80 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none"
+            className="w-full rounded-sm border border-white/10 bg-base-900 py-1.5 pl-8 pr-3 text-xs text-white/80 placeholder:text-white/25 focus:border-crimson/60 focus:outline-hidden"
           />
         </div>
         <select
           value={stageFilter}
           onChange={(e) => setStageFilter(e.target.value)}
           aria-label="Filter by stage"
-          className="rounded border border-white/10 bg-base-900 px-2 py-1.5 text-[0.68rem] text-white/70 focus:border-crimson/60 focus:outline-none"
+          className="rounded-sm border border-white/10 bg-base-900 px-2 py-1.5 text-[0.68rem] text-white/70 focus:border-crimson/60 focus:outline-hidden"
         >
           <option value="">All stages</option>
           {state.stages.map((s) => (
@@ -380,7 +383,7 @@ export function LeadsView(props: ViewProps) {
           value={sourceFilter}
           onChange={(e) => setSourceFilter(e.target.value)}
           aria-label="Filter by source"
-          className="rounded border border-white/10 bg-base-900 px-2 py-1.5 text-[0.68rem] text-white/70 focus:border-crimson/60 focus:outline-none"
+          className="rounded-sm border border-white/10 bg-base-900 px-2 py-1.5 text-[0.68rem] text-white/70 focus:border-crimson/60 focus:outline-hidden"
         >
           <option value="">All sources</option>
           {sources.map((s) => (
@@ -390,10 +393,10 @@ export function LeadsView(props: ViewProps) {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState text={`No ${config.terminology.records.toLowerCase()} match — adjust the search or filters.`} />
+        <EmptyState text={`No ${config.terminology.records.toLowerCase()} match: adjust the search or filters.`} />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[42rem] text-left">
+        <ScrollRail snap="none">
+          <table className="w-full min-w-2xl text-left">
             <thead>
               <tr className="border-b border-white/[0.07]">
                 {["Name", "Interest", "Source", "Stage", "Value", "Assigned", ""].map((h, i) => (
@@ -403,13 +406,22 @@ export function LeadsView(props: ViewProps) {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.05]">
+            <tbody className="divide-y divide-white/5">
               {filtered.map((lead) => (
-                <tr key={lead.id} className="transition-colors hover:bg-white/[0.02]">
+                <Spotlight
+                  as="tr"
+                  pill={false}
+                  id={lead.id}
+                  fresh={state.fresh}
+                  kind="record"
+                  key={lead.id}
+                  className="transition-colors hover:bg-white/2"
+                >
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                    <div className="relative flex items-center gap-2 pr-14">
                       <span className="text-xs font-medium text-white/85">{lead.name}</span>
                       {lead.temp && <TempBadge temp={lead.temp} />}
+                      {isFresh(state.fresh[lead.id]) && <FreshPill />}
                     </div>
                     {lead.note && <p className="mt-0.5 max-w-[16rem] truncate text-[0.62rem] text-white/35">{lead.note}</p>}
                   </td>
@@ -417,19 +429,19 @@ export function LeadsView(props: ViewProps) {
                   <td className="px-4 py-3 text-xs text-white/45">{lead.source}</td>
                   <td className="px-4 py-3"><StatusPill tone="gray">{stageLabel(lead.stageId)}</StatusPill></td>
                   <td className="px-4 py-3 text-xs tabular-nums text-white/60">
-                    {lead.value ? `$${lead.value.toLocaleString()}` : "—"}
+                    {lead.value ? `$${lead.value.toLocaleString()}` : "-"}
                   </td>
-                  <td className="px-4 py-3 text-xs text-white/45">{lead.assignee ?? "—"}</td>
+                  <td className="px-4 py-3 text-xs text-white/45">{lead.assignee ?? "-"}</td>
                   <td className="px-4 py-3 text-right">
                     <SmallButton onClick={() => setSelected(lead.id)} ariaLabel={`Open ${lead.name}'s record`}>
                       Open
                     </SmallButton>
                   </td>
-                </tr>
+                </Spotlight>
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRail>
       )}
 
       {adding && <IntakeFormModal {...props} onClose={() => setAdding(false)} />}
@@ -449,12 +461,12 @@ function StageEditor({ state, config, dispatch, track, onClose }: ViewProps & { 
   return (
     <Modal
       title="Customize pipeline stages"
-      subtitle="Rename, reorder, add, or archive stages — records in archived stages move to the first stage."
+      subtitle="Rename, reorder, add, or archive stages; records in archived stages move to the first stage."
       onClose={onClose}
     >
       <ul className="space-y-2">
         {state.stages.map((s, i) => (
-          <li key={s.id} className="flex items-center gap-2 rounded border border-white/[0.08] px-2.5 py-2">
+          <li key={s.id} className="flex items-center gap-2 rounded-sm border border-white/8 px-2.5 py-2">
             <input
               value={s.label}
               onChange={(e) => {
@@ -462,7 +474,7 @@ function StageEditor({ state, config, dispatch, track, onClose }: ViewProps & { 
                 track("customized pipeline stages");
               }}
               aria-label={`Rename stage ${s.label}`}
-              className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1.5 py-1 text-xs text-white/80 focus:border-crimson/50 focus:bg-base-900 focus:outline-none"
+              className="min-w-0 flex-1 rounded-sm border border-transparent bg-transparent px-1.5 py-1 text-xs text-white/80 focus:border-crimson/50 focus:bg-base-900 focus:outline-hidden"
             />
             <span className="text-[0.6rem] tabular-nums text-white/30">
               {state.leads.filter((l) => l.stageId === s.id).length}
@@ -493,7 +505,7 @@ function StageEditor({ state, config, dispatch, track, onClose }: ViewProps & { 
           onChange={(e) => setNewLabel(e.target.value)}
           placeholder="New stage name…"
           aria-label="New stage name"
-          className="min-w-0 flex-1 rounded border border-white/12 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none"
+          className="min-w-0 flex-1 rounded-sm border border-white/35 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-hidden"
         />
         <SmallButton
           tone="primary"
@@ -508,7 +520,7 @@ function StageEditor({ state, config, dispatch, track, onClose }: ViewProps & { 
           <Plus size={11} aria-hidden /> Add stage
         </SmallButton>
       </div>
-      <div className="mt-4 flex justify-between border-t border-white/[0.06] pt-3">
+      <div className="mt-4 flex justify-between border-t border-white/6 pt-3">
         <SmallButton
           onClick={() => {
             dispatch({ type: "stages-restore", stages: config.stages });
@@ -559,7 +571,9 @@ export function PipelineView(props: ViewProps) {
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-white/40">
-          Drag cards between stages, or use each card&apos;s menu — every move updates the live analytics.
+          <span className="hidden [@media(hover:hover)]:inline">Drag cards between stages, or use each card&apos;s menu; </span>
+          <span className="[@media(hover:hover)]:hidden">Use each card&apos;s stage menu or the arrow to move it; </span>
+          every move updates the live analytics.
         </p>
         <div className="flex items-center gap-3">
           <SampleDataTag className="hidden lg:inline-flex" />
@@ -568,8 +582,7 @@ export function PipelineView(props: ViewProps) {
           </SmallButton>
         </div>
       </div>
-      <div className="overflow-x-auto pb-2 no-scrollbar">
-        <div className="flex gap-3" style={{ minWidth: `${state.stages.length * 15}rem` }}>
+      <ScrollRail arrows className="flex gap-3 pb-2">
           {state.stages.map((stage, si) => {
             const leads = state.leads.filter((l) => l.stageId === stage.id);
             const total = leads.reduce((sum, l) => sum + (l.value ?? 0), 0);
@@ -583,8 +596,8 @@ export function PipelineView(props: ViewProps) {
                 }}
                 onDragLeave={() => setDropStage((s) => (s === stage.id ? null : s))}
                 onDrop={(e) => onDrop(e, stage.id)}
-                className={`flex w-60 shrink-0 flex-col rounded-lg border bg-white/[0.015] transition-colors ${
-                  dropStage === stage.id && dragId ? "border-crimson/60 bg-crimson/[0.04]" : "border-white/[0.07]"
+                className={`flex w-60 shrink-0 flex-col rounded-lg border bg-white/1.5 transition-colors ${
+                  dropStage === stage.id && dragId ? "border-crimson/60 bg-crimson/4" : "border-white/[0.07]"
                 }`}
               >
                 <div className="border-b border-white/[0.07] px-3 py-2.5">
@@ -592,7 +605,7 @@ export function PipelineView(props: ViewProps) {
                     <span className="text-[0.64rem] font-medium uppercase tracking-[0.14em] text-white/55">
                       {stage.label}
                     </span>
-                    <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[0.6rem] tabular-nums text-white/50">
+                    <span className="rounded-sm bg-white/6 px-1.5 py-0.5 text-[0.6rem] tabular-nums text-white/50">
                       {leads.length}
                     </span>
                   </div>
@@ -600,15 +613,20 @@ export function PipelineView(props: ViewProps) {
                     <p className="mt-0.5 text-[0.62rem] tabular-nums text-white/35">${total.toLocaleString()}</p>
                   )}
                 </div>
-                <div className="flex min-h-[7rem] flex-col gap-2 p-2">
+                <div className="flex min-h-28 flex-col gap-2 p-2">
                   {leads.length === 0 ? (
                     <p className="px-2 py-4 text-center text-[0.62rem] text-white/20">
                       {dragId ? "Drop here" : "Empty"}
                     </p>
                   ) : (
                     leads.map((lead) => (
-                      <div
+                      <Spotlight
+                        as="div"
+                        id={lead.id}
+                        fresh={state.fresh}
+                        kind="record"
                         key={lead.id}
+                        pill={false}
                         draggable
                         onDragStart={(e) => {
                           setDragId(lead.id);
@@ -620,22 +638,25 @@ export function PipelineView(props: ViewProps) {
                           setDropStage(null);
                         }}
                         className={`group cursor-grab rounded-md border bg-base-800 p-3 transition-colors active:cursor-grabbing ${
-                          dragId === lead.id ? "border-crimson/60 opacity-60" : "border-white/[0.08] hover:border-white/20"
+                          dragId === lead.id ? "border-crimson/60 opacity-60" : "border-white/8 hover:border-white/20"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex min-w-0 items-center gap-1.5">
                             <GripVertical size={11} className="shrink-0 text-white/20" aria-hidden />
                             <p className="text-xs font-medium text-white/85">{lead.name}</p>
                           </div>
-                          {lead.temp && <TempBadge temp={lead.temp} />}
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            {isFresh(state.fresh[lead.id]) && <FreshPill inline />}
+                            {lead.temp && <TempBadge temp={lead.temp} />}
+                          </div>
                         </div>
                         <p className="mt-1 text-[0.66rem] text-white/50">{lead.service}</p>
                         <div className="mt-2 flex items-center justify-between gap-2">
                           <span className="truncate text-[0.62rem] tabular-nums text-white/40">
                             {lead.value ? `$${lead.value.toLocaleString()}` : lead.source}
                           </span>
-                          <div className="flex items-center gap-1">
+                          <div className="flex min-w-0 items-center gap-1">
                             <label className="sr-only" htmlFor={`move-${lead.id}`}>
                               Move {lead.name} to stage
                             </label>
@@ -643,33 +664,31 @@ export function PipelineView(props: ViewProps) {
                               id={`move-${lead.id}`}
                               value={lead.stageId}
                               onChange={(e) => move(lead, e.target.value)}
-                              className="max-w-[6.5rem] rounded border border-white/10 bg-base-900 px-1 py-0.5 text-[0.6rem] text-white/55 focus:border-crimson/60 focus:outline-none"
+                              className="min-w-0 max-w-26 truncate rounded-sm border border-white/10 bg-base-900 px-1 py-0.5 text-[0.6rem] text-white/55 focus:border-crimson/60 focus:outline-hidden"
                             >
                               {state.stages.map((s) => (
                                 <option key={s.id} value={s.id}>{s.label}</option>
                               ))}
                             </select>
                             {!isLast && (
-                              <button
-                                type="button"
+                              <IconButton
                                 onClick={() => move(lead, state.stages[si + 1].id)}
-                                className="inline-flex items-center rounded border border-white/10 px-1.5 py-0.5 text-[0.6rem] text-white/50 transition-colors hover:border-crimson/50 hover:text-crimson-light focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson"
+                                className="rounded-sm border border-white/10 text-white/50 hover:border-crimson/50 hover:text-crimson-light focus-visible:ring-crimson lg:min-h-6 lg:min-w-6"
                                 aria-label={`Advance ${lead.name} to ${state.stages[si + 1].label}`}
                               >
-                                <ArrowRight size={10} aria-hidden />
-                              </button>
+                                <ArrowRight size={12} aria-hidden />
+                              </IconButton>
                             )}
                           </div>
                         </div>
-                      </div>
+                      </Spotlight>
                     ))
                   )}
                 </div>
               </div>
             );
           })}
-        </div>
-      </div>
+      </ScrollRail>
 
       {editing && <StageEditor {...props} onClose={() => setEditing(false)} />}
     </div>

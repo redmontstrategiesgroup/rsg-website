@@ -1,4 +1,4 @@
-# RSG Website — Launch Runbook
+# RSG Website: Launch Runbook
 
 Follow these phases in order. Phase 1 gets the site live; Phases 2–3 make the
 lead funnel real; Phase 4 is final verification. The production build is
@@ -6,7 +6,7 @@ already verified passing.
 
 ---
 
-## Phase 1 — Get the site live (~30 minutes)
+## Phase 1: Get the site live (~30 minutes)
 
 ### 1.1 Push the latest code to GitHub
 
@@ -17,7 +17,7 @@ git commit -m "Prepare launch"
 git push
 ```
 
-> Note: `.gitignore` already excludes `data/` and `.env*` — no secrets or
+> Note: `.gitignore` already excludes `data/` and `.env*`, no secrets or
 > lead data are committed.
 
 ### 1.2 Deploy on Vercel
@@ -25,7 +25,7 @@ git push
 1. Go to https://vercel.com → **Sign Up** → "Continue with GitHub".
 2. Click **Add New… → Project**.
 3. Find `rsg-website` in the list → **Import**.
-4. Framework preset auto-detects **Next.js** — change nothing.
+4. Framework preset auto-detects **Next.js**: change nothing.
 5. Open the **Environment Variables** accordion and add the two mandatory
    ones now (see 1.3).
 6. Click **Deploy**. ~2 minutes later you get a live URL like
@@ -33,7 +33,7 @@ git push
 
 ### 1.3 Mandatory environment variables
 
-Generate a session secret — in PowerShell:
+Generate a session secret, in PowerShell:
 
 ```powershell
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
@@ -46,7 +46,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 | `ADMIN_PASSWORD` | a strong password, 8+ characters |
 
 Without these, the marketing site works but /admin and /portal logins fail
-closed (by design — there are no default credentials).
+closed (by design: there are no default credentials).
 
 > Any time you add or change env vars later: Vercel → your project →
 > **Deployments** → ⋯ menu on the latest → **Redeploy**. Env changes only
@@ -54,15 +54,15 @@ closed (by design — there are no default credentials).
 
 ---
 
-## Phase 2 — Turn on the lead funnel (~1 hour)
+## Phase 2: Turn on the lead funnel (~1 hour)
 
-### 2.1 Supabase (durable lead storage — effectively required)
+### 2.1 Supabase (durable lead storage: effectively required)
 
 Vercel's filesystem is read-only, so the local `data/*.json` files don't work
 in production. Supabase is where production leads live.
 
 1. Go to https://supabase.com/dashboard and sign in.
-2. Open the **Redmont Client Portal** project (or whichever you prefer —
+2. Open the **Redmont Client Portal** project (or whichever you prefer;
    all your projects are currently paused). Click **Restore project** and
    wait a few minutes.
 3. Left sidebar → **SQL Editor** → **New query**.
@@ -80,7 +80,7 @@ in production. Supabase is where production leads live.
 8. Add both in Vercel → Settings → Environment Variables → Redeploy.
 
 ⚠️ The service_role key bypasses all security rules. It lives ONLY in Vercel
-env vars — never in code, never in the browser, never in git.
+env vars, never in code, never in the browser, never in git.
 
 ### 2.2 Resend (lead notification emails + auto-replies)
 
@@ -89,13 +89,13 @@ env vars — never in code, never in the browser, never in git.
    (`redmontstrategiesgroup.com`).
 3. Resend shows 2–3 DNS records (DKIM/SPF). Add them wherever your domain's
    DNS is managed (registrar dashboard → DNS settings → add record, copy
-   type/name/value exactly). Click **Verify** in Resend — can take up to an
+   type/name/value exactly). Click **Verify** in Resend; can take up to an
    hour.
 4. **API Keys → Create API Key** (full access) → env var `RESEND_API_KEY`.
 # Set two more env vars:
-   - `CONTACT_TO_EMAIL` — defaults to `contact@redmontstrategiesgroup.com`
+   - `CONTACT_TO_EMAIL`: defaults to `contact@redmontstrategiesgroup.com`
      if unset; set explicitly in production
-   - `CONTACT_FROM_EMAIL` — e.g. `RSG Website <contact@redmontstrategiesgroup.com>`
+   - `CONTACT_FROM_EMAIL`: e.g. `RSG Website <contact@redmontstrategiesgroup.com>`
      (must use the verified domain)
 6. Redeploy.
 
@@ -108,8 +108,8 @@ env vars — never in code, never in the browser, never in git.
 
 1. Go to https://platform.claude.com → sign in → **Settings → API Keys →
    Create Key**.
-2. Add billing under Settings → Billing (buy a small credit block, e.g. $20
-   — light chat traffic costs dollars/month; there's a 20-messages-per-5-minutes
+2. Add billing under Settings → Billing (buy a small credit block, e.g. $20:
+   light chat traffic costs dollars/month; there's a 20-messages-per-5-minutes
    rate limit per visitor).
 3. Env var `ANTHROPIC_API_KEY` → Redeploy.
 4. Smoke-test the live assistant with a few real questions before driving traffic.
@@ -138,7 +138,7 @@ env vars — never in code, never in the browser, never in git.
 
 ---
 
-## Phase 3 — Domain + analytics (~30 minutes + DNS wait)
+## Phase 3: Domain + analytics (~30 minutes + DNS wait)
 
 ### 3.1 Custom domain
 
@@ -147,31 +147,31 @@ env vars — never in code, never in the browser, never in git.
 2. Vercel → your project → **Settings → Domains** → **Add** → enter
    `redmontstrategiesgroup.com` (and add `www.redmontstrategiesgroup.com`;
    set the apex as primary redirect target).
-3. Vercel shows you exactly what to add at your DNS provider — typically:
+3. Vercel shows you exactly what to add at your DNS provider, typically:
    - `A` record, name `@`, value `76.76.21.21`
    - `CNAME` record, name `www`, value `cname.vercel-dns.com`
 4. Wait for the checkmarks (minutes to hours). HTTPS is automatic.
 5. If your live domain is NOT redmontstrategiesgroup.com, set the
    `NEXT_PUBLIC_SITE_URL` env var to your real URL (e.g.
    `https://yourdomain.com`). It drives the canonical URL, sitemap, robots,
-   and OpenGraph tags — no code change needed.
+   and OpenGraph tags, no code change needed.
 
 ### 3.2 Analytics provider
 
 The site fires 7 conversion events (`book_strategy_call_click`,
 `business_systems_audit_click`, `contact_form_start`, `contact_form_submit`,
 `chatbot_open`, `chatbot_qualified_lead`, `thank_you_page_view`) through a
-provider-agnostic dispatcher. Pick ONE provider, then wire its snippet —
+provider-agnostic dispatcher. Pick ONE provider, then wire its snippet,
 events flow with no other changes:
 
 - **Plausible** (simple, private, ~$9/mo)
-- **GA4** (free) — create a property at https://analytics.google.com, note
+- **GA4** (free): create a property at https://analytics.google.com, note
   the `G-XXXXXXX` id
 - **PostHog** (free tier, deepest funnels)
 
 ---
 
-## Phase 4 — Launch-day verification checklist
+## Phase 4: Launch-day verification checklist
 
 On the LIVE site (not localhost):
 
@@ -184,11 +184,11 @@ On the LIVE site (not localhost):
 - [ ] Visit `yourdomain.com/?utm_source=launchtest`, submit the form again,
       confirm `utm_source = launchtest` on the Supabase row.
 - [ ] Turnstile widget shows on the form and submission passes.
-- [ ] Open the chat, ask "What does RSG do?" — streamed answer arrives.
-- [ ] In chat, describe a fake business problem and share a name + email —
+- [ ] Open the chat, ask "What does RSG do?", streamed answer arrives.
+- [ ] In chat, describe a fake business problem and share a name + email;
       confirm the lead lands in Supabase with source `website_chat`.
 - [ ] Log into `/admin/login` with ADMIN_EMAIL/ADMIN_PASSWORD.
-- [ ] Log into `/login` — NOTE: demo portal accounts do not exist in
+- [ ] Log into `/login`: NOTE: demo portal accounts do not exist in
       production (file-based, dev-only). Expected.
 - [ ] Accept the cookie banner, click around, confirm your analytics
       provider shows events.
@@ -199,17 +199,17 @@ On the LIVE site (not localhost):
 ## Known production limitations (all have fixes when you want them)
 
 1. **Admin console tabs (Leads / Subscribers / Analytics) are empty in
-   production** — they read the local file store. Real data: leads in
+   production**: they read the local file store. Real data: leads in
    Supabase + email; analytics in your provider. Fix: point the admin
    console at Supabase.
-2. **Email-popup subscribers are NOT durably stored in production** — the
+2. **Email-popup subscribers are NOT durably stored in production**: the
    subscribe endpoint currently writes only to the file store. Fix before
    promoting the popup: add a `subscribers` table + Supabase write, or wire
    it to an email platform.
-3. **The client portal has no accounts in production** — demo data is
+3. **The client portal has no accounts in production**: demo data is
    file-based and gitignored. It's a dev/demo feature until the portal store
    moves to Supabase.
-4. **Chatbot should be smoke-tested against the live model** — do this right
+4. **Chatbot should be smoke-tested against the live model**: do this right
    after the API key is set, before driving traffic.
 
 ## Rough monthly costs

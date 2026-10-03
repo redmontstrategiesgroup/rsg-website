@@ -10,7 +10,7 @@ export default function BookingNotEligiblePage() {
     <main className="relative overflow-hidden pb-16 pt-24 sm:pb-24 sm:pt-32">
       <div className="container-px relative max-w-2xl">
         <p className="label mb-4">Next steps</p>
-        <h1 className="display text-4xl sm:text-5xl">
+        <h1 className="display text-[2.1rem] sm:text-5xl">
           Thank you for your interest
         </h1>
         <p className="mt-6 text-lg text-white/60">

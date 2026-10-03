@@ -1,5 +1,5 @@
 /**
- * Client Lifecycle Platform — monthly reporting.
+ * Client Lifecycle Platform: monthly reporting.
  *
  * Metrics land in `metrics` (one row per client + key + period month) and are
  * assembled into `reports` scorecards. Reports never invent numbers: the
@@ -68,7 +68,7 @@ const PERIOD_RE = /^\d{4}-\d{2}-01$/;
 
 function assertPeriod(period: string): void {
   if (!PERIOD_RE.test(period)) {
-    throw new Error(`Invalid period month "${period}" — expected YYYY-MM-01.`);
+    throw new Error(`Invalid period month "${period}": expected YYYY-MM-01.`);
   }
 }
 
@@ -173,7 +173,7 @@ export async function listMetrics(
 
 /**
  * Metrics for the period joined with the previous month's value. Only rows
- * that actually exist for the period appear — nothing is fabricated, and each
+ * that actually exist for the period appear; nothing is fabricated, and each
  * metric keeps its recorded source (measured / estimated / manual).
  */
 export async function buildScorecard(
@@ -261,7 +261,7 @@ function computeGoalProgress(
     if (!goal.metric_key) {
       return {
         goal: goal.goal,
-        progress: "No linked metric — reviewed qualitatively.",
+        progress: "No linked metric: reviewed qualitatively.",
         on_track: false,
       };
     }
@@ -357,7 +357,7 @@ export async function createDraftReport(input: {
 
   if (existingData) {
     const existing = existingData as MonthlyReport;
-    // Published reports are a delivered record — never rewrite them here.
+    // Published reports are a delivered record, never rewrite them here.
     if (existing.status === "published") return existing;
 
     const { data: refreshed, error: refreshError } = await sb
@@ -383,7 +383,7 @@ export async function createDraftReport(input: {
       project_id: input.projectId ?? null,
       token: newToken(),
       period_month: input.periodMonth,
-      title: input.title ?? `Monthly Performance Report — ${periodLabel(input.periodMonth)}`,
+      title: input.title ?? `Monthly Performance Report: ${periodLabel(input.periodMonth)}`,
       status: "draft" satisfies ReportStatus,
       executive_summary: "",
       key_wins: [],

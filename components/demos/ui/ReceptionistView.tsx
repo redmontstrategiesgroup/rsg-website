@@ -12,7 +12,7 @@ const AI_REPLY_DELAY_MS = 750;
 
 /**
  * Interactive AI receptionist simulation. The visitor role-plays the caller by
- * choosing replies; the scripted assistant answers, qualifies, and books —
+ * choosing replies; the scripted assistant answers, qualifies, and books;
  * and the outcome lands in the demo's real records (lead, appointment, task).
  */
 export function ReceptionistView(props: ViewProps) {
@@ -89,7 +89,7 @@ export function ReceptionistView(props: ViewProps) {
   return (
     <div className="grid gap-4 lg:grid-cols-5">
       {/* Call window */}
-      <div className="flex flex-col rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-3">
+      <div className="flex flex-col rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-3">
         <PanelHeading
           title={r.scenarioLabel}
           right={
@@ -97,16 +97,16 @@ export function ReceptionistView(props: ViewProps) {
               <button
                 type="button"
                 onClick={restart}
-                className="inline-flex items-center gap-1.5 rounded border border-white/15 px-2.5 py-1.5 text-[0.68rem] text-white/65 transition-colors hover:border-white/40 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+                className="inline-flex items-center gap-1.5 rounded-sm border border-white/15 px-2.5 py-1.5 text-[0.68rem] text-white/65 transition-colors hover:border-white/40 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
               >
                 <RotateCcw size={11} aria-hidden /> Restart call
               </button>
             ) : undefined
           }
         />
-        <div ref={scrollRef} className="min-h-[20rem] flex-1 space-y-3 overflow-y-auto p-4 no-scrollbar" aria-live="polite">
+        <div ref={scrollRef} className="min-h-80 flex-1 space-y-3 overflow-y-auto p-4 no-scrollbar" aria-live="polite">
           {!started ? (
-            <div className="flex h-full min-h-[18rem] flex-col items-center justify-center gap-4 text-center">
+            <div className="flex h-full min-h-72 flex-col items-center justify-center gap-4 text-center">
               <span className="flex h-11 w-11 items-center justify-center rounded-full border border-crimson/30 bg-crimson/10">
                 <Phone size={17} className="text-crimson-light" aria-hidden />
               </span>
@@ -125,11 +125,11 @@ export function ReceptionistView(props: ViewProps) {
               {bubbles.map((b) =>
                 b.from === "ai" ? (
                   <div key={b.id} className="flex items-start gap-2.5">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05]">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
                       <Bot size={12} className="text-white/60" aria-hidden />
                     </span>
                     <div className="max-w-[85%]">
-                      <div className="rounded-lg rounded-tl-sm border border-white/[0.08] bg-white/[0.04] px-3 py-2">
+                      <div className="rounded-lg rounded-tl-sm border border-white/8 bg-white/4 px-3 py-2">
                         <p className="text-xs leading-relaxed text-white/80">{b.text}</p>
                       </div>
                       <p className="mt-1 text-[0.58rem] uppercase tracking-wider text-white/30">
@@ -140,7 +140,7 @@ export function ReceptionistView(props: ViewProps) {
                 ) : (
                   <div key={b.id} className="flex justify-end">
                     <div className="max-w-[85%]">
-                      <div className="rounded-lg rounded-tr-sm border border-crimson/25 bg-crimson/[0.12] px-3 py-2">
+                      <div className="rounded-lg rounded-tr-sm border border-crimson/25 bg-crimson/12 px-3 py-2">
                         <p className="text-xs leading-relaxed text-white/85">{b.text}</p>
                       </div>
                       <p className="mt-1 text-right text-[0.58rem] uppercase tracking-wider text-white/30">
@@ -152,10 +152,10 @@ export function ReceptionistView(props: ViewProps) {
               )}
               {typing && (
                 <div className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05]">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5">
                     <Bot size={12} className="text-white/60" aria-hidden />
                   </span>
-                  <div className="rounded-lg rounded-tl-sm border border-white/[0.08] bg-white/[0.04] px-3 py-2.5">
+                  <div className="rounded-lg rounded-tl-sm border border-white/8 bg-white/4 px-3 py-2.5">
                     <span className="flex gap-1" aria-label="Assistant is typing">
                       {[0, 1, 2].map((i) => (
                         <span
@@ -169,9 +169,9 @@ export function ReceptionistView(props: ViewProps) {
                 </div>
               )}
               {outcome && (
-                <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/[0.06] p-3.5">
+                <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/6 p-3.5">
                   <p className="flex items-center gap-2 text-xs font-medium text-emerald-300/90">
-                    <CheckCircle2 size={13} aria-hidden /> Call handled — here&apos;s what the system just did
+                    <CheckCircle2 size={13} aria-hidden /> Call handled, here&apos;s what the system just did
                   </p>
                   <ul className="mt-2 space-y-1.5">
                     {outcome.map((line) => (
@@ -182,7 +182,7 @@ export function ReceptionistView(props: ViewProps) {
                     ))}
                   </ul>
                   <p className="mt-2.5 text-[0.62rem] text-white/35">
-                    Check Leads, Conversations, and the calendar — the records are really there.
+                    Check Leads, Conversations, and the calendar; the records are really there.
                   </p>
                 </div>
               )}
@@ -202,7 +202,7 @@ export function ReceptionistView(props: ViewProps) {
                   key={c.id}
                   type="button"
                   onClick={() => choose(c)}
-                  className="rounded-lg border border-white/15 bg-white/[0.03] px-3 py-2 text-left text-xs text-white/75 transition-colors hover:border-crimson/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+                  className="rounded-lg border border-white/15 bg-white/3 px-3 py-2 text-left text-xs text-white/75 transition-colors hover:border-crimson/50 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
                 >
                   {c.label}
                 </button>
@@ -214,13 +214,13 @@ export function ReceptionistView(props: ViewProps) {
 
       {/* Why it matters */}
       <div className="space-y-4 lg:col-span-2">
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 p-4">
           <p className="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-white/45">
             Why this matters
           </p>
           <ul className="mt-3 space-y-2.5">
             {[
-              "Every missed or after-hours call gets answered in seconds — not sent to voicemail.",
+              "Every missed or after-hours call gets answered in seconds, not sent to voicemail.",
               "The assistant collects the details your team needs and creates a qualified record automatically.",
               "Urgent situations are flagged and routed to a human immediately.",
               `Everything lands in one place: the ${config.terminology.record} record, the conversation, and the follow-up task.`,
@@ -231,23 +231,23 @@ export function ReceptionistView(props: ViewProps) {
               </li>
             ))}
           </ul>
-          <div className="mt-4 border-t border-white/[0.06] pt-3">
+          <div className="mt-4 border-t border-white/6 pt-3">
             <button
               type="button"
               onClick={() => openRequest({ feature: "AI receptionist & missed-call recovery", source: "receptionist_view" })}
-              className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+              className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
             >
               Add this to my business
               <ArrowRight size={11} aria-hidden />
             </button>
           </div>
         </div>
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 p-4">
           <p className="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-white/45">
             Honest by design
           </p>
           <p className="mt-2.5 text-xs leading-relaxed text-white/55">
-            This is a scripted demonstration — no live AI model, no real phone line, and nothing is
+            This is a scripted demonstration, no live AI model, no real phone line, and nothing is
             sent to anyone. Production assistants are configured to your services, pricing rules,
             and escalation policies, and always identify themselves as automated.
           </p>

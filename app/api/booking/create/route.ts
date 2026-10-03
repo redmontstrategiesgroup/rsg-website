@@ -2,13 +2,17 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit, rateLimitResponse } from "@/lib/security";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { createBooking } from "@/lib/scheduling/booking";
+import {
+  createBooking,
+  findBookingByIdempotencyKey,
+} from "@/lib/scheduling/booking";
 import { getSessionByToken } from "@/lib/scheduling/sessions";
 import {
   intakeAnswersSchema,
   intakeContactSchema,
   submitIntake,
 } from "@/lib/scheduling/intake";
+import { sessionContactName } from "@/lib/scheduling/intake-schema";
 import {
   recommendPlan,
   sanitizeServicePlanAnswers,
@@ -44,6 +48,43 @@ const schema = z.object({
     .optional(),
 });
 
+/**
+ * Success payload, shared by a fresh booking and an idempotent retry so the
+ * retry lands on the same confirmation page. Includes the consultative
+ * managed-services recommendation from the optional ongoing-support answers
+ * (pure computation, never blocks booking).
+ */
+function bookingResponse(
+  bookingId: string,
+  manageToken: string,
+  body: z.infer<typeof schema>
+) {
+  let recommendedPlanKey: string | null = null;
+  let recommendedPlanName: string | null = null;
+  try {
+    const sanitized = sanitizeServicePlanAnswers(
+      body.intake?.answers?.servicePlan
+    );
+    const rec = recommendPlan(sanitized);
+    if (rec) {
+      recommendedPlanKey = rec.planKey;
+      recommendedPlanName = defaultPlanByKey(rec.planKey)?.name ?? null;
+    }
+  } catch {
+    /* recommendation is best-effort */
+  }
+
+  return {
+    ok: true,
+    bookingId,
+    manageToken,
+    confirmedUrl: `/booking/confirmed?token=${manageToken}${
+      recommendedPlanKey ? `&plan=${recommendedPlanKey}` : ""
+    }`,
+    ...(recommendedPlanKey ? { recommendedPlanKey, recommendedPlanName } : {}),
+  };
+}
+
 export async function POST(request: Request) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json(
@@ -62,6 +103,22 @@ export async function POST(request: Request) {
     const session = await getSessionByToken(body.sessionToken);
     if (!session) {
       return NextResponse.json({ error: "Session expired." }, { status: 401 });
+    }
+
+    const idempotencyKey =
+      body.idempotencyKey || request.headers.get("idempotency-key") || undefined;
+
+    // A retried submit (double-click, flaky network) must return the booking
+    // it already made before anything else runs: re-running intake would log
+    // a second intake_completed and rewind the session step, and re-running
+    // the lifecycle hook would repeat its side effects.
+    if (idempotencyKey) {
+      const existing = await findBookingByIdempotencyKey(idempotencyKey);
+      if (existing) {
+        return NextResponse.json(
+          bookingResponse(existing.bookingId, existing.manageToken, body)
+        );
+      }
     }
 
     if (body.intake) {
@@ -87,10 +144,7 @@ export async function POST(request: Request) {
       meetingFormat: body.meetingFormat,
       visitorTimezone: body.visitorTimezone,
       visitorNotes: body.visitorNotes,
-      idempotencyKey:
-        body.idempotencyKey ||
-        request.headers.get("idempotency-key") ||
-        undefined,
+      idempotencyKey,
     });
 
     if (!result.ok) {
@@ -107,10 +161,12 @@ export async function POST(request: Request) {
     }
 
     // Lifecycle hook: create the preparation questionnaire, advance the
-    // journey, and send the invite email. Best-effort — never blocks booking.
+    // journey, and send the invite email. Best-effort; never blocks booking.
     try {
       const fresh = await getSessionByToken(body.sessionToken);
       const contact = (fresh?.contact ?? {}) as {
+        firstName?: string;
+        lastName?: string;
         name?: string;
         email?: string;
         businessName?: string;
@@ -137,7 +193,7 @@ export async function POST(request: Request) {
           bookingId: result.bookingId!,
           leadId: fresh?.lead_id ?? null,
           email: contact.email,
-          name: contact.name ?? "",
+          name: sessionContactName(contact),
           businessName: contact.businessName,
           appointmentStartsAt: body.startsAt,
           appointmentTimeLocal: new Date(body.startsAt).toLocaleString("en-US", {
@@ -152,36 +208,11 @@ export async function POST(request: Request) {
       console.error("[booking/create] lifecycle hook failed", lifecycleError);
     }
 
-    // Consultative managed-services recommendation from the optional
-    // ongoing-support answers. Pure computation — never blocks booking.
-    let recommendedPlanKey: string | null = null;
-    let recommendedPlanName: string | null = null;
-    try {
-      const sanitized = sanitizeServicePlanAnswers(
-        body.intake?.answers?.servicePlan
-      );
-      const rec = recommendPlan(sanitized);
-      if (rec) {
-        recommendedPlanKey = rec.planKey;
-        recommendedPlanName = defaultPlanByKey(rec.planKey)?.name ?? null;
-      }
-    } catch {
-      /* recommendation is best-effort */
-    }
-
-    return NextResponse.json({
-      ok: true,
-      bookingId: result.bookingId,
-      manageToken: result.manageToken,
-      confirmedUrl: `/booking/confirmed?token=${result.manageToken}${
-        recommendedPlanKey ? `&plan=${recommendedPlanKey}` : ""
-      }`,
-      ...(recommendedPlanKey
-        ? { recommendedPlanKey, recommendedPlanName }
-        : {}),
-    });
+    return NextResponse.json(
+      bookingResponse(result.bookingId, result.manageToken, body)
+    );
   } catch (err) {
-    if (err instanceof z.ZodError) {
+    if (err instanceof z.ZodError || err instanceof SyntaxError) {
       return NextResponse.json(
         { error: "Please check the highlighted fields and try again." },
         { status: 400 }

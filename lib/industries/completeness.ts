@@ -4,7 +4,7 @@
  * A primary vertical may not publish until every critical section carries
  * real, specialized content. The admin console shows this report as a
  * checklist, and the admin API refuses to set status "published" while any
- * check fails. Pure — safe on server and client.
+ * check fails. Pure: safe on server and client.
  */
 
 import type {
@@ -30,9 +30,8 @@ export function checkCompleteness(v: IndustryVertical): CompletenessReport {
     filled(v.hero?.headline) &&
       filled(v.hero?.subheadline) &&
       filled(v.hero?.designedFor) &&
-      filled(v.hero?.primaryCta?.label) &&
       filled(v.hero?.demoCta?.href),
-    "Headline, subheadline, designed-for statement, primary CTA, and demo CTA."
+    "Headline, subheadline, designed-for statement, and demo CTA."
   );
 
   const problems = v.problems ?? [];

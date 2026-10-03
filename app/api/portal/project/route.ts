@@ -98,7 +98,7 @@ export async function POST(request: Request) {
           projectId: milestone.project_id,
           actorType: "client",
           actorName: ctx.user.name,
-          action: `Approved milestone "${milestone.name}"${body.note ? ` — "${body.note}"` : ""}`,
+          action: `Approved milestone "${milestone.name}"${body.note ? `: "${body.note}"` : ""}`,
           entityType: "milestone",
           entityId: milestone.id,
         });

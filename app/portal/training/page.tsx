@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function TrainingPage() {
   const ctx = await requirePortalPage();
-  // Tolerate a not-yet-migrated database — render calm empty states.
+  // Tolerate a not-yet-migrated database: render calm empty states.
   const [entries, stats] = await Promise.all([
     getClientTrainingView(ctx.client.id, ctx.user.id, ctx.user.role).catch(() => []),
     trainingCompletionStats(ctx.client.id).catch(() => ({
@@ -31,7 +31,7 @@ export default async function TrainingPage() {
       <PageHeader
         eyebrow="Training"
         title="Training library"
-        description="Short, practical guides to the systems we've built for you — so your whole team runs them with confidence."
+        description="Short, practical guides to the systems we've built for you; so your whole team runs them with confidence."
       />
       <TrainingView
         entries={entries.map((e) => ({

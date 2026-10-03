@@ -99,7 +99,7 @@ export function TeamView({
       </div>
 
       <SectionCard title="People with access" padded={false}>
-        <ul className="divide-y divide-white/[0.06]">
+        <ul className="divide-y divide-white/6">
           {legacyOwner && !users.some((u) => u.role === "owner" && u.active) && (
             <li className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
               <div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ export function TeamView({
 
       <Banner tone="info" title="Access is personal">
         Each person gets their own login and their own permissions. If someone
-        leaves your team, remove their access here — it takes effect
+        leaves your team, remove their access here, it takes effect
         immediately.
       </Banner>
 

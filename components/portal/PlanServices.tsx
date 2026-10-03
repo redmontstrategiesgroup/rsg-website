@@ -57,15 +57,15 @@ const SUB_STATUS_PILL: Record<
 > = {
   active: { classes: "bg-emerald-400/10 text-emerald-300", label: "Active" },
   past_due: { classes: "bg-amber-400/10 text-amber-300", label: "Past due" },
-  paused: { classes: "bg-white/[0.06] text-white/50", label: "Paused" },
+  paused: { classes: "bg-white/6 text-white/50", label: "Paused" },
   pending_cancellation: {
     classes: "bg-crimson/15 text-crimson-light",
     label: "Pending cancellation",
   },
   cancelled: { classes: "bg-crimson/15 text-crimson-light", label: "Cancelled" },
-  pending: { classes: "bg-white/[0.06] text-white/50", label: "Pending" },
+  pending: { classes: "bg-white/6 text-white/50", label: "Pending" },
   awaiting_payment: {
-    classes: "bg-white/[0.06] text-white/50",
+    classes: "bg-white/6 text-white/50",
     label: "Awaiting payment",
   },
 };
@@ -87,7 +87,7 @@ const REQUEST_STATUS_PILL: Record<
     label: "Waiting on you",
   },
   completed: { classes: "bg-emerald-400/10 text-emerald-300", label: "Completed" },
-  declined: { classes: "bg-white/[0.06] text-white/50", label: "Declined" },
+  declined: { classes: "bg-white/6 text-white/50", label: "Declined" },
 };
 
 const INCLUSION_BADGE: Record<string, { classes: string; label: string }> = {
@@ -101,7 +101,7 @@ const INCLUSION_BADGE: Record<string, { classes: string; label: string }> = {
     label: "May carry an additional charge",
   },
   pending_assessment: {
-    classes: "bg-white/[0.06] text-white/50",
+    classes: "bg-white/6 text-white/50",
     label: "Pending assessment",
   },
 };
@@ -153,9 +153,9 @@ const OPEN_REQUEST_STATUSES: ServiceRequestStatus[] = [
 ];
 
 function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -166,18 +166,18 @@ function formatDate(iso: string | null | undefined): string {
 function inclusionNote(inclusion: string | undefined, slaHours: number): string {
   switch (inclusion) {
     case "included":
-      return `Included in your plan — response expected within ${slaHours} business hours.`;
+      return `Included in your plan: response expected within ${slaHours} business hours.`;
     case "needs_approval":
       return "Requires approval before work begins.";
     case "extra_charge":
-      return "May carry an additional charge — we'll confirm before any work starts.";
+      return "May carry an additional charge: we'll confirm before any work starts.";
     default:
       return "We'll assess this request and confirm scope before any work starts.";
   }
 }
 
 const inputClasses =
-  "w-full rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-none";
+  "w-full rounded-lg border border-white/15 bg-white/3 px-3.5 py-2.5 text-sm text-white placeholder:text-white/30 transition-colors focus:border-crimson focus:outline-hidden";
 
 const labelClasses =
   "font-mono text-[0.58rem] uppercase tracking-label text-white/40";
@@ -265,15 +265,15 @@ export function PlanServices({
     <div className="space-y-8">
       {/* Billing return banners */}
       {billingBanner === "success" && (
-        <div className="flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-4 text-sm text-emerald-200">
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/6 p-4 text-sm text-emerald-200">
           <CheckCircle2 size={16} className="shrink-0 text-emerald-300" />
-          Payment received — your plan is being activated.
+          Payment received: your plan is being activated.
         </div>
       )}
       {billingBanner === "cancelled" && (
-        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/70">
+        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 p-4 text-sm text-white/70">
           <AlertTriangle size={16} className="shrink-0 text-amber-300" />
-          Checkout was cancelled — no changes made.
+          Checkout was cancelled, no changes made.
         </div>
       )}
 
@@ -324,7 +324,7 @@ export function PlanServices({
         />
         <Link
           href="/book"
-          className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
         >
           <CalendarCheck size={15} className="text-crimson-light" />
           Schedule a review
@@ -346,7 +346,7 @@ export function PlanServices({
         {latestReportId && (
           <Link
             href={`/portal/reports/${latestReportId}`}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
           >
             <FileText size={15} className="text-crimson-light" />
             View monthly report
@@ -381,7 +381,7 @@ export function PlanServices({
                 </span>
               </div>
 
-              <dl className="mt-5 grid gap-x-6 gap-y-3 border-t border-white/[0.06] pt-5 sm:grid-cols-2">
+              <dl className="mt-5 grid gap-x-6 gap-y-3 border-t border-white/6 pt-5 sm:grid-cols-2">
                 <PlanFact
                   label="Billing"
                   value={
@@ -425,7 +425,7 @@ export function PlanServices({
               </dl>
 
               {plan.features.length > 0 && (
-                <div className="mt-5 border-t border-white/[0.06] pt-5">
+                <div className="mt-5 border-t border-white/6 pt-5">
                   <p className={labelClasses}>What&apos;s included</p>
                   <ul className="mt-3 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
                     {plan.features.slice(0, 8).map((f) => (
@@ -451,11 +451,11 @@ export function PlanServices({
               )}
 
               {data?.billingPortalAvailable && (
-                <div className="mt-6 border-t border-white/[0.06] pt-5">
+                <div className="mt-6 border-t border-white/6 pt-5">
                   <button
                     onClick={openBillingPortal}
                     disabled={billingPortalLoading}
-                    className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
                   >
                     <CreditCard size={15} className="text-crimson-light" />
                     {billingPortalLoading ? "Opening…" : "Manage billing"}
@@ -476,7 +476,7 @@ export function PlanServices({
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-white/45">
                 Your systems aren&apos;t under active management. A managed plan
                 keeps them secure, updated, monitored, and improving every
-                month — with everything logged right here in your portal.
+                month, with everything logged right here in your portal.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link href="/book" className="btn-primary text-sm">
@@ -504,7 +504,7 @@ export function PlanServices({
                 {usage.usedHours} of {usage.includedHours} hours used this
                 period
               </p>
-              <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.06]">
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/6">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{
@@ -527,7 +527,7 @@ export function PlanServices({
               </div>
               <p className="mt-3 text-[0.72rem] leading-relaxed text-white/40">
                 {usage.overLimit
-                  ? "You've used all included hours this period — we'll confirm before any additional-rate work."
+                  ? "You've used all included hours this period, we'll confirm before any additional-rate work."
                   : usage.approachingLimit
                     ? "You're approaching your included hours for this period."
                     : "Routine monitoring, backups, and updates never consume your hours."}
@@ -591,7 +591,7 @@ export function PlanServices({
             {client.systems.map((s) => (
               <div
                 key={s.name}
-                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4"
+                className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 p-4"
               >
                 <div className="flex min-w-0 items-center gap-2.5">
                   <Zap size={13} className="shrink-0 text-crimson-light" />
@@ -639,7 +639,7 @@ export function PlanServices({
             {openRequests.map((r) => (
               <div
                 key={r.id}
-                className="rounded-xl border border-white/10 bg-white/[0.02] p-4"
+                className="rounded-xl border border-white/10 bg-white/2 p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -689,7 +689,7 @@ export function PlanServices({
               {data.maintenance.slice(0, 8).map((m) => (
                 <li
                   key={m.id}
-                  className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3.5"
+                  className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-white/2 p-3.5"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -723,10 +723,10 @@ export function PlanServices({
               {data.reports.map((rep) => (
                 <li
                   key={rep.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3.5"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/2 p-3.5"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-crimson-light">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-crimson-light">
                       <FileText size={15} />
                     </span>
                     <div className="min-w-0">
@@ -769,7 +769,7 @@ export function PlanServices({
           <div className="mt-5 overflow-x-auto rounded-xl border border-white/10">
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                <tr className="border-b border-white/10 bg-white/2 font-mono text-[0.54rem] uppercase tracking-label text-white/40">
                   <th className="px-4 py-3 font-normal">Invoice</th>
                   <th className="px-4 py-3 font-normal">Amount</th>
                   <th className="px-4 py-3 font-normal">Status</th>
@@ -783,7 +783,7 @@ export function PlanServices({
                   return (
                     <tr
                       key={inv.id}
-                      className="border-b border-white/[0.06] last:border-0"
+                      className="border-b border-white/6 last:border-0"
                     >
                       <td className="px-4 py-3.5 text-white/80">
                         {inv.invoiceNumber || inv.description || "Invoice"}
@@ -798,7 +798,7 @@ export function PlanServices({
                               ? "bg-emerald-400/10 text-emerald-300"
                               : inv.status === "open"
                                 ? "bg-amber-400/10 text-amber-300"
-                                : "bg-white/[0.06] text-white/50"
+                                : "bg-white/6 text-white/50"
                           }`}
                         >
                           {inv.status}
@@ -830,7 +830,7 @@ export function PlanServices({
           <div className="mt-5 overflow-x-auto rounded-xl border border-white/10">
             <table className="w-full min-w-[480px] text-left text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                <tr className="border-b border-white/10 bg-white/2 font-mono text-[0.54rem] uppercase tracking-label text-white/40">
                   <th className="px-4 py-3 font-normal">Invoice</th>
                   <th className="px-4 py-3 font-normal">Date</th>
                   <th className="px-4 py-3 font-normal">Amount</th>
@@ -841,7 +841,7 @@ export function PlanServices({
                 {client.invoices.map((inv) => (
                   <tr
                     key={inv.id}
-                    className="border-b border-white/[0.06] last:border-0"
+                    className="border-b border-white/6 last:border-0"
                   >
                     <td className="px-4 py-3.5 font-mono text-white/80">
                       {inv.id}
@@ -857,7 +857,7 @@ export function PlanServices({
                             ? "bg-emerald-400/10 text-emerald-300"
                             : inv.status === "Due"
                               ? "bg-crimson/15 text-crimson-light"
-                              : "bg-white/[0.06] text-white/50"
+                              : "bg-white/6 text-white/50"
                         }`}
                       >
                         {inv.status}
@@ -911,7 +911,7 @@ function ActionButton({
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
+      className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-4 py-2.5 text-sm text-white/75 transition-colors hover:border-white/30 hover:text-white"
     >
       <Icon size={15} className="text-crimson-light" />
       {label}
@@ -983,7 +983,7 @@ function RoadmapCard({
     <div className="card p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-crimson-light">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-crimson-light">
             <MapIcon size={15} />
           </span>
           <div>
@@ -1005,7 +1005,7 @@ function RoadmapCard({
                 ? "bg-amber-400/10 text-amber-300"
                 : roadmap.status === "proposed"
                   ? "bg-crimson/15 text-crimson-light"
-                  : "bg-white/[0.06] text-white/50"
+                  : "bg-white/6 text-white/50"
           }`}
         >
           {roadmap.status.replaceAll("_", " ")}
@@ -1026,7 +1026,7 @@ function RoadmapCard({
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-white/10 bg-white/[0.02] p-4"
+                  className="rounded-xl border border-white/10 bg-white/2 p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <p className="text-sm font-medium text-white">{item.title}</p>
@@ -1037,7 +1037,7 @@ function RoadmapCard({
                           : item.status === "in_progress"
                             ? "bg-amber-400/10 text-amber-300"
                             : item.status === "deferred"
-                              ? "bg-white/[0.06] text-white/50"
+                              ? "bg-white/6 text-white/50"
                               : "bg-sky-400/10 text-sky-300"
                       }`}
                     >
@@ -1062,7 +1062,7 @@ function RoadmapCard({
       </div>
 
       {roadmap.status === "proposed" && (
-        <div className="mt-6 border-t border-white/[0.06] pt-5">
+        <div className="mt-6 border-t border-white/6 pt-5">
           <button
             onClick={approve}
             disabled={approving}
@@ -1076,7 +1076,7 @@ function RoadmapCard({
       {approvedNow && (
         <p className="mt-4 flex items-center gap-2 text-sm text-emerald-300">
           <CheckCircle2 size={15} />
-          Roadmap approved — we&apos;ll schedule the work and keep you posted
+          Roadmap approved: we&apos;ll schedule the work and keep you posted
           here.
         </p>
       )}
@@ -1121,7 +1121,7 @@ function ModalShell({
       <button
         aria-label="Close dialog"
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-xs"
         tabIndex={-1}
       />
       <motion.div
@@ -1138,7 +1138,7 @@ function ModalShell({
             ref={closeRef}
             onClick={onClose}
             aria-label="Close"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/[0.03] text-white/60 transition-colors hover:border-white/30 hover:text-white"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/3 text-white/60 transition-colors hover:border-white/30 hover:text-white"
           >
             <X size={15} />
           </button>
@@ -1261,12 +1261,12 @@ function RequestModal({
             onChange={(e) => setDetails(e.target.value)}
             maxLength={4000}
             rows={4}
-            placeholder="Anything that helps us scope it — links, examples, urgency."
+            placeholder="Anything that helps us scope it, links, examples, urgency."
             className={`${inputClasses} mt-2 resize-y`}
           />
         </div>
 
-        <p className="rounded-lg border border-white/10 bg-white/[0.02] p-3 text-[0.78rem] leading-relaxed text-white/55">
+        <p className="rounded-lg border border-white/10 bg-white/2 p-3 text-[0.78rem] leading-relaxed text-white/55">
           {inclusionNote(data.inclusionByType[type], data.slaHours)}
         </p>
 
@@ -1355,7 +1355,7 @@ function PlanChangeModal({
       }
       if (res.ok && json.requiresReview) {
         setSuccessCopy(
-          "Request received — your account manager will follow up."
+          "Request received: your account manager will follow up."
         );
       } else if (res.ok && json.ok) {
         setSuccessCopy("Plan updated.");
@@ -1389,11 +1389,11 @@ function PlanChangeModal({
       };
       if (res.ok && json.requiresReview) {
         setSuccessCopy(
-          "Request received — your account manager will follow up about a managed transition."
+          "Request received: your account manager will follow up about a managed transition."
         );
       } else if (res.ok && json.ok) {
         setSuccessCopy(
-          "Cancellation scheduled — your plan stays fully active until the end of the current billing period."
+          "Cancellation scheduled: your plan stays fully active until the end of the current billing period."
         );
         setTimeout(() => window.location.reload(), 1600);
       } else {
@@ -1439,8 +1439,8 @@ function PlanChangeModal({
                     key={p.id}
                     className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
                       selected
-                        ? "border-crimson/60 bg-crimson/[0.06]"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                        ? "border-crimson/60 bg-crimson/6"
+                        : "border-white/10 bg-white/2 hover:border-white/25"
                     }`}
                   >
                     <input
@@ -1457,7 +1457,7 @@ function PlanChangeModal({
                           {p.name}
                         </span>
                         {isCurrent && (
-                          <span className="rounded-full bg-white/[0.06] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-label text-white/50">
+                          <span className="rounded-full bg-white/6 px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-label text-white/50">
                             Current
                           </span>
                         )}
@@ -1493,7 +1493,7 @@ function PlanChangeModal({
               <option value="annual" className="bg-base text-white">
                 Annual
                 {target && annualPriceCents(target) != null
-                  ? ` — ${formatCents(annualPriceCents(target)!)}/yr`
+                  ? ` (${formatCents(annualPriceCents(target)!)}/yr)`
                   : ""}
               </option>
             </select>
@@ -1515,7 +1515,7 @@ function PlanChangeModal({
           </div>
 
           {criticalDowngrade && (
-            <label className="flex items-start gap-3 rounded-xl border border-amber-400/25 bg-amber-400/[0.05] p-4 text-[0.8rem] leading-relaxed text-white/70">
+            <label className="flex items-start gap-3 rounded-xl border border-amber-400/25 bg-amber-400/5 p-4 text-[0.8rem] leading-relaxed text-white/70">
               <input
                 type="checkbox"
                 checked={ackCritical}
@@ -1530,7 +1530,7 @@ function PlanChangeModal({
 
           {error && <p className="text-sm text-crimson-light">{error}</p>}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-4">
             <button
               type="button"
               onClick={() => {
@@ -1589,7 +1589,7 @@ function PlanChangeModal({
             />
           </div>
 
-          <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-[0.8rem] leading-relaxed text-white/70">
+          <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/2 p-4 text-[0.8rem] leading-relaxed text-white/70">
             <input
               type="checkbox"
               checked={ackEnd}
@@ -1601,7 +1601,7 @@ function PlanChangeModal({
           </label>
 
           {criticalCancellation && (
-            <label className="flex items-start gap-3 rounded-xl border border-amber-400/25 bg-amber-400/[0.05] p-4 text-[0.8rem] leading-relaxed text-white/70">
+            <label className="flex items-start gap-3 rounded-xl border border-amber-400/25 bg-amber-400/5 p-4 text-[0.8rem] leading-relaxed text-white/70">
               <input
                 type="checkbox"
                 checked={ackCritical}
@@ -1616,7 +1616,7 @@ function PlanChangeModal({
 
           {error && <p className="text-sm text-crimson-light">{error}</p>}
 
-          <div className="flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+          <div className="flex items-center justify-between gap-3 border-t border-white/6 pt-4">
             <button
               type="button"
               onClick={() => {

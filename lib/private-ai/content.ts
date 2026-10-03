@@ -38,7 +38,7 @@ export const DEPLOYMENT_OPTIONS: {
   },
   {
     id: "on_premise",
-    name: "On-Premise AI",
+    name: "Onpremise AI",
     summary:
       "Installed within your office, facility, warehouse, practice, or other physical location on your local network.",
     suitable: [
@@ -172,7 +172,7 @@ export const SYSTEMS_WE_BUILD: {
     id: "support",
     name: "Private Customer Service AI",
     summary:
-      "A secure support assistant trained on your services, products, policies, and approved account knowledge—with human escalation.",
+      "A secure support assistant trained on your services, products, policies, and approved account knowledge; with human escalation.",
     capabilities: [
       "Website chat and client portal",
       "SMS and email channels",
@@ -185,7 +185,7 @@ export const SYSTEMS_WE_BUILD: {
     id: "phone",
     name: "Private AI Phone System",
     summary:
-      "A custom AI receptionist that answers, qualifies, schedules, routes, and creates records—with clear consent and recording controls.",
+      "A custom AI receptionist that answers, qualifies, schedules, routes, and creates records; with clear consent and recording controls.",
     capabilities: [
       "Answer and route calls",
       "Qualify leads and collect information",
@@ -339,14 +339,14 @@ export const INDUSTRY_USE_CASES: {
     ],
   },
   {
-    name: "Retail",
+    name: "Real Estate Brokerage",
     examples: [
-      "Private inventory assistant",
-      "Product knowledge search",
-      "Store performance reporting",
-      "Employee training assistant",
-      "Customer support with escalation",
-      "Multi-location operations assistant",
+      "Private transaction-file assistant",
+      "Listing and contract knowledge search",
+      "Agent onboarding and policy assistant",
+      "Brokerage compliance Q&A with citations",
+      "Team production reporting",
+      "Client inquiry triage with licensed handoff",
     ],
   },
   {
@@ -359,7 +359,7 @@ export const INDUSTRY_USE_CASES: {
     ],
   },
   {
-    name: "Healthcare Administration & Dental",
+    name: "Health & Wellness Administration",
     examples: [
       "Internal policy search",
       "Administrative workflow assistance",
@@ -406,7 +406,7 @@ export const PROCESS_STAGES = [
   {
     step: 2,
     title: "Workflow and Data Mapping",
-    body: "Document how work actually moves—systems, handoffs, approvals, and where automation creates leverage.",
+    body: "Document how work actually moves: systems, handoffs, approvals, and where automation creates leverage.",
   },
   {
     step: 3,
@@ -469,7 +469,7 @@ export const PRIVATE_AI_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Can the AI connect to our current software?",
-    a: "In most cases, yes—through approved APIs, connectors, or custom integrations to CRM, scheduling, email, phone, accounting, storage, and internal tools you authorize.",
+    a: "In most cases, yes, through approved APIs, connectors, or custom integrations to CRM, scheduling, email, phone, accounting, storage, and internal tools you authorize.",
   },
   {
     q: "Can we use our existing servers?",
@@ -497,7 +497,7 @@ export const PRIVATE_AI_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What happens when the AI is uncertain?",
-    a: "Systems can escalate to a human, ask clarifying questions, or refuse when confidence is low or a request is sensitive—based on thresholds you configure.",
+    a: "Systems can escalate to a human, ask clarifying questions, or refuse when confidence is low or a request is sensitive, based on thresholds you configure.",
   },
   {
     q: "Can the system require human approval?",
@@ -505,7 +505,7 @@ export const PRIVATE_AI_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Can RSG maintain the system after launch?",
-    a: "Yes. Ongoing monitoring, updates, backups, permission changes, and optimization are available—especially with Secure Managed deployments.",
+    a: "Yes. Ongoing monitoring, updates, backups, permission changes, and optimization are available; especially with Secure Managed deployments.",
   },
   {
     q: "How long does implementation take?",
@@ -517,7 +517,7 @@ export const PRIVATE_AI_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Can it replace our existing software?",
-    a: "Usually it should not. Private AI is typically designed to operate alongside your current systems—searching, assisting, and automating—rather than forcing a rip-and-replace.",
+    a: "Usually it should not. Private AI is typically designed to operate alongside your current systems (searching, assisting, and automating) rather than forcing a rip-and-replace.",
   },
   {
     q: "Can it operate alongside our current systems?",
@@ -531,7 +531,7 @@ export const PRIVATE_AI_FAQS: { q: string; a: string }[] = [
 
 export const DESIGNER_BUSINESS_TYPES = [
   "Home services",
-  "Retail",
+  "Real estate",
   "Healthcare administration",
   "Professional services",
   "Construction",

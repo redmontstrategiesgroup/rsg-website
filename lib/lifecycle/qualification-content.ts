@@ -1,7 +1,7 @@
 import type { FormSection, ServiceCategory } from "./types.ts";
 
 /**
- * /start — conversational qualification flow. Plain language, no technical
+ * /start: conversational qualification flow. Plain language, no technical
  * questions up front, conditional follow-ups per primary need. Estimated
  * completion: 3–4 minutes.
  */
@@ -12,7 +12,7 @@ export const QUALIFICATION_SECTIONS: FormSection[] = [
   {
     key: "about",
     label: "About your business",
-    description: "The basics — so we know who we're talking to.",
+    description: "The basics, so we know who we're talking to.",
     estimatedMinutes: 1,
     questions: [
       { key: "name", label: "Your name", type: "text", required: true, placeholder: "First and last name" },
@@ -27,7 +27,6 @@ export const QUALIFICATION_SECTIONS: FormSection[] = [
           { value: "health_wellness", label: "Health & wellness" },
           { value: "fitness", label: "Fitness" },
           { value: "professional_services", label: "Professional services" },
-          { value: "retail", label: "Retail / e-commerce" },
           { value: "hospitality", label: "Hospitality / food" },
           { value: "real_estate", label: "Real estate" },
           { value: "other", label: "Something else" },
@@ -54,7 +53,7 @@ export const QUALIFICATION_SECTIONS: FormSection[] = [
     questions: [
       {
         key: "revenue_range", label: "Approximate monthly revenue", type: "chips", required: true,
-        help: "This stays private — it helps us recommend solutions that actually fit your size.",
+        help: "This stays private: it helps us recommend solutions that actually fit your size.",
         options: [
           { value: "pre_revenue", label: "Pre-revenue" },
           { value: "under_10k", label: "Under $10k" },
@@ -72,12 +71,12 @@ export const QUALIFICATION_SECTIONS: FormSection[] = [
           { value: "website", label: "A better website or online presence" },
           { value: "private_ai", label: "Private AI built around our data" },
           { value: "communication", label: "Better customer communication & follow-up" },
-          { value: "not_sure", label: "Not sure — I want expert eyes on it" },
+          { value: "not_sure", label: "Not sure: I want expert eyes on it" },
         ],
       },
-      { key: "main_challenge", label: "What's the main challenge behind that?", type: "textarea", required: true, placeholder: "In your own words — a sentence or two is plenty." },
+      { key: "main_challenge", label: "What's the main challenge behind that?", type: "textarea", required: true, placeholder: "In your own words: a sentence or two is plenty." },
       { key: "desired_outcome", label: "If we work together, what should be different a year from now?", type: "textarea", required: false, placeholder: "e.g. “Booked out 3 weeks ahead without me chasing every inquiry.”" },
-      { key: "current_systems", label: "What tools or software run the business today?", type: "textarea", required: false, placeholder: "e.g. QuickBooks, Google Calendar, a spreadsheet, pen & paper — all honest answers welcome." },
+      { key: "current_systems", label: "What tools or software run the business today?", type: "textarea", required: false, placeholder: "e.g. QuickBooks, Google Calendar, a spreadsheet, pen & paper; all honest answers welcome." },
     ],
   },
   {
@@ -147,7 +146,7 @@ export const QUALIFICATION_SECTIONS: FormSection[] = [
         options: [
           { value: "private_cloud", label: "Private cloud we control" },
           { value: "on_premise", label: "On our own hardware" },
-          { value: "unsure", label: "Not sure — advise us" },
+          { value: "unsure", label: "Not sure: advise us" },
         ],
       },
       {
@@ -190,12 +189,12 @@ export const QUALIFICATION_SECTIONS: FormSection[] = [
   {
     key: "fit",
     label: "Project fit",
-    description: "Last step — helps us come back with realistic recommendations.",
+    description: "Last step: helps us come back with realistic recommendations.",
     estimatedMinutes: 1,
     questions: [
       {
         key: "budget_range", label: "Estimated project budget", type: "chips", required: true,
-        help: "A range is fine — this shapes what we recommend, not what we charge.",
+        help: "A range is fine: this shapes what we recommend, not what we charge.",
         options: [
           { value: "under_2k", label: "Under $2,000" },
           { value: "2k_5k", label: "$2,000–$5,000" },
@@ -255,7 +254,7 @@ export function computeQualificationScore(answers: Record<string, unknown>): num
   return Math.min(100, score);
 }
 
-/** Assessment invite threshold — below it, prospects get the warm alt path. */
+/** Assessment invite threshold: below it, prospects get the warm alt path. */
 export const QUALIFIED_THRESHOLD = 35;
 
 export function qualificationCategory(

@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   try {
     const input = assessmentSchema.parse(body);
 
-    // Honeypot tripped — pretend success so bots learn nothing.
+    // Honeypot tripped: pretend success so bots learn nothing.
     if (input.hp && input.hp.trim().length > 0) {
       return Response.json({ ok: true });
     }
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     const result = await processLead(lead);
     if (!result.storedLocally && !result.storedRemotely && !result.emailed) {
       return Response.json(
-        { ok: false, error: "We couldn't save your assessment — please try again or email us directly." },
+        { ok: false, error: "We couldn't save your assessment, please try again or email us directly." },
         { status: 500 }
       );
     }
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
     }
     console.error("[assessment] failed", err);
     return Response.json(
-      { ok: false, error: "Something went wrong — please try again." },
+      { ok: false, error: "Something went wrong: please try again." },
       { status: 500 }
     );
   }

@@ -43,7 +43,7 @@ export type EnqueueInput = {
    * Stable identity for the DOMAIN event, e.g. `booking.created:${bookingId}`.
    * Two enqueues with the same eventId for the same endpoint collapse into one
    * row, and the receiver dedupes on it. Omitting it means duplicates cannot be
-   * detected on either side — only do that for events with genuinely no
+   * detected on either side, only do that for events with genuinely no
    * identity.
    */
   eventId?: string;
@@ -79,7 +79,7 @@ type ClaimedRow = {
  *
  * Jitter is not decoration. Without it, every delivery that failed during the
  * same outage retries at the same instant on the next tick and re-creates the
- * spike that caused the outage — the classic thundering herd. Full jitter
+ * spike that caused the outage: the classic thundering herd. Full jitter
  * (random over the whole window, not window ± a bit) spreads them properly.
  *
  * attempt 1 → up to 2s, 2 → 4s, 3 → 8s … 8 → capped at 1h.
@@ -99,7 +99,7 @@ export function backoffMs(attempt: number, retryAfterSeconds?: number | null): n
  * Is this HTTP status worth retrying?
  *
  * The old deliverer retried every non-2xx identically, so a 400 caused by a
- * malformed payload was re-sent five times and could never succeed — burning
+ * malformed payload was re-sent five times and could never succeed, burning
  * the retry budget while telling us nothing. 4xx means "your request is wrong";
  * repeating it unchanged is not a strategy. 408 and 429 are the exceptions:
  * they are about timing, not correctness.
@@ -127,7 +127,7 @@ function errorClassForStatus(status: number | null): ErrorClass {
  * Queue an event for every endpoint that subscribes to it.
  *
  * Never throws: a webhook that cannot be queued must not fail the booking that
- * produced it. It is logged loudly instead — an event that vanishes silently at
+ * produced it. It is logged loudly instead, an event that vanishes silently at
  * enqueue is invisible to every downstream check, because nothing downstream
  * knows it should have existed.
  */
@@ -186,7 +186,7 @@ export async function enqueue(input: EnqueueInput): Promise<{ queued: number }> 
       if (error) {
         // 23505 = unique violation on (endpoint_id, event_id): this domain event
         // is already queued for this endpoint. That is the dedupe working, not a
-        // failure — a double-fired enqueue is exactly what it is there for.
+        // failure: a double-fired enqueue is exactly what it is there for.
         if (error.code === "23505") continue;
         console.error("[outbox] enqueue failed", {
           eventType: input.eventType,
@@ -223,7 +223,7 @@ export type DeliveryResult = {
 /**
  * Claim a batch and attempt each one.
  *
- * The claim is what makes concurrent runs safe — see claim_webhook_deliveries()
+ * The claim is what makes concurrent runs safe, see claim_webhook_deliveries()
  * in the migration. Two cron ticks overlapping used to mean the same event was
  * POSTed twice.
  */
@@ -286,7 +286,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
         [CORRELATION_HEADER]: row.correlation_id ?? "",
         "X-RSG-Event": row.event_type,
         "X-RSG-Sequence": String(row.sequence ?? ""),
-        // The receiver's dedupe key. Stable across every retry of this event —
+        // The receiver's dedupe key. Stable across every retry of this event;
         // that is the entire contract that makes at-least-once tolerable.
         "Idempotency-Key": row.idempotency_key,
       },
@@ -333,7 +333,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
         attempts: attempt,
         response_status: status,
         last_error: permanent
-          ? `${errorMessage} (permanent — not retried)`
+          ? `${errorMessage} (permanent, not retried)`
           : `${errorMessage} (attempts exhausted)`,
         dead_lettered_at: new Date().toISOString(),
         claimed_at: null,
@@ -383,7 +383,7 @@ async function attemptDelivery(row: ClaimedRow): Promise<"delivered" | "retrying
  * there was no path back, so fixing a broken endpoint still left every event it
  * missed permanently undelivered.
  *
- * Resets attempts to 0 — a replay is a deliberate human decision after the
+ * Resets attempts to 0: a replay is a deliberate human decision after the
  * cause was addressed, so it deserves a fresh budget rather than one attempt
  * against an already-exhausted counter.
  */
@@ -434,7 +434,7 @@ export async function replayDeadLetters(filter: {
  *
  * `oldestPendingAgeSeconds` is the number that matters. A growing queue with
  * everything nominally "pending" is what a stopped cron looks like, and counts
- * alone will not show it — the count looks fine right up until it does not.
+ * alone will not show it: the count looks fine right up until it does not.
  */
 export async function outboxHealth(): Promise<{
   pending: number;

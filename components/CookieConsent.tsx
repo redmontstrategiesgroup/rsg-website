@@ -5,12 +5,14 @@ import Link from "next/link";
 
 /**
  * Cookie consent banner. On accept, sets a one-year consent cookie plus a
- * first-party visitor id (rsg_vid) for marketing attribution. On decline,
- * records the choice and sets nothing else.
+ * first-party visitor id (rsg_vid) for marketing attribution; the tracker
+ * then adds the 90-day first-touch cookie (rsg_ft, lib/tracking.ts). On
+ * decline, records the choice and clears both.
  */
 
 const CONSENT_COOKIE = "rsg_consent";
 const VISITOR_COOKIE = "rsg_vid";
+const FIRST_TOUCH_COOKIE = "rsg_ft";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
 function readCookie(name: string): string | null {
@@ -50,8 +52,9 @@ export function CookieConsent() {
 
   function decline() {
     writeCookie(CONSENT_COOKIE, "essential");
-    // Remove any previously set marketing cookie.
+    // Remove any previously set marketing cookies.
     writeCookie(VISITOR_COOKIE, "", 0);
+    writeCookie(FIRST_TOUCH_COOKIE, "", 0);
     setVisible(false);
   }
 
@@ -66,7 +69,7 @@ export function CookieConsent() {
     <div
       role="region"
       aria-label="Cookie notice"
-      className="fixed inset-x-3 bottom-20 z-40 border border-white/15 bg-base-900 p-5 shadow-lift sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[min(380px,calc(100%-6.5rem))] sm:p-6"
+      className="bottom-safe-20 fixed inset-x-3 z-40 border border-white/15 bg-base-900 p-5 shadow-lift sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[min(380px,calc(100%-6.5rem))] sm:p-6"
     >
       <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.22em] text-white/40">
         Cookies
@@ -76,7 +79,7 @@ export function CookieConsent() {
         site and to improve it. See the{" "}
         <Link
           href="/privacy"
-          className="text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white/60"
+          className="-my-3 inline-block py-3 text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-white/60 lg:my-0 lg:py-0"
         >
           privacy policy
         </Link>
@@ -92,7 +95,7 @@ export function CookieConsent() {
         </button>
         <button
           onClick={decline}
-          className="inline-flex min-h-12 items-center justify-center px-4 text-sm text-white/50 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+          className="inline-flex min-h-12 items-center justify-center px-4 text-sm text-white/50 transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/30"
         >
           Decline
         </button>

@@ -8,7 +8,7 @@ import { useEffect } from "react";
  * One IntersectionObserver for the whole document replaces the 222
  * framer-motion components this used to take. It only ever runs when the
  * inline script in the root layout decided, before first paint, that this is
- * a wide viewport whose user welcomes motion — on phones this effect returns
+ * a wide viewport whose user welcomes motion, on phones this effect returns
  * immediately and nothing is observed.
  *
  * A MutationObserver picks up nodes added by client navigation.

@@ -23,7 +23,7 @@ export function SecurityIncluded({
   return (
     <section
       id="security-included"
-      className={`scroll-mt-24 border-y border-white/[0.08] bg-base-900 ${className}`}
+      className={`scroll-mt-24 border-y border-white/8 bg-base-900 ${className}`}
     >
       <div className="container-px section-y">
         <div className="section-grid">
@@ -58,7 +58,7 @@ export function SecurityIncluded({
             <div className="grid gap-2 sm:grid-cols-2">
               {def.controls.map((c, i) => (
                 <Reveal key={c} y={10} delay={(i % 4) * 0.03}>
-                  <div className="flex items-start gap-2.5 border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-sm text-white/65">
+                  <div className="flex items-start gap-2.5 border border-white/8 bg-white/2 px-4 py-3 text-sm text-white/65">
                     <Check size={14} className="mt-0.5 shrink-0 text-crimson-light" />
                     {c}
                   </div>

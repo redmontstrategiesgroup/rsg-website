@@ -1,5 +1,5 @@
 /**
- * Business Systems Assessment — questions, scoring, and summary rules.
+ * Business Systems Assessment: questions, scoring, and summary rules.
  *
  * Written for a non-technical business owner: plain language everywhere,
  * tooltips for any technical term, and conditional questions so nobody is
@@ -9,7 +9,7 @@
  * a BIGGER gap / opportunity and 0 means healthy. The overall score is 0–100
  * where higher = more systems opportunity.
  *
- * Pure content + pure functions only — no data access in this file.
+ * Pure content + pure functions only, no data access in this file.
  */
 
 import {
@@ -40,9 +40,9 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         options: [
           { value: "home_services", label: "Home services (HVAC, plumbing, electrical, cleaning…)" },
           { value: "construction_trades", label: "Construction or trades" },
-          { value: "health_wellness", label: "Health & wellness (dental, med spa, gym, clinic…)" },
+          { value: "health_wellness", label: "Health & wellness (med spa, clinic, gym, therapy…)" },
           { value: "professional_services", label: "Professional services (legal, accounting, consulting…)" },
-          { value: "retail_ecommerce", label: "Retail or e-commerce" },
+          { value: "real_estate", label: "Real estate or brokerage" },
           { value: "restaurant_food", label: "Restaurant or food service" },
           { value: "other", label: "Something else" },
         ],
@@ -95,7 +95,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         label: "What frustrates you most about how the business runs day to day?",
         type: "textarea",
         required: true,
-        placeholder: "In your own words — there are no wrong answers here.",
+        placeholder: "In your own words: there are no wrong answers here.",
       },
     ],
   },
@@ -193,9 +193,9 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         options: [
           { value: "more_than_we_handle", label: "More than we can handle" },
           { value: "steady", label: "Steady and predictable" },
-          { value: "feast_famine", label: "Feast or famine — busy some weeks, dead others" },
+          { value: "feast_famine", label: "Feast or famine: busy some weeks, dead others" },
           { value: "too_few", label: "Not enough coming in" },
-          { value: "not_sure", label: "Hard to say — we don't really track it" },
+          { value: "not_sure", label: "Hard to say: we don't really track it" },
         ],
         points: { more_than_we_handle: 1, steady: 0, feast_famine: 6, too_few: 8, not_sure: 5 },
       },
@@ -209,7 +209,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
           { value: "spreadsheet", label: "A spreadsheet someone updates" },
           { value: "inbox", label: "It sits in email or voicemail until someone gets to it" },
           { value: "paper", label: "Paper, whiteboard, or sticky notes" },
-          { value: "memory", label: "It isn't — we rely on memory" },
+          { value: "memory", label: "It isn't: we rely on memory" },
         ],
         points: { software: 0, spreadsheet: 4, inbox: 5, paper: 6, memory: 8 },
       },
@@ -218,13 +218,13 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         label: "When a new inquiry comes in, how quickly does someone usually respond?",
         type: "select",
         required: true,
-        help: "Responding within minutes dramatically increases the odds of winning the work — most customers go with whoever answers first.",
+        help: "Responding within minutes dramatically increases the odds of winning the work; most customers go with whoever answers first.",
         options: [
           { value: "minutes", label: "Within minutes" },
           { value: "within_hour", label: "Within the hour" },
           { value: "same_day", label: "Sometime the same day" },
           { value: "next_day", label: "Usually the next day" },
-          { value: "several_days", label: "A few days — or sometimes not at all" },
+          { value: "several_days", label: "A few days, or sometimes not at all" },
         ],
         points: { minutes: 0, within_hour: 1, same_day: 3, next_day: 6, several_days: 8 },
       },
@@ -237,7 +237,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
           { value: "auto_text", label: "They get an automatic text back right away" },
           { value: "voicemail_reliable", label: "Voicemail, and we reliably call back" },
           { value: "voicemail_slips", label: "Voicemail, but callbacks slip through" },
-          { value: "nothing", label: "Nothing — a missed call is just missed" },
+          { value: "nothing", label: "Nothing: a missed call is just missed" },
           { value: "not_sure", label: "Not sure, honestly" },
         ],
         points: { auto_text: 0, voicemail_reliable: 2, voicemail_slips: 6, nothing: 8, not_sure: 5 },
@@ -265,12 +265,12 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         type: "select",
         required: true,
         tooltip:
-          "This is what businesses call a sales pipeline — a simple list of everyone who might buy, and what stage each conversation is at (new inquiry, quoted, ready to book…).",
+          "This is what businesses call a sales pipeline; a simple list of everyone who might buy, and what stage each conversation is at (new inquiry, quoted, ready to book…).",
         options: [
-          { value: "one_system", label: "Yes — it's all in one system" },
+          { value: "one_system", label: "Yes: it's all in one system" },
           { value: "in_my_head", label: "Yes, but it mostly lives in my head" },
-          { value: "partially", label: "Partially — some of it, in a few places" },
-          { value: "no", label: "No — things fall through the cracks" },
+          { value: "partially", label: "Partially: some of it, in a few places" },
+          { value: "no", label: "No: things fall through the cracks" },
         ],
         points: { one_system: 0, in_my_head: 6, partially: 4, no: 8 },
       },
@@ -284,8 +284,8 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         options: [
           { value: "yes_consistent", label: "Yes, and we actually use it" },
           { value: "yes_unused", label: "We have one, but barely use it" },
-          { value: "spreadsheets", label: "No — spreadsheets or paper" },
-          { value: "nothing", label: "No — nothing formal" },
+          { value: "spreadsheets", label: "No: spreadsheets or paper" },
+          { value: "nothing", label: "No: nothing formal" },
           { value: "not_sure", label: "Not sure what counts" },
         ],
         points: { yes_consistent: 0, yes_unused: 5, spreadsheets: 7, nothing: 8, not_sure: 6 },
@@ -299,7 +299,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
           { value: "automated", label: "They get automatic follow-up by email or text" },
           { value: "manual_consistent", label: "Someone follows up manually, consistently" },
           { value: "when_we_remember", label: "We follow up when we remember" },
-          { value: "nothing", label: "Usually nothing — they just go cold" },
+          { value: "nothing", label: "Usually nothing: they just go cold" },
         ],
         points: { automated: 0, manual_consistent: 2, when_we_remember: 6, nothing: 8 },
       },
@@ -309,7 +309,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         type: "boolean",
         required: true,
         tooltip:
-          "Automation means software does a repetitive task for you — like sending a reminder text or a follow-up email — without anyone having to think about it.",
+          "Automation means software does a repetitive task for you, like sending a reminder text or a follow-up email, without anyone having to think about it.",
         points: { true: 0, false: 6 },
       },
       {
@@ -320,7 +320,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         options: [
           { value: "regularly", label: "Yes, regularly" },
           { value: "occasionally", label: "Occasionally" },
-          { value: "never", label: "Never — once they go quiet, that's it" },
+          { value: "never", label: "Never: once they go quiet, that's it" },
         ],
         points: { regularly: 0, occasionally: 3, never: 6 },
       },
@@ -383,7 +383,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
           { value: "same_day", label: "Same day" },
           { value: "couple_days", label: "Within a couple of days" },
           { value: "week", label: "Up to a week" },
-          { value: "longer", label: "More than a week — quotes pile up" },
+          { value: "longer", label: "More than a week: quotes pile up" },
         ],
         points: { same_day: 0, couple_days: 3, week: 6, longer: 8 },
       },
@@ -415,7 +415,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         type: "select",
         required: true,
         options: [
-          { value: "software_auto", label: "Software — invoices go out automatically" },
+          { value: "software_auto", label: "Software: invoices go out automatically" },
           { value: "software_manual", label: "Software, but someone creates each one by hand" },
           { value: "manual_docs", label: "Word, Excel, or paper invoices" },
           { value: "inconsistent", label: "Honestly, invoicing sometimes slips through the cracks" },
@@ -431,13 +431,13 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
           { value: "immediately", label: "Immediately, or on the spot" },
           { value: "within_week", label: "Within a week" },
           { value: "weeks_2_4", label: "Two to four weeks" },
-          { value: "month_plus", label: "Over a month — chasing payments is normal" },
+          { value: "month_plus", label: "Over a month: chasing payments is normal" },
         ],
         points: { immediately: 0, within_week: 1, weeks_2_4: 4, month_plus: 7 },
       },
       {
         key: "online_payments",
-        label: "Can customers pay you online — by card, bank transfer, or a payment link?",
+        label: "Can customers pay you online, by card, bank transfer, or a payment link?",
         type: "boolean",
         required: true,
         points: { true: 0, false: 5 },
@@ -466,14 +466,14 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
       {
         key: "comms_consistency",
         label:
-          "Do customers get consistent updates — confirmations, reminders, \"on our way\" messages?",
+          "Do customers get consistent updates: confirmations, reminders, \"on our way\" messages?",
         type: "select",
         required: true,
         options: [
-          { value: "automated", label: "Yes — most of it happens automatically" },
+          { value: "automated", label: "Yes: most of it happens automatically" },
           { value: "manual_consistent", label: "Yes, but someone sends each one by hand" },
-          { value: "sometimes", label: "Sometimes — it depends who's handling it" },
-          { value: "rarely", label: "Rarely — customers have to chase us for updates" },
+          { value: "sometimes", label: "Sometimes: it depends who's handling it" },
+          { value: "rarely", label: "Rarely: customers have to chase us for updates" },
         ],
         points: { automated: 0, manual_consistent: 2, sometimes: 5, rarely: 7 },
       },
@@ -515,7 +515,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
           { value: "most", label: "Most of it" },
           { value: "about_half", label: "About half" },
           { value: "some", label: "Some" },
-          { value: "little", label: "Very little — almost every sale is a brand-new customer" },
+          { value: "little", label: "Very little: almost every sale is a brand-new customer" },
           { value: "not_sure", label: "Not sure" },
         ],
         points: { most: 0, about_half: 2, some: 4, little: 6, not_sure: 5 },
@@ -523,7 +523,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
       {
         key: "retention_outreach",
         label:
-          "Do you stay in touch with past customers — check-ins, seasonal reminders, or a newsletter?",
+          "Do you stay in touch with past customers, check-ins, seasonal reminders, or a newsletter?",
         type: "boolean",
         required: true,
         points: { true: 0, false: 6 },
@@ -533,7 +533,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
   {
     key: "team_data",
     label: "Your team, your numbers & your data",
-    description: "Whether the business can run without heroics — and whether its information is safe.",
+    description: "Whether the business can run without heroics, and whether its information is safe.",
     estimatedMinutes: 3,
     questions: [
       {
@@ -543,9 +543,9 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         type: "select",
         required: true,
         options: [
-          { value: "documented", label: "Yes — our processes are written down" },
-          { value: "partially", label: "Partially — some things are documented" },
-          { value: "in_heads", label: "No — it all lives in people's heads" },
+          { value: "documented", label: "Yes: our processes are written down" },
+          { value: "partially", label: "Partially: some things are documented" },
+          { value: "in_heads", label: "No: it all lives in people's heads" },
         ],
         points: { documented: 0, partially: 4, in_heads: 8 },
       },
@@ -564,7 +564,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
       },
       {
         key: "reporting",
-        label: "How do you know how the business is actually performing — revenue, jobs, marketing?",
+        label: "How do you know how the business is actually performing, revenue, jobs, marketing?",
         type: "select",
         required: true,
         options: [
@@ -578,7 +578,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
       {
         key: "kpis_known",
         label:
-          "Could you pull up last month's numbers — revenue, new customers — within a few minutes?",
+          "Could you pull up last month's numbers (revenue, new customers) within a few minutes?",
         type: "boolean",
         required: true,
         points: { true: 0, false: 5 },
@@ -589,9 +589,9 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         type: "select",
         required: true,
         options: [
-          { value: "nothing", label: "No — everything important is backed up in the cloud" },
+          { value: "nothing", label: "No: everything important is backed up in the cloud" },
           { value: "some", label: "We'd lose some things" },
-          { value: "lots", label: "Yes — a lot lives on one device or in one person's phone" },
+          { value: "lots", label: "Yes: a lot lives on one device or in one person's phone" },
           { value: "not_sure", label: "Not sure" },
         ],
         points: { nothing: 0, some: 5, lots: 8, not_sure: 6 },
@@ -612,7 +612,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
       {
         key: "sensitive_data",
         label:
-          "Do you handle sensitive customer information — health, financial, legal, or personal records?",
+          "Do you handle sensitive customer information, health, financial, legal, or personal records?",
         type: "boolean",
         required: true,
         help: "This affects which kinds of tools and safeguards make sense for you.",
@@ -632,7 +632,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         type: "select",
         required: true,
         options: [
-          { value: "double_plus", label: "Significantly bigger — double or more" },
+          { value: "double_plus", label: "Significantly bigger: double or more" },
           { value: "steady_growth", label: "Growing steadily" },
           { value: "smoother", label: "About the same size, but running much smoother" },
           { value: "sellable", label: "Positioned to sell or step back" },
@@ -671,7 +671,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
       {
         key: "manual_hours",
         label:
-          "How many hours a week does your business spend on repetitive admin — data entry, copying info between systems, chasing paperwork?",
+          "How many hours a week does your business spend on repetitive admin, data entry, copying info between systems, chasing paperwork?",
         type: "select",
         required: true,
         options: [
@@ -689,7 +689,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         type: "select",
         required: true,
         tooltip:
-          "AI tools are software that can read, write, answer questions, and handle routine communication — increasingly used for things like answering inquiries and drafting follow-ups.",
+          "AI tools are software that can read, write, answer questions, and handle routine communication, increasingly used for things like answering inquiries and drafting follow-ups.",
         options: [
           { value: "already_using", label: "We already use them" },
           { value: "tried_some", label: "I've tried them a bit" },
@@ -704,7 +704,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         type: "select",
         required: true,
         options: [
-          { value: "very_interested", label: "Very — I want to move on this" },
+          { value: "very_interested", label: "Very: I want to move on this" },
           { value: "curious", label: "Curious, if it's practical" },
           { value: "privacy_concerned", label: "Interested, but worried about privacy and security" },
           { value: "not_now", label: "Not right now" },
@@ -715,7 +715,7 @@ export const ASSESSMENT_SECTIONS: FormSection[] = [
         key: "anything_else",
         label: "Anything else you'd like us to know before we review your assessment?",
         type: "textarea",
-        placeholder: "Optional — context, plans, worries, anything.",
+        placeholder: "Optional: context, plans, worries, anything.",
       },
     ],
   },
@@ -905,8 +905,8 @@ const YEARS_PHRASES: Record<string, string> = {
 };
 
 /**
- * Honest, rule-based summary built ONLY from the answers given. Insightful —
- * names the real problems — but stops short of an implementation plan; the
+ * Honest, rule-based summary built ONLY from the answers given. Insightful,
+ * names the real problems, but stops short of an implementation plan; the
  * next steps point to the consultation.
  */
 export function buildAssessmentSummary(
@@ -937,7 +937,7 @@ export function buildAssessmentSummary(
 
   const overviewParts = [
     `${sizePhrase}${yearsPhrase ? ` ${yearsPhrase}` : ""}.`,
-    `Your overall systems score is ${score}/100 — higher means more room for better systems to help — which tells us ${band}.`,
+    `Your overall systems score is ${score}/100, higher means more room for better systems to help, which tells us ${band}.`,
   ];
   if (gapLabels.length > 0) {
     overviewParts.push(`The biggest room for improvement is in ${joinList(gapLabels)}.`);
@@ -961,7 +961,7 @@ export function buildAssessmentSummary(
   problem(
     first("missed_calls") === "nothing",
     9,
-    "Missed calls simply vanish — there's no voicemail follow-through or automatic text-back, so a portion of your inbound demand disappears without a trace.",
+    "Missed calls simply vanish: there's no voicemail follow-through or automatic text-back, so a portion of your inbound demand disappears without a trace.",
   );
   problem(
     first("missed_calls") === "voicemail_slips",
@@ -971,7 +971,7 @@ export function buildAssessmentSummary(
   problem(
     first("followup_process") === "nothing",
     9,
-    "Leads that don't buy immediately get no follow-up at all — they go cold by default, and most buyers need more than one touch before they commit.",
+    "Leads that don't buy immediately get no follow-up at all; they go cold by default, and most buyers need more than one touch before they commit.",
   );
   problem(
     first("followup_process") === "when_we_remember",
@@ -981,12 +981,12 @@ export function buildAssessmentSummary(
   problem(
     first("pipeline_visibility") === "no",
     8,
-    "You told us things fall through the cracks between first contact and closed sale — there's no single view of every open opportunity and what it's waiting on.",
+    "You told us things fall through the cracks between first contact and closed sale, there's no single view of every open opportunity and what it's waiting on.",
   );
   problem(
     first("pipeline_visibility") === "in_my_head",
     6,
-    "Your open opportunities live in your head. That works until volume rises — then it becomes the ceiling on how much the business can handle.",
+    "Your open opportunities live in your head. That works until volume rises, then it becomes the ceiling on how much the business can handle.",
   );
   problem(
     ["spreadsheets", "nothing"].includes(first("crm_usage")),
@@ -996,7 +996,7 @@ export function buildAssessmentSummary(
   problem(
     sendsQuotes && first("quote_followup") === "false",
     8,
-    "Quotes go out and nobody follows up on the unanswered ones. Quote follow-up is usually the fastest revenue lever a quoting business has — this money is currently left on the table.",
+    "Quotes go out and nobody follows up on the unanswered ones. Quote follow-up is usually the fastest revenue lever a quoting business has; this money is currently left on the table.",
   );
   problem(
     sendsQuotes && ["week", "longer"].includes(first("quote_speed")),
@@ -1006,7 +1006,7 @@ export function buildAssessmentSummary(
   problem(
     first("invoicing_method") === "inconsistent",
     8,
-    "By your own account, invoicing sometimes slips through the cracks — meaning work is occasionally done without ever being billed for.",
+    "By your own account, invoicing sometimes slips through the cracks, meaning work is occasionally done without ever being billed for.",
   );
   problem(
     first("payment_speed") === "month_plus",
@@ -1017,13 +1017,13 @@ export function buildAssessmentSummary(
     ["too_few", "feast_famine"].includes(first("lead_volume")),
     first("lead_volume") === "too_few" ? 8 : 6,
     first("lead_volume") === "too_few"
-      ? "Lead volume is the core constraint — there simply aren't enough new inquiries coming in to grow on."
+      ? "Lead volume is the core constraint, there simply aren't enough new inquiries coming in to grow on."
       : "Lead flow is feast-or-famine, which makes staffing, scheduling, and cash flow harder than they need to be.",
   );
   problem(
     ["memory_texts", "basic_calendar"].includes(first("scheduling_method")),
     first("scheduling_method") === "memory_texts" ? 7 : 5,
-    "Scheduling runs on calls, texts, and a basic calendar — a manual process that consumes time and creates double-bookings and misses as volume grows.",
+    "Scheduling runs on calls, texts, and a basic calendar, a manual process that consumes time and creates double-bookings and misses as volume grows.",
   );
   problem(
     isConsumer && first("review_asking") === "never",
@@ -1033,7 +1033,7 @@ export function buildAssessmentSummary(
   problem(
     ["hours_15_plus", "hours_5_15"].includes(first("manual_hours")),
     first("manual_hours") === "hours_15_plus" ? 7 : 5,
-    "A meaningful chunk of every week goes to repetitive admin — data entry, copying information between systems, chasing paperwork — that software should be doing.",
+    "A meaningful chunk of every week goes to repetitive admin (data entry, copying information between systems, chasing paperwork), that software should be doing.",
   );
   problem(
     first("workflow_docs") === "in_heads",
@@ -1043,14 +1043,14 @@ export function buildAssessmentSummary(
   problem(
     ["1", "2"].includes(first("capacity_scale")),
     6,
-    "By your own assessment, your current systems couldn't absorb a doubling of demand — which means growth would break things before it builds them.",
+    "By your own assessment, your current systems couldn't absorb a doubling of demand; which means growth would break things before it builds them.",
   );
 
   problems.sort((a, b) => b.weight - a.weight);
   const priority_problems = problems.slice(0, 5).map((p) => p.text);
   if (priority_problems.length === 0) {
     priority_problems.push(
-      "No single urgent gap stood out in your answers. The opportunity for a business in your position is consolidation — connecting the tools you already use so information flows between them without manual effort.",
+      "No single urgent gap stood out in your answers. The opportunity for a business in your position is consolidation, connecting the tools you already use so information flows between them without manual effort.",
     );
   }
 
@@ -1062,7 +1062,7 @@ export function buildAssessmentSummary(
 
   opportunity(
     ["same_day", "next_day", "several_days"].includes(first("response_time")),
-    "Faster lead response: getting every inquiry a reply within minutes — automatically — typically lifts close rates meaningfully, because most customers stop shopping once someone competent answers.",
+    "Faster lead response: getting every inquiry a reply within minutes, automatically, typically lifts close rates meaningfully, because most customers stop shopping once someone competent answers.",
   );
   opportunity(
     sendsQuotes && first("quote_followup") === "false",
@@ -1074,11 +1074,11 @@ export function buildAssessmentSummary(
   );
   opportunity(
     isConsumer && ["never", "when_we_remember"].includes(first("review_asking")),
-    "Review generation: systematically asking every happy customer for a review compounds — more reviews mean more visibility, which means more inbound leads at no ad cost.",
+    "Review generation: systematically asking every happy customer for a review compounds, more reviews mean more visibility, which means more inbound leads at no ad cost.",
   );
   opportunity(
     ["never", "occasionally"].includes(first("lost_leads")),
-    "Reactivating old leads: the people who inquired but never bought are the cheapest sales you'll ever make — a periodic re-engagement touch turns a dormant list into booked work.",
+    "Reactivating old leads: the people who inquired but never bought are the cheapest sales you'll ever make, a periodic re-engagement touch turns a dormant list into booked work.",
   );
   opportunity(
     first("retention_outreach") === "false",
@@ -1090,11 +1090,11 @@ export function buildAssessmentSummary(
   );
   opportunity(
     first("has_website") === "true" && ["none", "few", "not_tracked"].includes(first("website_leads")),
-    "Your website as a lead source: right now it produces little measurable business — turned into a proper lead-capture asset, it becomes a salesperson that never sleeps.",
+    "Your website as a lead source: right now it produces little measurable business, turned into a proper lead-capture asset, it becomes a salesperson that never sleeps.",
   );
   if (revenue_opportunities.length === 0) {
     revenue_opportunities.push(
-      "Your revenue engine looks comparatively healthy. Gains here would come from compounding small improvements — tightening each step of an already-working funnel — rather than fixing one broken link.",
+      "Your revenue engine looks comparatively healthy. Gains here would come from compounding small improvements, tightening each step of an already-working funnel, rather than fixing one broken link.",
     );
   }
 
@@ -1110,7 +1110,7 @@ export function buildAssessmentSummary(
   );
   risk(
     ["lots", "not_sure"].includes(first("data_backup")),
-    "Data loss exposure: important business information lives on individual devices without reliable backup — a lost phone or dead laptop could take real business history with it.",
+    "Data loss exposure: important business information lives on individual devices without reliable backup; a lost phone or dead laptop could take real business history with it.",
   );
   risk(
     ["shared_doc", "reused"].includes(first("password_practice")),
@@ -1120,7 +1120,7 @@ export function buildAssessmentSummary(
     first("sensitive_data") === "true" &&
       (["shared_doc", "reused"].includes(first("password_practice")) ||
         ["lots", "not_sure"].includes(first("data_backup"))),
-    "You handle sensitive customer information without the safeguards that kind of data calls for — a breach would carry real legal and reputational consequences.",
+    "You handle sensitive customer information without the safeguards that kind of data calls for; a breach would carry real legal and reputational consequences.",
   );
   risk(
     first("kpis_known") === "false" || first("reporting") === "gut",
@@ -1128,7 +1128,7 @@ export function buildAssessmentSummary(
   );
   risk(
     ["group_texts", "verbal"].includes(first("team_tools")),
-    "Internal communication runs on group texts and verbal handoffs — details get lost between the person who took the call and the person doing the work.",
+    "Internal communication runs on group texts and verbal handoffs, details get lost between the person who took the call and the person doing the work.",
   );
   risk(
     first("no_shows") === "often",
@@ -1136,11 +1136,11 @@ export function buildAssessmentSummary(
   );
   risk(
     first("invoicing_method") === "inconsistent",
-    "Revenue leakage: when invoicing slips through the cracks, completed work goes unbilled — a direct, silent loss.",
+    "Revenue leakage: when invoicing slips through the cracks, completed work goes unbilled, a direct, silent loss.",
   );
   if (operational_risks.length === 0) {
     operational_risks.push(
-      "No acute operational risks stood out in your answers — your exposure is mainly the opportunity cost of manual work, not a looming failure point.",
+      "No acute operational risks stood out in your answers; your exposure is mainly the opportunity cost of manual work, not a looming failure point.",
     );
   }
 
@@ -1148,9 +1148,9 @@ export function buildAssessmentSummary(
   const recommended_category = recommendServiceCategory(answers);
 
   const next_steps = [
-    "Book your consultation. We'll walk through these findings together, pressure-test them against how your business actually runs, and show you what closing the biggest gaps would look like — in plain terms, with real numbers.",
+    "Book your consultation. We'll walk through these findings together, pressure-test them against how your business actually runs, and show you what closing the biggest gaps would look like; in plain terms, with real numbers.",
     "If you can, have two figures handy for the call: roughly how many new leads you get per month, and your average job or sale value. They turn this assessment into a concrete revenue conversation.",
-    "If someone else owns one of these areas — an office manager, a sales lead — consider having them join the consultation.",
+    "If someone else owns one of these areas (an office manager, a sales lead), consider having them join the consultation.",
   ];
 
   return {

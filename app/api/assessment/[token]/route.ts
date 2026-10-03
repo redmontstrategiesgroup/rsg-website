@@ -21,7 +21,7 @@ function unavailable() {
 
 type Params = { params: Promise<{ token: string }> };
 
-/** Public shape — never leak point maps, internal notes, or lead ids. */
+/** Public shape, never leak point maps, internal notes, or lead ids. */
 function publicAssessment(a: NonNullable<Awaited<ReturnType<typeof getAssessmentByToken>>>) {
   return {
     status: a.status,

@@ -1,5 +1,5 @@
 /**
- * Client Lifecycle Platform — automation engine + in-app notifications.
+ * Client Lifecycle Platform: automation engine + in-app notifications.
  *
  * Every lifecycle side effect (emails, in-app notices) flows through
  * fireAutomation(): it honors the admin-configurable automation_settings
@@ -7,7 +7,7 @@
  * unique dedupe_key index as the duplicate-notification guard. Delayed runs
  * stay `pending` and are drained by processDueAutomationRuns() (cron/route).
  *
- * fireAutomation NEVER throws — a notification failure must not break the
+ * fireAutomation NEVER throws: a notification failure must not break the
  * business action that triggered it.
  */
 
@@ -25,7 +25,7 @@ import {
 } from "@/lib/scheduling/notifications";
 
 // ---------------------------------------------------------------------------
-// Registry — one entry per id seeded into automation_settings (migration §18),
+// Registry, one entry per id seeded into automation_settings (migration §18),
 // mapped to the lc_* notification_templates seeded in migration §19.
 // ---------------------------------------------------------------------------
 
@@ -456,7 +456,7 @@ export async function updateAutomationSetting(
 
 export type FireAutomationInput = {
   key: string;
-  /** Globally unique per logical event — the duplicate-notification guard. */
+  /** Globally unique per logical event: the duplicate-notification guard. */
   dedupeKey: string;
   entityType: string;
   entityId: string;
@@ -494,6 +494,12 @@ type RunPayload = {
   in_app?: FireAutomationInput["inApp"] | null;
   data?: Record<string, unknown>;
 };
+
+/** The booking a run's visitor email is about, if any. */
+export function runBookingId(run: { payload?: unknown }): string | null {
+  const payload = (run.payload ?? {}) as RunPayload;
+  return payload.email?.bookingId ?? null;
+}
 
 function isUniqueViolation(error: { code?: string; message?: string }): boolean {
   return (
@@ -753,6 +759,35 @@ export async function processDueAutomationRuns(limit = 25): Promise<{
       }
       skipped += 1;
       continue;
+    }
+
+    // Backstop for cancelBooking, which skips a booking's queued runs itself:
+    // never mail a visitor about a meeting that no longer exists.
+    const bookingId = runBookingId(run);
+    if (bookingId) {
+      const { data: booking } = await sb
+        .from("bookings")
+        .select("status")
+        .eq("id", bookingId)
+        .maybeSingle();
+      if (booking?.status === "cancelled") {
+        const { error: updateError } = await sb
+          .from("automation_runs")
+          .update({
+            status: "skipped",
+            executed_at: nowIso(),
+            error: "Booking cancelled before execution",
+          })
+          .eq("id", run.id);
+        if (updateError) {
+          console.error(
+            `[lifecycle] processDueAutomationRuns: failed to skip run ${run.id}`,
+            updateError
+          );
+        }
+        skipped += 1;
+        continue;
+      }
     }
 
     const channel: AutomationChannel = setting

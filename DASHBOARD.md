@@ -95,3 +95,17 @@ call the same secure server-side ingestion function.
 - Rotate the ingestion secret if it is exposed; update all senders together.
 - Keep `SUPABASE_SERVICE_ROLE_KEY` server-only and never add a `NEXT_PUBLIC_` prefix.
 - Development seed data is not used by the dashboard.
+
+## Weekly digest (`weekly_digest` briefs)
+
+Every Monday at 13:00 UTC, `/api/cron/weekly-digest` builds last week's digest:
+new leads, bookings, source conversion (trailing 90 days) and leads gone quiet
+(7+ days, open, < 60 days old). Numbers are computed in `lib/weekly-digest/metrics.ts`;
+Claude (`WEEKLY_DIGEST_MODEL`, default `claude-sonnet-5`) writes only the summary and
+recommendations. The brief is stored with idempotency key `weekly-digest:<Monday>` and
+emailed to `WEEKLY_DIGEST_TO` (default: the contact notify list).
+
+- Re-run or re-send: "Run weekly digest" on `/dashboard` (needs `manage_leads`), or
+  `POST /api/admin/weekly-digest { weekStart?: "YYYY-MM-DD", resend?: true }`.
+- Requires `CRON_SECRET` in production; without it every cron returns 503.
+- If Claude is unavailable the digest still sends, numbers-only.

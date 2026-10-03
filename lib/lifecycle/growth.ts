@@ -1,11 +1,11 @@
 /**
- * Client Lifecycle Platform — renewals and expansion roadmap.
+ * Client Lifecycle Platform: renewals and expansion roadmap.
  *
  * Renewals track anything with a date that must not sneak up on anyone
  * (contracts, subscriptions, support plans, review meetings) with tiered
  * reminder windows. Expansion items form the client's growth roadmap;
  * suggestions are rule-based from real platform data and are never persisted
- * automatically — the admin decides what goes on the roadmap.
+ * automatically: the admin decides what goes on the roadmap.
  */
 
 import { nowIso, requireSupabase } from "@/lib/lifecycle/core";
@@ -52,7 +52,7 @@ export async function createRenewal(input: {
   reminderDays?: number[];
 }): Promise<Renewal> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.renewsOn)) {
-    throw new Error(`Invalid renewal date "${input.renewsOn}" — expected YYYY-MM-DD.`);
+    throw new Error(`Invalid renewal date "${input.renewsOn}": expected YYYY-MM-DD.`);
   }
   const sb = requireSupabase();
   const row: Record<string, unknown> = {
@@ -98,7 +98,7 @@ export async function updateRenewal(
   if (patch.name !== undefined) row.name = patch.name;
   if (patch.renewsOn !== undefined) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(patch.renewsOn)) {
-      throw new Error(`Invalid renewal date "${patch.renewsOn}" — expected YYYY-MM-DD.`);
+      throw new Error(`Invalid renewal date "${patch.renewsOn}": expected YYYY-MM-DD.`);
     }
     row.renews_on = patch.renewsOn;
   }
@@ -173,7 +173,7 @@ export async function findDueRenewalReminders(
   for (const renewal of (data ?? []) as Renewal[]) {
     const renewsAtMs = dateUtcMs(renewal.renews_on);
     const daysOut = Math.ceil((renewsAtMs - now.getTime()) / DAY_MS);
-    if (daysOut < 0) continue; // already past the renewal date — nothing to remind
+    if (daysOut < 0) continue; // already past the renewal date, nothing to remind
 
     const windows = (Array.isArray(renewal.reminder_days) ? renewal.reminder_days : [])
       .filter((n) => Number.isFinite(n) && n >= 0);
@@ -329,7 +329,7 @@ export async function deleteExpansionItem(id: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Rule-based expansion suggestions (never persisted — admin decides)
+// Rule-based expansion suggestions (never persisted: admin decides)
 // ---------------------------------------------------------------------------
 
 export type ExpansionSuggestion = {
@@ -405,7 +405,7 @@ export async function suggestExpansionOpportunities(
   if (websiteUpdateCount >= TICKET_SIGNAL_THRESHOLD) {
     suggestions.push({
       title: "Ongoing website optimization plan",
-      problem: `${websiteUpdateCount} website-update tickets were submitted in the last ${TICKET_LOOKBACK_DAYS} days — website changes are being handled one ticket at a time.`,
+      problem: `${websiteUpdateCount} website-update tickets were submitted in the last ${TICKET_LOOKBACK_DAYS} days, website changes are being handled one ticket at a time.`,
       solution: "A monthly optimization plan with a set allocation for content, design, and page updates, worked on a predictable cadence instead of per-request tickets.",
       expectedOutcome: "Website changes ship on a regular schedule, with the recurring ticket back-and-forth removed.",
       priority: websiteUpdateCount >= TICKET_SIGNAL_THRESHOLD * 2 ? "high" : "medium",
@@ -417,7 +417,7 @@ export async function suggestExpansionOpportunities(
   if (trainingCount >= TICKET_SIGNAL_THRESHOLD) {
     suggestions.push({
       title: "Team enablement package",
-      problem: `${trainingCount} training tickets were submitted in the last ${TICKET_LOOKBACK_DAYS} days — the team is learning the systems one support request at a time.`,
+      problem: `${trainingCount} training tickets were submitted in the last ${TICKET_LOOKBACK_DAYS} days; the team is learning the systems one support request at a time.`,
       solution: "A structured enablement package: role-based training sessions plus an assigned training-library curriculum for the whole team.",
       expectedOutcome: "The team self-serves day-to-day questions and training requests stop arriving as support tickets.",
       priority: "medium",
@@ -432,7 +432,7 @@ export async function suggestExpansionOpportunities(
     const monthsTracked = new Set(missedCallRows.map((m) => m.period_month.slice(0, 7))).size;
     suggestions.push({
       title: "Expand AI reception coverage",
-      problem: `${totalRecovered} missed calls were recovered across ${monthsTracked} tracked month${monthsTracked === 1 ? "" : "s"} — call volume is regularly exceeding what gets answered live.`,
+      problem: `${totalRecovered} missed calls were recovered across ${monthsTracked} tracked month${monthsTracked === 1 ? "" : "s"}, call volume is regularly exceeding what gets answered live.`,
       solution: "Extend AI reception to full after-hours and overflow coverage, including booking and qualification on recovered calls.",
       expectedOutcome: "A larger share of inbound calls turns into booked work instead of voicemail.",
       priority: "high",
@@ -445,7 +445,7 @@ export async function suggestExpansionOpportunities(
     const monthsTracked = new Set(metrics.map((m) => m.period_month.slice(0, 7))).size;
     suggestions.push({
       title: "Review generation system",
-      problem: `${metrics.length} metric entries are tracked across ${monthsTracked} month${monthsTracked === 1 ? "" : "s"}, and none measure review generation — there is no system producing reviews today.`,
+      problem: `${metrics.length} metric entries are tracked across ${monthsTracked} month${monthsTracked === 1 ? "" : "s"}, and none measure review generation; there is no system producing reviews today.`,
       solution: "Automated post-job review requests with follow-up sequencing, tracked as a monthly reviews_generated metric.",
       expectedOutcome: "A steady, measurable flow of new reviews feeding local reputation and conversion.",
       priority: "medium",
@@ -460,7 +460,7 @@ export async function suggestExpansionOpportunities(
     if (daysOut < 0 || daysOut > RENEWAL_LOOKAHEAD_DAYS) continue;
     suggestions.push({
       title: `Review support tier before "${renewal.name}" renews`,
-      problem: `The support plan "${renewal.name}" renews on ${renewal.renews_on} (${daysOut} day${daysOut === 1 ? "" : "s"} out) — the renewal window is the natural point to right-size coverage.`,
+      problem: `The support plan "${renewal.name}" renews on ${renewal.renews_on} (${daysOut} day${daysOut === 1 ? "" : "s"} out): the renewal window is the natural point to right-size coverage.`,
       solution: "Review actual support usage against the current plan and move to a higher tier with faster response targets if usage justifies it.",
       expectedOutcome: "The support plan matches real usage going into the next term, agreed before the renewal date.",
       priority: daysOut <= 30 ? "high" : "medium",
@@ -473,7 +473,7 @@ export async function suggestExpansionOpportunities(
     const names = quietProjects.map((p) => p.name).join(", ");
     suggestions.push({
       title: "Quarterly optimization reviews",
-      problem: `${quietProjects.length} project${quietProjects.length === 1 ? " is" : "s are"} in support or completed status (${names}) — no active build phase is currently driving improvements.`,
+      problem: `${quietProjects.length} project${quietProjects.length === 1 ? " is" : "s are"} in support or completed status (${names}), no active build phase is currently driving improvements.`,
       solution: "A quarterly optimization review: performance walkthrough, small-improvement backlog, and a refreshed roadmap each quarter.",
       expectedOutcome: "Delivered systems keep compounding after launch instead of going static.",
       priority: "medium",

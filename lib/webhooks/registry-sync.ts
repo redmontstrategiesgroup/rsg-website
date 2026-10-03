@@ -2,7 +2,7 @@ import { requireSupabase } from "@/lib/scheduling/db";
 import { enqueue, replayDeadLetters } from "./outbox";
 
 /**
- * Client registry sender — the website half of the per-app Supabase split.
+ * Client registry sender: the website half of the per-app Supabase split.
  *
  * The website is the source of truth for who a client is. Each app project
  * (`rsg-ghost`, `rsg-nexus`, …) keeps a read-only mirror in its `rsg_clients`
@@ -14,7 +14,7 @@ import { enqueue, replayDeadLetters } from "./outbox";
  * a second implementation would be a second place for those bugs to return.
  *
  * WHAT SYNCS: id, name, status, version. Nothing else. Contact details, notes
- * and the whole `rsg_*` CRM subsystem stay here — five copies of a client's
+ * and the whole `rsg_*` CRM subsystem stay here, five copies of a client's
  * phone number is five places to leak it and five places to honour a deletion.
  */
 
@@ -43,7 +43,7 @@ function eventPayload(c: ClientRow, deleted = false) {
  * The event id is `registry.client:<id>:<version>`, which makes the whole thing
  * idempotent end to end: the outbox's unique (endpoint_id, event_id) index stops
  * the same version being queued twice, and the receiver applies it only if the
- * version is newer than what it holds. Calling this redundantly is free — which
+ * version is newer than what it holds. Calling this redundantly is free, which
  * is what makes the reconcile sweep below a two-liner.
  */
 export async function emitClientChange(clientId: string): Promise<{ queued: number }> {
@@ -69,7 +69,7 @@ export async function emitClientChange(clientId: string): Promise<{ queued: numb
  * Drain deletion tombstones.
  *
  * A hard-deleted client is gone from `clients`, so without the tombstone table
- * the mirrors would keep serving it forever — deletion has to travel as an
+ * the mirrors would keep serving it forever, deletion has to travel as an
  * event, not as an absence.
  *
  * `emitted_at` is stamped only after queueing succeeds. If this dies partway,
@@ -115,7 +115,7 @@ export async function emitTombstones(limit = 100): Promise<{ queued: number }> {
  * Nightly reconcile.
  *
  * Push handles latency; this handles the events that were dropped while an app
- * project was unreachable. Do NOT rely on push alone — a paused Supabase
+ * project was unreachable. Do NOT rely on push alone, a paused Supabase
  * project returns errors for days, and by the time it comes back every delivery
  * for it has dead-lettered. Nothing else would ever retry them.
  *
@@ -126,7 +126,7 @@ export async function emitTombstones(limit = 100): Promise<{ queued: number }> {
  *
  *   2. Re-emit every client's CURRENT version. Rows already queued or delivered
  *      collide on the unique index and are skipped, so this only materialises
- *      what genuinely never got queued — the case where the website itself
+ *      what genuinely never got queued: the case where the website itself
  *      failed at enqueue time and no row was ever created. That gap is
  *      invisible to step 1, because there is no dead letter to find.
  */
@@ -171,7 +171,7 @@ export async function reconcileRegistry(options?: {
  * Register an app project as a sync destination.
  *
  * Run once per app after creating its Supabase project. The secret must match
- * that project's REGISTRY_SYNC_SECRET, and must be DISTINCT per app — one
+ * that project's REGISTRY_SYNC_SECRET, and must be DISTINCT per app; one
  * shared secret across five projects means one leak compromises all five.
  */
 export async function registerAppDestination(input: {

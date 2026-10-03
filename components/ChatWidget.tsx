@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
+import { IconButton } from "@/components/ui/IconButton";
 import { postJson } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 import { trackEvent } from "@/lib/events";
 import { clampViewportHeight } from "@/lib/mobile";
 
@@ -25,26 +27,45 @@ const QUICK_REPLIES = [
   "Book a strategy call",
 ];
 
-/** Render assistant text with bare URLs as links (e.g. the booking link). */
+/**
+ * Full URLs, plus site paths like /book or /crmsystems (the knowledge base
+ * gives the bot relative paths). The lookbehind skips "and/or" and "24/7".
+ */
+const LINK_PATTERN = /(https?:\/\/[^\s)]+|(?<![\w/])\/[a-z][a-z0-9/-]*)/gi;
+const LINK_CLASS =
+  "text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white";
+
+/** Render assistant text with URLs and site paths as links. */
 function Linkified({ text }: { text: string }) {
-  const parts = text.split(/(https?:\/\/[^\s)]+)/g);
+  const parts = text.split(LINK_PATTERN);
   return (
     <>
-      {parts.map((part, i) =>
-        /^https?:\/\//.test(part) ? (
-          <a
-            key={i}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
-          >
-            {part}
-          </a>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
+      {parts.map((part, i) => {
+        if (/^https?:\/\//.test(part)) {
+          // Sentence punctuation right after a URL is not part of it.
+          const url = part.replace(/[.,;:!?]+$/, "");
+          return (
+            <span key={i}>
+              <a href={url} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
+                {url}
+              </a>
+              {part.slice(url.length)}
+            </span>
+          );
+        }
+        if (/^\/[a-z]/i.test(part)) {
+          const path = part.replace(/\/+$/, "");
+          return (
+            <span key={i}>
+              <Link href={path} className={LINK_CLASS}>
+                {path}
+              </Link>
+              {part.slice(path.length)}
+            </span>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
     </>
   );
 }
@@ -87,7 +108,7 @@ export function ChatWidget() {
     const trimmed = text.trim();
     if (!trimmed || busy) return;
 
-    // Mirror of the server's conversation cap — save the round trip.
+    // Mirror of the server's conversation cap, save the round trip.
     if (messages.length > 40) {
       setMessages((m) => [
         ...m,
@@ -135,6 +156,7 @@ export function ChatWidget() {
         if (!chunk) continue;
         if (chunk.includes(QUALIFIED_LEAD_SENTINEL)) {
           trackEvent("chatbot_qualified_lead");
+          markKnownVisitor();
           chunk = chunk.replaceAll(QUALIFIED_LEAD_SENTINEL, "");
           if (!chunk) continue;
         }
@@ -179,7 +201,7 @@ export function ChatWidget() {
             setOpen(true);
             trackEvent("chatbot_open");
           }}
-          className="fixed bottom-3 right-3 z-50 inline-flex min-h-12 items-center border border-white/20 bg-base-900 px-5 py-3 text-[0.74rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:bottom-5 sm:right-5 lg:min-h-0 sm:text-[0.65rem]"
+          className="bottom-safe right-safe fixed z-50 inline-flex min-h-12 items-center border border-white/20 bg-base-900 px-5 py-3 text-[0.74rem] font-medium uppercase tracking-[0.22em] text-white/75 shadow-card transition-colors hover:border-white/45 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/40 sm:bottom-safe-5 sm:right-5 lg:min-h-0 sm:text-[0.65rem]"
           aria-label="Open chat with Redmont Strategies Group"
         >
           Chat
@@ -195,8 +217,11 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-3 bottom-3 z-50 flex flex-col overflow-hidden rounded-xl border border-white/15 bg-base-900 shadow-lift sm:bottom-6 sm:right-6 sm:left-auto sm:w-[min(400px,calc(100%-2rem))]"
-            style={{ height: `min(${panelHeight}px, calc(100dvh - 1.5rem))`, maxHeight: "calc(100dvh - 1.5rem)" }}
+            className="bottom-safe fixed inset-x-3 z-50 flex flex-col overflow-hidden rounded-xl border border-white/15 bg-base-900 shadow-lift sm:bottom-6 sm:right-6 sm:left-auto sm:w-[min(400px,calc(100%-2rem))]"
+            style={{
+              height: `min(${panelHeight}px, calc(100dvh - 0.75rem - max(0.75rem, env(safe-area-inset-bottom))))`,
+              maxHeight: "calc(100dvh - 0.75rem - max(0.75rem, env(safe-area-inset-bottom)))",
+            }}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div className="flex items-center gap-3">
@@ -210,13 +235,13 @@ export function ChatWidget() {
                   Assistant
                 </span>
               </div>
-              <button
+              <IconButton
                 onClick={() => setOpen(false)}
-                className="inline-flex h-8 w-8 items-center justify-center text-white/50 transition-colors hover:text-white"
+                className="-mr-2 text-white/50 hover:text-white"
                 aria-label="Close chat"
               >
                 <X size={16} />
-              </button>
+              </IconButton>
             </div>
 
             <div
@@ -227,7 +252,7 @@ export function ChatWidget() {
               {messages.map((m, i) =>
                 m.role === "user" ? (
                   <div key={i} className="flex justify-end">
-                    <p className="max-w-[85%] border border-white/10 bg-white/[0.05] px-3.5 py-2.5 text-sm leading-relaxed text-white/90">
+                    <p className="max-w-[85%] border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm leading-relaxed text-white/90">
                       {m.content}
                     </p>
                   </div>
@@ -256,7 +281,7 @@ export function ChatWidget() {
                         }
                         void send(q);
                       }}
-                      className="border border-white/15 px-3 py-2 text-left text-xs text-white/60 transition-colors hover:border-white/40 hover:text-white"
+                      className="inline-flex min-h-11 items-center border border-white/15 px-3 py-2 text-left text-xs text-white/60 transition-colors hover:border-white/40 hover:text-white lg:min-h-0"
                     >
                       {q}
                     </button>
@@ -276,8 +301,11 @@ export function ChatWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask a question"
+                  aria-label="Ask a question"
                   maxLength={2000}
-                  className="w-full border border-white/15 bg-transparent px-3.5 py-3 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-none"
+                  autoComplete="off"
+                  enterKeyHint="send"
+                  className="w-full border border-white/15 bg-transparent px-3.5 py-3 text-sm text-white placeholder:text-white/25 transition-colors focus:border-white/50 focus:outline-hidden"
                 />
                 <button
                   type="submit"

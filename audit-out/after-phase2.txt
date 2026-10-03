@@ -1,0 +1,134 @@
+
+------------------------------------------------------------------------------
+RESPONSIVE AUDIT  http://localhost:3000
+------------------------------------------------------------------------------
+
+[375x667 (iPhone SE)] /demos
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 146px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1411px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/healthwellness
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1172px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 453px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/contractors
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1173px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 813px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/gyms
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1106px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 573px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/realestate
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1449px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 573px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 141px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1396px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/healthwellness
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1157px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 438px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/contractors
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1158px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 798px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/gyms
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1091px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 558px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/realestate
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1434px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 558px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 133px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1372px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/healthwellness
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1133px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 414px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/contractors
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1134px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 774px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/gyms
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1067px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 534px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/realestate
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1410px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 534px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /demos
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 902px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[932x430 (landscape)] /demos/healthwellness
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 647px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+
+[932x430 (landscape)] /demos/contractors
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 648px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 296px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /demos/gyms
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 581px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 56px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /demos/realestate
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 924px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 56px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 29px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1066px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[768x1024 (iPad)] /demos/healthwellness
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 811px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 100px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/contractors
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 812px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 460px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/gyms
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 745px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 220px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/realestate
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1088px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 220px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+------------------------------------------------------------------------------
+TOTALS   overflow=0  clipped=0  tap<44px=0  rails-no-snap=48  fixed-below-fold=0
+Routes: 33   Viewports: 5
+Skipped: 9 portal routes (set AUDIT_SESSION_COOKIE); 2 admin routes (set AUDIT_ADMIN_COOKIE)
+------------------------------------------------------------------------------
+JSON written to audit-out/after-phase2.json

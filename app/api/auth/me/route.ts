@@ -10,7 +10,7 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ client: null }, { status: 401 });
   }
-  // Revocation checkpoint for tabs left open — the keepalive fires every
+  // Revocation checkpoint for tabs left open, the keepalive fires every
   // 10 minutes, so a revoked session is cleared within that window.
   if (session.sid && !(await isSessionLive(session.sid))) {
     await clearSessionCookie();

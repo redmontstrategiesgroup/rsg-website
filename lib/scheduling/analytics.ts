@@ -11,7 +11,7 @@ export async function trackSchedulingEvent(input: {
   isTest?: boolean;
 }) {
   if (input.isTest) {
-    // Still store but flagged — excluded from production analytics queries
+    // Still store but flagged: excluded from production analytics queries
   }
   try {
     const sb = requireSupabase();

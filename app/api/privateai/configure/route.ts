@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // Bot heuristic — too fast
+  // Bot heuristic: too fast
   if (parsed.data.elapsedMs < 2500) {
     return NextResponse.json({ ok: true });
   }

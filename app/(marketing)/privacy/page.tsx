@@ -99,19 +99,6 @@ export default function PrivacyPage() {
                 period is required.
               </p>
             </div>
-            <div>
-              <h2 className="text-base font-medium text-white">
-                Subprocessors
-              </h2>
-              <p className="mt-3">
-                We use a small set of infrastructure providers to operate the
-                site: Vercel (hosting), Supabase (database), Resend (transactional
-                email), Anthropic (optional site chat), Cloudflare Turnstile
-                (optional bot protection), Upstash (optional rate limiting), and
-                Sentry (optional error monitoring). We do not sell personal
-                information.
-              </p>
-            </div>
           </div>
         </div>
       </section>

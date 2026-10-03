@@ -39,7 +39,7 @@ const content: LocalPageContent = {
     "Owners tracking leads in a phone, an inbox, and memory",
     "Teams with a CRM nobody actually uses",
     "Businesses losing deals to slow or forgotten follow-up",
-    "Retail stores and ecommerce brands whose customers buy once and vanish",
+    "Brokerages whose past clients close once and are never heard from again",
     "Operations ready to grow but blind to their own pipeline",
   ],
   serviceArea:
@@ -84,12 +84,8 @@ const content: LocalPageContent = {
       href: "/operationsconsulting",
     },
     {
-      label: "Retail & Multi-Location Systems",
-      href: "/industries/retail",
-    },
-    {
-      label: "Interactive Retail Demo",
-      href: "/demos/retail",
+      label: "Real Estate & Brokerage Systems",
+      href: "/industries/realestate",
     },
   ],
   schema: {

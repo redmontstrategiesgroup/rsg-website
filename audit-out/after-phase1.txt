@@ -1,0 +1,383 @@
+
+------------------------------------------------------------------------------
+RESPONSIVE AUDIT  http://localhost:3000
+------------------------------------------------------------------------------
+
+[375x667 (iPhone SE)] /
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[375x667 (iPhone SE)] /security
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[375x667 (iPhone SE)] /connect
+  OVERFLOW (1) — clipped off the right edge:
+    +173px  w=720  div.pointer-events-none.fixed.inset-0.-z-10 > div.absolute.left-1/2.top-[-8%].h-[420px].w-[720px].-translate-x-1/2
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[375x667 (iPhone SE)] /demos
+  OVERFLOW (8) — clipped off the right edge:
+    +36px  w=107  div.flex.gap-1.5 > div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5
+    +29px  w=93  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > p.truncate.text-[0.48rem].uppercase.tracking-wider.text-white/35
+    +29px  w=93  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > div.mt-1.flex.gap-0.5
+    +29px  w=93  div.mt-1.flex.gap-0.5 > span.h-1.flex-1.rounded-sm.bg-crimson/50
+    +9px  w=115  div.flex.gap-1.5 > div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5
+    +2px  w=101  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > p.truncate.text-[0.48rem].uppercase.tracking-wider.text-white/35
+    +2px  w=101  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > div.mt-1.flex.gap-0.5
+    +2px  w=101  div.mt-1.flex.gap-0.5 > span.h-1.flex-1.rounded-sm.bg-crimson/50
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 146px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1411px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/healthwellness
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1172px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 453px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/contractors
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1173px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 813px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/gyms
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1106px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 573px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/realestate
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1449px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 573px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /thankyou
+  TAP TARGETS < 44px (1):
+    327x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+
+[390x844 (iPhone 14)] /
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[390x844 (iPhone 14)] /security
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[390x844 (iPhone 14)] /connect
+  OVERFLOW (1) — clipped off the right edge:
+    +165px  w=720  div.pointer-events-none.fixed.inset-0.-z-10 > div.absolute.left-1/2.top-[-8%].h-[420px].w-[720px].-translate-x-1/2
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[390x844 (iPhone 14)] /demos
+  OVERFLOW (4) — clipped off the right edge:
+    +21px  w=107  div.flex.gap-1.5 > div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5
+    +14px  w=93  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > p.truncate.text-[0.48rem].uppercase.tracking-wider.text-white/35
+    +14px  w=93  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > div.mt-1.flex.gap-0.5
+    +14px  w=93  div.mt-1.flex.gap-0.5 > span.h-1.flex-1.rounded-sm.bg-crimson/50
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 141px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1396px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/healthwellness
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1157px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 438px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/contractors
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1158px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 798px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/gyms
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1091px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 558px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/realestate
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1434px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 558px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /thankyou
+  TAP TARGETS < 44px (1):
+    342x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+
+[414x896 (Plus/Max)] /
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[414x896 (Plus/Max)] /security
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[414x896 (Plus/Max)] /connect
+  OVERFLOW (1) — clipped off the right edge:
+    +153px  w=720  div.pointer-events-none.fixed.inset-0.-z-10 > div.absolute.left-1/2.top-[-8%].h-[420px].w-[720px].-translate-x-1/2
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[414x896 (Plus/Max)] /demos
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 133px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1372px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/healthwellness
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1133px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 414px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/contractors
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1134px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 774px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/gyms
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1067px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 534px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/realestate
+  TAP TARGETS < 44px (1):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1410px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 534px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /thankyou
+  TAP TARGETS < 44px (1):
+    366x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+
+[932x430 (landscape)] /
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[932x430 (landscape)] /security
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[932x430 (landscape)] /industries
+  TAP TARGETS < 44px (3):
+    515x43  "Home Service & Trade Businesses"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    427x43  "Health & Wellness Practices"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    592x43  "Residential Brokerages & Agent Teams"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+
+[932x430 (landscape)] /industries/homeservices
+  TAP TARGETS < 44px (6):
+    373x41  "Select…HVACPlumbingElectricalRoofing / s"  select#aq-home-services-services
+    778x42  ""  input#aq-home-services-service-area
+    373x42  ""  input#aq-home-services-office-staff
+    373x42  ""  input#aq-home-services-field-techs
+    373x42  ""  input#aq-home-services-monthly-leads
+    373x42  ""  input#aq-home-services-avg-job-value
+
+[932x430 (landscape)] /industries/healthwellness
+  TAP TARGETS < 44px (3):
+    373x41  "Select…Med spa / aesthetic clinicIV ther"  select#aq-health-wellness-practice-type
+    373x41  "Select…Just me2–34–67 or more"  select#aq-health-wellness-providers
+    373x41  "Select…BoulevardVagaroMindbodyJane AppZe"  select#aq-health-wellness-software
+
+[932x430 (landscape)] /industries/realestate
+  TAP TARGETS < 44px (6):
+    373x41  "Select…Solo agentAgent team inside a bro"  select#aq-real-estate-brokerage-type
+    373x41  "Select…Just me2–5 agents6–15 agents16–40"  select#aq-real-estate-agent-count
+    373x42  ""  input#aq-real-estate-annual-transactions
+    373x41  "Select…Mostly buyersMostly listingsRough"  select#aq-real-estate-buyer-seller-mix
+    373x41  "Select…Follow Up BossBoldTrail / kvCORES"  select#aq-real-estate-crm
+    373x41  "Select…Paid portalsThe team's own IDX we"  select#aq-real-estate-lead-sources
+
+[932x430 (landscape)] /connect
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[932x430 (landscape)] /demos
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 902px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[932x430 (landscape)] /demos/healthwellness
+  TAP TARGETS < 44px (19):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    95x42  "Clients"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 11 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 647px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+
+[932x430 (landscape)] /demos/contractors
+  TAP TARGETS < 44px (19):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 11 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 648px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 296px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /demos/gyms
+  TAP TARGETS < 44px (18):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    132x42  "AI Front Desk"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 10 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 581px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 56px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /demos/realestate
+  TAP TARGETS < 44px (19):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    144x42  "Clients & Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    129x42  "Transactions"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 11 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 924px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 56px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /thankyou
+  TAP TARGETS < 44px (1):
+    138x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+
+[768x1024 (iPad)] /
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[768x1024 (iPad)] /services/customprivateaisystems
+  OVERFLOW (1) — clipped off the right edge:
+    +26px  w=820  div.pointer-events-none.absolute.inset-0.-z-10.hidden.sm:block > div.absolute.left-1/2.top-[-20%].h-[520px].w-[820px].-translate-x-1/2
+
+[768x1024 (iPad)] /security
+  TAP TARGETS < 44px (1):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+
+[768x1024 (iPad)] /industries
+  TAP TARGETS < 44px (3):
+    515x43  "Home Service & Trade Businesses"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    427x43  "Health & Wellness Practices"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    592x43  "Residential Brokerages & Agent Teams"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+
+[768x1024 (iPad)] /industries/homeservices
+  OVERFLOW (1) — clipped off the right edge:
+    +4px  w=680  div.pointer-events-none.absolute.inset-0.-z-10.hidden.sm:block > div.absolute.left-[12%].top-[-20%].h-[420px].w-[680px].rounded-full
+
+[768x1024 (iPad)] /industries/healthwellness
+  OVERFLOW (1) — clipped off the right edge:
+    +4px  w=680  div.pointer-events-none.absolute.inset-0.-z-10.hidden.sm:block > div.absolute.left-[12%].top-[-20%].h-[420px].w-[680px].rounded-full
+
+[768x1024 (iPad)] /industries/realestate
+  OVERFLOW (1) — clipped off the right edge:
+    +4px  w=680  div.pointer-events-none.absolute.inset-0.-z-10.hidden.sm:block > div.absolute.left-[12%].top-[-20%].h-[420px].w-[680px].rounded-full
+
+[768x1024 (iPad)] /connect
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[768x1024 (iPad)] /demos
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 29px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1066px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[768x1024 (iPad)] /demos/healthwellness
+  TAP TARGETS < 44px (1):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 811px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 100px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/contractors
+  TAP TARGETS < 44px (1):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 812px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 460px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/gyms
+  TAP TARGETS < 44px (1):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 745px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 220px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/realestate
+  TAP TARGETS < 44px (1):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1088px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 220px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /thankyou
+  TAP TARGETS < 44px (1):
+    138x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+
+------------------------------------------------------------------------------
+TOTALS   overflow=19  tap<44px=157  rails-no-snap=48  fixed-below-fold=0
+Routes: 33   Viewports: 5
+Skipped: 9 portal routes (set AUDIT_SESSION_COOKIE); 2 admin routes (set AUDIT_ADMIN_COOKIE)
+------------------------------------------------------------------------------
+JSON written to audit-out/after-phase1.json

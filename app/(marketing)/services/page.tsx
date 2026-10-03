@@ -8,12 +8,12 @@ import { SecurityIncluded } from "@/components/security/SecurityIncluded";
 export const metadata: Metadata = {
   title: "Services | Redmont Strategies Group",
   description:
-    "Business consulting, AI strategy, custom private AI systems, operations consulting, and web development. Strategy first. Technology second. Execution always.",
+    "Business consulting, AI implementation, custom private AI systems, operations consulting, and web development. Strategy first. Technology second. Execution always.",
   alternates: { canonical: "/services" },
   openGraph: {
     title: "Services | Redmont Strategies Group",
     description:
-      "Business consulting, AI strategy, custom private AI systems, operations consulting, and web development. Strategy first. Technology second. Execution always.",
+      "Business consulting, AI implementation, custom private AI systems, operations consulting, and web development. Strategy first. Technology second. Execution always.",
     url: "/services",
     images: ["/og.png"],
   },

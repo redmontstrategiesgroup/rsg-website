@@ -19,7 +19,7 @@ export default async function TeamPage() {
   const ctx = await requirePortalPage();
   if (!canManageTeam(ctx.user.role)) redirect("/portal");
 
-  // Tolerate a not-yet-migrated database — render calm empty states.
+  // Tolerate a not-yet-migrated database: render calm empty states.
   const team = await listTeam(ctx.client.id).catch(() => ({
     users: [],
     legacyOwner: null,
@@ -30,7 +30,7 @@ export default async function TeamPage() {
       <PageHeader
         eyebrow="Team"
         title="Portal access"
-        description="Give teammates their own logins with the right level of access — never share passwords."
+        description="Give teammates their own logins with the right level of access, never share passwords."
       />
       <TeamView
         users={team.users.map((u) => ({

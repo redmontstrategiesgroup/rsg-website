@@ -1,5 +1,5 @@
 /**
- * Connect page defaults — safe for client and server imports (no Node I/O).
+ * Connect page defaults: safe for client and server imports (no Node I/O).
  */
 
 import type { ConnectLink, ConnectSettings } from "./connect-types";
@@ -66,7 +66,7 @@ export function defaultConnectLinks(): ConnectLink[] {
       id: "link-private-ai",
       title: "Custom Private AI Systems",
       description:
-        "AI built around your workflows and data—local, private cloud, or managed.",
+        "AI built around your workflows and data, local, private cloud, or managed.",
       url: "/services/customprivateaisystems",
       icon: "sparkles",
       badge: "",
@@ -79,7 +79,7 @@ export function defaultConnectLinks(): ConnectLink[] {
     {
       id: "link-demos",
       title: "View Industry Demo Systems",
-      description: "Interactive operating systems for med spas, gyms, dental, and contractors.",
+      description: "Interactive operating systems for health & wellness practices, contractors, and real estate teams.",
       url: "/demos",
       icon: "monitor",
       badge: "",

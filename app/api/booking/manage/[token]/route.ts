@@ -162,6 +162,7 @@ export async function POST(request: Request, ctx: Ctx) {
         to,
         visitorTimezone: tz,
         teamMemberId: booking.team_member_id,
+        excludeBookingId: booking.id,
       });
       return NextResponse.json({ slots, from, to });
     }
@@ -179,7 +180,7 @@ export async function POST(request: Request, ctx: Ctx) {
 
     return NextResponse.json({ error: "Unknown action." }, { status: 400 });
   } catch (err) {
-    if (err instanceof z.ZodError) {
+    if (err instanceof z.ZodError || err instanceof SyntaxError) {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
     console.error("[booking/manage]", err);

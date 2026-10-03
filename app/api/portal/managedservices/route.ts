@@ -156,7 +156,7 @@ export async function POST(request: Request) {
           });
         };
 
-        // Business-critical downgrades never self-serve — reviewed transition.
+        // Business-critical downgrades never self-serve: reviewed transition.
         if (current.businessCritical && target.tierRank < current.tierRank) {
           if (body.acknowledge !== true) {
             return NextResponse.json(
@@ -172,7 +172,7 @@ export async function POST(request: Request) {
         }
 
         // Business-critical sideways moves (equal tier, or any move that
-        // drops the business-critical designation) are reviewed too — they
+        // drops the business-critical designation) are reviewed too, they
         // must never self-serve past the managed-transition guard.
         if (
           current.businessCritical &&
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
         }
 
         if (target.tierRank >= current.tierRank) {
-          // Upgrade — amounts resolve server-side from the plan row.
+          // Upgrade: amounts resolve server-side from the plan row.
           const amount =
             body.billingFrequency === "annual"
               ? annualPriceCents(target)
@@ -210,7 +210,7 @@ export async function POST(request: Request) {
             } catch (err) {
               console.error("[portal-ms] Stripe plan change failed.", err);
               return NextResponse.json(
-                { error: "Billing update failed — no changes were made." },
+                { error: "Billing update failed, no changes were made." },
                 { status: 502 }
               );
             }
@@ -236,7 +236,7 @@ export async function POST(request: Request) {
           }
 
           if (isStripeConfigured()) {
-            // No Stripe subscription yet — collect payment via Checkout.
+            // No Stripe subscription yet: collect payment via Checkout.
             const client = await getClientById(clientId);
             if (!client) {
               return NextResponse.json(
@@ -255,7 +255,7 @@ export async function POST(request: Request) {
             });
             if (!customerId) {
               return NextResponse.json(
-                { error: "Billing update failed — no changes were made." },
+                { error: "Billing update failed, no changes were made." },
                 { status: 502 }
               );
             }
@@ -292,12 +292,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ ok: true, checkoutUrl: checkout?.url });
           }
 
-          // Stripe not configured — manual/invoiced billing, reviewed by RSG.
+          // Stripe not configured: manual/invoiced billing, reviewed by RSG.
           await submitReviewRequest("plan.change_requested");
           return NextResponse.json({ ok: true, requiresReview: true });
         }
 
-        // Non-critical downgrade — takes effect after review at renewal.
+        // Non-critical downgrade: takes effect after review at renewal.
         await submitReviewRequest("plan.downgrade_requested");
         return NextResponse.json({ ok: true, requiresReview: true });
       }
@@ -338,7 +338,7 @@ export async function POST(request: Request) {
             subscriptionId: sub.id,
             type: "cancellation.requested",
             description:
-              "Client requested cancellation of a business-critical plan — managed transition review required.",
+              "Client requested cancellation of a business-critical plan, managed transition review required.",
             actor: `client:${clientId}`,
           });
           return NextResponse.json({ ok: true, requiresReview: true });
@@ -350,7 +350,7 @@ export async function POST(request: Request) {
           } catch (err) {
             console.error("[portal-ms] Stripe cancellation failed.", err);
             return NextResponse.json(
-              { error: "Billing update failed — no changes were made." },
+              { error: "Billing update failed, no changes were made." },
               { status: 502 }
             );
           }

@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 /**
- * Webhook signing — one scheme for every outbound webhook we send.
+ * Webhook signing, one scheme for every outbound webhook we send.
  *
  * REPLACES `signWebhookPayload` in lib/scheduling/notifications.ts, which was a
  * bare `HMAC(secret, body)` with no timestamp. That signature stays valid
@@ -10,7 +10,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * and rejecting old ones is what closes that.
  *
  * The signed material is `${timestamp}.${rawBody}`. The timestamp MUST be inside
- * the signature — a timestamp that only travels in a header can be rewritten by
+ * the signature: a timestamp that only travels in a header can be rewritten by
  * the attacker replaying the body.
  *
  * This is byte-for-byte the scheme the receivers expect:
@@ -45,7 +45,7 @@ export function signPayload(
  * Verify an inbound signature.
  *
  * Use this for anything we RECEIVE that is signed with our scheme. Returns a
- * reason rather than a bare boolean so a rejection can be logged specifically —
+ * reason rather than a bare boolean so a rejection can be logged specifically,
  * "stale timestamp" and "bad signature" are very different incidents, and
  * collapsing them makes a clock-skew outage look like an attack.
  */
@@ -72,7 +72,7 @@ export function verifySignature(input: {
     .digest("hex");
 
   // Compare in constant time. A plain === leaks, through timing, how many
-  // leading characters matched — which is enough to forge a signature given
+  // leading characters matched, which is enough to forge a signature given
   // enough attempts. Length is checked first because timingSafeEqual throws on
   // a length mismatch, and length is not secret.
   const a = Buffer.from(signature, "utf8");

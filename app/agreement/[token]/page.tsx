@@ -25,7 +25,7 @@ export default async function AgreementPage({
   if (!isSupabaseConfigured()) {
     body = (
       <p className="text-sm text-white/55">
-        This agreement isn&rsquo;t available right now — please try again shortly.
+        This agreement isn&rsquo;t available right now, please try again shortly.
       </p>
     );
   } else {
@@ -71,7 +71,7 @@ export default async function AgreementPage({
   }
 
   return (
-    <main className="min-h-screen bg-base pb-24">
+    <main className="min-h-dvh bg-base pb-24">
       <header className="border-b border-white/10 bg-base/70 backdrop-blur-xl print:hidden">
         <div className="container-px flex h-16 items-center justify-between">
           <Logo />

@@ -1,5 +1,5 @@
 /**
- * Minimal TOTP (RFC 6238) for admin MFA — no third-party auth libs.
+ * Minimal TOTP (RFC 6238) for admin MFA, no third-party auth libs.
  */
 
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";

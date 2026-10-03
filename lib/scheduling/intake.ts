@@ -15,7 +15,7 @@ export type { IntakeAnswers, IntakeContact } from "./intake-schema";
 
 /**
  * Simplified booking intake. Unlike the legacy scored qualification, every
- * visitor who completes this step may book — the answers are stored for
+ * visitor who completes this step may book; the answers are stored for
  * internal preparation and routing, never to gate the calendar.
  *
  * Persist the visitor's details, record consent, and mark the session as

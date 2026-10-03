@@ -5,23 +5,22 @@ import {
   Activity,
   AlertTriangle,
   ArrowRight,
-  Boxes,
   Cpu,
-  Gauge,
   Workflow as WorkflowIcon,
 } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import type { IndustryVertical, WorkflowStage } from "@/lib/industries/types";
 
 /**
  * Interactive workflow map. Selecting a stage reveals what happens there,
- * where it commonly fails, the RSG system responsible, automation
- * opportunities, KPIs, and recommended integrations.
+ * where it commonly fails, the RSG system responsible, and the automation
+ * opportunities it opens up.
  *
  * Layout variants keep the three vertical pages structurally distinct:
  *  - "pipeline": horizontal job pipeline (home services)
- *  - "journey":  vertical patient-journey rail (dental)
- *  - "loop":     wrapping lifecycle grid that closes back on itself (retail)
+ *  - "journey":  vertical client-journey rail (health & wellness)
+ *  - "loop":     wrapping lifecycle grid that closes back on itself (real estate)
  */
 export function WorkflowMap({
   vertical,
@@ -65,10 +64,17 @@ export function WorkflowMap({
           >
             {/* Stage selector */}
             {variant === "pipeline" && (
-              <div className="-mx-6 min-w-0 max-w-full overflow-x-auto px-6 pb-2 sm:mx-0 sm:px-0" role="tablist" aria-label="Workflow stages">
-                <ol className="flex min-w-max items-stretch gap-0">
+              <ScrollRail
+                as="ol"
+                inset={6}
+                activeKey={active.id}
+                keyboardTabs
+                role="tablist"
+                aria-label="Workflow stages"
+                className="-mx-6 flex items-stretch gap-0 pb-2 sm:mx-0 sm:px-0 sm:scroll-px-0"
+              >
                   {stages.map((s, i) => (
-                    <li key={s.id} className="flex items-center">
+                    <li key={s.id} role="presentation" className="flex shrink-0 items-center">
                       <StageButton
                         stage={s}
                         index={i}
@@ -85,18 +91,17 @@ export function WorkflowMap({
                       )}
                     </li>
                   ))}
-                </ol>
-              </div>
+              </ScrollRail>
             )}
 
             {variant === "journey" && (
-              <div className="lg:col-span-4" role="tablist" aria-label="Patient journey stages">
+              <div className="lg:col-span-4 overflow-auto no-scrollbar" role="tablist" aria-label="Client journey stages">
                 <ol className="relative space-y-1 border-l border-white/10 pl-5">
                   {stages.map((s, i) => (
                     <li key={s.id} className="relative">
                       <span
                         aria-hidden
-                        className={`absolute -left-[23px] top-1/2 h-2 w-2 -translate-y-1/2 rounded-full transition-colors ${
+                        className={`absolute left-[-23px] top-1/2 h-2 w-2 -translate-y-1/2 rounded-full transition-colors ${
                           s.id === active.id
                             ? "bg-crimson-light shadow-glow-sm"
                             : i <= activeIndex
@@ -119,24 +124,32 @@ export function WorkflowMap({
             )}
 
             {variant === "loop" && (
-              <div role="tablist" aria-label="Customer lifecycle stages">
-                <ol className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
-                  {stages.map((s, i) => (
-                    <li key={s.id}>
-                      <StageButton
-                        stage={s}
-                        index={i}
-                        active={s.id === active.id}
-                        onSelect={() => setActiveId(s.id)}
-                        panelId={panelId}
-                        shape="tile"
-                      />
-                    </li>
-                  ))}
-                </ol>
+              <div>
+                <ScrollRail
+                  as="ol"
+                  inset={6}
+                  activeKey={active.id}
+                  keyboardTabs
+                  role="tablist"
+                  aria-label="Customer lifecycle stages"
+                  className="-mx-6 flex gap-2 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:px-0 sm:pb-0 sm:scroll-px-0 lg:grid-cols-6"
+                >
+                    {stages.map((s, i) => (
+                      <li key={s.id} role="presentation" className="w-40 shrink-0 sm:w-auto">
+                        <StageButton
+                          stage={s}
+                          index={i}
+                          active={s.id === active.id}
+                          onSelect={() => setActiveId(s.id)}
+                          panelId={panelId}
+                          shape="tile"
+                        />
+                      </li>
+                    ))}
+                </ScrollRail>
                 <p className="mt-3 flex items-center gap-2 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
                   <ArrowRight size={11} aria-hidden />
-                  Stage {stages.length} feeds stage 1 — the lifecycle is a loop, not a funnel
+                  Stage {stages.length} feeds stage 1: the lifecycle is a loop, not a funnel
                 </p>
               </div>
             )}
@@ -148,8 +161,8 @@ export function WorkflowMap({
               aria-label={`Stage details: ${active.label}`}
               className={variant === "journey" ? "lg:col-span-8" : ""}
             >
-              <div className="overflow-hidden rounded-xl border border-white/10 bg-base-900/70">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] px-6 py-4">
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-base-900/70 sm:max-h-[calc(100dvh-22rem)] sm:overflow-y-auto">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 px-6 py-4">
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full border border-crimson/40 bg-crimson/10 font-mono text-[0.72rem] sm:text-[0.62rem] text-crimson-light">
                       {activeIndex + 1}
@@ -161,7 +174,7 @@ export function WorkflowMap({
                   </span>
                 </div>
 
-                <div className="grid gap-px bg-white/[0.06] lg:grid-cols-2">
+                <div className="grid gap-px bg-white/6 lg:grid-cols-2">
                   <DetailCell icon={<WorkflowIcon size={13} aria-hidden />} title="What happens here">
                     <p className="text-sm leading-relaxed text-white/60">{active.happens}</p>
                   </DetailCell>
@@ -179,8 +192,8 @@ export function WorkflowMap({
                       ))}
                     </ul>
                   </DetailCell>
-                  <DetailCell icon={<Cpu size={13} aria-hidden />} title="RSG system responsible">
-                    <p className="inline-flex items-center gap-2 rounded-lg border border-crimson/30 bg-crimson/[0.08] px-3 py-2 text-sm text-white/85">
+                  <DetailCell icon={<Cpu size={13} aria-hidden />} title="RSG system responsible" wide>
+                    <p className="inline-flex items-center gap-2 rounded-lg border border-crimson/30 bg-crimson/8 px-3 py-2 text-sm text-white/85">
                       {active.system}
                     </p>
                     <p className="mt-3 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
@@ -191,32 +204,6 @@ export function WorkflowMap({
                         <li key={a} className="flex gap-2.5 text-sm leading-relaxed text-white/55">
                           <Activity size={13} aria-hidden className="mt-1 shrink-0 text-crimson-light/60" />
                           {a}
-                        </li>
-                      ))}
-                    </ul>
-                  </DetailCell>
-                  <DetailCell icon={<Gauge size={13} aria-hidden />} title="KPIs worth watching">
-                    <ul className="flex flex-wrap gap-2">
-                      {active.kpis.map((k) => (
-                        <li
-                          key={k}
-                          className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.72rem] text-white/60"
-                        >
-                          {k}
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="mt-5 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
-                      Recommended integrations
-                    </p>
-                    <ul className="mt-2 flex flex-wrap gap-2">
-                      {active.integrations.map((n) => (
-                        <li
-                          key={n}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.72rem] text-white/60"
-                        >
-                          <Boxes size={11} aria-hidden className="text-white/35" />
-                          {n}
                         </li>
                       ))}
                     </ul>
@@ -247,7 +234,7 @@ function StageButton({
   shape: "node" | "row" | "tile";
 }) {
   const base =
-    "transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson";
+    "transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson";
   if (shape === "row") {
     return (
       <button
@@ -257,7 +244,7 @@ function StageButton({
         aria-controls={panelId}
         onClick={onSelect}
         className={`${base} block w-full rounded-lg px-3 py-2.5 text-left ${
-          active ? "bg-crimson/[0.08] text-white" : "text-white/45 hover:bg-white/[0.03] hover:text-white/75"
+          active ? "bg-crimson/8 text-white" : "text-white/45 hover:bg-white/3 hover:text-white/75"
         }`}
       >
         <span className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/30">
@@ -277,8 +264,8 @@ function StageButton({
         onClick={onSelect}
         className={`${base} flex h-full w-full flex-col rounded-lg border px-3 py-3 text-left ${
           active
-            ? "border-crimson/50 bg-crimson/[0.08]"
-            : "border-white/10 bg-white/[0.02] hover:border-white/25"
+            ? "border-crimson/50 bg-crimson/8"
+            : "border-white/10 bg-white/2 hover:border-white/25"
         }`}
       >
         <span className={`font-mono text-[0.7rem] sm:text-[0.55rem] ${active ? "text-crimson-light" : "text-white/30"}`}>
@@ -305,13 +292,13 @@ function StageButton({
         className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-[0.72rem] sm:text-[0.62rem] transition-colors ${
           active
             ? "border-crimson bg-crimson/15 text-crimson-light shadow-glow-sm"
-            : "border-white/15 bg-white/[0.03] text-white/45"
+            : "border-white/15 bg-white/3 text-white/45"
         }`}
       >
         {index + 1}
       </span>
       <span
-        className={`max-w-[6.5rem] text-center text-[0.72rem] sm:text-[0.62rem] leading-tight ${
+        className={`max-w-26 text-center text-[0.72rem] sm:text-[0.62rem] leading-tight ${
           active ? "text-white" : "text-white/45"
         }`}
       >
@@ -325,15 +312,18 @@ function DetailCell({
   icon,
   title,
   tone,
+  wide,
   children,
 }: {
   icon: React.ReactNode;
   title: string;
   tone?: "risk";
+  /** Span both columns: used to fill the row when the grid holds an odd count. */
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-base-900 p-6">
+    <div className={`bg-base-900 p-6 ${wide ? "lg:col-span-2" : ""}`}>
       <p
         className={`flex items-center gap-2 font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label ${
           tone === "risk" ? "text-crimson-light/80" : "text-white/35"

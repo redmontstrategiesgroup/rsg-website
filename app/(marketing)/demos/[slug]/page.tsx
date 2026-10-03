@@ -7,10 +7,8 @@ import { Reveal } from "@/components/Reveal";
 import { DEMO_CONFIGS, demoBySlug } from "@/components/demos/data";
 import { DemoOS } from "@/components/demos/DemoOS";
 import {
-  BuilderSection,
   ConversionSection,
   DemoPageHeader,
-  SystemBreakdown,
 } from "@/components/demos/sections";
 
 type Params = { slug: string };
@@ -58,12 +56,6 @@ export default async function DemoPage({ params }: { params: Promise<Params> }) 
           <DemoOS config={config} />
         </Reveal>
       </section>
-
-      <div id="breakdown" className="scroll-mt-24">
-        <SystemBreakdown config={config} />
-      </div>
-
-      <BuilderSection config={config} />
 
       <ConversionSection demoSlug={config.slug} cta={config.cta} config={config} />
 

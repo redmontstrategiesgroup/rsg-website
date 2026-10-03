@@ -49,10 +49,10 @@ export function IncidentsView({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-2xl">
           <p className={labelClass}>Incident response</p>
-          <p className="mt-1 text-xs leading-relaxed text-white/45">
+          <p className="mt-1 text-xs leading-relaxed text-white/65">
             Detect, contain, rotate credentials, isolate systems, preserve logs,
             restore service, notify affected clients, and track corrective
-            actions — each incident carries its own record and timeline.
+            actions: each incident carries its own record and timeline.
           </p>
         </div>
         {canManage && (
@@ -61,7 +61,7 @@ export function IncidentsView({
               setCreating((v) => !v);
               setSelectedId(null);
             }}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30"
           >
             <Plus size={14} /> New incident
           </button>
@@ -81,14 +81,14 @@ export function IncidentsView({
 
       {incidents.length === 0 ? (
         <div className="card flex items-start gap-3 p-6 text-sm text-white/55">
-          <Siren size={18} className="mt-0.5 shrink-0 text-white/40" />
+          <Siren size={18} className="mt-0.5 shrink-0 text-white/60" />
           <p>No incidents recorded. When one occurs, open a record here to track containment, notification, and resolution.</p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Severity</th>
                 <th className="px-4 py-3">Status</th>
@@ -99,16 +99,16 @@ export function IncidentsView({
             </thead>
             <tbody>
               {incidents.map((i) => (
-                <tr key={i.id} className="border-b border-white/[0.06] last:border-0">
+                <tr key={i.id} className="border-b border-white/6 last:border-0">
                   <td className="px-4 py-3 text-white/85">{i.title}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${riskPill(i.severity)}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-xs ${riskPill(i.severity)}`}>
                       {i.severity}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-white/60">{INCIDENT_STATUS_LABELS[i.status]}</td>
-                  <td className="px-4 py-3 text-white/55">{i.owner || "—"}</td>
-                  <td className="px-4 py-3 text-white/50">{formatDate(i.detectedAt)}</td>
+                  <td className="px-4 py-3 text-white/55">{i.owner || "-"}</td>
+                  <td className="px-4 py-3 text-white/65">{formatDate(i.detectedAt)}</td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => {
@@ -166,7 +166,7 @@ function IncidentForm({
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description — what was detected"
+        placeholder="Description: what was detected"
         rows={3}
         className={inputClass}
       />
@@ -194,7 +194,7 @@ function IncidentForm({
             })
           }
           disabled={busy || !title.trim()}
-          className="btn-primary !px-5 !py-2.5 text-sm disabled:opacity-50"
+          className="btn-primary px-5! py-2.5! text-sm disabled:opacity-50"
         >
           Create incident
         </button>
@@ -225,15 +225,15 @@ function IncidentDetail({
 
   const report = () => {
     const lines = [
-      `INCIDENT REPORT — ${incident.title}`,
+      `INCIDENT REPORT: ${incident.title}`,
       `Severity: ${incident.severity}`,
       `Status: ${INCIDENT_STATUS_LABELS[incident.status]}`,
-      `Owner: ${incident.owner || "—"}`,
+      `Owner: ${incident.owner || "-"}`,
       `Detected: ${incident.detectedAt}`,
-      `Systems affected: ${incident.systemsAffected.join(", ") || "—"}`,
+      `Systems affected: ${incident.systemsAffected.join(", ") || "-"}`,
       "",
       "Description:",
-      incident.description || "—",
+      incident.description || "-",
       "",
       "Timeline:",
       ...incident.timeline.map(
@@ -258,10 +258,10 @@ function IncidentDetail({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${riskPill(incident.severity)}`}>
+              <span className={`rounded-full border px-2 py-0.5 text-xs ${riskPill(incident.severity)}`}>
                 {incident.severity}
               </span>
-              <span className="rounded-full border border-white/12 bg-white/[0.04] px-2 py-0.5 text-[0.6rem] text-white/60">
+              <span className="rounded-full border border-white/12 bg-white/4 px-2 py-0.5 text-xs text-white/60">
                 {INCIDENT_STATUS_LABELS[incident.status]}
               </span>
             </div>
@@ -273,8 +273,8 @@ function IncidentDetail({
         </div>
 
         {incident.description && <p className="mt-3 text-sm text-white/65">{incident.description}</p>}
-        <p className="mt-2 text-xs text-white/40">
-          Owner: {incident.owner || "—"} · Detected {formatDate(incident.detectedAt)}
+        <p className="mt-2 text-xs text-white/60">
+          Owner: {incident.owner || "-"} · Detected {formatDate(incident.detectedAt)}
           {incident.systemsAffected.length > 0 && <> · Systems: {incident.systemsAffected.join(", ")}</>}
         </p>
 
@@ -284,10 +284,10 @@ function IncidentDetail({
           <ol className="mt-3 space-y-3 border-l border-white/10 pl-4">
             {incident.timeline.map((t, i) => (
               <li key={i} className="relative">
-                <span className="absolute -left-[1.32rem] top-1.5 h-2 w-2 rounded-full bg-crimson-light" />
+                <span className="absolute left-[-1.32rem] top-1.5 h-2 w-2 rounded-full bg-crimson-light" />
                 <p className="text-xs font-medium text-white/80">
                   {INCIDENT_TIMELINE_LABELS[t.kind]}
-                  <span className="ml-2 font-normal text-white/35">{formatDate(t.at)} · {t.actor}</span>
+                  <span className="ml-2 font-normal text-white/60">{formatDate(t.at)} · {t.actor}</span>
                 </p>
                 <p className="mt-0.5 text-sm text-white/60">{t.text}</p>
               </li>
@@ -323,14 +323,14 @@ function IncidentDetail({
                   if (ok) setEntryText("");
                 }}
                 disabled={busy || !entryText.trim()}
-                className="btn-primary !px-4 !py-2.5 text-sm disabled:opacity-50"
+                className="btn-primary px-4! py-2.5! text-sm disabled:opacity-50"
               >
                 Add
               </button>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-white/45">Status:</span>
+              <span className="text-xs text-white/65">Status:</span>
               <select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className={`${inputClass} max-w-[200px]`}>
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>

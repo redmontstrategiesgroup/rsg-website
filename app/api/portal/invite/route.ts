@@ -11,7 +11,7 @@ const schema = z.object({
   password: z.string().min(10).max(200),
 });
 
-/** Public (token-authenticated) — a new teammate setting their password. */
+/** Public (token-authenticated): a new teammate setting their password. */
 export async function POST(request: Request) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: "Not available." }, { status: 503 });

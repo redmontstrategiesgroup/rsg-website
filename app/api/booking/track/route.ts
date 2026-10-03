@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 /**
  * Funnel analytics for the public booking flow. Events are keyed to a valid
  * booking session and carry only non-identifying metadata (category slug,
- * step name) — never names, emails, phone numbers, or free-text answers.
+ * step name), never names, emails, phone numbers, or free-text answers.
  */
 
 const EVENTS = [

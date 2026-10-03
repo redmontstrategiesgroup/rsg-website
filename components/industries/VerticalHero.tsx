@@ -6,7 +6,7 @@ import type { IndustryVertical } from "@/lib/industries/types";
 /**
  * Vertical page hero: outcome headline, industry-specific interface preview,
  * and a plain designed-for statement. The preview visual is passed in so each
- * vertical renders its own product surface — never a shared dashboard.
+ * vertical renders its own product surface, never a shared dashboard.
  */
 export function VerticalHero({
   vertical,
@@ -18,7 +18,7 @@ export function VerticalHero({
   const { hero } = vertical;
   return (
     <section className="relative overflow-hidden">
-      {/* Decorative only — hidden on phones, where the blur and grid cost
+      {/* Decorative only: hidden on phones, where the blur and grid cost
           compositing work and add nothing to the message. */}
       <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute inset-0 bg-grid opacity-[0.25]" />
@@ -67,10 +67,12 @@ export function VerticalHero({
 
           <Reveal y={12} delay={0.24}>
             <div className="mt-10 flex flex-wrap items-center gap-4">
-              <a href={hero.primaryCta.href} className="btn-primary">
-                {hero.primaryCta.label}
-                <ArrowRight size={15} className="ml-2" aria-hidden />
-              </a>
+              {hero.primaryCta ? (
+                <a href={hero.primaryCta.href} className="btn-primary">
+                  {hero.primaryCta.label}
+                  <ArrowRight size={15} className="ml-2" aria-hidden />
+                </a>
+              ) : null}
               <Link href={hero.demoCta.href} className="btn-ghost">
                 <MousePointerClick size={15} className="mr-2" aria-hidden />
                 {hero.demoCta.label}
@@ -84,25 +86,13 @@ export function VerticalHero({
             </p>
           </Reveal>
 
-          <Reveal y={12} delay={0.34}>
-            <ul className="mt-7 flex flex-wrap gap-2">
-              {vertical.audience.map((a) => (
-                <li
-                  key={a}
-                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.75rem] sm:text-[0.68rem] text-white/55"
-                >
-                  {a}
-                </li>
-              ))}
-            </ul>
-          </Reveal>
         </div>
 
         <div className="lg:col-span-6 xl:col-span-6">
           <Reveal y={20} delay={0.2}>
             {visual}
             <p className="mt-3 text-right font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/25">
-              Simulated interface — sample data only
+              Simulated interface: sample data only
             </p>
           </Reveal>
         </div>

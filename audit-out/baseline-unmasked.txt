@@ -1,0 +1,2095 @@
+
+------------------------------------------------------------------------------
+RESPONSIVE AUDIT  http://localhost:3000
+------------------------------------------------------------------------------
+
+[375x667 (iPhone SE)] /
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[375x667 (iPhone SE)] /services
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /services/customprivateaisystems
+  TAP TARGETS < 44px (30):
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Industry Demo Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[375x667 (iPhone SE)] /security
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[375x667 (iPhone SE)] /process
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /industries
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /industries/homeservices
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 1259px  div.mt-9.sm:mt-14.space-y-8 > div.-mx-6.min-w-0.max-w-full.overflow-x-auto.no-scrollbar.px-6
+
+[375x667 (iPhone SE)] /industries/healthwellness
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /industries/realestate
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 393px  div > div.overflow-x-auto.no-scrollbar
+
+[375x667 (iPhone SE)] /book
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /book/consultation
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /book/strategy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /connect
+  OVERFLOW (1) — clipped off the right edge:
+    +173px  w=720  div.pointer-events-none.fixed.inset-0.-z-10 > div.absolute.left-1/2.top-[-8%].h-[420px].w-[720px].-translate-x-1/2
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[375x667 (iPhone SE)] /faq
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /demos
+  OVERFLOW (8) — clipped off the right edge:
+    +36px  w=107  div.flex.gap-1.5 > div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5
+    +29px  w=93  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > p.truncate.text-[0.48rem].uppercase.tracking-wider.text-white/35
+    +29px  w=93  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > div.mt-1.flex.gap-0.5
+    +29px  w=93  div.mt-1.flex.gap-0.5 > span.h-1.flex-1.rounded-sm.bg-crimson/50
+    +9px  w=115  div.flex.gap-1.5 > div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5
+    +2px  w=101  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > p.truncate.text-[0.48rem].uppercase.tracking-wider.text-white/35
+    +2px  w=101  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > div.mt-1.flex.gap-0.5
+    +2px  w=101  div.mt-1.flex.gap-0.5 > span.h-1.flex-1.rounded-sm.bg-crimson/50
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 513px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1411px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/healthwellness
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    95x42  "Clients"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1172px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 453px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/contractors
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1173px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 813px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/gyms
+  TAP TARGETS < 44px (42):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    132x42  "AI Front Desk"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 34 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1106px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 573px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /demos/realestate
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    144x42  "Clients & Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    129x42  "Transactions"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1449px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 573px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[375x667 (iPhone SE)] /businessconsulting
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[375x667 (iPhone SE)] /systemsaudit
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[375x667 (iPhone SE)] /aistrategy
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[375x667 (iPhone SE)] /aiautomation
+  TAP TARGETS < 44px (32):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    … 24 more
+
+[375x667 (iPhone SE)] /operationsconsulting
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[375x667 (iPhone SE)] /webdevelopment
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[375x667 (iPhone SE)] /crmsystems
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[375x667 (iPhone SE)] /servicearea
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    65x17  "Industries"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[375x667 (iPhone SE)] /privacy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /terms
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /start
+  TAP TARGETS < 44px (30):
+    83x40  "Just me"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    54x40  "2–5"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    60x40  "6–15"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    69x40  "16–50"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    56x40  "50+"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    93x38  "Continue"  div.mt-10.flex.items-center.justify-between.gap-4 > button.inline-flex.min-h-[38px].items-center.justify-center.gap-2.px-4
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[375x667 (iPhone SE)] /thankyou
+  TAP TARGETS < 44px (25):
+    327x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[375x667 (iPhone SE)] /booking/review
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[375x667 (iPhone SE)] /booking/noteligible
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[390x844 (iPhone 14)] /services
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /services/customprivateaisystems
+  TAP TARGETS < 44px (30):
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Industry Demo Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[390x844 (iPhone 14)] /security
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[390x844 (iPhone 14)] /process
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /industries
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /industries/homeservices
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 1244px  div.mt-9.sm:mt-14.space-y-8 > div.-mx-6.min-w-0.max-w-full.overflow-x-auto.no-scrollbar.px-6
+
+[390x844 (iPhone 14)] /industries/healthwellness
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /industries/realestate
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 378px  div > div.overflow-x-auto.no-scrollbar
+
+[390x844 (iPhone 14)] /book
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /book/consultation
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /book/strategy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /connect
+  OVERFLOW (1) — clipped off the right edge:
+    +165px  w=720  div.pointer-events-none.fixed.inset-0.-z-10 > div.absolute.left-1/2.top-[-8%].h-[420px].w-[720px].-translate-x-1/2
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[390x844 (iPhone 14)] /faq
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /demos
+  OVERFLOW (4) — clipped off the right edge:
+    +21px  w=107  div.flex.gap-1.5 > div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5
+    +14px  w=93  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > p.truncate.text-[0.48rem].uppercase.tracking-wider.text-white/35
+    +14px  w=93  div.flex-1.rounded.border.border-white/[0.07].bg-white/[0.015].px-1.5 > div.mt-1.flex.gap-0.5
+    +14px  w=93  div.mt-1.flex.gap-0.5 > span.h-1.flex-1.rounded-sm.bg-crimson/50
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 498px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1396px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/healthwellness
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    95x42  "Clients"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1157px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 438px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/contractors
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1158px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 798px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/gyms
+  TAP TARGETS < 44px (42):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    132x42  "AI Front Desk"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 34 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1091px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 558px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /demos/realestate
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    144x42  "Clients & Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    129x42  "Transactions"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1434px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 558px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[390x844 (iPhone 14)] /businessconsulting
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[390x844 (iPhone 14)] /systemsaudit
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[390x844 (iPhone 14)] /aistrategy
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[390x844 (iPhone 14)] /aiautomation
+  TAP TARGETS < 44px (32):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    … 24 more
+
+[390x844 (iPhone 14)] /operationsconsulting
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[390x844 (iPhone 14)] /webdevelopment
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[390x844 (iPhone 14)] /crmsystems
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[390x844 (iPhone 14)] /servicearea
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    65x17  "Industries"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[390x844 (iPhone 14)] /privacy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /terms
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /start
+  TAP TARGETS < 44px (30):
+    83x40  "Just me"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    54x40  "2–5"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    60x40  "6–15"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    69x40  "16–50"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    56x40  "50+"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    93x38  "Continue"  div.mt-10.flex.items-center.justify-between.gap-4 > button.inline-flex.min-h-[38px].items-center.justify-center.gap-2.px-4
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[390x844 (iPhone 14)] /thankyou
+  TAP TARGETS < 44px (25):
+    342x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[390x844 (iPhone 14)] /booking/review
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[390x844 (iPhone 14)] /booking/noteligible
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[414x896 (Plus/Max)] /services
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /services/customprivateaisystems
+  TAP TARGETS < 44px (30):
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Industry Demo Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[414x896 (Plus/Max)] /security
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[414x896 (Plus/Max)] /process
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /industries
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /industries/homeservices
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 1220px  div.mt-9.sm:mt-14.space-y-8 > div.-mx-6.min-w-0.max-w-full.overflow-x-auto.no-scrollbar.px-6
+
+[414x896 (Plus/Max)] /industries/healthwellness
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /industries/realestate
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 354px  div > div.overflow-x-auto.no-scrollbar
+
+[414x896 (Plus/Max)] /book
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /book/consultation
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /book/strategy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /connect
+  OVERFLOW (1) — clipped off the right edge:
+    +153px  w=720  div.pointer-events-none.fixed.inset-0.-z-10 > div.absolute.left-1/2.top-[-8%].h-[420px].w-[720px].-translate-x-1/2
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[414x896 (Plus/Max)] /faq
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /demos
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 474px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1372px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/healthwellness
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    95x42  "Clients"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1133px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 414px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/contractors
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1134px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 774px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/gyms
+  TAP TARGETS < 44px (42):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    132x42  "AI Front Desk"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 34 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1067px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 534px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /demos/realestate
+  TAP TARGETS < 44px (43):
+    126x18  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    144x42  "Clients & Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    129x42  "Transactions"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1410px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 534px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[414x896 (Plus/Max)] /businessconsulting
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[414x896 (Plus/Max)] /systemsaudit
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[414x896 (Plus/Max)] /aistrategy
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[414x896 (Plus/Max)] /aiautomation
+  TAP TARGETS < 44px (32):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    … 24 more
+
+[414x896 (Plus/Max)] /operationsconsulting
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[414x896 (Plus/Max)] /webdevelopment
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[414x896 (Plus/Max)] /crmsystems
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[414x896 (Plus/Max)] /servicearea
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    65x17  "Industries"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[414x896 (Plus/Max)] /privacy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /terms
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /start
+  TAP TARGETS < 44px (30):
+    83x40  "Just me"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    54x40  "2–5"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    60x40  "6–15"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    69x40  "16–50"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    56x40  "50+"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    93x38  "Continue"  div.mt-10.flex.items-center.justify-between.gap-4 > button.inline-flex.min-h-[38px].items-center.justify-center.gap-2.px-4
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[414x896 (Plus/Max)] /thankyou
+  TAP TARGETS < 44px (25):
+    366x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[414x896 (Plus/Max)] /booking/review
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[414x896 (Plus/Max)] /booking/noteligible
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[932x430 (landscape)] /services
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /services/customprivateaisystems
+  TAP TARGETS < 44px (30):
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Industry Demo Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[932x430 (landscape)] /security
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[932x430 (landscape)] /process
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /industries
+  TAP TARGETS < 44px (27):
+    515x43  "Home Service & Trade Businesses"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    427x43  "Health & Wellness Practices"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    592x43  "Residential Brokerages & Agent Teams"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 19 more
+
+[932x430 (landscape)] /industries/homeservices
+  TAP TARGETS < 44px (30):
+    373x41  "Select…HVACPlumbingElectricalRoofing / s"  select#aq-home-services-services
+    778x42  ""  input#aq-home-services-service-area
+    373x42  ""  input#aq-home-services-office-staff
+    373x42  ""  input#aq-home-services-field-techs
+    373x42  ""  input#aq-home-services-monthly-leads
+    373x42  ""  input#aq-home-services-avg-job-value
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 681px  div.mt-9.sm:mt-14.space-y-8 > div.-mx-6.min-w-0.max-w-full.overflow-x-auto.no-scrollbar.px-6
+
+[932x430 (landscape)] /industries/healthwellness
+  TAP TARGETS < 44px (27):
+    373x41  "Select…Med spa / aesthetic clinicIV ther"  select#aq-health-wellness-practice-type
+    373x41  "Select…Just me2–34–67 or more"  select#aq-health-wellness-providers
+    373x41  "Select…BoulevardVagaroMindbodyJane AppZe"  select#aq-health-wellness-software
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 19 more
+
+[932x430 (landscape)] /industries/realestate
+  TAP TARGETS < 44px (30):
+    373x41  "Select…Solo agentAgent team inside a bro"  select#aq-real-estate-brokerage-type
+    373x41  "Select…Just me2–5 agents6–15 agents16–40"  select#aq-real-estate-agent-count
+    373x42  ""  input#aq-real-estate-annual-transactions
+    373x41  "Select…Mostly buyersMostly listingsRough"  select#aq-real-estate-buyer-seller-mix
+    373x41  "Select…Follow Up BossBoldTrail / kvCORES"  select#aq-real-estate-crm
+    373x41  "Select…Paid portalsThe team's own IDX we"  select#aq-real-estate-lead-sources
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[932x430 (landscape)] /book
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /book/consultation
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /book/strategy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /connect
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[932x430 (landscape)] /faq
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /demos
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 902px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[932x430 (landscape)] /demos/healthwellness
+  TAP TARGETS < 44px (43):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    95x42  "Clients"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 647px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+
+[932x430 (landscape)] /demos/contractors
+  TAP TARGETS < 44px (43):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 648px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 296px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /demos/gyms
+  TAP TARGETS < 44px (42):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    132x42  "AI Front Desk"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 34 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 581px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 56px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /demos/realestate
+  TAP TARGETS < 44px (43):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    144x42  "Clients & Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    129x42  "Transactions"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 924px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 56px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[932x430 (landscape)] /businessconsulting
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[932x430 (landscape)] /systemsaudit
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[932x430 (landscape)] /aistrategy
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[932x430 (landscape)] /aiautomation
+  TAP TARGETS < 44px (32):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    … 24 more
+
+[932x430 (landscape)] /operationsconsulting
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[932x430 (landscape)] /webdevelopment
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[932x430 (landscape)] /crmsystems
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[932x430 (landscape)] /servicearea
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    65x17  "Industries"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[932x430 (landscape)] /privacy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /terms
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /start
+  TAP TARGETS < 44px (30):
+    83x40  "Just me"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    54x40  "2–5"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    60x40  "6–15"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    69x40  "16–50"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    56x40  "50+"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    93x38  "Continue"  div.mt-10.flex.items-center.justify-between.gap-4 > button.inline-flex.min-h-[38px].items-center.justify-center.gap-2.px-4
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[932x430 (landscape)] /thankyou
+  TAP TARGETS < 44px (25):
+    138x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[932x430 (landscape)] /booking/review
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[932x430 (landscape)] /booking/noteligible
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[768x1024 (iPad)] /services
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /services/customprivateaisystems
+  OVERFLOW (1) — clipped off the right edge:
+    +26px  w=820  div.pointer-events-none.absolute.inset-0.-z-10.hidden.sm:block > div.absolute.left-1/2.top-[-20%].h-[520px].w-[820px].-translate-x-1/2
+  TAP TARGETS < 44px (30):
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    158x17  "Industry Demo Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-crimson-light
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[768x1024 (iPad)] /security
+  TAP TARGETS < 44px (25):
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[768x1024 (iPad)] /process
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /industries
+  TAP TARGETS < 44px (27):
+    515x43  "Home Service & Trade Businesses"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    427x43  "Health & Wellness Practices"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    592x43  "Residential Brokerages & Agent Teams"  h2.display.text-[1.7rem].leading-[1.1].text-white.sm:text-[2.1rem] > a.transition-colors.group-hover:text-white
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 19 more
+
+[768x1024 (iPad)] /industries/homeservices
+  OVERFLOW (1) — clipped off the right edge:
+    +4px  w=680  div.pointer-events-none.absolute.inset-0.-z-10.hidden.sm:block > div.absolute.left-[12%].top-[-20%].h-[420px].w-[680px].rounded-full
+  TAP TARGETS < 44px (30):
+    291x41  "Select…HVACPlumbingElectricalRoofing / s"  select#aq-home-services-services
+    614x42  ""  input#aq-home-services-service-area
+    291x42  ""  input#aq-home-services-office-staff
+    291x42  ""  input#aq-home-services-field-techs
+    291x42  ""  input#aq-home-services-monthly-leads
+    291x42  ""  input#aq-home-services-avg-job-value
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 845px  div.mt-9.sm:mt-14.space-y-8 > div.-mx-6.min-w-0.max-w-full.overflow-x-auto.no-scrollbar.px-6
+
+[768x1024 (iPad)] /industries/healthwellness
+  OVERFLOW (1) — clipped off the right edge:
+    +4px  w=680  div.pointer-events-none.absolute.inset-0.-z-10.hidden.sm:block > div.absolute.left-[12%].top-[-20%].h-[420px].w-[680px].rounded-full
+  TAP TARGETS < 44px (27):
+    291x41  "Select…Med spa / aesthetic clinicIV ther"  select#aq-health-wellness-practice-type
+    291x41  "Select…Just me2–34–67 or more"  select#aq-health-wellness-providers
+    291x41  "Select…BoulevardVagaroMindbodyJane AppZe"  select#aq-health-wellness-software
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 19 more
+
+[768x1024 (iPad)] /industries/realestate
+  OVERFLOW (1) — clipped off the right edge:
+    +4px  w=680  div.pointer-events-none.absolute.inset-0.-z-10.hidden.sm:block > div.absolute.left-[12%].top-[-20%].h-[420px].w-[680px].rounded-full
+  TAP TARGETS < 44px (30):
+    291x41  "Select…Solo agentAgent team inside a bro"  select#aq-real-estate-brokerage-type
+    291x41  "Select…Just me2–5 agents6–15 agents16–40"  select#aq-real-estate-agent-count
+    291x42  ""  input#aq-real-estate-annual-transactions
+    291x41  "Select…Mostly buyersMostly listingsRough"  select#aq-real-estate-buyer-seller-mix
+    291x41  "Select…Follow Up BossBoldTrail / kvCORES"  select#aq-real-estate-crm
+    291x41  "Select…Paid portalsThe team's own IDX we"  select#aq-real-estate-lead-sources
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+  SCROLL RAILS WITHOUT SNAP (1):
+    scrolls 32px  div > div.overflow-x-auto.no-scrollbar
+
+[768x1024 (iPad)] /book
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /book/consultation
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /book/strategy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /connect
+  TAP TARGETS < 44px (6):
+    74x30  "LinkedIn"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    83x30  "Instagram"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    56x30  "Email"  div.mt-5.flex.flex-wrap.items-center.justify-center.gap-2 > a.rounded-full.border.border-white/10.bg-white/[0.03].px-3.py-1.5
+    89x20  "Main Website"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    49x20  "Privacy"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+    41x20  "Terms"  nav.flex.flex-wrap.items-center.justify-center.gap-x-5.gap-y-2 > a.hover:text-white
+
+[768x1024 (iPad)] /faq
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /demos
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 152px  div.rounded-xl.border.border-white/10.bg-base-900/60 > div.flex.overflow-x-auto.border-b.border-white/[0.08].no-scrollbar
+    scrolls 1066px  div.p-4.sm:p-6 > div.min-w-0.max-w-full.overflow-x-auto.pb-3.no-scrollbar
+
+[768x1024 (iPad)] /demos/healthwellness
+  TAP TARGETS < 44px (43):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    95x42  "Clients"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 811px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 100px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/contractors
+  TAP TARGETS < 44px (43):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 812px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 460px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/gyms
+  TAP TARGETS < 44px (42):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    90x42  "Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    101x42  "Pipeline"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    132x42  "AI Front Desk"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 34 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 745px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 220px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /demos/realestate
+  TAP TARGETS < 44px (43):
+    114x16  "Demo Systems"  div.flex.flex-wrap.items-center.gap-3 > a.text-[0.75rem].sm:text-[0.68rem].font-medium.uppercase.tracking-[0.2em].text-white/40
+    80x38  "Reset"  div.flex.shrink-0.flex-wrap.items-center.gap-2 > button.inline-flex.items-center.gap-1.5.border.border-white/15.px-3.5
+    28x28  "Staff notifications (0)"  div.relative > button.relative.inline-flex.h-7.w-7.items-center.justify-center
+    110x42  "Overview"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    144x42  "Clients & Leads"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    129x42  "Transactions"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    137x42  "Conversations"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    141x42  "AI Receptionist"  li.shrink-0 > button.flex.w-full.items-center.gap-2.5.whitespace-nowrap.border-b-2
+    … 35 more
+  SCROLL RAILS WITHOUT SNAP (2):
+    scrolls 1088px  nav.border-b.border-white/[0.08].lg:w-48.lg:shrink-0.lg:border-b-0.lg:border-r > ul.flex.overflow-x-auto.no-scrollbar.lg:block.lg:py-3
+    scrolls 220px  div.rounded-lg.border.border-white/[0.07].bg-white/[0.02] > div.flex.gap-2.overflow-x-auto.p-4.no-scrollbar
+
+[768x1024 (iPad)] /businessconsulting
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[768x1024 (iPad)] /systemsaudit
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[768x1024 (iPad)] /aistrategy
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[768x1024 (iPad)] /aiautomation
+  TAP TARGETS < 44px (32):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    … 24 more
+
+[768x1024 (iPad)] /operationsconsulting
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[768x1024 (iPad)] /webdevelopment
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    162x17  "CRM & Pipeline Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[768x1024 (iPad)] /crmsystems
+  TAP TARGETS < 44px (31):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    273x17  "Web Development & Digital Infrastructure"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    219x17  "Real Estate & Brokerage Systems"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 23 more
+
+[768x1024 (iPad)] /servicearea
+  TAP TARGETS < 44px (30):
+    94x17  "781-588-0972"  p.mt-6.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    94x17  "781-588-0972"  p.text-sm.text-white/45 > a.text-white/70.underline.decoration-white/25.underline-offset-4.transition-colors.hover:text-white
+    134x17  "Business Consulting"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    65x17  "Industries"  li > a.text-sm.text-white/55.underline.decoration-white/20.underline-offset-4.transition-colors
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[768x1024 (iPad)] /privacy
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /terms
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /start
+  TAP TARGETS < 44px (30):
+    83x40  "Just me"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    54x40  "2–5"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    60x40  "6–15"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    69x40  "16–50"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    56x40  "50+"  div.flex.flex-wrap.gap-2 > button.min-h-[40px].border.px-3.5.py-2.text-sm.transition
+    93x38  "Continue"  div.mt-10.flex.items-center.justify-between.gap-4 > button.inline-flex.min-h-[38px].items-center.justify-center.gap-2.px-4
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 22 more
+
+[768x1024 (iPad)] /thankyou
+  TAP TARGETS < 44px (25):
+    138x20  "Return to Homepage"  div.mt-8.sm:mt-12.flex.flex-col.gap-6.sm:flex-row > a.link-underline
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 17 more
+
+[768x1024 (iPad)] /booking/review
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+[768x1024 (iPad)] /booking/noteligible
+  TAP TARGETS < 44px (24):
+    56x17  "LinkedIn"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    66x17  "Instagram"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    35x17  "Email"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    158x17  "Business Systems Audit"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    192x17  "AI Strategy & Implementation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    93x17  "AI Automation"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    179x17  "Custom Private AI Systems"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    148x17  "Operations Consulting"  li > a.text-sm.text-white/55.transition-colors.hover:text-white
+    … 16 more
+
+------------------------------------------------------------------------------
+TOTALS   overflow=19  tap<44px=4631  rails-no-snap=57  fixed-below-fold=0
+Routes: 33   Viewports: 5
+Skipped: 9 portal routes (set AUDIT_SESSION_COOKIE); 2 admin routes (set AUDIT_ADMIN_COOKIE)
+------------------------------------------------------------------------------
+JSON written to audit-out/baseline-unmasked.json

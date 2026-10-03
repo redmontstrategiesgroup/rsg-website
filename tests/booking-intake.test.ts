@@ -38,7 +38,7 @@ describe("intakeContactSchema", () => {
     businessName: "South Shore Clinic",
     email: "jordan@example.com",
     phone: "(781) 555-0100",
-    industry: "Dental",
+    industry: "Wellness",
     website: "example.com",
     preferredContact: "phone" as const,
   };

@@ -89,8 +89,7 @@ function rowToProposal(row: Record<string, unknown>): Proposal {
       : "implementation",
     summary: str(row.summary),
     preparedFor: str(row.prepared_for ?? row.preparedFor),
-    implementation:
-      ((row.implementation ?? {}) as ProposalImplementation) ?? {},
+    implementation: (row.implementation ?? {}) as ProposalImplementation,
     planId: strOrNull(row.plan_id ?? row.planId),
     alternativePlanIds: Array.isArray(row.alternative_plan_ids)
       ? (row.alternative_plan_ids as string[])
@@ -255,7 +254,7 @@ export async function upsertProposal(input: ProposalInput): Promise<Proposal | n
       if (error) throw error;
       return proposal;
     } catch (err) {
-      console.warn("[proposals] upsert failed — using file store.", err);
+      console.warn("[proposals] upsert failed: using file store.", err);
     }
   }
 
@@ -441,7 +440,7 @@ export async function recordProposalAcceptance(input: {
       if (error) throw error;
       return data?.length ? next : null;
     } catch (err) {
-      console.warn("[proposals] acceptance update failed — using file store.", err);
+      console.warn("[proposals] acceptance update failed: using file store.", err);
     }
   }
 

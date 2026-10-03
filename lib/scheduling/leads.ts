@@ -9,7 +9,7 @@ import {
 
 /**
  * Managed-services fields for the lead row, derived from the optional
- * ongoing-support answers. Never throws — a recommendation failure must
+ * ongoing-support answers. Never throws: a recommendation failure must
  * never break booking.
  */
 function servicePlanLeadFields(

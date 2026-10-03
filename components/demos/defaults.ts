@@ -1,7 +1,4 @@
-/**
- * Safe defaults for optional IndustryConfig fields so incomplete demo
- * datasets (contractor/gym/dental) still run without runtime crashes.
- */
+/** Safe defaults for optional IndustryConfig fields so a partial config still runs without runtime crashes. */
 import type { IndustryConfig, RoleConfig, Terminology } from "./types";
 
 export const DEFAULT_TERMINOLOGY: Terminology = {

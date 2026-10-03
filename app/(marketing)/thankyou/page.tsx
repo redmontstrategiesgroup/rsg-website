@@ -15,7 +15,7 @@ export default function ThankYouPage() {
   return (
     <PageShell>
       <TrackPageEvent event="thank_you_page_view" />
-      <section className="container-px flex min-h-[70vh] items-center py-16 sm:py-36">
+      <section className="container-px flex min-h-[70dvh] items-center py-16 sm:py-36">
         <div className="max-w-2xl">
           <div className="h-px w-12 bg-crimson-light/80" />
           <h1 className="display mt-9 text-[2.3rem] leading-[1.04] sm:text-[3.2rem]">
@@ -41,12 +41,12 @@ export default function ThankYouPage() {
               </li>
               <li>
                 <span className="text-white/80">2.</span> You receive a short
-                confirmation email — or book a time below if you prefer to lock
+                confirmation email, or book a time below if you prefer to lock
                 a slot now.
               </li>
               <li>
                 <span className="text-white/80">3.</span> We reply with next
-                steps for a focused strategy conversation — no pitch deck, no
+                steps for a focused strategy conversation, no pitch deck, no
                 generic audit PDF.
               </li>
             </ol>
@@ -61,7 +61,7 @@ export default function ThankYouPage() {
             >
               Book a Strategy Call
             </TrackedLink>
-            <Link href="/" className="link-underline">
+            <Link href="/" className="link-underline inline-flex min-h-11 items-center lg:min-h-0">
               Return to Homepage
             </Link>
           </div>

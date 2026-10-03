@@ -14,7 +14,7 @@ import {
 } from "@/lib/lifecycle/proposal-templates";
 
 /**
- * Proposals — data access, tracking, and approval workflow.
+ * Proposals: data access, tracking, and approval workflow.
  * Templates/copy live in proposal-templates.ts.
  */
 
@@ -59,7 +59,7 @@ export async function createProposal(input: {
       lead_id: input.leadId ?? null,
       client_id: input.clientId ?? null,
       token: newToken(),
-      title: input.title?.trim() || `${template.title} — ${input.businessName}`,
+      title: input.title?.trim() || `${template.title}: ${input.businessName}`,
       status: "draft" satisfies ProposalStatus,
       total_cents: input.totalCents,
       deposit_cents: input.depositCents,
@@ -142,7 +142,7 @@ export async function getProposal(id: string): Promise<{
   return { proposal: data as Proposal, ...related };
 }
 
-/** Public token lookup — lazily expires overdue sent/viewed proposals. */
+/** Public token lookup: lazily expires overdue sent/viewed proposals. */
 export async function getProposalByToken(token: string): Promise<{
   proposal: Proposal;
   options: ProposalOption[];

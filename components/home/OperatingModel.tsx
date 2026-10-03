@@ -11,7 +11,7 @@ const PILLARS = [
   {
     group: "Conversion",
     caption: "How inquiries become customers",
-    items: ["Sales Process", "Customer Follow-Up", "CRM / Pipeline"],
+    items: ["Sales Process", "Customer Follow-up", "CRM / Pipeline"],
   },
   {
     group: "Execution",

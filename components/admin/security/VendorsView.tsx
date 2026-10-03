@@ -45,9 +45,9 @@ export function VendorsView({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-2xl">
           <p className={labelClass}>Vendor & subprocessor registry</p>
-          <p className="mt-1 text-xs leading-relaxed text-white/45">
-            Every third-party service in a project — hosting, databases, email,
-            SMS, payments, analytics, AI models, storage, auth — with what data
+          <p className="mt-1 text-xs leading-relaxed text-white/65">
+            Every third-party service in a project, hosting, databases, email,
+            SMS, payments, analytics, AI models, storage, auth; with what data
             it handles, its agreement status, and a removal procedure. RSG does
             not claim any vendor is approved for a regulated industry.
           </p>
@@ -57,13 +57,13 @@ export function VendorsView({
             <button
               onClick={() => run({ action: "seed_platform_vendors" })}
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 disabled:opacity-50"
             >
               <Sparkles size={14} /> Add this platform&apos;s vendors
             </button>
             <button
               onClick={() => setEditing(emptyVendor())}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30"
             >
               <Plus size={14} /> New vendor
             </button>
@@ -73,7 +73,7 @@ export function VendorsView({
 
       {vendors.length === 0 ? (
         <div className="card flex items-start gap-3 p-6 text-sm text-white/55">
-          <Boxes size={18} className="mt-0.5 shrink-0 text-white/40" />
+          <Boxes size={18} className="mt-0.5 shrink-0 text-white/60" />
           <p>
             No vendors documented yet.{" "}
             {canManage && "Use “Add this platform’s vendors” to record the real services this system runs on."}
@@ -83,7 +83,7 @@ export function VendorsView({
         <div className="overflow-x-auto rounded-xl border border-white/10">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <th className="px-4 py-3">Vendor</th>
                 <th className="px-4 py-3">Purpose</th>
                 <th className="px-4 py-3">Data</th>
@@ -95,22 +95,22 @@ export function VendorsView({
             </thead>
             <tbody>
               {vendors.map((v) => (
-                <tr key={v.id} className="border-b border-white/[0.06] last:border-0 align-top">
+                <tr key={v.id} className="border-b border-white/6 last:border-0 align-top">
                   <td className="px-4 py-3.5">
                     <p className="font-medium text-white">{v.name}</p>
-                    <p className="text-xs text-white/40">{v.service}</p>
+                    <p className="text-xs text-white/60">{v.service}</p>
                   </td>
                   <td className="max-w-[220px] px-4 py-3.5 text-white/55">{v.purpose}</td>
-                  <td className="max-w-[180px] px-4 py-3.5 text-xs text-white/50">
-                    {v.dataCategories.join(", ") || "—"}
+                  <td className="max-w-[180px] px-4 py-3.5 text-xs text-white/65">
+                    {v.dataCategories.join(", ") || "-"}
                   </td>
                   <td className="px-4 py-3.5 text-white/60">{AGREEMENT_STATUS_LABELS[v.agreementStatus]}</td>
                   <td className="px-4 py-3.5">
-                    <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${riskPill(v.riskLevel)}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-xs ${riskPill(v.riskLevel)}`}>
                       {v.riskLevel}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 text-white/45">{formatDay(v.lastReviewDate)}</td>
+                  <td className="px-4 py-3.5 text-white/65">{formatDay(v.lastReviewDate)}</td>
                   <td className="px-4 py-3.5 text-right">
                     {canManage && (
                       <button onClick={() => setEditing(v)} className="text-xs text-crimson-light hover:underline">
@@ -208,7 +208,7 @@ function VendorForm({
           <button
             onClick={() => v.name?.trim() && onSubmit(v as Record<string, unknown>)}
             disabled={busy || !v.name?.trim()}
-            className="btn-primary !px-5 !py-2.5 text-sm disabled:opacity-50"
+            className="btn-primary px-5! py-2.5! text-sm disabled:opacity-50"
           >
             Save vendor
           </button>

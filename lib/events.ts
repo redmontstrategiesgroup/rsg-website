@@ -1,13 +1,13 @@
 /**
- * Provider-agnostic analytics events. No vendor is hardcoded — the dispatcher
+ * Provider-agnostic analytics events. No vendor is hardcoded, the dispatcher
  * forwards to whichever platform is present on the page:
  *
- *   - `window.rsgTrack(name, props)` — custom hook point (wire anything here)
+ *   - `window.rsgTrack(name, props)`, custom hook point (wire anything here)
  *   - Google Analytics 4 (`gtag`) or Google Tag Manager (`dataLayer`)
  *   - Plausible (`plausible`)
  *   - PostHog (`posthog`)
  *
- * Add a provider by dropping its snippet into the site — events flow
+ * Add a provider by dropping its snippet into the site, events flow
  * automatically. Events also log to the console in development.
  */
 

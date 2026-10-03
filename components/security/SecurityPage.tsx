@@ -22,12 +22,12 @@ import {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-white/[0.08]">
-      {/* Decorative only — hidden on phones, where the blur and grid cost
+    <section className="relative overflow-hidden border-b border-white/8">
+      {/* Decorative only: hidden on phones, where the blur and grid cost
           compositing work and add nothing to the message. */}
       <div className="pointer-events-none absolute inset-0 -z-10 hidden sm:block">
         <div className="absolute inset-0 bg-grid opacity-[0.16]" />
-        <div className="absolute left-1/2 top-[-20%] h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-crimson/[0.08] blur-[140px]" />
+        <div className="absolute left-1/2 top-[-20%] h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-crimson/8 blur-[140px]" />
       </div>
       <div className="container-px py-16 sm:py-32">
         <nav
@@ -56,7 +56,7 @@ function Hero() {
           <p className="mt-7 max-w-2xl text-[1.05rem] leading-relaxed text-white/60">
             RSG does not simply connect tools and hope they work. Permissions,
             approvals, backups, logs, testing, and recovery procedures are
-            designed into every system from the beginning — because these systems
+            designed into every system from the beginning, because these systems
             run real business operations and hold sensitive data.
           </p>
         </Reveal>
@@ -106,7 +106,7 @@ const PHILOSOPHY = [
 
 function Philosophy() {
   return (
-    <section id="philosophy" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="philosophy" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -121,7 +121,7 @@ function Philosophy() {
           <Reveal y={12} delay={0.14}>
             <p className="mt-6 text-[1.02rem] leading-relaxed text-white/55">
               RSG evaluates every project across the areas below. Which controls
-              a system receives depends on what it does and the data it holds —
+              a system receives depends on what it does and the data it holds,
               security is selected to fit the project, not sold as a fixed bundle.
             </p>
           </Reveal>
@@ -129,7 +129,7 @@ function Philosophy() {
         <div className="mt-9 sm:mt-14 grid gap-3 sm:grid-cols-2">
           {PHILOSOPHY.map((p, i) => (
             <Reveal key={p.title} y={12} delay={(i % 2) * 0.06}>
-              <div className="h-full border border-white/10 bg-white/[0.02] p-6 sm:p-7">
+              <div className="h-full border border-white/10 bg-white/2 p-6 sm:p-7">
                 <h3 className="display text-xl text-white">{p.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/55">{p.body}</p>
               </div>
@@ -145,7 +145,7 @@ function Philosophy() {
 
 function Pillars() {
   return (
-    <section id="standard" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="standard" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -165,11 +165,11 @@ function Pillars() {
               <Reveal key={pillar.id} y={12} delay={(i % 3) * 0.05}>
                 <article
                   id={pillar.id}
-                  className="scroll-mt-28 border border-white/10 bg-white/[0.02] p-6 sm:p-8"
+                  className="scroll-mt-28 border border-white/10 bg-white/2 p-6 sm:p-8"
                 >
                   <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
                     <div>
-                      <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-crimson-light">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/3 text-crimson-light">
                         <Icon size={18} />
                       </span>
                       <p className="label mt-5">{pillar.eyebrow}</p>
@@ -181,7 +181,7 @@ function Pillars() {
                         {pillar.controls.map((c) => (
                           <li
                             key={c}
-                            className="flex items-start gap-2.5 border border-white/[0.08] bg-white/[0.015] px-3.5 py-2.5 text-sm text-white/65"
+                            className="flex items-start gap-2.5 border border-white/8 bg-white/1.5 px-3.5 py-2.5 text-sm text-white/65"
                           >
                             <Check size={14} className="mt-0.5 shrink-0 text-crimson-light" />
                             {c}
@@ -231,7 +231,7 @@ const HIGH_RISK = [
 
 function ApprovalFlow() {
   return (
-    <section id="ai-approvals" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="ai-approvals" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -246,7 +246,7 @@ function ApprovalFlow() {
             <p className="mt-6 text-[1.02rem] leading-relaxed text-white/55">
               When an AI feature drafts a high-risk action, it does not execute
               automatically. It enters an approval queue where a person can
-              approve, reject, edit, or escalate — and every AI action can be
+              approve, reject, edit, or escalate; and every AI action can be
               logged.
             </p>
           </Reveal>
@@ -257,7 +257,7 @@ function ApprovalFlow() {
           <div className="mt-8 sm:mt-12 flex flex-wrap items-center gap-3">
             {APPROVAL_FLOW.map((s, i) => (
               <div key={s.key} className="flex items-center gap-3">
-                <div className="flex items-center gap-2.5 border border-white/10 bg-white/[0.02] px-4 py-3">
+                <div className="flex items-center gap-2.5 border border-white/10 bg-white/2 px-4 py-3">
                   <span className="font-mono text-xs text-crimson-light">{String(i + 1).padStart(2, "0")}</span>
                   <span className="text-sm text-white/75">{s.label}</span>
                 </div>
@@ -268,7 +268,7 @@ function ApprovalFlow() {
             ))}
             <div className="flex items-center gap-3">
               <ArrowRight size={16} className="text-white/25" />
-              <div className="border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/45">
+              <div className="border border-white/10 bg-white/2 px-4 py-3 text-sm text-white/45">
                 or Rejected / Escalated
               </div>
             </div>
@@ -281,7 +281,7 @@ function ApprovalFlow() {
             {HIGH_RISK.map((h) => (
               <div
                 key={h}
-                className="border border-white/[0.08] bg-white/[0.015] px-3.5 py-2.5 text-sm text-white/60"
+                className="border border-white/8 bg-white/1.5 px-3.5 py-2.5 text-sm text-white/60"
               >
                 {h}
               </div>
@@ -297,7 +297,7 @@ function ApprovalFlow() {
 
 function Framework() {
   return (
-    <section id="framework" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="framework" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -320,7 +320,7 @@ function Framework() {
         <div className="mt-8 sm:mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {FRAMEWORK_STAGES.map((stage, i) => (
             <Reveal key={stage.name} y={12} delay={(i % 4) * 0.05}>
-              <div className="h-full border border-white/10 bg-white/[0.02] p-5">
+              <div className="h-full border border-white/10 bg-white/2 p-5">
                 <h3 className="display text-lg text-white">{stage.name}</h3>
                 <p className="mt-2 text-xs leading-relaxed text-white/50">{stage.summary}</p>
                 <ul className="mt-4 space-y-1.5">
@@ -341,7 +341,7 @@ function Framework() {
           <p className="label">OWASP-informed AI risks, in plain terms</p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {OWASP_AI_RISKS.map((r) => (
-              <div key={r.risk} className="border border-white/[0.08] bg-white/[0.015] p-4">
+              <div key={r.risk} className="border border-white/8 bg-white/1.5 p-4">
                 <p className="text-sm font-medium text-white/85">{r.risk}</p>
                 <p className="mt-1 text-xs leading-relaxed text-white/50">{r.how}</p>
               </div>
@@ -350,7 +350,7 @@ function Framework() {
         </div>
 
         {/* Compliance posture */}
-        <div className="mt-8 sm:mt-12 border border-white/10 bg-white/[0.02] p-6 sm:p-7">
+        <div className="mt-8 sm:mt-12 border border-white/10 bg-white/2 p-6 sm:p-7">
           <p className="label">An honest word on compliance</p>
           <ul className="mt-4 space-y-2.5">
             {COMPLIANCE_STATEMENTS.map((s) => (
@@ -370,7 +370,7 @@ function Framework() {
 
 function Packages() {
   return (
-    <section id="packages" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="packages" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -384,7 +384,7 @@ function Packages() {
           <Reveal y={12} delay={0.14}>
             <p className="mt-6 text-[1.02rem] leading-relaxed text-white/55">
               Controls are grouped so the right depth of security fits each kind
-              of project — from a standard website to a confidential private-AI
+              of project, from a standard website to a confidential private-AI
               deployment.
             </p>
           </Reveal>
@@ -393,7 +393,7 @@ function Packages() {
         <div className="mt-8 sm:mt-12 grid gap-3 lg:grid-cols-2">
           {SECURITY_PACKAGES.map((pkg, i) => (
             <Reveal key={pkg.id} y={12} delay={(i % 2) * 0.06}>
-              <div className="h-full border border-white/10 bg-white/[0.02] p-6 sm:p-7">
+              <div className="h-full border border-white/10 bg-white/2 p-6 sm:p-7">
                 <h3 className="display text-xl text-white">{pkg.name}</h3>
                 <p className="mt-2 text-sm text-white/50">{pkg.suitedFor}</p>
                 <ul className="mt-5 grid gap-2">
@@ -422,7 +422,7 @@ function Packages() {
 
 function Faq() {
   return (
-    <section id="faq" className="scroll-mt-24 border-b border-white/[0.08]">
+    <section id="faq" className="scroll-mt-24 border-b border-white/8">
       <div className="container-px section-y">
         <div className="max-w-3xl">
           <Reveal y={12}>
@@ -436,7 +436,7 @@ function Faq() {
         </div>
         <div className="mt-8 sm:mt-12 max-w-3xl">
           {SECURITY_FAQS.map((item) => (
-            <details key={item.q} className="group border-t border-white/[0.08] last:border-b">
+            <details key={item.q} className="group border-t border-white/8 last:border-b">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-7 [&::-webkit-details-marker]:hidden">
                 <span className="display text-[1.15rem] leading-snug text-white">{item.q}</span>
                 <Plus
@@ -487,7 +487,7 @@ function Cta() {
                 Prefer to call?{" "}
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+                  className="inline-flex min-h-11 items-center align-middle text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white lg:min-h-0"
                 >
                   {PHONE_DISPLAY}
                 </a>
@@ -508,7 +508,7 @@ export function SecurityControlGrid() {
       {HOMEPAGE_CONTROL_GRID.map((c) => (
         <div
           key={c}
-          className="flex items-center gap-2.5 border border-white/[0.08] bg-white/[0.015] px-4 py-3 text-sm text-white/65"
+          className="flex items-center gap-2.5 border border-white/8 bg-white/1.5 px-4 py-3 text-sm text-white/65"
         >
           <Check size={14} className="shrink-0 text-crimson-light" />
           {c}

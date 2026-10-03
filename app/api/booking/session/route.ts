@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Only allow isTest from admin-authenticated callers — ignore from public
+    // Only allow isTest from admin-authenticated callers, ignore from public
     const session = await createBookingSession({
       attribution: body.attribution,
       timezone: body.timezone,
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     if (err instanceof SchedulingUnavailableError) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
-    if (err instanceof z.ZodError) {
+    if (err instanceof z.ZodError || err instanceof SyntaxError) {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
     console.error("[booking/session]", err);
@@ -124,7 +124,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Session not found or expired." }, { status: 404 });
   }
 
-  // Public-safe projection — no internal scores unless test
+  // Public-safe projection, no internal scores unless test
   return NextResponse.json({
     token: session.token,
     step: session.step,
@@ -180,7 +180,7 @@ export async function PATCH(request: Request) {
     }
     return NextResponse.json({ ok: true, step: updated.step });
   } catch (err) {
-    if (err instanceof z.ZodError) {
+    if (err instanceof z.ZodError || err instanceof SyntaxError) {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
     }
     console.error("[booking/session PATCH]", err);

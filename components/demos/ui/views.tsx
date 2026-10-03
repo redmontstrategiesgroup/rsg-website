@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -34,16 +35,21 @@ import { BarChart, FunnelChart, LineChart } from "./charts";
 import { Modal } from "./Modal";
 import { CheckboxInput, SelectInput, SmallButton, TextInput } from "./fields";
 import { TIME_OPTIONS, applyNow, type ViewProps } from "./shared";
+import { FreshPill, Spotlight, isFresh } from "./Spotlight";
 
 /* ------------------------------------------------------------------ */
 /* Shared bits                                                         */
 /* ------------------------------------------------------------------ */
 
-export function MetricCard({ metric }: { metric: Metric }) {
+export function MetricCard({ metric, spot }: { metric: Metric; spot?: boolean }) {
   const DeltaIcon = metric.deltaDir === "down" ? ArrowDownRight : ArrowUpRight;
   const good = metric.deltaGood ?? metric.deltaDir !== "down";
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+    <div
+      className={`relative rounded-lg border border-white/[0.07] bg-white/2 p-4 ${
+        spot ? "demo-spotlight demo-spotlight--metric" : ""
+      }`}
+    >
       <p className="text-[0.62rem] font-medium uppercase tracking-[0.14em] text-white/40">
         {metric.label}
       </p>
@@ -63,6 +69,7 @@ export function MetricCard({ metric }: { metric: Metric }) {
         )}
       </div>
       {metric.hint && <p className="mt-1.5 text-[0.66rem] text-white/35">{metric.hint}</p>}
+      {spot && <FreshPill />}
     </div>
   );
 }
@@ -78,16 +85,24 @@ export function ActivityFeed({
   if (items.length === 0)
     return <EmptyState text="No activity yet. Run a scenario or create a record to see the system work." />;
   return (
-    <ul className="divide-y divide-white/[0.05]">
+    <ul className="divide-y divide-white/5">
       {items.map((item) => {
         const Icon = ACTIVITY_ICONS[item.icon];
         return (
-          <li key={item.id} className="flex items-start gap-3 px-4 py-3">
+          <Spotlight
+            as="li"
+            pill="inline"
+            id={item.id}
+            fresh={state.fresh}
+            kind="record"
+            key={item.id}
+            className="flex items-start gap-3 px-4 py-3"
+          >
             <span
               className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border ${
                 item.icon === "alert"
                   ? "border-crimson/30 bg-crimson/10 text-crimson-light"
-                  : "border-white/10 bg-white/[0.04] text-white/50"
+                  : "border-white/10 bg-white/4 text-white/50"
               }`}
             >
               <Icon size={12} aria-hidden />
@@ -96,7 +111,7 @@ export function ActivityFeed({
               <p className="text-xs leading-relaxed text-white/70">{item.text}</p>
               <p className="mt-0.5 text-[0.62rem] text-white/30">{item.time}</p>
             </div>
-          </li>
+          </Spotlight>
         );
       })}
     </ul>
@@ -110,6 +125,7 @@ export function ActivityFeed({
 const WIDGET_LABELS: Record<string, string> = {
   metrics: "Key metrics",
   pipeline: "Pipeline summary",
+  recovered: "Recovered revenue",
   activity: "Live activity",
   schedule: "Upcoming schedule",
   tasks: "Open tasks",
@@ -155,49 +171,57 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
               return (
                 <div key={w.id} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                   {state.metrics.slice(0, 8).map((m) => (
-                    <MetricCard key={m.id} metric={m} />
+                    <MetricCard key={m.id} metric={m} spot={isFresh(state.fresh[m.id])} />
                   ))}
                 </div>
               );
             case "pipeline":
               return (
-                <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+                <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/2">
                   <PanelHeading
                     title={`Pipeline · $${derived.pipelineValue.toLocaleString()} open`}
                     right={<SampleDataTag />}
                   />
-                  <div className="flex gap-2 overflow-x-auto p-4 no-scrollbar">
+                  <ScrollRail inset={4} className="flex gap-2 py-4">
                     {state.stages.map((s) => {
                       const count = state.leads.filter((l) => l.stageId === s.id).length;
                       return (
-                        <div key={s.id} className="min-w-[7rem] flex-1 rounded border border-white/[0.07] bg-white/[0.015] px-3 py-2">
+                        <div key={s.id} className="min-w-28 flex-1 shrink-0 rounded-sm border border-white/[0.07] bg-white/1.5 px-3 py-2">
                           <p className="truncate text-[0.58rem] uppercase tracking-wider text-white/35">{s.label}</p>
                           <p className="mt-1 text-lg font-medium tabular-nums text-white/85">{count}</p>
                         </div>
                       );
                     })}
-                  </div>
+                  </ScrollRail>
                 </div>
               );
             case "activity":
               return (
-                <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+                <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/2">
                   <PanelHeading title="Live activity" />
-                  <div className="max-h-[19rem] overflow-y-auto no-scrollbar">
+                  <div className="max-h-76 overflow-y-auto overscroll-contain">
                     <ActivityFeed state={state} limit={8} />
                   </div>
                 </div>
               );
             case "schedule":
               return (
-                <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+                <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/2">
                   <PanelHeading title="Upcoming schedule" />
                   {upcoming.length === 0 ? (
                     <EmptyState text="Nothing scheduled. Book one from the calendar tab." />
                   ) : (
-                    <ul className="divide-y divide-white/[0.05]">
+                    <ul className="divide-y divide-white/5">
                       {upcoming.map((e) => (
-                        <li key={e.id} className="flex items-center gap-4 px-4 py-3">
+                        <Spotlight
+                          as="li"
+                          pill="inline"
+                          id={e.id}
+                          fresh={state.fresh}
+                          kind="calendar"
+                          key={e.id}
+                          className="flex items-center gap-4 px-4 py-3"
+                        >
                           <div className="w-14 shrink-0 text-center">
                             <p className="text-[0.6rem] uppercase tracking-wider text-white/35">{e.day}</p>
                             <p className="text-sm font-medium text-white/80">{e.date}</p>
@@ -210,7 +234,7 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
                             </p>
                           </div>
                           {e.status && <AppointmentStatusPill status={e.status} />}
-                        </li>
+                        </Spotlight>
                       ))}
                     </ul>
                   )}
@@ -218,26 +242,68 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
               );
             case "tasks":
               return (
-                <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+                <div key={w.id} className="rounded-lg border border-white/[0.07] bg-white/2">
                   <PanelHeading title={`Open tasks · ${derived.openTasks}`} />
                   {openTasks.length === 0 ? (
                     <EmptyState text="No open tasks. The system is keeping up." />
                   ) : (
-                    <ul className="divide-y divide-white/[0.05]">
+                    <ul className="divide-y divide-white/5">
                       {openTasks.map((t) => (
-                        <li key={t.id} className="flex items-center gap-3 px-4 py-2.5">
+                        <Spotlight
+                          as="li"
+                          pill="inline"
+                          id={t.id}
+                          fresh={state.fresh}
+                          kind="task"
+                          key={t.id}
+                          className="flex items-center gap-3 px-4 py-2.5"
+                        >
                           <Circle size={12} className="shrink-0 text-white/25" aria-hidden />
                           <p className="min-w-0 flex-1 truncate text-xs text-white/70">{t.title}</p>
                           <span className="hidden text-[0.62rem] text-white/35 sm:block">{t.assignee}</span>
                           <span className={`text-[0.62rem] ${t.priority === "high" ? "text-crimson-light" : "text-white/35"}`}>
                             {t.due}
                           </span>
-                        </li>
+                        </Spotlight>
                       ))}
                     </ul>
                   )}
                 </div>
               );
+            case "recovered": {
+              const recent = state.recoveries.slice(0, 3);
+              return (
+                <div key={w.id} className="rounded-lg border border-emerald-500/20 bg-emerald-500/4">
+                  <PanelHeading
+                    title={`Recovered this month · $${derived.recoveredTotal.toLocaleString()}`}
+                    right={<SampleDataTag />}
+                  />
+                  {recent.length === 0 ? (
+                    <EmptyState text="Nothing recovered yet. Run the guided tour." />
+                  ) : (
+                    <ul className="divide-y divide-white/5">
+                      {recent.map((r) => (
+                        <Spotlight
+                          as="li"
+                          pill="inline"
+                          id={r.id}
+                          fresh={state.fresh}
+                          kind="recovery"
+                          key={r.id}
+                          className="flex items-center gap-3 px-4 py-2.5"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs text-white/70">{r.contact}</p>
+                            <p className="truncate text-[0.62rem] text-white/35">{r.silentFor}</p>
+                          </div>
+                          <span className="text-xs tabular-nums text-emerald-300/90">${r.amount.toLocaleString()}</span>
+                        </Spotlight>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            }
             default:
               return null;
           }
@@ -255,7 +321,7 @@ export function OverviewView({ state, config: _config, dispatch, track }: ViewPr
         >
           <ul className="space-y-2">
             {state.settings.widgets.map((w, i) => (
-              <li key={w.id} className="flex items-center gap-3 rounded border border-white/[0.08] px-3 py-2">
+              <li key={w.id} className="flex items-center gap-3 rounded-sm border border-white/8 px-3 py-2">
                 <span className="flex-1 text-xs text-white/75">{WIDGET_LABELS[w.id] ?? w.id}</span>
                 <SmallButton
                   onClick={() => moveWidget(w.id, -1)}
@@ -326,7 +392,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+      <div className="rounded-lg border border-white/[0.07] bg-white/2">
         <PanelHeading
           title={`Needs attention · ${open.length}`}
           right={
@@ -338,9 +404,17 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
         {open.length === 0 ? (
           <EmptyState text="All caught up." />
         ) : (
-          <ul className="divide-y divide-white/[0.05]">
+          <ul className="divide-y divide-white/5">
             {open.map((t) => (
-              <li key={t.id} className="flex items-start gap-3 px-4 py-3">
+              <Spotlight
+                as="li"
+                pill="inline"
+                id={t.id}
+                fresh={state.fresh}
+                kind="task"
+                key={t.id}
+                className="flex items-start gap-3 px-4 py-3"
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -353,7 +427,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
                     ]);
                     track("completed tasks");
                   }}
-                  className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-white/20 text-transparent transition-colors hover:border-crimson hover:text-crimson-light focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson"
+                  className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border border-white/20 text-transparent transition-colors hover:border-crimson hover:text-crimson-light focus:outline-hidden focus-visible:ring-1 focus-visible:ring-crimson"
                   aria-label={`Mark "${t.title}" complete`}
                 >
                   <Check size={11} />
@@ -373,20 +447,28 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
                   </p>
                 </div>
                 {t.priority === "high" && <StatusPill tone="crimson">High</StatusPill>}
-              </li>
+              </Spotlight>
             ))}
           </ul>
         )}
       </div>
-      <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+      <div className="rounded-lg border border-white/[0.07] bg-white/2">
         <PanelHeading title={`Completed · ${done.length}`} right={<SampleDataTag />} />
         {done.length === 0 ? (
           <EmptyState text="Completed tasks will appear here." />
         ) : (
-          <ul className="divide-y divide-white/[0.05]">
+          <ul className="divide-y divide-white/5">
             {done.map((t) => (
-              <li key={t.id} className="flex items-start gap-3 px-4 py-3">
-                <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-400">
+              <Spotlight
+                as="li"
+                pill="inline"
+                id={t.id}
+                fresh={state.fresh}
+                kind="task"
+                key={t.id}
+                className="flex items-start gap-3 px-4 py-3"
+              >
+                <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm border border-emerald-500/40 bg-emerald-500/10 text-emerald-400">
                   <Check size={11} aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1 opacity-55">
@@ -399,7 +481,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
                 >
                   <RotateCcw size={10} aria-hidden /> Reopen
                 </SmallButton>
-              </li>
+              </Spotlight>
             ))}
           </ul>
         )}
@@ -413,7 +495,7 @@ export function TasksView({ state, dispatch, track }: ViewProps) {
               label="Assignee"
               value={assignee}
               onChange={setAssignee}
-              options={state.settings.staff.map((s) => ({ value: s.name, label: `${s.name} — ${s.role}` }))}
+              options={state.settings.staff.map((s) => ({ value: s.name, label: `${s.name}: ${s.role}` }))}
             />
             <div className="flex justify-end gap-2 pt-1">
               <SmallButton onClick={() => setAdding(false)}>Cancel</SmallButton>
@@ -459,7 +541,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
   const reschedule = () => {
     if (!rescheduling) return;
     const d = config.scheduleDays[reschedDay];
-    const contactName = rescheduling.title.split("—").pop()?.trim() ?? rescheduling.title;
+    const contactName = rescheduling.title.split("-").pop()?.trim() ?? rescheduling.title;
     applyNow(dispatch, [
       {
         kind: "calendarUpdate",
@@ -471,7 +553,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
         item: {
           id: uid("act"),
           icon: "calendar",
-          text: `${rescheduling.title} rescheduled to ${d.day} ${reschedTime}. Updated confirmation sent — simulated.`,
+          text: `${rescheduling.title} rescheduled to ${d.day} ${reschedTime}. Updated confirmation sent, simulated.`,
           time: "Just now",
         },
       },
@@ -520,7 +602,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
           day: d.day,
           date: d.date,
           time,
-          title: `${t?.label ?? config.terminology.appointment} — ${contact.trim()}`,
+          title: `${t?.label ?? config.terminology.appointment}: ${contact.trim()}`,
           withWhom: staff,
           status: "confirmed",
         },
@@ -530,7 +612,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
         item: {
           id: uid("act"),
           icon: "calendar",
-          text: `${config.terminology.appointment} booked: ${contact.trim()} (${d.day} ${time}, ${t?.duration ?? 30} min). Reminder sequence scheduled — simulated.`,
+          text: `${config.terminology.appointment} booked: ${contact.trim()} (${d.day} ${time}, ${t?.duration ?? 30} min). Reminder sequence scheduled, simulated.`,
           time: "Just now",
         },
       },
@@ -539,7 +621,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
         notification: {
           id: uid("n"),
           title: `${config.terminology.appointment} booked`,
-          body: `${contact.trim()} — ${d.day} ${time} with ${staff}. Simulated confirmation sent.`,
+          body: `${contact.trim()}: ${d.day} ${time} with ${staff}. Simulated confirmation sent.`,
           tone: "success",
         },
       },
@@ -556,7 +638,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
   }
 
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+    <div className="rounded-lg border border-white/[0.07] bg-white/2">
       <PanelHeading
         title="This week"
         right={
@@ -571,7 +653,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
       {state.calendar.length === 0 ? (
         <EmptyState text="Nothing scheduled yet." />
       ) : (
-        <div className="divide-y divide-white/[0.05]">
+        <div className="divide-y divide-white/5">
           {[...byDay.entries()].map(([dayKey, events]) => (
             <div key={dayKey} className="flex gap-4 px-4 py-3">
               <div className="w-16 shrink-0 pt-0.5">
@@ -580,9 +662,16 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
               </div>
               <ul className="min-w-0 flex-1 space-y-2">
                 {events.map((e) => (
-                  <li
+                  <Spotlight
+                    as="li"
+                    /* Block chip: the corner the floating pill wants is the
+                       status pill's, so it is placed alongside it below. */
+                    pill={false}
+                    id={e.id}
+                    fresh={state.fresh}
+                    kind="calendar"
                     key={e.id}
-                    className={`rounded-md border-l-2 bg-white/[0.03] px-3 py-2 ${
+                    className={`rounded-md border-l-2 bg-white/3 px-3 py-2 ${
                       e.status === "risk" || e.status === "no-show"
                         ? "border-red-400/70"
                         : e.status === "pending"
@@ -600,7 +689,10 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
                           {e.withWhom ? ` · ${e.withWhom}` : ""}
                         </p>
                       </div>
-                      {e.status && <AppointmentStatusPill status={e.status} />}
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        {isFresh(state.fresh[e.id]) && <FreshPill inline />}
+                        {e.status && <AppointmentStatusPill status={e.status} />}
+                      </div>
                     </div>
                     {e.status !== "completed" && e.status !== "canceled" && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -622,7 +714,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
                         </SmallButton>
                       </div>
                     )}
-                  </li>
+                  </Spotlight>
                 ))}
               </ul>
             </div>
@@ -633,7 +725,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
       {booking && (
         <Modal
           title={`New ${config.terminology.appointment.toLowerCase()}`}
-          subtitle="Demo calendar only — no real appointment is created."
+          subtitle="Demo calendar only, no real appointment is created."
           onClose={() => setBooking(false)}
         >
           <div className="space-y-3">
@@ -662,7 +754,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
               label="Staff"
               value={staff}
               onChange={setStaff}
-              options={state.settings.staff.map((s) => ({ value: s.name, label: `${s.name} — ${s.role}` }))}
+              options={state.settings.staff.map((s) => ({ value: s.name, label: `${s.name}: ${s.role}` }))}
             />
             <div className="flex justify-end gap-2 pt-1">
               <SmallButton onClick={() => setBooking(false)}>Cancel</SmallButton>
@@ -677,7 +769,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
       {rescheduling && (
         <Modal
           title="Reschedule"
-          subtitle={`${rescheduling.title} — currently ${rescheduling.day} ${rescheduling.date} at ${rescheduling.time}. Demo calendar only.`}
+          subtitle={`${rescheduling.title}: currently ${rescheduling.day} ${rescheduling.date} at ${rescheduling.time}. Demo calendar only.`}
           onClose={() => setRescheduling(null)}
         >
           <div className="space-y-3">
@@ -697,7 +789,7 @@ export function CalendarView({ state, config, dispatch, track }: ViewProps) {
             </div>
             <p className="text-[0.64rem] leading-relaxed text-white/35">
               The customer gets an updated confirmation and the reminder sequence re-arms around the
-              new time — simulated here, automatic in production.
+              new time: simulated here, automatic in production.
             </p>
             <div className="flex justify-end gap-2 pt-1">
               <SmallButton onClick={() => setRescheduling(null)}>Cancel</SmallButton>
@@ -724,7 +816,7 @@ export function ReviewsView({ state }: ViewProps) {
       : 0;
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-5">
+      <div className="rounded-lg border border-white/[0.07] bg-white/2 p-5">
         <p className="text-[0.62rem] font-medium uppercase tracking-[0.14em] text-white/40">
           Review performance
         </p>
@@ -741,7 +833,7 @@ export function ReviewsView({ state }: ViewProps) {
             ))}
           </div>
         </div>
-        <dl className="mt-5 space-y-2.5 border-t border-white/[0.06] pt-4">
+        <dl className="mt-5 space-y-2.5 border-t border-white/6 pt-4">
           {(
             [
               ["Requested", state.reviews.filter((r) => r.status === "requested").length],
@@ -760,14 +852,22 @@ export function ReviewsView({ state }: ViewProps) {
           or filtered to manipulate public ratings.
         </p>
       </div>
-      <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-2">
+      <div className="rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-2">
         <PanelHeading title="Recent requests" right={<SampleDataTag />} />
         {state.reviews.length === 0 ? (
           <EmptyState text="Complete an appointment on the calendar to trigger a review request." />
         ) : (
-          <ul className="divide-y divide-white/[0.05]">
+          <ul className="divide-y divide-white/5">
             {state.reviews.map((r) => (
-              <li key={r.id} className="flex items-center gap-3 px-4 py-3">
+              <Spotlight
+                as="li"
+                pill="inline"
+                id={r.id}
+                fresh={state.fresh}
+                kind="record"
+                key={r.id}
+                className="flex items-center gap-3 px-4 py-3"
+              >
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-white/80">{r.name}</p>
                   <p className="text-[0.64rem] text-white/40">
@@ -794,7 +894,7 @@ export function ReviewsView({ state }: ViewProps) {
                 >
                   {r.status}
                 </StatusPill>
-              </li>
+              </Spotlight>
             ))}
           </ul>
         )}
@@ -818,7 +918,7 @@ function CampaignCard({
     ? Math.round((campaign.stats.replied / campaign.stats.sent) * 100)
     : 0;
   return (
-    <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+    <div className="rounded-lg border border-white/[0.07] bg-white/2">
       <div className="flex items-start justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
         <div>
           <p className="text-xs font-medium text-white/85">{campaign.name}</p>
@@ -831,7 +931,7 @@ function CampaignCard({
       <div className="space-y-3 px-4 py-3">
         <div className="flex flex-wrap gap-1.5">
           {campaign.filters.map((f) => (
-            <span key={f} className="rounded border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[0.6rem] text-white/50">
+            <span key={f} className="rounded-sm border border-white/10 bg-white/4 px-1.5 py-0.5 text-[0.6rem] text-white/50">
               {f}
             </span>
           ))}
@@ -839,7 +939,7 @@ function CampaignCard({
         <div className="rounded-md border border-crimson/20 bg-crimson/[0.07] px-3 py-2.5">
           <p className="text-[0.68rem] leading-relaxed text-white/75">{campaign.message}</p>
         </div>
-        <div className="grid grid-cols-4 gap-2 border-t border-white/[0.06] pt-3 text-center">
+        <div className="grid grid-cols-2 gap-2 border-t border-white/6 pt-3 text-center sm:grid-cols-4">
           {(
             [
               ["Sent", campaign.stats.sent],
@@ -854,7 +954,7 @@ function CampaignCard({
             </div>
           ))}
         </div>
-        <div className="flex justify-end border-t border-white/[0.06] pt-3">
+        <div className="flex justify-end border-t border-white/6 pt-3">
           <SmallButton tone="primary" onClick={onSend}>
             <Send size={10} aria-hidden /> Send test batch (simulated)
           </SmallButton>
@@ -882,7 +982,7 @@ export function CampaignsView({ state: _state, config, dispatch, track }: ViewPr
           id: uid("run"),
           automationId: c.id,
           name: c.name,
-          detail: "Simulated campaign batch — 12 contacts matched the filters; replies route to the inbox.",
+          detail: "Simulated campaign batch: 12 contacts matched the filters; replies route to the inbox.",
           time: "Just now",
           simulated: true,
         },
@@ -938,6 +1038,7 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
     { id: "lk-2", label: `${config.terminology.records} in system`, value: state.leads.length },
     { id: "lk-3", label: "Open tasks", value: derived.openTasks },
     { id: "lk-4", label: "Workflow executions (session)", value: derived.workflowExecutions },
+    { id: "lk-5", label: "Recovered this month", value: derived.recoveredTotal, format: "currency" },
   ];
 
   return (
@@ -971,38 +1072,38 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
         </div>
         <span className="inline-flex items-center gap-1.5 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/30">
           <span className="h-1 w-1 rounded-full bg-white/30" aria-hidden />
-          Interactive demo data — computed from your session
+          Interactive demo data: computed from your session
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {liveKpis.map((m) => (
           <MetricCard key={m.id} metric={m} />
         ))}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4 lg:col-span-2">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 p-4 lg:col-span-2">
           <p className="mb-4 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-white/45">
             Live pipeline distribution{source ? ` · ${source}` : ""}
           </p>
           <FunnelChart points={derived.funnel} />
         </div>
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-3">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-3">
           <PanelHeading title="Source performance (live)" />
           {derived.sources.length === 0 ? (
             <EmptyState text="No records match these filters." />
           ) : (
-            <div className="divide-y divide-white/[0.05]">
+            <div className="divide-y divide-white/5">
               {derived.sources.map((s) => (
-                <div key={s.name} className="flex items-center gap-4 px-4 py-3">
+                <div key={s.name} className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-3">
                   <span className="w-28 shrink-0 truncate text-xs text-white/65 sm:w-36">{s.name}</span>
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div className="h-1.5 min-w-24 flex-1 overflow-hidden rounded-full bg-white/6">
                     <div className="h-full rounded-full bg-white/30" style={{ width: `${(s.leads / maxSource) * 100}%` }} />
                   </div>
-                  <span className="w-12 shrink-0 text-right text-xs tabular-nums text-white/55">{s.leads} in</span>
-                  <span className="w-20 shrink-0 text-right text-xs tabular-nums text-crimson-light/90">
-                    {s.booked} advanced
+                  <span className="flex shrink-0 gap-3 text-xs tabular-nums">
+                    <span className="text-white/55">{s.leads} in</span>
+                    <span className="text-crimson-light/90">{s.booked} advanced</span>
                   </span>
                 </div>
               ))}
@@ -1012,14 +1113,14 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 p-4">
           <p className="mb-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-white/45">
             {a.volume.title}
           </p>
           <p className="mb-4 text-[0.6rem] text-white/30">Illustrative 8-week baseline · demo data</p>
           <BarChart points={a.volume.points} unit={a.volume.unit} />
         </div>
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 p-4">
           <p className="mb-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-white/45">
             {a.responseTime.title}
           </p>
@@ -1028,14 +1129,14 @@ export function AnalyticsView({ state, config, track, openRequest }: ViewProps) 
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-crimson/20 bg-crimson/[0.05] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-crimson/20 bg-crimson/5 px-4 py-3">
         <p className="text-xs text-white/65">
-          Want reporting like this on your own numbers — leads, response time, close rate?
+          Want reporting like this on your own numbers, leads, response time, close rate?
         </p>
         <button
           type="button"
           onClick={() => openRequest({ feature: "Reporting & analytics", source: "analytics_view" })}
-          className="inline-flex shrink-0 items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+          className="inline-flex shrink-0 items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
         >
           See what this would cost
           <ArrowUpRight size={11} aria-hidden />

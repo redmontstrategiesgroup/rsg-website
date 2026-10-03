@@ -2,10 +2,11 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
-import { hashPassword } from "./auth";
-import { getSupabase } from "./supabase";
-import { isDemoDataEnabled } from "./demo";
-import { SEED_CLIENTS, DEMO_PASSWORD } from "./seed";
+import { hashPassword } from "./auth.ts";
+import { getSupabase } from "./supabase.ts";
+import { isDemoDataEnabled } from "./demo.ts";
+import { escapeLikePattern } from "./validate.ts";
+import { SEED_CLIENTS, DEMO_PASSWORD } from "./seed.ts";
 import type {
   ClientRecord,
   Lead,
@@ -17,7 +18,7 @@ import type {
 
 /**
  * File-backed store for local development only. Production fails closed
- * without Supabase — file/tmp paths are never treated as durable there.
+ * without Supabase: file/tmp paths are never treated as durable there.
  */
 
 const IS_PROD = process.env.NODE_ENV === "production";
@@ -36,7 +37,7 @@ async function ensureDir() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
   } catch {
-    /* read-only filesystem — writes will no-op below */
+    /* read-only filesystem: writes will no-op below */
   }
 }
 
@@ -70,7 +71,7 @@ async function readJson<T>(file: string, fallback: T): Promise<T> {
 /*
  * Client accounts: Supabase when configured, local file store otherwise.
  * Every Supabase read is wrapped so that a missing table or a transient error
- * falls back to the file store (in dev) rather than locking anyone out — the
+ * falls back to the file store (in dev) rather than locking anyone out, the
  * app is never left broken while the migration is pending.
  */
 
@@ -89,6 +90,7 @@ type ClientRow = {
   activity: ClientRecord["activity"] | null;
   deliverables: ClientRecord["deliverables"] | null;
   invoices: ClientRecord["invoices"] | null;
+  lead_id: string | null;
 };
 
 function rowToClient(row: ClientRow): ClientRecord {
@@ -107,13 +109,14 @@ function rowToClient(row: ClientRow): ClientRecord {
     deliverables: row.deliverables ?? [],
     invoices: row.invoices ?? [],
     passwordHash: row.password_hash,
+    leadId: row.lead_id ?? null,
   };
 }
 
 /**
  * Local file-store clients. Returns whatever has been written to disk (e.g.
  * clients created via the admin while Supabase is unconfigured). Demo/sample
- * clients are seeded ONLY when isDemoDataEnabled() — never in production and
+ * clients are seeded ONLY when isDemoDataEnabled(), never in production and
  * never in dev unless NEXT_PUBLIC_ENABLE_DEMO_DATA=true.
  */
 async function fileClients(): Promise<ClientRecord[]> {
@@ -140,7 +143,7 @@ export async function getClients(): Promise<ClientRecord[]> {
       if (error) throw error;
       return (data as ClientRow[]).map(rowToClient);
     } catch (err) {
-      console.warn("[store] clients read from Supabase failed — using file store.", err);
+      console.warn("[store] clients read from Supabase failed, using file store.", err);
     }
   }
   return fileClients();
@@ -156,13 +159,13 @@ export async function findClientByEmail(
       const { data, error } = await supabase
         .from("clients")
         .select("*")
-        .ilike("email", target)
+        .ilike("email", escapeLikePattern(target))
         .limit(1);
       if (error) throw error;
       const row = (data as ClientRow[])[0];
       return row ? rowToClient(row) : null;
     } catch (err) {
-      console.warn("[store] client lookup from Supabase failed — using file store.", err);
+      console.warn("[store] client lookup from Supabase failed, using file store.", err);
     }
   }
   const clients = await fileClients();
@@ -184,7 +187,7 @@ export async function getClientById(
       const row = (data as ClientRow[])[0];
       return row ? rowToClient(row) : null;
     } catch (err) {
-      console.warn("[store] client-by-id from Supabase failed — using file store.", err);
+      console.warn("[store] client-by-id from Supabase failed: using file store.", err);
     }
   }
   const clients = await fileClients();
@@ -232,7 +235,7 @@ export async function updateClient(
     });
   }
 
-  // Optional password reset — also revoke any active sessions for this client.
+  // Optional password reset: also revoke any active sessions for this client.
   const passwordChanged =
     typeof patch.password === "string" && patch.password.length >= 6;
   if (passwordChanged) {
@@ -259,7 +262,7 @@ export async function updateClient(
       if (error) throw error;
       return next;
     } catch (err) {
-      console.warn("[store] client update to Supabase failed — using file store.", err);
+      console.warn("[store] client update to Supabase failed, using file store.", err);
     }
   }
 
@@ -320,7 +323,7 @@ export async function createClient(input: {
       const row = (data as ClientRow[])[0];
       if (row) return rowToClient(row);
     } catch (err) {
-      console.warn("[store] client create to Supabase failed — using file store.", err);
+      console.warn("[store] client create to Supabase failed, using file store.", err);
     }
   }
 
@@ -334,7 +337,7 @@ export async function createClient(input: {
 
 /**
  * DB-backed session records enable revocation. They are checked only on
- * full portal page loads and the keepalive ping — normal in-page browsing
+ * full portal page loads and the keepalive ping, normal in-page browsing
  * relies on the fast local cookie-signature check and never touches the DB.
  * Every call degrades safely: if Supabase isn't configured (or the table is
  * missing), sessions behave like the previous stateless-cookie model.
@@ -365,7 +368,7 @@ export async function createSessionRecord(params: {
 
 /**
  * True if the session id is live (exists, not revoked, not expired). When
- * Supabase isn't available this returns true — enforcement degrades to the
+ * Supabase isn't available this returns true, enforcement degrades to the
  * cookie signature + expiry, never a lockout.
  */
 export async function isSessionLive(sessionId: string): Promise<boolean> {
@@ -384,7 +387,7 @@ export async function isSessionLive(sessionId: string): Promise<boolean> {
     if (new Date(row.expires_at).getTime() < Date.now()) return false;
     return true;
   } catch (err) {
-    console.warn("[store] session check failed — allowing on signature only.", err);
+    console.warn("[store] session check failed: allowing on signature only.", err);
     return true;
   }
 }
@@ -418,13 +421,19 @@ export async function revokeClientSessions(clientId: string): Promise<void> {
 }
 
 /** Persist a lead to the local file store. Returns false on write failure. */
-export async function saveLead(lead: Lead): Promise<boolean> {
+export async function saveLead(
+  lead: Lead,
+  storageMetadata?: Record<string, unknown>
+): Promise<boolean> {
   const leads = await readJson<Lead[]>(LEADS_FILE, []);
   const withId: Lead = {
     ...lead,
     id: lead.id ?? randomUUID(),
     status: lead.status ?? "new",
   };
+  if (storageMetadata) {
+    (withId as Lead & Record<string, unknown>).storageMetadata = storageMetadata;
+  }
   leads.unshift(withId);
   return writeJson(LEADS_FILE, leads);
 }
@@ -449,7 +458,12 @@ type LeadRow = {
   utm_campaign: string | null;
   utm_content: string | null;
   utm_term: string | null;
+  visitor_id?: string | null;
+  first_touch?: Record<string, unknown> | null;
   lead_score: number | null;
+  rule_score?: number | null;
+  ai_score?: number | null;
+  ai_insight_id?: string | null;
   source: string | null;
   status: string | null;
   notes: string | null;
@@ -493,6 +507,24 @@ function demoMetaFromSnapshot(
   };
 }
 
+/** Read back the first_touch JSONB, dropping anything not string-shaped. */
+function firstTouchFromRow(
+  raw: Record<string, unknown> | null | undefined
+): Lead["firstTouch"] {
+  if (!raw || typeof raw !== "object" || typeof raw.at !== "string") return undefined;
+  const s = (k: string) => (typeof raw[k] === "string" ? (raw[k] as string) : "");
+  return {
+    utmSource: s("utmSource"),
+    utmMedium: s("utmMedium"),
+    utmCampaign: s("utmCampaign"),
+    utmContent: s("utmContent"),
+    utmTerm: s("utmTerm"),
+    referrer: s("referrer"),
+    landingPage: s("landingPage"),
+    at: raw.at,
+  };
+}
+
 function rowToLead(row: LeadRow): Lead {
   return {
     id: row.id,
@@ -514,7 +546,12 @@ function rowToLead(row: LeadRow): Lead {
     utmCampaign: row.utm_campaign ?? "",
     utmContent: row.utm_content ?? "",
     utmTerm: row.utm_term ?? "",
+    visitorId: row.visitor_id ?? undefined,
+    firstTouch: firstTouchFromRow(row.first_touch),
     score: row.lead_score ?? 0,
+    ruleScore: row.rule_score ?? undefined,
+    aiScore: row.ai_score ?? undefined,
+    aiInsightId: row.ai_insight_id ?? undefined,
     source: row.source ?? "website_contact_form",
     status: (row.status as Lead["status"]) ?? "new",
     notes: row.notes ?? "",
@@ -555,21 +592,82 @@ export async function getLeads(): Promise<Lead[]> {
       .limit(500);
     if (error) throw error;
     const remote = ((data as LeadRow[]) ?? []).map(rowToLead);
-    // Prefer remote records; append file-only leads that aren't already present.
-    const remoteEmails = new Set(
-      remote.map((l) => `${l.email.toLowerCase()}|${l.submittedAt}`)
-    );
-    const extras = fileLeads.filter(
-      (l) => !remoteEmails.has(`${l.email.toLowerCase()}|${l.submittedAt}`)
-    );
+    // Prefer remote records; append file-only leads that aren't already
+    // present. Match on id, and on email + instant (not the raw string:
+    // Postgres returns "+00:00" where the file store has "Z", so a string
+    // compare let every mirrored lead through twice with the same id).
+    const instant = (l: Lead) =>
+      `${l.email.toLowerCase()}|${new Date(l.submittedAt).getTime()}`;
+    const seenIds = new Set(remote.map((l) => l.id).filter(Boolean));
+    const seenInstants = new Set(remote.map(instant));
+    const extras: Lead[] = [];
+    for (const l of fileLeads) {
+      if ((l.id && seenIds.has(l.id)) || seenInstants.has(instant(l))) continue;
+      if (l.id) seenIds.add(l.id);
+      seenInstants.add(instant(l));
+      extras.push(l);
+    }
     return [...remote, ...extras].sort(
       (a, b) =>
         new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
     );
   } catch (err) {
-    console.warn("[store] leads read from Supabase failed — using file store.", err);
+    console.warn("[store] leads read from Supabase failed, using file store.", err);
     return fileLeads;
   }
+}
+
+/** Most page views shown per lead journey. */
+const MAX_JOURNEY_VIEWS = 50;
+
+/**
+ * Attach each lead's consented browsing (page_views for its visitorId, up to
+ * the moment it was submitted) for the admin lead card. Best-effort: on any
+ * failure the leads come back unchanged.
+ */
+export async function attachJourneys(leads: Lead[]): Promise<Lead[]> {
+  const vids = [...new Set(leads.map((l) => l.visitorId).filter(Boolean))] as string[];
+  if (!vids.length) return leads;
+
+  let views: PageView[] = [];
+  const supabase = getSupabase();
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("page_views")
+        .select("vid, path, referrer, viewed_at")
+        .in("vid", vids)
+        .order("viewed_at", { ascending: true })
+        .limit(MAX_ANALYTICS_EVENTS);
+      if (error) throw error;
+      views = ((data as PageViewRow[]) ?? []).map(rowToPageView);
+    } else {
+      const vidSet = new Set(vids);
+      views = (await readJson<PageView[]>(ANALYTICS_FILE, []))
+        .filter((v) => vidSet.has(v.vid))
+        .sort((a, b) => a.at.localeCompare(b.at));
+    }
+  } catch (err) {
+    console.warn("[store] lead journey read failed.", err);
+    return leads;
+  }
+
+  const byVid = new Map<string, PageView[]>();
+  for (const v of views) {
+    const list = byVid.get(v.vid) ?? [];
+    list.push(v);
+    byVid.set(v.vid, list);
+  }
+  return leads.map((lead) => {
+    const list = lead.visitorId ? byVid.get(lead.visitorId) : undefined;
+    if (!list) return lead;
+    const cutoff = new Date(lead.submittedAt).getTime();
+    const journey = list
+      .filter((v) => new Date(v.at).getTime() <= cutoff)
+      .slice(-MAX_JOURNEY_VIEWS)
+      .map((v) => ({ path: v.path, at: v.at }));
+    return journey.length ? { ...lead, journey } : lead;
+  });
 }
 
 /** True if the same email submitted within the last `windowMs` (dedupe). */
@@ -587,7 +685,7 @@ export async function findRecentLeadByEmail(
       const { data, error } = await supabase
         .from("leads")
         .select("*")
-        .ilike("email", target)
+        .ilike("email", escapeLikePattern(target))
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(1);
@@ -607,6 +705,18 @@ export async function findRecentLeadByEmail(
         new Date(l.submittedAt).getTime() >= Date.now() - windowMs
     ) ?? null
   );
+}
+
+/** One lead by id (Supabase only: file-store leads are dev-only and never analyzed). */
+export async function getLeadById(id: string): Promise<Lead | null> {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+  const { data, error } = await supabase.from("leads").select("*").eq("id", id).maybeSingle();
+  if (error) {
+    console.warn("[store] lead lookup failed.", error.message);
+    return null;
+  }
+  return data ? rowToLead(data as LeadRow) : null;
 }
 
 export type LeadPatch = {
@@ -651,7 +761,7 @@ export async function updateLead(
       const row = (data as LeadRow[])?.[0];
       if (row) return rowToLead(row);
     } catch (err) {
-      console.warn("[store] lead update to Supabase failed — trying file store.", err);
+      console.warn("[store] lead update to Supabase failed, trying file store.", err);
     }
   }
 
@@ -684,13 +794,61 @@ export async function updateLead(
 
 /* ---------------------------- Subscribers ------------------------------ */
 
+type SubscriberRow = {
+  email: string;
+  source: string | null;
+  created_at: string;
+  unsubscribed_at?: string | null;
+};
+
+function rowToSubscriber(row: SubscriberRow): Subscriber {
+  return {
+    email: row.email,
+    source: row.source ?? "popup",
+    subscribedAt: row.created_at,
+    unsubscribedAt: row.unsubscribed_at ?? null,
+  };
+}
+
 /**
  * Add an email to the marketing list. De-duplicates by email.
  * Returns: "created" | "duplicate" | "failed".
+ *
+ * Prefers Supabase (the only durable store in production, and what the admin
+ * console reads); falls back to the local file store in development.
  */
 export async function saveSubscriber(
   sub: Subscriber
 ): Promise<"created" | "duplicate" | "failed"> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("subscribers")
+        .upsert(
+          {
+            email: sub.email.toLowerCase(),
+            source: sub.source,
+            created_at: sub.subscribedAt,
+          },
+          { onConflict: "email", ignoreDuplicates: true }
+        )
+        .select("email");
+      if (error) throw error;
+      // ignoreDuplicates returns no row when the address was already present.
+      if ((data as SubscriberRow[] | null)?.length) return "created";
+      // Present already: an explicit re-signup lifts a prior unsubscribe.
+      await supabase
+        .from("subscribers")
+        .update({ unsubscribed_at: null })
+        .eq("email", sub.email.toLowerCase());
+      return "duplicate";
+    } catch (err) {
+      console.error("[store] subscriber save to Supabase failed.", err);
+      if (IS_PROD) return "failed";
+    }
+  }
+
   const subs = await readJson<Subscriber[]>(SUBSCRIBERS_FILE, []);
   const exists = subs.some(
     (s) => s.email.toLowerCase() === sub.email.toLowerCase()
@@ -701,8 +859,68 @@ export async function saveSubscriber(
   return ok ? "created" : "failed";
 }
 
-export async function getSubscribers(): Promise<Subscriber[]> {
-  return readJson<Subscriber[]>(SUBSCRIBERS_FILE, []);
+/**
+ * The marketing list. Suppressed (unsubscribed) addresses are dropped by
+ * default so any sender that reads this list honours the unsubscribe link
+ * without further checks; pass `includeUnsubscribed` for admin views.
+ */
+export async function getSubscribers(
+  opts: { includeUnsubscribed?: boolean } = {}
+): Promise<Subscriber[]> {
+  const keep = (s: Subscriber) => opts.includeUnsubscribed || !s.unsubscribedAt;
+  const fileSubs = (await readJson<Subscriber[]>(SUBSCRIBERS_FILE, [])).filter(keep);
+  const supabase = getSupabase();
+  if (!supabase) return fileSubs;
+
+  try {
+    const { data, error } = await supabase
+      .from("subscribers")
+      .select("email, source, created_at, unsubscribed_at")
+      .order("created_at", { ascending: false })
+      .limit(2000);
+    if (error) throw error;
+    const remote = ((data as SubscriberRow[]) ?? []).map(rowToSubscriber).filter(keep);
+    const known = new Set(remote.map((s) => s.email.toLowerCase()));
+    const extras = fileSubs.filter((s) => !known.has(s.email.toLowerCase()));
+    return [...remote, ...extras].sort(
+      (a, b) =>
+        new Date(b.subscribedAt).getTime() - new Date(a.subscribedAt).getTime()
+    );
+  } catch (err) {
+    console.warn("[store] subscribers read from Supabase failed, using file store.", err);
+    return fileSubs;
+  }
+}
+
+/**
+ * Suppress an address. Idempotent; an address that was never subscribed is
+ * still recorded so a later signup cannot silently re-enable mail.
+ * Returns false only when nothing durable could be written.
+ */
+export async function unsubscribeSubscriber(email: string): Promise<boolean> {
+  const addr = email.trim().toLowerCase();
+  const at = new Date().toISOString();
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase
+        .from("subscribers")
+        .upsert(
+          { email: addr, source: "unsubscribe", unsubscribed_at: at },
+          { onConflict: "email", ignoreDuplicates: false }
+        );
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error("[store] unsubscribe write to Supabase failed.", err);
+      if (IS_PROD) return false;
+    }
+  }
+  const subs = await readJson<Subscriber[]>(SUBSCRIBERS_FILE, []);
+  const hit = subs.find((s) => s.email.toLowerCase() === addr);
+  if (hit) hit.unsubscribedAt = at;
+  else subs.unshift({ email: addr, source: "unsubscribe", subscribedAt: at, unsubscribedAt: at });
+  return writeJson(SUBSCRIBERS_FILE, subs);
 }
 
 /* ----------------------------- Analytics ------------------------------- */
@@ -711,14 +929,72 @@ const ANALYTICS_FILE = path.join(DATA_DIR, "analytics.json");
 /** Keep the event log bounded; ~20k page views is months of small-site data. */
 const MAX_ANALYTICS_EVENTS = 20_000;
 
-export async function recordPageView(view: PageView): Promise<void> {
+/** The admin summary only looks back this far (lib/analytics.ts). */
+const ANALYTICS_READ_DAYS = 30;
+
+type PageViewRow = {
+  vid: string;
+  path: string;
+  referrer: string | null;
+  viewed_at: string;
+};
+
+export function rowToPageView(row: PageViewRow): PageView {
+  return {
+    vid: row.vid,
+    path: row.path,
+    referrer: row.referrer ?? "",
+    at: row.viewed_at,
+  };
+}
+
+/**
+ * Persist one consented page view. Returns whether it was actually stored,
+ * so the API never reports a view as recorded when it was dropped.
+ */
+export async function recordPageView(view: PageView): Promise<boolean> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase.from("page_views").insert({
+        vid: view.vid,
+        path: view.path,
+        referrer: view.referrer,
+        viewed_at: view.at,
+      });
+      if (error) throw error;
+      return true;
+    } catch (err) {
+      console.error("[store] page view write to Supabase failed.", err);
+      if (IS_PROD) return false;
+    }
+  }
   const events = await readJson<PageView[]>(ANALYTICS_FILE, []);
   events.unshift(view);
-  await writeJson(ANALYTICS_FILE, events.slice(0, MAX_ANALYTICS_EVENTS));
+  return writeJson(ANALYTICS_FILE, events.slice(0, MAX_ANALYTICS_EVENTS));
 }
 
 export async function getPageViews(): Promise<PageView[]> {
-  return readJson<PageView[]>(ANALYTICS_FILE, []);
+  const fileViews = await readJson<PageView[]>(ANALYTICS_FILE, []);
+  const supabase = getSupabase();
+  if (!supabase) return fileViews;
+
+  try {
+    const since = new Date(
+      Date.now() - ANALYTICS_READ_DAYS * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const { data, error } = await supabase
+      .from("page_views")
+      .select("vid, path, referrer, viewed_at")
+      .gte("viewed_at", since)
+      .order("viewed_at", { ascending: false })
+      .limit(MAX_ANALYTICS_EVENTS);
+    if (error) throw error;
+    return [...((data as PageViewRow[]) ?? []).map(rowToPageView), ...fileViews];
+  } catch (err) {
+    console.warn("[store] page views read from Supabase failed, using file store.", err);
+    return fileViews;
+  }
 }
 
 /* -------------------------------- Admins ------------------------------- */
@@ -800,7 +1076,7 @@ export async function findAdminByEmail(
   const envAdmin = envAdminRecord();
   if (!envAdmin) {
     console.warn(
-      "[auth] Admin login disabled — set ADMIN_EMAIL and ADMIN_PASSWORD (8+ chars), or seed public.admins."
+      "[auth] Admin login disabled: set ADMIN_EMAIL and ADMIN_PASSWORD (8+ chars), or seed public.admins."
     );
     return null;
   }
@@ -902,7 +1178,7 @@ export async function isAdminSessionLive(sessionId: string): Promise<boolean> {
     if (new Date(row.expires_at).getTime() < Date.now()) return false;
     return true;
   } catch (err) {
-    console.warn("[store] admin session check failed — allowing on signature.", err);
+    console.warn("[store] admin session check failed: allowing on signature.", err);
     return true;
   }
 }

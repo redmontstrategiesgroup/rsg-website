@@ -46,10 +46,10 @@ const { backoffMs, isRetryableStatus } = await import("../lib/webhooks/outbox.ts
 const SECRET = "test-secret-do-not-use";
 
 describe("webhook signing", () => {
-  it("signs `${timestamp}.${body}` — the exact scheme the receivers verify", () => {
+  it("signs `${timestamp}.${body}`: the exact scheme the receivers verify", () => {
     // Independently recomputed here. If this assertion is ever "fixed" by
     // changing the expectation, the per-app registry-sync edge functions stop
-    // accepting our deliveries — they implement this same construction.
+    // accepting our deliveries: they implement this same construction.
     const body = JSON.stringify({ hello: "world" });
     const ts = 1_700_000_000_000;
     const { signature } = signPayload(SECRET, body, ts);
@@ -163,7 +163,7 @@ describe("webhook signing", () => {
 });
 
 describe("webhook retry classification", () => {
-  it("does not retry 4xx — repeating a rejected request unchanged cannot succeed", () => {
+  it("does not retry 4xx: repeating a rejected request unchanged cannot succeed", () => {
     for (const status of [400, 401, 403, 404, 422]) {
       assert.equal(isRetryableStatus(status), false, `${status} should not retry`);
     }

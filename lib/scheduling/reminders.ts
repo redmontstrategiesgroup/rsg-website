@@ -102,7 +102,7 @@ export async function processDueJobs(limit = 50) {
       } else if (job.job_type === "abandon_follow_up") {
         await processAbandonFollowUp(job);
       } else if (job.job_type === "follow_up") {
-        // Soft follow-up placeholder — only activity log (no spam)
+        // Soft follow-up placeholder, only activity log (no spam)
         await logActivity({
           entityType: "booking",
           bookingId: job.booking_id,
@@ -171,7 +171,7 @@ async function sendReminder(
   });
 
   // A booking has several reminders (24h, 1h, …), so the template key is part
-  // of the identity — keying on bookingId alone would deliver only the first.
+  // of the identity: keying on bookingId alone would deliver only the first.
   // Retries of the SAME reminder job reuse this key on purpose: that is the
   // duplicate we do want collapsed.
   await enqueueWebhook(
@@ -197,12 +197,12 @@ async function maybeMarkNoShow(bookingId: string | null) {
     .maybeSingle();
   if (!booking) return;
   if (!["confirmed", "rescheduled"].includes(booking.status)) return;
-  // Only auto-flag if still not completed — admin can override
+  // Only auto-flag if still not completed, admin can override
   // We don't auto-complete; mark no_show only if still open past start+30
   if (DateTime.fromISO(booking.starts_at) > DateTime.utc().minus({ minutes: 30 })) {
     return;
   }
-  // Leave as confirmed unless admin marks — enqueue internal notice only
+  // Leave as confirmed unless admin marks, enqueue internal notice only
   const settings = await getSettings();
   await sendInternalNotification(
     "internal_no_show",
@@ -274,7 +274,7 @@ async function detectAbandonedSessions(abandonHours: number) {
       contact.email &&
       (session.follow_up_count ?? 0) < (settings.max_follow_ups ?? 1)
     ) {
-      // consent stored on lead — check lead
+      // consent stored on lead: check lead
       let allow = false;
       if (session.lead_id) {
         const { data: lead } = await sb

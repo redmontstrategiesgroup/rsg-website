@@ -64,7 +64,7 @@ export function RetentionView({
     <div className="space-y-5">
       <div className="max-w-2xl">
         <p className={labelClass}>Data-retention manager</p>
-        <p className="mt-1 text-xs leading-relaxed text-white/45">
+        <p className="mt-1 text-xs leading-relaxed text-white/65">
           Define how long each category of data is kept and what happens at
           expiry. Legal holds pause deletion. Nothing important is auto-deleted
           without a documented rule, permission checks, and a recoverable
@@ -78,24 +78,24 @@ export function RetentionView({
           const existing = byCategory.get(cat.key);
           const dirty = Boolean(draft[cat.key] && Object.keys(draft[cat.key]).length);
           return (
-            <div key={cat.key} className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+            <div key={cat.key} className="rounded-xl border border-white/10 bg-white/2 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <Timer size={14} className="text-white/40" />
+                    <Timer size={14} className="text-white/60" />
                     <p className="font-medium text-white">{cat.label}</p>
                     {existing?.legalHold && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[0.58rem] text-amber-300">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[0.6875rem] text-amber-300">
                         <Lock size={10} /> Legal hold
                       </span>
                     )}
                     {existing && (
-                      <span className="rounded-full border border-white/12 bg-white/[0.04] px-2 py-0.5 text-[0.58rem] text-white/50">
+                      <span className="rounded-full border border-white/12 bg-white/4 px-2 py-0.5 text-[0.6875rem] text-white/65">
                         {existing.status}
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-white/40">{cat.hint}</p>
+                  <p className="mt-1 text-xs text-white/60">{cat.hint}</p>
                 </div>
               </div>
 

@@ -70,17 +70,23 @@ export type ClientPublic = {
 };
 
 export type ClientRecord = ClientPublic & {
-  /** scrypt "salt:digest" — never sent to the client. */
+  /** scrypt "salt:digest", never sent to the client. */
   passwordHash?: string;
+  /** FK to the originating lead/booking (provisionClientForOpportunity), server-only, never sent to the client. */
+  leadId?: string | null;
 };
 
 export type AdminRole =
   | "owner"
+  | "founder"
+  | "cofounder"
+  | "head_programmer"
   | "administrator"
   | "manager"
   | "scheduler"
   | "consultant"
   | "sales"
+  | "wholesale_real_estate"
   | "employee"
   | "contractor"
   | "security_reviewer"
@@ -88,11 +94,15 @@ export type AdminRole =
 
 export const ADMIN_ROLES: AdminRole[] = [
   "owner",
+  "founder",
+  "cofounder",
+  "head_programmer",
   "administrator",
   "manager",
   "scheduler",
   "consultant",
   "sales",
+  "wholesale_real_estate",
   "employee",
   "contractor",
   "security_reviewer",
@@ -101,11 +111,15 @@ export const ADMIN_ROLES: AdminRole[] = [
 
 export const ADMIN_ROLE_LABELS: Record<AdminRole, string> = {
   owner: "Owner",
+  founder: "Founder",
+  cofounder: "Co-founder",
+  head_programmer: "Head Programmer",
   administrator: "Administrator",
   manager: "Manager",
   scheduler: "Scheduler",
   consultant: "Consultant",
   sales: "Sales",
+  wholesale_real_estate: "Wholesale Real Estate",
   employee: "Employee",
   contractor: "Contractor",
   security_reviewer: "Security Reviewer",
@@ -119,7 +133,7 @@ export type AdminRecord = {
   passwordHash: string;
   role: AdminRole;
   mfaEnabled: boolean;
-  /** Present only when MFA setup/verify is needed — never send to client. */
+  /** Present only when MFA setup/verify is needed, never send to client. */
   mfaSecret?: string | null;
 };
 
@@ -191,6 +205,21 @@ export const LEAD_STATUSES: LeadStatus[] = [
   "archived",
 ];
 
+/** A visitor's first consented visit (rsg_ft cookie, lib/attribution.ts). */
+export type FirstTouch = {
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  utmContent: string;
+  utmTerm: string;
+  /** Referring site's host only, "" for direct or internal. */
+  referrer: string;
+  /** Path of the first page seen. */
+  landingPage: string;
+  /** ISO timestamp of that visit. */
+  at: string;
+};
+
 export type Lead = {
   /** Stable id when loaded from Supabase or assigned locally. */
   id?: string;
@@ -205,7 +234,7 @@ export type Lead = {
   /** What they want to improve. */
   improve: string;
   submittedAt: string;
-  /** Intake preferences (optional — added Jul 2026). */
+  /** Intake preferences (optional: added Jul 2026). */
   preferredContact?: string;
   bestTime?: string;
   timeline?: string;
@@ -219,8 +248,20 @@ export type Lead = {
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
+  /** Anonymous rsg_vid cookie at submit time (only with cookie consent). */
+  visitorId?: string;
+  /** First consented visit, from the rsg_ft cookie (only with cookie consent). */
+  firstTouch?: FirstTouch;
+  /** Consented page views for visitorId, oldest first. Admin reads only. */
+  journey?: { path: string; at: string }[];
   /** Basic lead score, 0–100. */
   score?: number;
+  /** Rule-based intake score (scoreLead + intake bonus), before any Claude adjustment. */
+  ruleScore?: number;
+  /** Claude's own 0–100 fit score from the latest successful analysis. */
+  aiScore?: number;
+  /** Latest lead_ai_insights row id. */
+  aiInsightId?: string;
   /** Where the lead was captured: website_contact_form | website_chat. */
   source?: string;
   /** Admin pipeline status. */
@@ -270,6 +311,8 @@ export type Subscriber = {
   /** Where the signup came from, e.g. "popup". */
   source: string;
   subscribedAt: string;
+  /** Set when the address used an unsubscribe link; never email it again. */
+  unsubscribedAt?: string | null;
 };
 
 /** One consented page view (first-party analytics via the rsg_vid cookie). */

@@ -17,15 +17,16 @@ export function Hero() {
         <div className="lg:col-span-7">
           <Reveal y={12}>
             <h1 className="display text-[2.35rem] leading-[1.02] sm:text-[4.4rem] sm:leading-[0.99] lg:text-[5.2rem]">
-              Business Consulting
+              AI Implementation Firm
               <br />
               <span className="text-white/40">for Service Businesses</span>
             </h1>
           </Reveal>
           <Reveal y={12} delay={0.1}>
             <p className="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-white/55 sm:mt-8 sm:text-lg">
-              Redmont Strategies Group helps service businesses fix lead flow,
-              follow-up, and operations — then builds the systems to run them.
+              AI transformation support for service businesses that want
+              clearer lead flow, tighter follow-up, and stronger operations;
+              then the systems to run them.
             </p>
           </Reveal>
           <Reveal y={12} delay={0.18}>
@@ -43,7 +44,7 @@ export function Hero() {
 
         {/*
           Desktop-only diagram. The fade-in is CSS (animate-fade-up) rather
-          than framer-motion — that removed the library from the marketing
+          than framer-motion: that removed the library from the marketing
           critical path entirely, and it is never downloaded on a phone where
           this element does not render at all.
         */}
@@ -59,10 +60,10 @@ const MID_NODES = [
   { label: "Operations", x: 120, y: 176, side: "left" },
   { label: "Sales", x: 440, y: 176, side: "right" },
   { label: "Marketing", x: 120, y: 268, side: "left" },
-  { label: "Follow-Up", x: 440, y: 268, side: "right" },
+  { label: "Follow-up", x: 440, y: 268, side: "right" },
 ] as const;
 
-const BASE_CELLS = ["Web Infrastructure", "AI Implementation", "Reporting"];
+const BASE_CELLS = ["Web Infrastructure", "AI Transformation", "Reporting"];
 
 export function SystemsModel() {
   return (
@@ -70,7 +71,7 @@ export function SystemsModel() {
       viewBox="0 0 560 520"
       className="h-auto w-full"
       role="img"
-      aria-label="Structural model of a business: strategy at the top, operations, sales, marketing, and customer follow-up along one spine, resting on an execution layer of web infrastructure, AI implementation, and reporting."
+      aria-label="Structural model of a business: strategy at the top, operations, sales, marketing, and customer follow-up along one spine, resting on an execution layer of web infrastructure, AI transformation, and reporting."
     >
       {/* Direction band */}
       <rect

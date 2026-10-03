@@ -2,17 +2,17 @@ import { NextResponse } from "next/server";
 import { saveSubscriber } from "@/lib/store";
 import { isEmail, toStr, LIMITS } from "@/lib/validate";
 import { rateLimit, rateLimitResponse, clientIp } from "@/lib/security";
-import { DEFAULT_CONTACT_TO_EMAIL } from "@/lib/leads";
+import { contactNotifyEmails } from "@/lib/notify-emails";
 import type { Subscriber } from "@/lib/types";
 import { Resend } from "resend";
 import { callProvider } from "@/lib/integration-log";
 
 export const runtime = "nodejs";
 
-async function notifyOwner(sub: Subscriber): Promise<void> {
+async function notifyOwner(sub: Subscriber): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return;
-  const to = process.env.CONTACT_TO_EMAIL?.trim() || DEFAULT_CONTACT_TO_EMAIL;
+  if (!apiKey) return false;
+  const to = contactNotifyEmails();
   try {
     const resend = new Resend(apiKey);
     await callProvider(
@@ -34,8 +34,10 @@ async function notifyOwner(sub: Subscriber): Promise<void> {
         return data;
       }
     );
+    return true;
   } catch {
-    // Non-fatal — the subscriber is already saved. Recorded by callProvider.
+    // Recorded by callProvider against the Resend connection.
+    return false;
   }
 }
 
@@ -71,14 +73,18 @@ export async function POST(request: Request) {
   };
 
   const result = await saveSubscriber(sub);
-  if (result === "failed") {
+
+  // Notify on a new signup, and also when storage failed: the address is then
+  // only recoverable from the notification, so it must go out before we
+  // decide whether the visitor sees an error.
+  const notified =
+    result === "duplicate" ? false : await notifyOwner(sub);
+
+  if (result === "failed" && !notified) {
     return NextResponse.json(
       { error: "We couldn't save your email right now. Please try again." },
       { status: 503 }
     );
-  }
-  if (result === "created") {
-    await notifyOwner(sub);
   }
 
   return NextResponse.json({ ok: true });

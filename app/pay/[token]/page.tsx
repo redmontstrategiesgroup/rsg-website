@@ -26,7 +26,7 @@ export default async function PayPage({
   if (!isSupabaseConfigured()) {
     body = (
       <p className="text-center text-sm text-white/55">
-        Payments aren&rsquo;t available right now — please try again shortly.
+        Payments aren&rsquo;t available right now: please try again shortly.
       </p>
     );
   } else {
@@ -56,7 +56,7 @@ export default async function PayPage({
   }
 
   return (
-    <main className="min-h-screen bg-base pb-24">
+    <main className="min-h-dvh bg-base pb-24">
       <header className="border-b border-white/10 bg-base/70 backdrop-blur-xl">
         <div className="container-px flex h-16 items-center justify-between">
           <Logo />

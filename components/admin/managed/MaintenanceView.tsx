@@ -64,9 +64,9 @@ export function MaintenanceView({
     <div className="space-y-8">
       <form
         onSubmit={submit}
-        className="rounded-xl border border-white/10 bg-white/[0.02] p-5"
+        className="rounded-xl border border-white/10 bg-white/2 p-5"
       >
-        <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+        <p className="text-xs font-medium uppercase tracking-wide text-white/65">
           Log maintenance work
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -173,13 +173,13 @@ export function MaintenanceView({
       </form>
 
       <div>
-        <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/45">
+        <p className="text-xs font-medium uppercase tracking-wide text-white/65">
           Recent logs
         </p>
         {logs.length ? (
           <div className="mt-3 overflow-x-auto rounded-xl border border-white/10">
             <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+              <thead className="bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                 <tr className="border-b border-white/10">
                   <th className="px-4 py-3 font-normal">When</th>
                   <th className="px-4 py-3 font-normal">Client</th>
@@ -193,7 +193,7 @@ export function MaintenanceView({
               <tbody>
                 {logs.map((l) => (
                   <tr key={l.id} className="border-b border-white/5 last:border-0">
-                    <td className="px-4 py-3 text-xs text-white/50">
+                    <td className="px-4 py-3 text-xs text-white/65">
                       {fmtDateTime(l.performedAt)}
                     </td>
                     <td className="px-4 py-3 text-white/75">
@@ -202,14 +202,14 @@ export function MaintenanceView({
                     <td className="px-4 py-3 text-white/85">
                       {l.title}
                       {l.description ? (
-                        <span className="block max-w-[320px] truncate text-xs text-white/40">
+                        <span className="block max-w-[320px] truncate text-xs text-white/60">
                           {l.description}
                         </span>
                       ) : null}
                     </td>
                     <td className="px-4 py-3 text-white/60">{l.category}</td>
                     <td className="px-4 py-3 text-white/60">{l.hoursSpent}</td>
-                    <td className="px-4 py-3 text-white/60">{l.performedBy || "—"}</td>
+                    <td className="px-4 py-3 text-white/60">{l.performedBy || "-"}</td>
                     <td className="px-4 py-3 text-white/60">
                       {l.visibleToClient ? "Yes" : "No"}
                     </td>

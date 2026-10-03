@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 import {
   ArrowDown,
   ArrowUp,
@@ -55,29 +56,29 @@ export function SettingsView(props: ViewProps) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-4">
-      <nav aria-label="Settings sections" className="lg:col-span-1">
-        <ul className="flex gap-1 overflow-x-auto no-scrollbar lg:flex-col">
+      <nav aria-label="Settings sections" className="min-w-0 lg:col-span-1">
+        <ScrollRail as="ul" activeKey={section} hideScrollbar className="flex gap-1 lg:flex-col lg:overflow-visible">
           {SECTIONS.map((sec) => (
             <li key={sec.id} className="shrink-0">
               <button
                 type="button"
                 onClick={() => setSection(sec.id)}
                 aria-current={section === sec.id ? "page" : undefined}
-                className={`w-full whitespace-nowrap rounded px-3 py-2 text-left text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson ${
-                  section === sec.id ? "bg-white/[0.06] text-white" : "text-white/50 hover:text-white/80"
+                className={`w-full whitespace-nowrap rounded px-3 py-2 text-left text-xs transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson ${
+                  section === sec.id ? "bg-white/6 text-white" : "text-white/50 hover:text-white/80"
                 }`}
               >
                 {sec.label}
               </button>
             </li>
           ))}
-        </ul>
+        </ScrollRail>
       </nav>
 
-      <div className="lg:col-span-3">
+      <div className="min-w-0 lg:col-span-3">
         {/* ------------------------------------------------ Business */}
         {section === "business" && (
-          <div className="space-y-4 rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+          <div className="space-y-4 rounded-lg border border-white/[0.07] bg-white/2 p-4">
             <p className="text-xs text-white/40">
               Changes preview instantly across the whole demo and stay isolated to your session.
             </p>
@@ -104,7 +105,7 @@ export function SettingsView(props: ViewProps) {
                     }}
                     aria-label={`Set accent color ${c}`}
                     aria-pressed={s.accent === c}
-                    className={`h-8 w-8 rounded-full border-2 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
+                    className={`h-8 w-8 rounded-full border-2 transition-transform focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/50 ${
                       s.accent === c ? "scale-110 border-white" : "border-transparent"
                     }`}
                     style={{ backgroundColor: c }}
@@ -128,7 +129,7 @@ export function SettingsView(props: ViewProps) {
         {/* ------------------------------------------------ Team & roles */}
         {section === "team" && (
           <div className="space-y-4">
-            <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+            <div className="rounded-lg border border-white/[0.07] bg-white/2">
               <PanelHeading title="View the demo as…" />
               <div className="grid gap-2 p-4 sm:grid-cols-2">
                 {config.roles.map((r) => (
@@ -140,10 +141,10 @@ export function SettingsView(props: ViewProps) {
                       track("switched roles");
                     }}
                     aria-pressed={s.role === r.id}
-                    className={`rounded-lg border p-3 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson ${
+                    className={`rounded-lg border p-3 text-left transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson ${
                       s.role === r.id
                         ? "border-crimson/50 bg-crimson/[0.07]"
-                        : "border-white/[0.08] hover:border-white/20"
+                        : "border-white/8 hover:border-white/20"
                     }`}
                   >
                     <p className="flex items-center gap-2 text-xs font-medium text-white/85">
@@ -154,11 +155,11 @@ export function SettingsView(props: ViewProps) {
                 ))}
               </div>
               <p className="px-4 pb-3 text-[0.64rem] text-white/35">
-                Role views are a demonstration of role-based access — navigation adapts to the selected role.
+                Role views are a demonstration of role-based access, navigation adapts to the selected role.
               </p>
             </div>
 
-            <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+            <div className="rounded-lg border border-white/[0.07] bg-white/2">
               <PanelHeading
                 title={`Team · ${s.staff.length}`}
                 right={
@@ -175,7 +176,7 @@ export function SettingsView(props: ViewProps) {
                   </SmallButton>
                 }
               />
-              <ul className="divide-y divide-white/[0.05]">
+              <ul className="divide-y divide-white/5">
                 {s.staff.map((m) => (
                   <li key={m.id} className="flex flex-wrap items-center gap-2 px-4 py-2.5">
                     <input
@@ -187,7 +188,7 @@ export function SettingsView(props: ViewProps) {
                         })
                       }
                       aria-label={`Name for ${m.name}`}
-                      className="min-w-[8rem] flex-1 rounded border border-transparent bg-transparent px-1.5 py-1 text-xs text-white/80 focus:border-crimson/50 focus:bg-base-900 focus:outline-none"
+                      className="min-w-32 flex-1 rounded-sm border border-transparent bg-transparent px-1.5 py-1 text-xs text-white/80 focus:border-crimson/50 focus:bg-base-900 focus:outline-hidden"
                     />
                     <input
                       value={m.role}
@@ -198,7 +199,7 @@ export function SettingsView(props: ViewProps) {
                         })
                       }
                       aria-label={`Role for ${m.name}`}
-                      className="w-36 rounded border border-transparent bg-transparent px-1.5 py-1 text-[0.68rem] text-white/50 focus:border-crimson/50 focus:bg-base-900 focus:outline-none"
+                      className="w-36 rounded-sm border border-transparent bg-transparent px-1.5 py-1 text-[0.68rem] text-white/50 focus:border-crimson/50 focus:bg-base-900 focus:outline-hidden"
                     />
                     <SmallButton
                       tone="danger"
@@ -224,7 +225,7 @@ export function SettingsView(props: ViewProps) {
 
         {/* ------------------------------------------------ Intake builder */}
         {section === "intake" && (
-          <div className="rounded-lg border border-white/[0.07] bg-white/[0.02]">
+          <div className="rounded-lg border border-white/[0.07] bg-white/2">
             <PanelHeading
               title="Intake form builder"
               right={
@@ -243,11 +244,11 @@ export function SettingsView(props: ViewProps) {
                 </div>
               }
             />
-            <p className="border-b border-white/[0.06] px-4 py-2.5 text-[0.66rem] text-white/40">
-              This form powers &ldquo;New {config.terminology.record}&rdquo; — test submissions create real demo
+            <p className="border-b border-white/6 px-4 py-2.5 text-[0.66rem] text-white/40">
+              This form powers &ldquo;New {config.terminology.record}&rdquo;, test submissions create real demo
               records and trigger the intake workflow.
             </p>
-            <ul className="divide-y divide-white/[0.05]">
+            <ul className="divide-y divide-white/5">
               {s.intakeFields.map((f, i) => (
                 <li key={f.id} className="flex flex-wrap items-center gap-2 px-4 py-2.5">
                   <input
@@ -260,9 +261,9 @@ export function SettingsView(props: ViewProps) {
                       track("customized the intake form");
                     }}
                     aria-label={`Label for field ${f.label}`}
-                    className="min-w-[9rem] flex-1 rounded border border-transparent bg-transparent px-1.5 py-1 text-xs text-white/80 focus:border-crimson/50 focus:bg-base-900 focus:outline-none"
+                    className="min-w-36 flex-1 rounded-sm border border-transparent bg-transparent px-1.5 py-1 text-xs text-white/80 focus:border-crimson/50 focus:bg-base-900 focus:outline-hidden"
                   />
-                  <span className="rounded border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[0.58rem] uppercase tracking-wider text-white/40">
+                  <span className="rounded-sm border border-white/10 bg-white/4 px-1.5 py-0.5 text-[0.58rem] uppercase tracking-wider text-white/40">
                     {f.type}
                   </span>
                   <label className="flex items-center gap-1 text-[0.62rem] text-white/50">
@@ -275,7 +276,7 @@ export function SettingsView(props: ViewProps) {
                           fields: s.intakeFields.map((x) => (x.id === f.id ? { ...x, required: e.target.checked } : x)),
                         })
                       }
-                      className="h-3 w-3 accent-[#b3243a]"
+                      className="h-3 w-3 accent-crimson"
                     />
                     Required
                   </label>
@@ -316,7 +317,7 @@ export function SettingsView(props: ViewProps) {
                 </li>
               ))}
             </ul>
-            <div className="flex flex-wrap gap-2 border-t border-white/[0.06] px-4 py-3">
+            <div className="flex flex-wrap gap-2 border-t border-white/6 px-4 py-3">
               {(["text", "textarea", "select", "phone", "email", "checkbox"] as const).map((t) => (
                 <SmallButton
                   key={t}
@@ -340,10 +341,10 @@ export function SettingsView(props: ViewProps) {
 
         {/* ------------------------------------------------ Personalization */}
         {section === "personalize" && (
-          <div className="space-y-3 rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+          <div className="space-y-3 rounded-lg border border-white/[0.07] bg-white/2 p-4">
             <p className="text-xs leading-relaxed text-white/50">
               Answer a few optional questions and the demo reshapes itself around your business. No
-              account needed; nothing is submitted anywhere — answers stay in your browser and you
+              account needed; nothing is submitted anywhere, answers stay in your browser and you
               can clear them anytime.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -391,7 +392,7 @@ export function SettingsView(props: ViewProps) {
               />
             </div>
             {s.personalization.problem && (
-              <div className="rounded-lg border border-crimson/25 bg-crimson/[0.06] p-3">
+              <div className="rounded-lg border border-crimson/25 bg-crimson/6 p-3">
                 <p className="flex items-center gap-1.5 text-[0.62rem] font-medium uppercase tracking-[0.14em] text-crimson-light">
                   <Wand2 size={11} aria-hidden /> Suggested starting point
                 </p>
@@ -400,11 +401,11 @@ export function SettingsView(props: ViewProps) {
                 </p>
               </div>
             )}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/6 pt-3">
               <button
                 type="button"
                 onClick={() => props.openRequest({ source: "settings_personalize" })}
-                className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+                className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
               >
                 <Wand2 size={11} aria-hidden /> Customize this system for my business
               </button>
@@ -425,7 +426,7 @@ export function SettingsView(props: ViewProps) {
 
         {/* ------------------------------------------------ Reset */}
         {section === "reset" && (
-          <div className="space-y-4 rounded-lg border border-white/[0.07] bg-white/[0.02] p-4">
+          <div className="space-y-4 rounded-lg border border-white/[0.07] bg-white/2 p-4">
             <div>
               <p className="text-xs font-medium text-white/80">Demo environment</p>
               <p className="mt-1 text-[0.68rem] leading-relaxed text-white/45">
@@ -480,17 +481,17 @@ function recommendationFor(problem: string, automationNames: string[]): string {
     automationNames.find((n) => n.toLowerCase().includes(needle)) ?? automationNames[0];
   switch (problem) {
     case "Slow response to new leads":
-      return `Start with "${pick("intake")}" — every inquiry gets an answer in under a minute, then a staff task with full context. Test it now: submit the intake form from the ${""}records tab.`;
+      return `Start with "${pick("intake")}": every inquiry gets an answer in under a minute, then a staff task with full context. Test it now: submit the intake form from the ${""}records tab.`;
     case "No follow-up after quotes/consults":
-      return `Start with "${pick("follow")}" — a paced sequence that keeps nudging until someone replies, and pauses the moment your team responds manually.`;
+      return `Start with "${pick("follow")}": a paced sequence that keeps nudging until someone replies, and pauses the moment your team responds manually.`;
     case "Missed calls going to voicemail":
-      return `Start with "${pick("missed")}" — run the missed-call scenario from the scenario menu to watch a voicemail turn into a captured, qualified record.`;
+      return `Start with "${pick("missed")}": run the missed-call scenario from the scenario menu to watch a voicemail turn into a captured, qualified record.`;
     case "No-shows and cancellations":
-      return `Start with "${pick("no-show")}" — open the calendar and mark any appointment as a no-show to watch the recovery sequence fire in real time.`;
+      return `Start with "${pick("no-show")}": open the calendar and mark any appointment as a no-show to watch the recovery sequence fire in real time.`;
     case "Old leads never re-contacted":
-      return `Start with "${pick("reactivation")}" — check the campaigns tab and send a simulated batch to see how dormant records come back.`;
+      return `Start with "${pick("reactivation")}": check the campaigns tab and send a simulated batch to see how dormant records come back.`;
     default:
-      return `Start with "${pick("intake")}" and the task automations — most of the repetitive work in this demo's Tasks tab was created (and can be resolved) automatically.`;
+      return `Start with "${pick("intake")}" and the task automations: most of the repetitive work in this demo's Tasks tab was created (and can be resolved) automatically.`;
   }
 }
 
@@ -507,9 +508,9 @@ function TemplatesEditor({ state, config, dispatch, track }: ViewProps) {
 
   return (
     <div className="grid gap-3 lg:grid-cols-3">
-      <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-1">
+      <div className="rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-1">
         <PanelHeading title="Templates" />
-        <ul className="divide-y divide-white/[0.05]">
+        <ul className="divide-y divide-white/5">
           {state.templates.map((x) => (
             <li key={x.id}>
               <button
@@ -517,7 +518,7 @@ function TemplatesEditor({ state, config, dispatch, track }: ViewProps) {
                 onClick={() => setSelectedId(x.id)}
                 aria-current={t.id === x.id ? "true" : undefined}
                 className={`w-full px-4 py-2.5 text-left text-xs transition-colors ${
-                  t.id === x.id ? "bg-white/[0.05] text-white" : "text-white/55 hover:text-white/85"
+                  t.id === x.id ? "bg-white/5 text-white" : "text-white/55 hover:text-white/85"
                 }`}
               >
                 {x.name}
@@ -526,7 +527,7 @@ function TemplatesEditor({ state, config, dispatch, track }: ViewProps) {
             </li>
           ))}
         </ul>
-        <div className="border-t border-white/[0.06] p-3">
+        <div className="border-t border-white/6 p-3">
           <SmallButton
             onClick={() => {
               dispatch({ type: "templates-restore", templates: config.templates });
@@ -538,7 +539,7 @@ function TemplatesEditor({ state, config, dispatch, track }: ViewProps) {
         </div>
       </div>
 
-      <div className="space-y-3 rounded-lg border border-white/[0.07] bg-white/[0.02] p-4 lg:col-span-2">
+      <div className="space-y-3 rounded-lg border border-white/[0.07] bg-white/2 p-4 lg:col-span-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-medium text-white/85">{t.name}</p>
           <SelectInput
@@ -573,14 +574,14 @@ function TemplatesEditor({ state, config, dispatch, track }: ViewProps) {
                 onClick={() =>
                   dispatch({ type: "template-update", templateId: t.id, patch: { text: `${t.text} {${v}}` } })
                 }
-                className="rounded border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[0.6rem] text-white/55 transition-colors hover:border-crimson/50 hover:text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-crimson"
+                className="rounded-sm border border-white/10 bg-white/4 px-1.5 py-0.5 font-mono text-[0.6rem] text-white/55 transition-colors hover:border-crimson/50 hover:text-white focus:outline-hidden focus-visible:ring-1 focus-visible:ring-crimson"
               >
                 {`{${v}}`}
               </button>
             ))}
           </div>
         </div>
-        <div className="rounded-lg border border-white/[0.08] bg-base-900/70 p-3">
+        <div className="rounded-lg border border-white/8 bg-base-900/70 p-3">
           <p className="text-[0.6rem] font-medium uppercase tracking-[0.14em] text-white/35">
             Live preview · sample {config.terminology.record}
           </p>

@@ -24,8 +24,8 @@ export async function resolveAdminContext(): Promise<AdminContext | null> {
   if (!session) return null;
   // getAdminById resolves both DB admins and the env bootstrap owner (it
   // returns envAdminRecord() for rsg-env-admin / rsg-admin). If it returns
-  // null the account no longer exists — including an env admin whose
-  // ADMIN_EMAIL/ADMIN_PASSWORD was removed — so we fail closed rather than
+  // null the account no longer exists, including an env admin whose
+  // ADMIN_EMAIL/ADMIN_PASSWORD was removed, so we fail closed rather than
   // synthesizing an owner, which would leave old sessions un-revocable.
   const admin = await getAdminById(session.sub);
   if (!admin) return null;
@@ -33,7 +33,7 @@ export async function resolveAdminContext(): Promise<AdminContext | null> {
 }
 
 /** True when the security settings enforce MFA for this admin and they have
- *  not enrolled yet. The env bootstrap admin is exempt (it cannot enroll —
+ *  not enrolled yet. The env bootstrap admin is exempt (it cannot enroll,
  *  MFA requires a DB admin row) so enforcement can never lock out recovery. */
 export async function isMfaSetupRequired(ctx: AdminContext): Promise<boolean> {
   if (ctx.admin.mfaEnabled) return false;
@@ -60,7 +60,7 @@ export async function requireAdmin(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   // MFA enforcement: when enabled for this admin's role, every permission-
-  // gated action is blocked server-side until they enroll — except MFA setup
+  // gated action is blocked server-side until they enroll, except MFA setup
   // itself, so they can complete enrollment.
   if (permission && permission !== "manage_mfa") {
     if (await isMfaSetupRequired(ctx)) {

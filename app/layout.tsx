@@ -2,33 +2,38 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { RevealObserver } from "@/components/RevealObserver";
+import { KnownVisitorMarker } from "@/components/KnownVisitorMarker";
 import { PHONE_TEL, SITE_URL } from "@/lib/site";
 
 // Body / UI
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-sans",
+  variable: "--font-inter",
 });
 
 // Techy geometric display
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-display",
+  variable: "--font-space-grotesk",
 });
 
 // Mono for labels, indices, data microtype
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-mono",
+  variable: "--font-jetbrains-mono",
 });
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  // Lets the page extend under the notch and home indicator so fixed chrome
+  // (chat launcher, cookie banner) can offset itself with
+  // env(safe-area-inset-*). Without this the env() values resolve to 0.
+  viewportFit: "cover",
 };
 
 // og:image and twitter:image come from the file conventions
@@ -36,18 +41,16 @@ export const viewport: Viewport = {
 // route and survive per-page openGraph overrides.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title:
-    "Redmont Strategies Group | Business & AI Consulting in Plymouth County, MA",
+  title: "AI Implementation Firm | Redmont Strategies Group",
   description:
-    "Redmont Strategies Group is a business consulting and AI strategy firm serving service businesses across Plymouth County and the South Shore of Massachusetts.",
-  // NOTE: no `alternates.canonical` here — Next.js inherits layout metadata,
+    "AI implementation firm for service businesses across Plymouth County and the South Shore of Massachusetts: business consulting, systems, and AI implementation by Redmont Strategies Group.",
+  // NOTE: no `alternates.canonical` here: Next.js inherits layout metadata,
   // which would canonicalize every page to the homepage. Each page sets its own.
   robots: { index: true, follow: true },
   openGraph: {
-    title:
-      "Redmont Strategies Group | Business & AI Consulting in Plymouth County, MA",
+    title: "AI Implementation Firm | Redmont Strategies Group",
     description:
-      "Business consulting and AI strategy for service businesses across Plymouth County and the South Shore of Massachusetts.",
+      "AI implementation firm for service businesses across Plymouth County and the South Shore of Massachusetts.",
     url: SITE_URL,
     siteName: "Redmont Strategies Group",
     locale: "en_US",
@@ -60,7 +63,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Organization schema. Publishes the phone number and service area only —
+// Organization schema. Publishes the phone number and service area only,
 // deliberately no PostalAddress and no openingHours (RSG keeps its street
 // address and business hours private).
 const ORG_SCHEMA = {
@@ -70,7 +73,7 @@ const ORG_SCHEMA = {
   url: SITE_URL,
   logo: `${SITE_URL}/brand/rsg-mark.png`,
   description:
-    "Business consulting and AI strategy for service and retail businesses across Plymouth County and the South Shore of Massachusetts.",
+    "AI implementation firm and business systems partner for service, wellness, and real estate businesses across Plymouth County and the South Shore of Massachusetts.",
   telephone: PHONE_TEL,
   areaServed: [
     { "@type": "AdministrativeArea", name: "Plymouth County, Massachusetts" },
@@ -101,7 +104,7 @@ const WEBSITE_SCHEMA = {
  * [data-reveal] content stays visible and no observer or animation JS runs.
  *
  * The timer is a failsafe. If the flag is set but RevealObserver never boots
- * — a chunk fails to load, hydration errors — it strips the flag and the page
+ * (a chunk fails to load, hydration errors), it strips the flag and the page
  * paints in full rather than leaving the body invisible.
  */
 const REVEAL_BOOTSTRAP = `(function(){try{var d=document.documentElement;
@@ -119,6 +122,11 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrains.variable}`}
+      // REVEAL_BOOTSTRAP adds data-reveal="on" to <html> before hydration on
+      // desktop; without this React reports the attribute as a mismatch on
+      // every page. Scoped to this element only — attribute diffs elsewhere
+      // still surface.
+      suppressHydrationWarning
     >
       <body>
         <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOTSTRAP }} />
@@ -132,6 +140,7 @@ export default function RootLayout({
         />
         {children}
         <RevealObserver />
+        <KnownVisitorMarker />
       </body>
     </html>
   );

@@ -27,6 +27,7 @@ import {
   type SalesOpportunity,
 } from "@/lib/lifecycle/types";
 import { formatInvoiceNumber } from "@/lib/lifecycle/billing-shared";
+import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Section =
   | "overview"
@@ -108,7 +109,7 @@ async function run(action: string, payload: AnyRecord): Promise<AnyRecord> {
 }
 
 function fmtDate(value: string | null | undefined, withTime = false): string {
-  if (!value) return "—";
+  if (!value) return "-";
   return new Date(value).toLocaleString("en-US", {
     dateStyle: "medium",
     ...(withTime ? { timeStyle: "short" as const } : {}),
@@ -131,7 +132,7 @@ function Table({
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-white/10 font-mono text-[0.55rem] uppercase tracking-label text-white/35">
+          <tr className="border-b border-white/10 text-xs font-medium uppercase tracking-wide text-white/60">
             {headers.map((h) => (
               <th key={h} className="px-4 py-3 font-medium">
                 {h}
@@ -139,9 +140,9 @@ function Table({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.06] align-top">
+        <tbody className="divide-y divide-white/6 align-top">
           {rows.map((cells, i) => (
-            <tr key={i} className="hover:bg-white/[0.015]">
+            <tr key={i} className="hover:bg-white/1.5">
               {cells.map((cell, j) => (
                 <td key={j} className="px-4 py-3">
                   {cell}
@@ -207,18 +208,19 @@ export function LifecycleAdminPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="no-scrollbar flex gap-1 overflow-x-auto border-b border-white/10" role="tablist">
+      <ScrollRail role="tablist" activeKey={section} keyboardTabs className="flex gap-1 border-b border-white/10">
         {SECTIONS.map((s) => (
           <button
             key={s.id}
+            type="button"
             role="tab"
             aria-selected={section === s.id}
             onClick={() => {
               setSection(s.id);
               setClientId(null);
             }}
-            className={`relative whitespace-nowrap px-3.5 py-2.5 text-sm transition ${
-              section === s.id ? "text-white" : "text-white/45 hover:text-white/75"
+            className={`relative shrink-0 whitespace-nowrap px-3.5 py-2.5 text-sm transition ${
+              section === s.id ? "text-white" : "text-white/65 hover:text-white/75"
             }`}
           >
             {s.label}
@@ -227,7 +229,7 @@ export function LifecycleAdminPanel() {
             )}
           </button>
         ))}
-      </div>
+      </ScrollRail>
 
       {clientId ? (
         <ClientRecord clientId={clientId} onBack={() => setClientId(null)} />
@@ -263,7 +265,7 @@ function Loading({ error }: { error: string | null }) {
       {error}
     </Banner>
   ) : (
-    <p className="py-10 text-center text-sm text-white/40">Loading…</p>
+    <p className="py-10 text-center text-sm text-white/60">Loading…</p>
   );
 }
 
@@ -290,7 +292,7 @@ function Overview({ onOpenClient }: { onOpenClient: (id: string) => void }) {
       <SectionCard title="Most recent opportunities" padded={false}>
         <Table
           headers={["Business", "Stage", "Next action", "Party", "Due", "Value"]}
-          empty="No opportunities yet — they appear when prospects qualify."
+          empty="No opportunities yet: they appear when prospects qualify."
           rows={(data.opportunities as SalesOpportunity[]).map((o) => [
             <button
               key="n"
@@ -300,10 +302,10 @@ function Overview({ onOpenClient }: { onOpenClient: (id: string) => void }) {
               {o.name}
             </button>,
             <StatusPill key="s" status={o.stage} label={OPPORTUNITY_STAGE_LABELS[o.stage]} />,
-            <span key="a" className="text-white/60">{o.next_action ?? "—"}</span>,
+            <span key="a" className="text-white/60">{o.next_action ?? "-"}</span>,
             o.next_action_party,
             fmtDate(o.next_action_due),
-            o.value_cents != null ? formatCents(o.value_cents) : "—",
+            o.value_cents != null ? formatCents(o.value_cents) : "-",
           ])}
         />
       </SectionCard>
@@ -329,12 +331,12 @@ function Pipeline() {
             const lead = o.lead_id ? leads[o.lead_id] : null;
             return [
               <span key="n" className="text-white/85">{o.name}</span>,
-              <span key="c" className="text-xs text-white/50">
-                {lead ? `${lead.name} · ${lead.email}` : "—"}
+              <span key="c" className="text-xs text-white/65">
+                {lead ? `${lead.name} · ${lead.email}` : "-"}
               </span>,
               <select
                 key="stage"
-                className={`${inputClass(false)} !w-auto !px-2 !py-1.5 text-xs`}
+                className={`${inputClass(false)} w-auto! px-2! py-1.5! text-xs`}
                 value={o.stage}
                 onChange={async (e) => {
                   try {
@@ -352,7 +354,7 @@ function Pipeline() {
                 ))}
               </select>,
               <span key="na" className="text-xs text-white/55">
-                {o.next_action ?? "—"}
+                {o.next_action ?? "-"}
                 {o.next_action_due ? ` · due ${fmtDate(o.next_action_due)}` : ""}
               </span>,
               <Act
@@ -377,8 +379,8 @@ function Pipeline() {
             rows={(data.assessments as AnyRecord[]).map((a) => [
               <span key="e" className="text-xs text-white/70">{a.email}</span>,
               <StatusPill key="s" status={a.status} />,
-              a.score ?? "—",
-              <span key="r" className="text-xs">{a.recommended_service_category ?? "—"}</span>,
+              a.score ?? "-",
+              <span key="r" className="text-xs">{a.recommended_service_category ?? "-"}</span>,
               fmtDate(a.submitted_at),
               a.status === "submitted" ? (
                 <Act
@@ -421,7 +423,7 @@ function Pipeline() {
       <Modal
         open={notesFor !== null}
         onClose={() => setNotesFor(null)}
-        title={`Consultation notes — ${notesFor?.name ?? ""}`}
+        title={`Consultation notes: ${notesFor?.name ?? ""}`}
         wide
         footer={
           <Button
@@ -477,17 +479,17 @@ function Proposals() {
       <SectionCard padded={false}>
         <Table
           headers={["Title", "Status", "Total", "Viewed", "Expires", "Actions"]}
-          empty="No proposals yet — create one from a qualified opportunity."
+          empty="No proposals yet: create one from a qualified opportunity."
           rows={(data.proposals as AnyRecord[]).map((p) => [
             <div key="t">
               <span className="text-white/85">{p.title}</span>
-              <span className="ml-2 font-mono text-[0.55rem] text-white/30">v{p.version}</span>
+              <span className="ml-2 font-mono text-[0.6875rem] text-white/60">v{p.version}</span>
             </div>,
             <StatusPill key="s" status={p.status} />,
             formatCents(p.total_cents),
             p.first_viewed_at
               ? `${fmtDate(p.first_viewed_at)} · ${Math.round((p.total_view_seconds ?? 0) / 60)}m viewed`
-              : "—",
+              : "-",
             fmtDate(p.expires_at),
             <div key="a" className="flex flex-wrap gap-3">
               {p.status === "draft" && (
@@ -514,7 +516,7 @@ function Proposals() {
                 />
               )}
               <a
-                className="text-xs text-white/45 underline underline-offset-4 hover:text-white"
+                className="text-xs text-white/65 underline underline-offset-4 hover:text-white"
                 href={`/proposals/${p.token}`}
                 target="_blank"
                 rel="noreferrer"
@@ -557,7 +559,7 @@ function Proposals() {
       >
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Opportunity ID" hint="From the Pipeline tab — links everything together." optional>
+            <Field label="Opportunity ID" hint="From the Pipeline tab: links everything together." optional>
               {(props) => (
                 <input {...props} className={inputClass(false)} value={form.opportunityId}
                   onChange={(e) => setForm({ ...form, opportunityId: e.target.value })} />
@@ -621,7 +623,7 @@ function Contracts() {
     <SectionCard padded={false} title="Agreements">
       <Table
         headers={["Title", "Kind", "Status", "Sent", "Completed", "Actions"]}
-        empty='No agreements yet — approve a proposal, then "Create agreement".'
+        empty='No agreements yet: approve a proposal, then "Create agreement".'
         rows={(data.contracts as AnyRecord[]).map((c) => [
           <span key="t" className="text-white/85">{c.title}</span>,
           c.kind,
@@ -654,7 +656,7 @@ function Contracts() {
               />
             )}
             <a
-              className="text-xs text-white/45 underline underline-offset-4 hover:text-white"
+              className="text-xs text-white/65 underline underline-offset-4 hover:text-white"
               href={`/agreement/${c.token}`}
               target="_blank"
               rel="noreferrer"
@@ -706,7 +708,7 @@ function Billing() {
                 </>
               )}
               <a
-                className="text-xs text-white/45 underline underline-offset-4 hover:text-white"
+                className="text-xs text-white/65 underline underline-offset-4 hover:text-white"
                 href={`/pay/${i.token}`}
                 target="_blank"
                 rel="noreferrer"
@@ -727,7 +729,7 @@ function Billing() {
                 Respond within
                 <input
                   type="number"
-                  className={`${inputClass(false)} !w-24 !px-2 !py-1.5 text-xs`}
+                  className={`${inputClass(false)} w-24! px-2! py-1.5! text-xs`}
                   defaultValue={p.target_response_minutes}
                   onBlur={(e) =>
                     void run("update_sla", {
@@ -759,7 +761,7 @@ function Billing() {
       <Modal
         open={payFor !== null}
         onClose={() => setPayFor(null)}
-        title={`Record payment — ${payFor ? formatInvoiceNumber(payFor.number) : ""}`}
+        title={`Record payment: ${payFor ? formatInvoiceNumber(payFor.number) : ""}`}
         footer={
           <Button
             onClick={async () => {
@@ -782,9 +784,9 @@ function Billing() {
           </Button>
         }
       >
-        <p className="mb-4 text-xs leading-relaxed text-white/50">
+        <p className="mb-4 text-xs leading-relaxed text-white/65">
           For bank transfers, checks, or other offline payments. Record the
-          amount and a reference — never card numbers. If this completes a
+          amount and a reference, never card numbers. If this completes a
           deposit, portal activation and project creation run automatically.
         </p>
         <Field label="Amount received ($)">
@@ -817,7 +819,7 @@ function Clients({ onOpen }: { onOpen: (id: string) => void }) {
         rows={(data.clients as AnyRecord[]).map((c) => [
           <span key="c" className="text-white/85">{c.company}</span>,
           c.name,
-          <span key="e" className="text-xs text-white/50">{c.email}</span>,
+          <span key="e" className="text-xs text-white/65">{c.email}</span>,
           <button
             key="o"
             className="text-xs text-crimson-light underline underline-offset-4 hover:text-white"
@@ -838,35 +840,35 @@ function ClientRecord({ clientId, onBack }: { clientId: string; onBack: () => vo
     {
       title: "Opportunities",
       rows: data.opportunities,
-      render: (o) => `${o.name} — ${o.stage}`,
+      render: (o) => `${o.name}: ${o.stage}`,
     },
-    { title: "Proposals", rows: data.proposals, render: (p) => `${p.title} — ${p.status}` },
-    { title: "Contracts", rows: data.contracts, render: (c) => `${c.title} — ${c.status}` },
+    { title: "Proposals", rows: data.proposals, render: (p) => `${p.title}: ${p.status}` },
+    { title: "Contracts", rows: data.contracts, render: (c) => `${c.title}: ${c.status}` },
     {
       title: "Invoices",
       rows: data.invoices,
-      render: (i) => `${formatInvoiceNumber(i.number)} ${i.description} — ${i.status}`,
+      render: (i) => `${formatInvoiceNumber(i.number)} ${i.description}: ${i.status}`,
     },
-    { title: "Projects", rows: data.projects, render: (p) => `${p.name} — ${p.status} (${p.progress}%)` },
-    { title: "Requests", rows: data.requests, render: (r) => `#${r.number} ${r.title} — ${r.status}` },
-    { title: "Tickets", rows: data.tickets, render: (t) => `#${t.number} ${t.subject} — ${t.status}` },
-    { title: "Reports", rows: data.reports, render: (r) => `${r.period_month} — ${r.status}` },
-    { title: "Renewals", rows: data.renewals, render: (r) => `${r.name} — ${r.renews_on} (${r.status})` },
+    { title: "Projects", rows: data.projects, render: (p) => `${p.name}: ${p.status} (${p.progress}%)` },
+    { title: "Requests", rows: data.requests, render: (r) => `#${r.number} ${r.title}: ${r.status}` },
+    { title: "Tickets", rows: data.tickets, render: (t) => `#${t.number} ${t.subject}: ${t.status}` },
+    { title: "Reports", rows: data.reports, render: (r) => `${r.period_month}: ${r.status}` },
+    { title: "Renewals", rows: data.renewals, render: (r) => `${r.name}: ${r.renews_on} (${r.status})` },
     {
       title: "Expansion roadmap",
       rows: data.expansion,
-      render: (e) => `${e.title} — ${e.status}`,
+      render: (e) => `${e.title}: ${e.status}`,
     },
   ];
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
+          <p className="text-xs font-medium uppercase tracking-wide text-white/60">
             Unified client record
           </p>
           <h3 className="font-display text-lg text-white">
-            {data.client.company} <span className="text-white/40">· {data.client.name}</span>
+            {data.client.company} <span className="text-white/60">· {data.client.name}</span>
           </h3>
         </div>
         <Button variant="ghost" onClick={onBack}>
@@ -877,14 +879,14 @@ function ClientRecord({ clientId, onBack }: { clientId: string; onBack: () => vo
         {blocks.map((b) => (
           <SectionCard key={b.title} title={`${b.title} (${b.rows.length})`}>
             {b.rows.length === 0 ? (
-              <p className="text-xs text-white/35">None.</p>
+              <p className="text-xs text-white/60">None.</p>
             ) : (
               <ul className="space-y-1.5 text-xs text-white/65">
                 {b.rows.slice(0, 8).map((r, i) => (
                   <li key={i}>{b.render(r)}</li>
                 ))}
                 {b.rows.length > 8 && (
-                  <li className="text-white/35">…and {b.rows.length - 8} more</li>
+                  <li className="text-white/60">…and {b.rows.length - 8} more</li>
                 )}
               </ul>
             )}
@@ -892,14 +894,14 @@ function ClientRecord({ clientId, onBack }: { clientId: string; onBack: () => vo
         ))}
       </div>
       <SectionCard title="Complete history" padded={false}>
-        <ul className="max-h-96 divide-y divide-white/[0.06] overflow-y-auto">
+        <ul className="max-h-96 divide-y divide-white/6 overflow-y-auto">
           {(data.activity as AnyRecord[]).map((a) => (
             <li key={a.id} className="flex justify-between gap-4 px-5 py-2.5 text-xs">
               <span className="text-white/70">
-                <span className="text-white/35">{a.actor_name || a.actor_type}: </span>
+                <span className="text-white/60">{a.actor_name || a.actor_type}: </span>
                 {a.action}
               </span>
-              <span className="shrink-0 text-white/30">{fmtDate(a.created_at, true)}</span>
+              <span className="shrink-0 text-white/60">{fmtDate(a.created_at, true)}</span>
             </li>
           ))}
         </ul>
@@ -947,7 +949,7 @@ function ProjectDetail({ id, onBack }: { id: string; onBack: () => void }) {
       <div className="flex items-center justify-between">
         <h3 className="font-display text-lg text-white">
           {data.project.name}{" "}
-          <span className="font-mono text-xs text-white/40">{data.project.code}</span>
+          <span className="font-mono text-xs text-white/60">{data.project.code}</span>
         </h3>
         <Button variant="ghost" onClick={onBack}>
           Back
@@ -961,13 +963,13 @@ function ProjectDetail({ id, onBack }: { id: string; onBack: () => void }) {
             <div key="m">
               <span className="text-white/85">{m.name}</span>
               {m.client_action && (
-                <p className="mt-0.5 text-[0.65rem] text-white/40">Client: {m.client_action}</p>
+                <p className="mt-0.5 text-xs text-white/60">Client: {m.client_action}</p>
               )}
             </div>,
             m.owner_party,
             <select
               key="st"
-              className={`${inputClass(false)} !w-auto !px-2 !py-1.5 text-xs`}
+              className={`${inputClass(false)} w-auto! px-2! py-1.5! text-xs`}
               value={m.status}
               onChange={async (e) => {
                 try {
@@ -993,7 +995,7 @@ function ProjectDetail({ id, onBack }: { id: string; onBack: () => void }) {
               ? m.approved_at
                 ? `Approved by ${m.approved_by ?? "client"}`
                 : "Client approval required"
-              : "—",
+              : "-",
           ])}
         />
       </SectionCard>
@@ -1163,13 +1165,13 @@ function ThreadModal({
               key={m.id}
               className={`border px-3.5 py-2.5 ${
                 m.internal
-                  ? "border-amber-400/25 bg-amber-400/[0.04]"
+                  ? "border-amber-400/25 bg-amber-400/4"
                   : m.author_type === "admin"
-                    ? "border-crimson/25 bg-crimson/[0.05]"
-                    : "border-white/10 bg-white/[0.02]"
+                    ? "border-crimson/25 bg-crimson/5"
+                    : "border-white/10 bg-white/2"
               }`}
             >
-              <p className="text-[0.65rem] text-white/35">
+              <p className="text-xs text-white/60">
                 {m.author_name || m.author_type}
                 {m.internal && " · internal note"} · {fmtDate(m.created_at, true)}
               </p>
@@ -1177,7 +1179,7 @@ function ThreadModal({
             </div>
           ))}
           {(data.messages as AnyRecord[]).length === 0 && (
-            <p className="text-center text-xs text-white/35">No messages yet.</p>
+            <p className="text-center text-xs text-white/60">No messages yet.</p>
           )}
           <div className="border-t border-white/10 pt-3">
             <textarea
@@ -1188,7 +1190,7 @@ function ThreadModal({
               onChange={(e) => setBody(e.target.value)}
             />
             <div className="mt-2 flex items-center justify-between">
-              <label className="flex items-center gap-2 text-xs text-white/50">
+              <label className="flex items-center gap-2 text-xs text-white/65">
                 <input
                   type="checkbox"
                   className="accent-crimson"
@@ -1255,7 +1257,7 @@ function Training() {
           rows={items.map((t) => [
             <span key="t" className="text-white/85">{t.title}</span>,
             t.kind,
-            t.system_tag || "—",
+            t.system_tag || "-",
             t.difficulty,
             t.published ? "Yes" : "No",
             <div key="a" className="flex gap-3">
@@ -1271,7 +1273,7 @@ function Training() {
                   if (clientId) {
                     const required = window.confirm("Mark as REQUIRED training?");
                     await run("assign_training", { trainingItemId: t.id, clientId, required });
-                    window.alert("Assigned — the client was notified.");
+                    window.alert("Assigned: the client was notified.");
                   }
                 }}
                 onDone={() => {}}
@@ -1344,7 +1346,7 @@ function Reports() {
       <Modal
         open={editing !== null}
         onClose={() => setEditing(null)}
-        title={`Edit report — ${editing?.period_month ?? ""}`}
+        title={`Edit report: ${editing?.period_month ?? ""}`}
         wide
         footer={
           <Button
@@ -1401,7 +1403,7 @@ function Growth() {
               const result = await run("suggest_expansion", { clientId });
               const suggestions = (result.suggestions ?? []) as AnyRecord[];
               if (suggestions.length === 0) {
-                window.alert("No data-backed suggestions yet — that's honest, not broken.");
+                window.alert("No data-backed suggestions yet: that's honest, not broken.");
                 return;
               }
               for (const s of suggestions) {
@@ -1420,7 +1422,7 @@ function Growth() {
         <Button
           onClick={async () => {
             const clientId = window.prompt("Client ID:");
-            const name = clientId && window.prompt("Renewal name (e.g. Care Plan — Annual):");
+            const name = clientId && window.prompt("Renewal name (e.g. Care Plan: Annual):");
             const renewsOn = name && window.prompt("Renews on (YYYY-MM-DD):");
             if (clientId && name && renewsOn) {
               try {
@@ -1444,7 +1446,7 @@ function Growth() {
             r.kind,
             fmtDate(r.renews_on),
             <StatusPill key="s" status={r.status} />,
-            r.value_cents != null ? formatCents(r.value_cents) : "—",
+            r.value_cents != null ? formatCents(r.value_cents) : "-",
           ])}
         />
       </SectionCard>
@@ -1464,12 +1466,12 @@ function Automations() {
           rows={(data.settings as AnyRecord[]).map((s) => [
             <div key="l">
               <span className="text-white/85">{s.label ?? s.id}</span>
-              <p className="mt-0.5 text-[0.65rem] text-white/40">{s.description ?? ""}</p>
+              <p className="mt-0.5 text-xs text-white/60">{s.description ?? ""}</p>
             </div>,
-            <span key="t" className="text-xs text-white/55">{s.trigger ?? "—"}</span>,
+            <span key="t" className="text-xs text-white/55">{s.trigger ?? "-"}</span>,
             <select
               key="c"
-              className={`${inputClass(false)} !w-auto !px-2 !py-1.5 text-xs`}
+              className={`${inputClass(false)} w-auto! px-2! py-1.5! text-xs`}
               defaultValue={s.channel}
               onChange={(e) =>
                 void run("update_automation", { id: s.id, channel: e.target.value }).catch(() => {})
@@ -1483,7 +1485,7 @@ function Automations() {
             <input
               key="d"
               type="number"
-              className={`${inputClass(false)} !w-20 !px-2 !py-1.5 text-xs`}
+              className={`${inputClass(false)} w-20! px-2! py-1.5! text-xs`}
               defaultValue={s.delay_minutes}
               onBlur={(e) =>
                 void run("update_automation", { id: s.id, delayMinutes: Number(e.target.value) }).catch(
@@ -1509,7 +1511,7 @@ function Automations() {
           empty="No automation runs yet."
           rows={(data.runs as AnyRecord[]).map((r) => [
             r.automation_key,
-            <span key="e" className="font-mono text-[0.6rem] text-white/40">
+            <span key="e" className="font-mono text-xs text-white/60">
               {r.entity_type}:{String(r.entity_id).slice(0, 8)}
             </span>,
             <StatusPill key="s" status={r.status === "completed" ? "completed" : r.status} />,
@@ -1537,18 +1539,18 @@ function Activity() {
   if (loading || error || !data) return <Loading error={error} />;
   return (
     <SectionCard title="Lifecycle activity" padded={false}>
-      <ul className="divide-y divide-white/[0.06]">
+      <ul className="divide-y divide-white/6">
         {(data.activity as AnyRecord[]).map((a) => (
           <li key={a.id} className="flex justify-between gap-4 px-5 py-2.5 text-xs">
             <span className="text-white/70">
-              <span className="text-white/35">{a.actor_name || a.actor_type}: </span>
+              <span className="text-white/60">{a.actor_name || a.actor_type}: </span>
               {a.action}
             </span>
-            <span className="shrink-0 text-white/30">{fmtDate(a.created_at, true)}</span>
+            <span className="shrink-0 text-white/60">{fmtDate(a.created_at, true)}</span>
           </li>
         ))}
         {(data.activity as AnyRecord[]).length === 0 && (
-          <li className="px-5 py-8 text-center text-white/35">No activity yet.</li>
+          <li className="px-5 py-8 text-center text-white/60">No activity yet.</li>
         )}
       </ul>
     </SectionCard>

@@ -65,7 +65,7 @@ export function ApprovalsView({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-2xl">
           <p className={labelClass}>AI approval queue</p>
-          <p className="mt-1 text-xs leading-relaxed text-white/45">
+          <p className="mt-1 text-xs leading-relaxed text-white/65">
             High-risk AI actions do not execute automatically. Each waits here
             for a human to approve, reject, edit, or escalate. Approval states:
             Drafted → Awaiting approval → Approved / Rejected / Escalated →
@@ -76,7 +76,7 @@ export function ApprovalsView({
           <button
             onClick={() => run({ action: "create_demo_approval" })}
             disabled={busy}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.03] px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/3 px-3.5 py-2 text-sm text-white/70 transition-colors hover:border-white/30 disabled:opacity-50"
           >
             <Plus size={14} /> Queue sample request
           </button>
@@ -85,11 +85,11 @@ export function ApprovalsView({
 
       {open.length === 0 ? (
         <div className="card flex items-start gap-3 p-6 text-sm text-white/55">
-          <ShieldQuestion size={18} className="mt-0.5 shrink-0 text-white/40" />
+          <ShieldQuestion size={18} className="mt-0.5 shrink-0 text-white/60" />
           <div>
             <p className="text-white/70">No AI actions are waiting for approval.</p>
-            <p className="mt-1 text-xs text-white/40">
-              When an AI feature drafts a high-risk action — {HIGH_RISK_EXAMPLES.slice(0, 4).join(", ")}, and more —
+            <p className="mt-1 text-xs text-white/60">
+              When an AI feature drafts a high-risk action, {HIGH_RISK_EXAMPLES.slice(0, 4).join(", ")}, and more;
               it lands here for a human decision before anything happens.
             </p>
           </div>
@@ -97,23 +97,23 @@ export function ApprovalsView({
       ) : (
         <div className="space-y-4">
           {open.map((a) => (
-            <article key={a.id} className="rounded-xl border border-crimson/25 bg-crimson/[0.04] p-5">
+            <article key={a.id} className="rounded-xl border border-crimson/25 bg-crimson/4 p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] font-medium ${riskPill(a.riskLevel)}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${riskPill(a.riskLevel)}`}>
                       {a.riskLevel} risk
                     </span>
-                    <span className="rounded-full border border-white/12 bg-white/[0.04] px-2 py-0.5 text-[0.6rem] text-white/60">
+                    <span className="rounded-full border border-white/12 bg-white/4 px-2 py-0.5 text-xs text-white/60">
                       {APPROVAL_STATUS_LABELS[a.status]}
                     </span>
-                    <span className="font-mono text-[0.56rem] uppercase tracking-label text-white/35">
+                    <span className="text-xs font-medium uppercase tracking-wide text-white/60">
                       {a.actionType}
                     </span>
                   </div>
                   <h4 className="mt-2 text-base font-medium text-white">{a.title}</h4>
                 </div>
-                <p className="shrink-0 text-xs text-white/40">
+                <p className="shrink-0 text-xs text-white/60">
                   Requested {formatDate(a.requestedAt)}
                   {a.expiresAt && <> · expires {formatDate(a.expiresAt)}</>}
                 </p>
@@ -138,7 +138,7 @@ export function ApprovalsView({
                   </ul>
                   <p className={`${labelClass} mt-3`}>Records affected</p>
                   <p className="mt-1 text-sm text-white/60">
-                    {a.recordsAffected.join(", ") || "—"}
+                    {a.recordsAffected.join(", ") || "-"}
                   </p>
                 </div>
               </div>
@@ -183,7 +183,7 @@ export function ApprovalsView({
                   </div>
                 </div>
               ) : (
-                <p className="mt-4 text-xs text-white/40">
+                <p className="mt-4 text-xs text-white/60">
                   Your role can view approvals but not decide them.
                 </p>
               )}
@@ -199,7 +199,7 @@ export function ApprovalsView({
           <div className="mt-2 overflow-x-auto rounded-xl border border-white/10">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/[0.02] font-mono text-[0.54rem] uppercase tracking-label text-white/40">
+                <tr className="border-b border-white/10 bg-white/2 text-xs font-medium uppercase tracking-wide text-white/60">
                   <th className="px-4 py-3">Action</th>
                   <th className="px-4 py-3">Risk</th>
                   <th className="px-4 py-3">Status</th>
@@ -210,16 +210,16 @@ export function ApprovalsView({
               </thead>
               <tbody>
                 {decided.slice(0, 30).map((a) => (
-                  <tr key={a.id} className="border-b border-white/[0.06] last:border-0">
+                  <tr key={a.id} className="border-b border-white/6 last:border-0">
                     <td className="px-4 py-3 text-white/80">{a.title}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full border px-2 py-0.5 text-[0.6rem] ${riskPill(a.riskLevel)}`}>
+                      <span className={`rounded-full border px-2 py-0.5 text-xs ${riskPill(a.riskLevel)}`}>
                         {a.riskLevel}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-white/60">{APPROVAL_STATUS_LABELS[a.status]}</td>
-                    <td className="px-4 py-3 text-white/55">{a.decidedBy ?? "—"}</td>
-                    <td className="px-4 py-3 text-white/50">{formatDate(a.decidedAt)}</td>
+                    <td className="px-4 py-3 text-white/55">{a.decidedBy ?? "-"}</td>
+                    <td className="px-4 py-3 text-white/65">{formatDate(a.decidedAt)}</td>
                     <td className="px-4 py-3 text-right">
                       {canApprove && a.status === "approved" && (
                         <button

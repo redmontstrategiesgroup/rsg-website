@@ -1,5 +1,5 @@
 /**
- * Proposal templates — one per service category.
+ * Proposal templates, one per service category.
  *
  * Each template carries complete section copy (every ProposalSectionKey),
  * default optional services, and a milestone payment-schedule builder.
@@ -54,12 +54,12 @@ const CURRENT_CHALLENGES_BODY =
   "Every recommendation in this proposal traces back to a specific problem we identified together. " +
   "Based on what you shared during qualification, your assessment, and our consultation, " +
   "{{business_name}} is currently working against: {{challenges}}. " +
-  "None of these are unusual — but left unaddressed, each one quietly costs time, revenue, or both.";
+  "None of these are unusual, but left unaddressed, each one quietly costs time, revenue, or both.";
 
 const DESIRED_OUTCOMES_BODY =
   "Success for this engagement is defined by your goals, not ours. Together we established that the " +
   "outcomes that matter most to {{business_name}} are: {{outcomes}}. Every phase, deliverable, and " +
-  "milestone in this proposal is structured to move those numbers — and your monthly reporting will " +
+  "milestone in this proposal is structured to move those numbers, and your monthly reporting will " +
   "track them explicitly.";
 
 const RESPONSIBILITIES_BODY =
@@ -89,7 +89,7 @@ const RESPONSIBILITIES_ITEMS: SectionItem[] = [
 const DEFAULT_SECURITY_BODY =
   "Your business data is handled with the same discipline we apply to our own. Access to your systems " +
   "is limited to the team members working on this engagement, credentials are stored in an encrypted " +
-  "vault and never in plain text, and everything used during the build remains yours — we claim no " +
+  "vault and never in plain text, and everything used during the build remains yours, we claim no " +
   "ownership of your customer records, content, or operational data. Confidentiality terms are " +
   "available for signature before any system access is granted, and access is revoked at your request " +
   "or at project close, whichever comes first.";
@@ -97,30 +97,30 @@ const DEFAULT_SECURITY_BODY =
 const INVESTMENT_BODY =
   "The total investment for the engagement described in this proposal is {{investment}}. A deposit of " +
   "{{deposit}} reserves your project start and is credited in full against the total. Optional services " +
-  "can be added below — one-time options adjust the project total, while recurring options are billed " +
+  "can be added below, one-time options adjust the project total, while recurring options are billed " +
   "on their own cycle after launch. There are no hidden fees: anything that would change the price " +
   "comes to you as a written change order before work begins.";
 
 const PAYMENT_SCHEDULE_BODY =
-  "The investment is split into predictable payments tied to real project milestones — you never pay " +
+  "The investment is split into predictable payments tied to real project milestones, you never pay " +
   "for work you cannot see. The schedule below reflects the current total of {{investment}} with a " +
   "deposit of {{deposit}}; approved optional services are itemized on each invoice.";
 
 const SUPPORT_ITEMS: SectionItem[] = [
   {
-    title: "Launch support — included",
+    title: "Launch support: included",
     detail:
       "Thirty days of post-launch support are included: adjustments, fixes, and questions are handled " +
       "at no additional cost while your team settles into the new system.",
   },
   {
-    title: "Training library — included",
+    title: "Training library: included",
     detail:
       "Every system ships with recorded walkthroughs and written guides in your client portal, so new " +
       "team members can be trained without scheduling a call.",
   },
   {
-    title: "Ongoing care — optional",
+    title: "Ongoing care: optional",
     detail:
       "Monitoring, updates, and priority support are available as a recurring plan under Optional " +
       "Services. No long-term commitment is required to launch.",
@@ -129,7 +129,7 @@ const SUPPORT_ITEMS: SectionItem[] = [
 
 const ASSUMPTIONS_BODY =
   "This proposal is priced and scheduled on the following working assumptions. If any of them change, " +
-  "we flag the impact on cost or timeline before it happens — never after.";
+  "we flag the impact on cost or timeline before it happens, never after.";
 
 const ASSUMPTIONS_ITEMS: SectionItem[] = [
   {
@@ -185,7 +185,7 @@ const NEXT_STEPS_ITEMS: SectionItem[] = [
   {
     title: "4. Kickoff",
     detail:
-      "We schedule your kickoff call and begin onboarding {{business_name}} immediately — most " +
+      "We schedule your kickoff call and begin onboarding {{business_name}} immediately, most " +
       "projects start within one week of the deposit clearing.",
   },
 ];
@@ -199,10 +199,10 @@ const DELIVERABLES_BODY =
 
 const EXCLUSIONS_BODY =
   "To keep the investment honest, here is what this engagement does not include. If you need any of " +
-  "these, we quote them separately — you are never surprised by an invoice.";
+  "these, we quote them separately; you are never surprised by an invoice.";
 
 const PHASES_BODY =
-  "The engagement runs in structured phases with an approval gate at the end of each — you always know " +
+  "The engagement runs in structured phases with an approval gate at the end of each, you always know " +
   "where the project stands and what happens next.";
 
 const INTEGRATIONS_BODY =
@@ -284,14 +284,14 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
   growth_systems: {
     key: "growth_systems",
     label: "Growth Systems",
-    title: "Growth Systems Engagement — {{business_name}}",
+    title: "Growth Systems Engagement: {{business_name}}",
     sections: makeSections({
       summary:
-        "{{business_name}} is not short on demand — it is short on a system that captures, follows up " +
+        "{{business_name}} is not short on demand; it is short on a system that captures, follows up " +
         "on, and converts that demand without depending on someone remembering to do it. This proposal " +
         "outlines a Growth System engineered for {{business_name}}: every inquiry answered, every lead " +
         "followed up automatically, and every opportunity visible in one pipeline. It is built directly " +
-        "around the challenges you described — {{challenges}} — and structured to deliver {{outcomes}}. " +
+        "around the challenges you described, {{challenges}}, and structured to deliver {{outcomes}}. " +
         "The total investment is {{investment}}, paid against milestones and beginning with a " +
         "{{deposit}} deposit.",
       recommendationTitle: "The Recommended Growth System",
@@ -300,13 +300,13 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
         "answers every inquiry within seconds regardless of channel; automated follow-up sequences that " +
         "nurture every lead until they book or opt out; a single pipeline where {{business_name}} can " +
         "see every opportunity, its stage, and its next action; and reporting that shows exactly where " +
-        "revenue is coming from. Each part works on its own — together they compound, because no lead " +
+        "revenue is coming from. Each part works on its own, together they compound, because no lead " +
         "leaks between them.",
       scope: [
         {
           title: "Lead capture consolidation",
           detail:
-            "Every inquiry channel — website forms, phone, text, email, and social — routed into one " +
+            "Every inquiry channel (website forms, phone, text, email, and social), routed into one " +
             "system with nothing falling through.",
         },
         {
@@ -338,7 +338,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       ],
       deliverables: [
         { title: "A fully configured lead-management system", detail: "Owned by {{business_name}}, running on your accounts." },
-        { title: "Automated response and follow-up sequences", detail: "Written, tested, and live — with editable copy your team controls." },
+        { title: "Automated response and follow-up sequences", detail: "Written, tested, and live; with editable copy your team controls." },
         { title: "A working sales pipeline", detail: "Configured stages, automations, and reporting views." },
         { title: "Lead-source reporting", detail: "A dashboard showing lead volume, response times, and conversion by source." },
         { title: "Training library", detail: "Recorded walkthroughs and written quick-reference guides in your client portal." },
@@ -351,22 +351,22 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       ],
       phases: [
         {
-          title: "Phase 1 — Discovery & mapping",
+          title: "Phase 1: Discovery & mapping",
           detail: "We document every lead source, current response process, and sales stage, then finalize the system design with you.",
           meta: "Week 1",
         },
         {
-          title: "Phase 2 — Build & integration",
+          title: "Phase 2: Build & integration",
           detail: "Lead routing, automations, sequences, and the pipeline are built and connected to your existing tools.",
           meta: "Weeks 2–4",
         },
         {
-          title: "Phase 3 — Launch & calibration",
+          title: "Phase 3: Launch & calibration",
           detail: "The system goes live with real leads. We monitor daily, tune response timing, and adjust sequence copy based on actual replies.",
           meta: "Week 5",
         },
         {
-          title: "Phase 4 — Training & handoff",
+          title: "Phase 4: Training & handoff",
           detail: "Your team is trained, the recorded library is published, and 30-day launch support begins.",
           meta: "Week 6",
         },
@@ -384,7 +384,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
         { title: "Review platforms", detail: "Google Business Profile and other review destinations, if the review option is added." },
       ],
       support:
-        "A growth system is not a set-and-forget purchase — lead behavior shifts, and the system should " +
+        "A growth system is not a set-and-forget purchase, lead behavior shifts, and the system should " +
         "shift with it. Launch support is included for 30 days, and ongoing optimization is available as " +
         "a recurring option below.",
     }),
@@ -427,14 +427,14 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
   operations_systems: {
     key: "operations_systems",
     label: "Operations Systems",
-    title: "Operations Systems Engagement — {{business_name}}",
+    title: "Operations Systems Engagement: {{business_name}}",
     sections: makeSections({
       summary:
-        "The work {{business_name}} delivers is strong — the friction is in everything around it: " +
+        "The work {{business_name}} delivers is strong; the friction is in everything around it: " +
         "scheduling, quoting, invoicing, and keeping everyone on the same page. This proposal outlines " +
         "an Operations System that removes that friction: one workflow from first request to paid " +
         "invoice, with nothing living in someone's head or a stack of paper. It addresses the " +
-        "challenges we identified together — {{challenges}} — and is structured to deliver {{outcomes}}. " +
+        "challenges we identified together, {{challenges}}, and is structured to deliver {{outcomes}}. " +
         "The total investment is {{investment}}, paid against milestones and beginning with a " +
         "{{deposit}} deposit.",
       recommendationTitle: "The Recommended Operations System",
@@ -443,14 +443,14 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
         "scheduling that puts every job on one calendar; quoting and approval flows that get customer " +
         "sign-off in hours instead of days; invoicing that generates and sends itself when work is " +
         "marked complete; and internal status tracking so anyone on the team can see where every job " +
-        "stands without asking. The goal is simple — the business runs the same way whether the owner " +
+        "stands without asking. The goal is simple; the business runs the same way whether the owner " +
         "is in the room or not.",
       scope: [
         {
           title: "Workflow mapping",
           detail:
-            "We document how work actually moves through {{business_name}} today — including the " +
-            "unwritten steps — before changing anything.",
+            "We document how work actually moves through {{business_name}} today, including the " +
+            "unwritten steps, before changing anything.",
         },
         {
           title: "Scheduling & dispatch",
@@ -488,29 +488,29 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       ],
       phases: [
         {
-          title: "Phase 1 — Workflow mapping",
+          title: "Phase 1: Workflow mapping",
           detail: "Every step from inquiry to payment is documented and the future-state workflow is approved by you.",
           meta: "Week 1",
         },
         {
-          title: "Phase 2 — Core build",
+          title: "Phase 2: Core build",
           detail: "Scheduling, quoting, and job tracking are configured and connected, with your real templates and pricing.",
           meta: "Weeks 2–4",
         },
         {
-          title: "Phase 3 — Invoicing & automation",
+          title: "Phase 3: Invoicing & automation",
           detail: "Invoicing, payment reminders, and customer notifications go live alongside the core workflow.",
           meta: "Week 5",
         },
         {
-          title: "Phase 4 — Training & handoff",
+          title: "Phase 4: Training & handoff",
           detail: "Office and field staff are trained by role, documentation is published, and 30-day launch support begins.",
           meta: "Week 6",
         },
       ],
       timeline:
         "Most Operations System engagements run five to seven weeks from kickoff to full adoption. We " +
-        "deliberately launch in stages — scheduling first, then quoting, then invoicing — so " +
+        "deliberately launch in stages (scheduling first, then quoting, then invoicing) so " +
         "{{business_name}} never has to absorb every change at once and daily operations are never " +
         "interrupted.",
       integrations: [
@@ -521,7 +521,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
         { title: "Email", detail: "Quotes, invoices, and confirmations sent from your domain." },
       ],
       support:
-        "An operations system earns its keep in month two, three, and twelve — when the team is using " +
+        "An operations system earns its keep in month two, three, and twelve, when the team is using " +
         "it without thinking about it. Launch support is included for 30 days, and an ongoing care plan " +
         "is available below to keep workflows tuned as {{business_name}} grows.",
     }),
@@ -561,14 +561,14 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
   business_systems: {
     key: "business_systems",
     label: "Business Systems",
-    title: "Business Systems Engagement — {{business_name}}",
+    title: "Business Systems Engagement: {{business_name}}",
     sections: makeSections({
       summary:
-        "{{business_name}} has outgrown the way it currently runs — that is a good problem, and it is " +
+        "{{business_name}} has outgrown the way it currently runs; that is a good problem, and it is " +
         "the problem this proposal solves. We propose a connected Business System spanning the full " +
         "customer journey: how leads come in, how work gets sold, how it gets delivered, and how the " +
         "numbers roll up so decisions get made on facts. It is designed around the challenges we " +
-        "identified together — {{challenges}} — and structured to deliver {{outcomes}}. The total " +
+        "identified together, {{challenges}}, and structured to deliver {{outcomes}}. The total " +
         "investment is {{investment}}, paid against milestones and beginning with a {{deposit}} deposit.",
       recommendationTitle: "The Recommended Business System",
       recommendation:
@@ -577,7 +577,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
         "scheduling, job tracking, and customer communication so sold work moves without friction. The " +
         "visibility layer: dashboards that show {{business_name}}'s pipeline, capacity, and cash " +
         "position in one place. Because all three layers share the same data, the handoff points where " +
-        "most businesses lose money — sale to delivery, delivery to invoice — simply stop leaking.",
+        "most businesses lose money (sale to delivery, delivery to invoice), simply stop leaking.",
       scope: [
         {
           title: "Business systems audit",
@@ -585,7 +585,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
         },
         {
           title: "CRM backbone",
-          detail: "One system of record for every contact, lead, customer, and job — no more parallel spreadsheets.",
+          detail: "One system of record for every contact, lead, customer, and job; no more parallel spreadsheets.",
         },
         {
           title: "Sales pipeline & follow-up automation",
@@ -619,22 +619,22 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       ],
       phases: [
         {
-          title: "Phase 1 — Audit & design",
+          title: "Phase 1: Audit & design",
           detail: "Current systems are mapped, gaps quantified, and the target architecture approved by you before any build begins.",
           meta: "Weeks 1–2",
         },
         {
-          title: "Phase 2 — Revenue layer",
+          title: "Phase 2: Revenue layer",
           detail: "CRM, pipeline, and follow-up automation go live first so improvements start paying for the rest of the build.",
           meta: "Weeks 3–5",
         },
         {
-          title: "Phase 3 — Delivery layer",
+          title: "Phase 3: Delivery layer",
           detail: "Scheduling, job tracking, and customer communication are connected to the revenue layer.",
           meta: "Weeks 6–8",
         },
         {
-          title: "Phase 4 — Visibility, training & handoff",
+          title: "Phase 4: Visibility, training & handoff",
           detail: "Dashboards go live, the team is trained by role, and 30-day launch support begins.",
           meta: "Weeks 9–10",
         },
@@ -642,7 +642,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       timeline:
         "A full Business Systems engagement typically runs nine to eleven weeks from kickoff to " +
         "complete handoff. It launches in layers, with each layer producing value while the next is " +
-        "built — {{business_name}} does not wait until week ten to see results, and daily operations " +
+        "built: {{business_name}} does not wait until week ten to see results, and daily operations " +
         "are never interrupted.",
       integrations: [
         { title: "Email & calendar", detail: "Your existing business email and calendars, synced both directions." },
@@ -658,7 +658,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
     }),
     defaultOptions: [
       {
-        title: "Executive KPI Dashboard — Advanced",
+        title: "Executive KPI Dashboard: Advanced",
         description:
           "Extended reporting: per-crew or per-rep performance, customer lifetime value, marketing ROI by source, and monthly trend views.",
         price_cents: 200000,
@@ -693,19 +693,19 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
   private_ai: {
     key: "private_ai",
     label: "Private AI",
-    title: "Private AI System — {{business_name}}",
+    title: "Private AI System: {{business_name}}",
     sections: makeSections({
       summary:
-        "{{business_name}} wants the leverage of AI without handing its data to a public tool — that " +
+        "{{business_name}} wants the leverage of AI without handing its data to a public tool, that " +
         "is exactly the system this proposal describes. We propose a private AI system built on your " +
         "data, running under your control, with access limited to the people you choose. It is scoped " +
-        "around the challenges we identified together — {{challenges}} — and structured to deliver " +
+        "around the challenges we identified together, {{challenges}}, and structured to deliver " +
         "{{outcomes}}. The total investment is {{investment}}, paid against milestones and beginning " +
         "with a {{deposit}} deposit.",
       recommendationTitle: "The Recommended Private AI System",
       recommendation:
         "We recommend a private knowledge and automation system in three parts. First, a secure " +
-        "environment provisioned for {{business_name}} — isolated from other tenants, with role-based " +
+        "environment provisioned for {{business_name}}: isolated from other tenants, with role-based " +
         "access control from day one. Second, a knowledge layer built from your documents, procedures, " +
         "and historical records, so the assistant answers from your reality instead of internet " +
         "averages. Third, the working assistant itself: your team asks questions, drafts documents, and " +
@@ -752,22 +752,22 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       ],
       phases: [
         {
-          title: "Phase 1 — Requirements & data inventory",
+          title: "Phase 1: Requirements & data inventory",
           detail: "Use cases prioritized, data sources cataloged, and access rules defined and approved by you.",
           meta: "Weeks 1–2",
         },
         {
-          title: "Phase 2 — Environment & knowledge base",
+          title: "Phase 2: Environment & knowledge base",
           detail: "The secure environment is provisioned and your knowledge base is built and quality-checked against real questions.",
           meta: "Weeks 3–5",
         },
         {
-          title: "Phase 3 — Assistant build & hardening",
-          detail: "The assistant is configured, guardrails are tested — including what it must refuse to answer — and access controls are verified.",
+          title: "Phase 3: Assistant build & hardening",
+          detail: "The assistant is configured, guardrails are tested, including what it must refuse to answer, and access controls are verified.",
           meta: "Weeks 6–7",
         },
         {
-          title: "Phase 4 — Pilot, training & production",
+          title: "Phase 4: Pilot, training & production",
           detail: "A pilot group works with the system daily, refinements are applied, the full team is trained, and production deployment completes.",
           meta: "Weeks 8–9",
         },
@@ -785,7 +785,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       ],
       support:
         "AI systems drift as your business and your data change. Launch support is included for 30 " +
-        "days, and managed updates — model upgrades, knowledge refreshes, and monitoring — are " +
+        "days, and managed updates (model upgrades, knowledge refreshes, and monitoring) are " +
         "available as a recurring option below.",
       security:
         "Security is the reason this system exists, so it is engineered in rather than bolted on. Your " +
@@ -799,7 +799,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       {
         title: "Additional Knowledge Domain",
         description:
-          "Extend the knowledge base with another major data domain — for example estimating history, HR policies, or vendor documentation — built and verified to the same standard.",
+          "Extend the knowledge base with another major data domain (for example estimating history, HR policies, or vendor documentation), built and verified to the same standard.",
         price_cents: 225000,
         billing: "one_time",
         sort_order: 0,
@@ -815,7 +815,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       {
         title: "Workflow Automation Pack",
         description:
-          "Three AI-driven workflow automations built on top of the assistant — for example drafting quotes from call notes or summarizing job files — specified with you during Phase 1.",
+          "Three AI-driven workflow automations built on top of the assistant, for example drafting quotes from call notes or summarizing job files, specified with you during Phase 1.",
         price_cents: 175000,
         billing: "one_time",
         sort_order: 2,
@@ -831,20 +831,20 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
   website_platform: {
     key: "website_platform",
     label: "Website & Platform",
-    title: "Website & Platform Build — {{business_name}}",
+    title: "Website & Platform Build: {{business_name}}",
     sections: makeSections({
       summary:
         "A website should be {{business_name}}'s hardest-working employee: on shift around the clock, " +
         "answering questions, and converting visitors into booked business. This proposal outlines a " +
-        "website and platform build that does exactly that — not a brochure, but a working system with " +
+        "website and platform build that does exactly that, not a brochure, but a working system with " +
         "booking, lead capture, and follow-up built in. It is designed around the challenges we " +
-        "identified together — {{challenges}} — and structured to deliver {{outcomes}}. The total " +
+        "identified together, {{challenges}}, and structured to deliver {{outcomes}}. The total " +
         "investment is {{investment}}, paid against milestones and beginning with a {{deposit}} deposit.",
       recommendationTitle: "The Recommended Website & Platform",
       recommendation:
         "We recommend a conversion-focused platform in three parts: a fast, professional website built " +
-        "around how {{business_name}}'s customers actually decide — clear services, proof, and a " +
-        "next step on every page; working conversion machinery — forms, click-to-call, and self-service " +
+        "around how {{business_name}}'s customers actually decide: clear services, proof, and a " +
+        "next step on every page; working conversion machinery, forms, click-to-call, and self-service " +
         "booking wired directly into lead follow-up so inquiries get answered instead of collected; and " +
         "a technical foundation that loads fast, ranks properly, and is measured, so you know what the " +
         "site is producing rather than guessing.",
@@ -875,7 +875,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
         },
       ],
       deliverables: [
-        { title: "A launched, custom website", detail: "Fully owned by {{business_name}} — design, content, and platform." },
+        { title: "A launched, custom website", detail: "Fully owned by {{business_name}}: design, content, and platform." },
         { title: "Integrated booking and lead-capture flows", detail: "Wired into follow-up automation, not just an inbox." },
         { title: "Search-ready technical foundation", detail: "Speed, structure, metadata, and local-search fundamentals in place." },
         { title: "Analytics & conversion reporting", detail: "A clear view of what the site produces each month." },
@@ -889,22 +889,22 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       ],
       phases: [
         {
-          title: "Phase 1 — Strategy & architecture",
+          title: "Phase 1: Strategy & architecture",
           detail: "Sitemap, messaging, and page-level goals approved by you before design begins.",
           meta: "Week 1",
         },
         {
-          title: "Phase 2 — Design",
-          detail: "Design direction and key page designs reviewed and approved — you see the site before it is built.",
+          title: "Phase 2: Design",
+          detail: "Design direction and key page designs reviewed and approved; you see the site before it is built.",
           meta: "Weeks 2–3",
         },
         {
-          title: "Phase 3 — Build & integration",
+          title: "Phase 3: Build & integration",
           detail: "The site is built, booking and lead flows are wired in, and tracking is configured.",
           meta: "Weeks 4–6",
         },
         {
-          title: "Phase 4 — Launch & handoff",
+          title: "Phase 4: Launch & handoff",
           detail: "Content is finalized, redirects verified, the site goes live, and your team is trained.",
           meta: "Week 7",
         },
@@ -912,7 +912,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
       timeline:
         "Most Website & Platform builds run six to eight weeks from kickoff to launch. Content is the " +
         "most common source of delay on any website project, so we schedule content collection in week " +
-        "one and flag anything at risk early — the roadmap in your portal shows exactly what is needed " +
+        "one and flag anything at risk early; the roadmap in your portal shows exactly what is needed " +
         "and when.",
       integrations: [
         { title: "Booking & scheduling", detail: "Self-service appointment booking synced to your calendar." },
@@ -922,7 +922,7 @@ export const PROPOSAL_TEMPLATES: Record<string, ProposalTemplate> = {
         { title: "Analytics", detail: "Conversion and traffic reporting configured from day one." },
       ],
       support:
-        "A website starts aging the day it launches — software updates, security patches, and content " +
+        "A website starts aging the day it launches, software updates, security patches, and content " +
         "changes never stop. Launch support is included for 30 days, and a hosting-and-care plan is " +
         "available below so {{business_name}} never has to think about maintenance again.",
     }),

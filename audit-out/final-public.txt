@@ -1,0 +1,51 @@
+
+------------------------------------------------------------------------------
+RESPONSIVE AUDIT  http://localhost:3000
+------------------------------------------------------------------------------
+
+[375x667 (iPhone SE)] /demos/healthwellness  (walked 13 tabs)
+
+[375x667 (iPhone SE)] /demos/contractors  (walked 13 tabs)
+
+[375x667 (iPhone SE)] /demos/gyms  (walked 12 tabs)
+
+[375x667 (iPhone SE)] /demos/realestate  (walked 13 tabs)
+
+[390x844 (iPhone 14)] /demos/healthwellness  (walked 13 tabs)
+
+[390x844 (iPhone 14)] /demos/contractors  (walked 13 tabs)
+
+[390x844 (iPhone 14)] /demos/gyms  (walked 12 tabs)
+
+[390x844 (iPhone 14)] /demos/realestate  (walked 13 tabs)
+
+[414x896 (Plus/Max)] /demos/healthwellness  (walked 13 tabs)
+
+[414x896 (Plus/Max)] /demos/contractors  (walked 13 tabs)
+
+[414x896 (Plus/Max)] /demos/gyms  (walked 12 tabs)
+
+[414x896 (Plus/Max)] /demos/realestate  (walked 13 tabs)
+
+[932x430 (landscape)] /demos/healthwellness  (walked 13 tabs)
+
+[932x430 (landscape)] /demos/contractors  (walked 13 tabs)
+
+[932x430 (landscape)] /demos/gyms  (walked 12 tabs)
+
+[932x430 (landscape)] /demos/realestate  (walked 13 tabs)
+
+[768x1024 (iPad)] /demos/healthwellness  (walked 13 tabs)
+
+[768x1024 (iPad)] /demos/contractors  (walked 13 tabs)
+
+[768x1024 (iPad)] /demos/gyms  (walked 12 tabs)
+
+[768x1024 (iPad)] /demos/realestate  (walked 13 tabs)
+
+------------------------------------------------------------------------------
+TOTALS   overflow=0  clipped=0  tap<44px=0  rails-no-snap=0  fixed-below-fold=0
+Routes: 33   Viewports: 5
+Skipped: 9 portal routes (set AUDIT_SESSION_COOKIE); 2 admin routes (set AUDIT_ADMIN_COOKIE)
+------------------------------------------------------------------------------
+JSON written to audit-out/final-public.json

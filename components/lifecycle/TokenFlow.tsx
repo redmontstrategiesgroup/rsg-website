@@ -48,7 +48,7 @@ export function TokenFlow({
   if (initialStatus === "expired") {
     return (
       <Banner tone="warning" title="This link has expired.">
-        No problem — reach out and we&rsquo;ll send you a fresh one, or book a
+        No problem: reach out and we&rsquo;ll send you a fresh one, or book a
         consultation directly from the Book page in the site navigation.
       </Banner>
     );
@@ -59,13 +59,13 @@ export function TokenFlow({
       return <AssessmentSummaryView summary={summary} />;
     }
     return (
-      <div className="animate-fade-up border border-white/10 bg-white/[0.02] px-6 py-10 text-center sm:px-10">
+      <div className="animate-fade-up border border-white/10 bg-white/2 px-6 py-10 text-center sm:px-10">
         <p className="label justify-center">All set</p>
-        <h2 className="display mt-4 text-2xl">Thank you — we&rsquo;re prepared.</h2>
+        <h2 className="display mt-4 text-2xl">Thank you: we&rsquo;re prepared.</h2>
         <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-white/55">
           Your answers are with our team. We&rsquo;ll come to your consultation
           with your situation already understood, so the time goes to
-          recommendations — not background.
+          recommendations, not background.
         </p>
       </div>
     );
@@ -91,8 +91,8 @@ export function TokenFlow({
     });
     setUploadNote(
       put.ok
-        ? `Uploaded ${file.name} — thank you.`
-        : "Upload failed — please try again or bring the document to your consultation.",
+        ? `Uploaded ${file.name}: thank you.`
+        : "Upload failed: please try again or bring the document to your consultation.",
     );
   }
 
@@ -112,7 +112,7 @@ export function TokenFlow({
           });
           if (!res.ok) {
             const data = (await res.json().catch(() => ({}))) as { error?: string };
-            throw new Error(data.error || "Couldn't save — check your connection and retry.");
+            throw new Error(data.error || "Couldn't save: check your connection and retry.");
           }
         }}
         onSubmit={async () => {
@@ -121,7 +121,7 @@ export function TokenFlow({
             assessment?: { summary?: AssessmentSummary | null };
             error?: string;
           };
-          if (!res.ok) throw new Error(data.error || "Couldn't submit — please try again.");
+          if (!res.ok) throw new Error(data.error || "Couldn't submit: please try again.");
           setSummary(data.assessment?.summary ?? null);
           setSubmitted(true);
           if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -194,7 +194,7 @@ export function TokenFlow({
         ) : (
           <>
             <p className="text-sm leading-relaxed text-white/55">
-              They&rsquo;ll receive a link to contribute to these answers —
+              They&rsquo;ll receive a link to contribute to these answers,
               useful for questions about tools, finances, or operations someone
               else owns.
             </p>
@@ -208,7 +208,7 @@ export function TokenFlow({
             />
             {inviteState === "error" && (
               <p role="alert" className="mt-2 text-xs text-crimson-light">
-                That invite couldn&rsquo;t be sent — check the address and try again.
+                That invite couldn&rsquo;t be sent: check the address and try again.
               </p>
             )}
           </>
@@ -227,7 +227,7 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
   const bookSlug = CATEGORY_APPOINTMENT_SLUGS[category] ?? "business-systems-consultation";
   return (
     <div className="animate-fade-up space-y-6">
-      <div className="border border-white/10 bg-white/[0.02] px-6 py-8 sm:px-8">
+      <div className="border border-white/10 bg-white/2 px-6 py-8 sm:px-8">
         <p className="label">Your preliminary assessment</p>
         <p className="mt-4 text-sm leading-relaxed text-white/75">{summary.overview}</p>
       </div>
@@ -236,7 +236,7 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
         <SummaryList title="Highest-priority problems" items={summary.priority_problems} />
         <SummaryList title="Revenue opportunities" items={summary.revenue_opportunities} />
         <SummaryList title="Operational risks" items={summary.operational_risks} />
-        <div className="border border-white/10 bg-white/[0.02] px-5 py-5">
+        <div className="border border-white/10 bg-white/2 px-5 py-5">
           <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">
             Where you stand by area
           </p>
@@ -258,7 +258,7 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
         </div>
       </div>
 
-      <div className="border border-crimson/30 bg-crimson/[0.06] px-6 py-8 text-center sm:px-8">
+      <div className="border border-crimson/30 bg-crimson/6 px-6 py-8 text-center sm:px-8">
         <p className="label justify-center">Recommended next step</p>
         <h3 className="display mt-3 text-xl sm:text-2xl">
           {SERVICE_CATEGORY_LABELS[category] ?? "Business Systems"} Consultation
@@ -275,7 +275,7 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
           Book your consultation
         </a>
         <p className="mt-4 text-[0.68rem] text-white/35">
-          The full implementation plan — systems, sequencing, and investment —
+          The full implementation plan (systems, sequencing, and investment), 
           is built with you during the consultation.
         </p>
       </div>
@@ -285,11 +285,11 @@ function AssessmentSummaryView({ summary }: { summary: AssessmentSummary }) {
 
 function SummaryList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="border border-white/10 bg-white/[0.02] px-5 py-5">
+    <div className="border border-white/10 bg-white/2 px-5 py-5">
       <p className="font-mono text-[0.58rem] uppercase tracking-label text-white/40">{title}</p>
       {items.length === 0 ? (
         <p className="mt-3 text-sm text-white/45">
-          Nothing significant surfaced here — a good sign.
+          Nothing significant surfaced here: a good sign.
         </p>
       ) : (
         <ul className="mt-3 space-y-2">

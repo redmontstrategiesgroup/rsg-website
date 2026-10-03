@@ -23,7 +23,7 @@ import type {
   SecurityStatusLevel,
 } from "./types";
 
-const PRIVILEGED_ROLES = new Set(["owner", "administrator"]);
+const PRIVILEGED_ROLES = new Set(["owner", "founder", "cofounder", "administrator"]);
 
 /** Roughly 12 months, for vendor-review staleness. */
 const VENDOR_REVIEW_MAX_AGE_MS = 365 * 24 * 3600_000;
@@ -108,7 +108,7 @@ async function getBackupStatus(): Promise<BackupStatus> {
   }
 
   return {
-    value: "Managed by Supabase — not verified from this console",
+    value: "Managed by Supabase, not verified from this console",
     detail:
       "Automated database backups are handled by Supabase for this project. Set SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF to display verified backup status here.",
     status: "review_recommended",
@@ -223,7 +223,7 @@ export async function buildSecurityOverview(): Promise<SecurityOverview> {
       key: "admins",
       label: "Active administrators",
       value: String(admins.length),
-      detail: `${admins.filter((a) => PRIVILEGED_ROLES.has(a.role)).length} with owner/administrator privileges.`,
+      detail: `${admins.filter((a) => PRIVILEGED_ROLES.has(a.role)).length} with full admin privileges (owner, founder, co-founder, administrator).`,
       status: "secure",
     },
     {
@@ -232,7 +232,7 @@ export async function buildSecurityOverview(): Promise<SecurityOverview> {
       value: failedLogins7d === null ? "Unavailable" : String(failedLogins7d),
       detail:
         failedLogins7d === null
-          ? "Audit store not connected — configure Supabase to track authentication events."
+          ? "Audit store not connected: configure Supabase to track authentication events."
           : "Counted from real authentication audit events.",
       status:
         failedLogins7d === null
@@ -361,8 +361,8 @@ export async function buildSecurityOverview(): Promise<SecurityOverview> {
       value: process.env.NODE_ENV ?? "development",
       status: "secure",
       detail: isProd
-        ? "Production mode — file-store writes and dev fallbacks are disabled."
-        : "Development mode — local file store may substitute for Supabase.",
+        ? "Production mode: file-store writes and dev fallbacks are disabled."
+        : "Development mode: local file store may substitute for Supabase.",
     },
     {
       key: "database",

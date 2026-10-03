@@ -24,12 +24,12 @@ const content: LocalPageContent = {
   includesHeading: "What a build can include",
   includes: [
     "Conversion-focused website design and build",
-    "Retail storefronts and ecommerce",
+    "IDX property search and listing pages",
     "Landing pages for specific services and offers",
     "Booking flows connected to your calendar",
-    "Online ordering with in-store pickup and local delivery",
-    "Product reservations and gift cards",
-    "Product search and live inventory visibility",
+    "Home valuation and seller inquiry funnels",
+    "Showing requests and open house registration",
+    "Saved searches and new-listing alerts",
     "Forms and calls routed into a CRM with follow-up",
     "Dashboards and client portals where they earn their place",
     "Site speed, tracking, and technical SEO fundamentals",
@@ -37,7 +37,7 @@ const content: LocalPageContent = {
   whoHeading: "Who this is for",
   who: [
     "Service businesses whose site gets traffic but few inquiries",
-    "Retail stores and ecommerce brands selling in-store and online",
+    "Brokerages and agent teams whose IDX site produces leads nobody works",
     "Owners replacing an outdated or DIY website",
     "Teams whose booking, forms, and CRM do not talk to each other",
     "Businesses that want reporting they can actually read",
@@ -84,12 +84,8 @@ const content: LocalPageContent = {
       href: "/systemsaudit",
     },
     {
-      label: "Retail & Multi-Location Systems",
-      href: "/industries/retail",
-    },
-    {
-      label: "Interactive Retail Demo",
-      href: "/demos/retail",
+      label: "Real Estate & Brokerage Systems",
+      href: "/industries/realestate",
     },
   ],
   schema: {

@@ -38,10 +38,10 @@ describe("demoRequestSchema", () => {
   it("accepts a minimal request (optional fields omitted)", () => {
     const parsed = demoRequestSchema.parse({
       name: "Sam Lee",
-      company: "Lee Dental",
+      company: "Lee Wellness",
       email: "sam@example.com",
       phone: "7815550123",
-      demoSlug: "dental",
+      demoSlug: "healthwellness",
     });
     assert.equal(parsed.preferredContact, "email");
     assert.deepEqual(parsed.services, []);
@@ -91,10 +91,8 @@ describe("demoRequestSchema", () => {
   it("covers every live demo slug", () => {
     assert.deepEqual([...DEMO_REQUEST_SLUGS].sort(), [
       "contractors",
-      "dental",
-      "gyms",
-      "medspa",
-      "retail",
+      "healthwellness",
+      "realestate",
     ]);
   });
 });

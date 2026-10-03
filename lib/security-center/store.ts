@@ -17,7 +17,7 @@ import {
 
 /**
  * Security Center persistence: Supabase when configured, a local JSON file
- * for dev otherwise. Mirrors lib/store.ts semantics — production never
+ * for dev otherwise. Mirrors lib/store.ts semantics, production never
  * treats the file store as durable and fails closed to Supabase.
  */
 
@@ -139,7 +139,7 @@ export async function listIncidents(): Promise<SecurityIncident[]> {
       if (error) throw error;
       return ((data as IncidentRow[]) ?? []).map(rowToIncident);
     } catch (err) {
-      console.warn("[security-center] incidents read failed — using file store.", err);
+      console.warn("[security-center] incidents read failed: using file store.", err);
     }
   }
   const file = await readFileStore();
@@ -208,7 +208,7 @@ export async function createIncident(
       const row = (data as IncidentRow[])?.[0];
       if (row) return rowToIncident(row);
     } catch (err) {
-      console.warn("[security-center] incident create failed — using file store.", err);
+      console.warn("[security-center] incident create failed: using file store.", err);
     }
   }
 
@@ -297,7 +297,7 @@ export async function updateIncident(
       if (error) throw error;
       return next;
     } catch (err) {
-      console.warn("[security-center] incident update failed — using file store.", err);
+      console.warn("[security-center] incident update failed: using file store.", err);
     }
   }
 
@@ -371,7 +371,7 @@ export async function listVendors(): Promise<VendorRecord[]> {
       if (error) throw error;
       return ((data as VendorRow[]) ?? []).map(rowToVendor);
     } catch (err) {
-      console.warn("[security-center] vendors read failed — using file store.", err);
+      console.warn("[security-center] vendors read failed: using file store.", err);
     }
   }
   const file = await readFileStore();
@@ -438,7 +438,7 @@ export async function upsertVendor(
       if (error) throw error;
       return record;
     } catch (err) {
-      console.warn("[security-center] vendor upsert failed — using file store.", err);
+      console.warn("[security-center] vendor upsert failed: using file store.", err);
     }
   }
 
@@ -496,7 +496,7 @@ export async function listRetentionRules(): Promise<RetentionRule[]> {
       if (error) throw error;
       return ((data as RetentionRow[]) ?? []).map(rowToRetention);
     } catch (err) {
-      console.warn("[security-center] retention read failed — using file store.", err);
+      console.warn("[security-center] retention read failed: using file store.", err);
     }
   }
   const file = await readFileStore();
@@ -550,7 +550,7 @@ export async function upsertRetentionRule(
       if (error) throw error;
       return record;
     } catch (err) {
-      console.warn("[security-center] retention upsert failed — using file store.", err);
+      console.warn("[security-center] retention upsert failed: using file store.", err);
     }
   }
 
@@ -629,7 +629,7 @@ export async function listApprovals(): Promise<AiApproval[]> {
       if (error) throw error;
       return ((data as ApprovalRow[]) ?? []).map(rowToApproval);
     } catch (err) {
-      console.warn("[security-center] approvals read failed — using file store.", err);
+      console.warn("[security-center] approvals read failed: using file store.", err);
     }
   }
   const file = await readFileStore();
@@ -716,7 +716,7 @@ export async function createApproval(
       if (error) throw error;
       return record;
     } catch (err) {
-      console.warn("[security-center] approval create failed — using file store.", err);
+      console.warn("[security-center] approval create failed: using file store.", err);
     }
   }
 
@@ -790,7 +790,7 @@ export async function updateApproval(
       if (error) throw error;
       return next;
     } catch (err) {
-      console.warn("[security-center] approval update failed — using file store.", err);
+      console.warn("[security-center] approval update failed: using file store.", err);
     }
   }
 
@@ -854,7 +854,7 @@ export async function listSecurityTests(): Promise<SecurityTest[]> {
       if (error) throw error;
       return ((data as TestRow[]) ?? []).map(rowToTest);
     } catch (err) {
-      console.warn("[security-center] tests read failed — using file store.", err);
+      console.warn("[security-center] tests read failed: using file store.", err);
     }
   }
   const file = await readFileStore();
@@ -912,7 +912,7 @@ export async function upsertSecurityTest(
       if (error) throw error;
       return record;
     } catch (err) {
-      console.warn("[security-center] test upsert failed — using file store.", err);
+      console.warn("[security-center] test upsert failed: using file store.", err);
     }
   }
 
@@ -980,7 +980,7 @@ export async function getSecuritySettings(): Promise<SecuritySettings> {
       if (error) throw error;
       if (data?.[0]) value = normalizeSettings((data[0] as { settings: unknown }).settings);
     } catch (err) {
-      console.warn("[security-center] settings read failed — using defaults.", err);
+      console.warn("[security-center] settings read failed: using defaults.", err);
     }
   } else {
     const file = await readFileStore();
@@ -1010,7 +1010,7 @@ export async function updateSecuritySettings(
       settingsCache = { value: next, at: Date.now() };
       return next;
     } catch (err) {
-      console.warn("[security-center] settings update failed — using file store.", err);
+      console.warn("[security-center] settings update failed: using file store.", err);
     }
   }
 

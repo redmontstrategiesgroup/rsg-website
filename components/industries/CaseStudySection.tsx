@@ -5,7 +5,7 @@ import type { IndustryVertical } from "@/lib/industries/types";
 /**
  * One clearly-labeled scenario per vertical. Until an admin marks a verified
  * case study (with approved metrics and disclosures), the illustrative label
- * and projection note are always rendered — no fabricated names, quotes, or
+ * and projection note are always rendered, no fabricated names, quotes, or
  * results ever appear here.
  */
 export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
@@ -25,7 +25,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
           </Reveal>
           {!cs.verified && (
             <Reveal y={12} delay={0.14}>
-              <p className="mt-6 inline-flex items-start gap-2.5 rounded-lg border border-white/12 bg-white/[0.03] px-4 py-3 text-[0.8rem] leading-relaxed text-white/50">
+              <p className="mt-6 inline-flex items-start gap-2.5 rounded-lg border border-white/12 bg-white/3 px-4 py-3 text-[0.8rem] leading-relaxed text-white/50">
                 <Info size={15} aria-hidden className="mt-0.5 shrink-0 text-white/35" />
                 {cs.label}
               </p>
@@ -36,14 +36,14 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
         <Reveal y={14} delay={0.1}>
           <div className="mt-9 sm:mt-14 overflow-hidden rounded-xl border border-white/10">
             {/* Profile strip */}
-            <div className="grid gap-px bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-px bg-white/6 sm:grid-cols-2 lg:grid-cols-4">
               <ProfileCell label="Business" value={cs.businessType} />
               <ProfileCell label="Size" value={cs.size} />
               <ProfileCell label="Implementation timeline" value={cs.timeline} />
               <ProfileCell label="Current stack" value={cs.currentStack.join(" · ")} />
             </div>
 
-            <div className="border-t border-white/[0.08] bg-base-900 p-7 sm:p-9">
+            <div className="border-t border-white/8 bg-base-900 p-7 sm:p-9">
               <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light/80">
                 The operational problem
               </p>
@@ -51,7 +51,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
 
               {/* Before / after */}
               <div className="mt-10 grid gap-6 lg:grid-cols-2">
-                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6">
+                <div className="rounded-xl border border-white/10 bg-white/2 p-6">
                   <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     Workflow before
                   </p>
@@ -66,7 +66,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
                     ))}
                   </ol>
                 </div>
-                <div className="rounded-xl border border-crimson/30 bg-crimson/[0.05] p-6">
+                <div className="rounded-xl border border-crimson/30 bg-crimson/5 p-6">
                   <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-crimson-light">
                     Workflow after
                   </p>
@@ -85,7 +85,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
 
               {/* Implementation + KPIs + projections */}
               <div className="mt-10 grid gap-8 lg:grid-cols-12">
-                <div className="lg:col-span-5">
+                <div className="lg:col-span-6">
                   <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     Proposed RSG implementation
                   </p>
@@ -98,22 +98,7 @@ export function CaseStudySection({ vertical }: { vertical: IndustryVertical }) {
                     ))}
                   </ul>
                 </div>
-                <div className="lg:col-span-3">
-                  <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
-                    KPIs monitored
-                  </p>
-                  <ul className="mt-4 flex flex-wrap gap-2">
-                    {cs.kpis.map((k) => (
-                      <li
-                        key={k}
-                        className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.72rem] text-white/55"
-                      >
-                        {k}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="lg:col-span-4">
+                <div className="lg:col-span-6">
                   <p className="font-mono text-[0.7rem] sm:text-[0.55rem] uppercase tracking-label text-white/35">
                     {cs.verified ? "Results" : "Projected outcomes"}
                   </p>

@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { Reveal } from "../Reveal";
+import { trackEvent } from "@/lib/events";
 
 const STEPS = [
   {
-    name: "Diagnose",
-    body: "We review the whole business: offer, website, lead flow, and operations.",
+    name: "Audit",
+    body: "A Business Systems Audit of the whole business: offer, website, lead flow, sales, follow-up, and operations. Nothing gets built before this.",
   },
   {
     name: "Map",
@@ -44,13 +46,24 @@ export function ProcessList({
                   A practical framework for improving how the business runs.
                 </Heading>
               </Reveal>
+              <Reveal y={12} delay={0.16}>
+                <Link
+                  href="/book"
+                  onClick={() =>
+                    trackEvent("business_systems_audit_click", { location: "process_section" })
+                  }
+                  className="btn-primary mt-8"
+                >
+                  Get a Business Systems Audit
+                </Link>
+              </Reveal>
             </div>
           </div>
 
           <div className="lg:col-span-6 lg:col-start-7">
             {STEPS.map((step, i) => (
               <Reveal key={step.name} y={12} delay={i * 0.05}>
-                <div className="border-t border-white/[0.08] py-7 last:border-b sm:py-12">
+                <div className="border-t border-white/8 py-7 last:border-b sm:py-12">
                   <p className="label">{String(i + 1).padStart(2, "0")}</p>
                   <h3 className="display mt-3 text-[1.35rem] text-white">
                     {step.name}

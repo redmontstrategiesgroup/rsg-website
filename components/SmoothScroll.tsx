@@ -5,7 +5,7 @@ import Lenis from "lenis";
 
 /**
  * Inertial smooth scrolling for the marketing site (Lenis).
- * Desktop only — on touch / narrow viewports Lenis fights native scroll
+ * Desktop only, on touch / narrow viewports Lenis fights native scroll
  * and can make position:fixed chrome (nav, chat) feel unpinned.
  * Also skipped for prefers-reduced-motion.
  */

@@ -41,7 +41,7 @@ export async function POST(request: Request, ctx: Ctx) {
       <h2 style="margin: 0 0 12px;">Proposal declined</h2>
       <p style="margin: 0 0 8px; color: #333;">
         <strong>${esc(proposal.title)}</strong>
-        ${proposal.preparedFor ? ` — prepared for ${esc(proposal.preparedFor)}` : ""}
+        ${proposal.preparedFor ? `: prepared for ${esc(proposal.preparedFor)}` : ""}
       </p>
       <p style="margin: 0; color: #666;">Declined from the public proposal page.</p>
     </div>`;

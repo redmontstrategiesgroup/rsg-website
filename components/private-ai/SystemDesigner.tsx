@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Reveal } from "@/components/Reveal";
 import { postJson } from "@/lib/api";
+import { markKnownVisitor } from "@/lib/known-visitor";
 import { buildSimulatedArchitecture } from "@/lib/private-ai/architecture";
 import {
   DEPLOYMENT_OPTIONS,
@@ -79,7 +80,7 @@ function ChipButton({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-left text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 lg:min-h-0 ${
+      className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-left text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson/50 lg:min-h-0 ${
         selected
           ? "border-crimson/45 bg-crimson/10 text-white"
           : "border-white/10 text-white/55 hover:border-white/25 hover:text-white"
@@ -199,13 +200,14 @@ export function SystemDesigner() {
 
     if (data.architecture) setArchitecture(data.architecture);
     saveLocal();
+    markKnownVisitor();
     setSubmitState("success");
   }
 
   return (
     <section
       id="private-ai-designer"
-      className="scroll-mt-24 border-b border-white/[0.08] bg-base-900/40"
+      className="scroll-mt-24 border-b border-white/8 bg-base-900/40"
     >
       <div className="container-px section-y">
         <Reveal y={12}>
@@ -219,7 +221,7 @@ export function SystemDesigner() {
         <Reveal y={12} delay={0.1}>
           <p className="mt-4 max-w-2xl text-[0.98rem] leading-relaxed text-white/50">
             Configure a simulated private AI system. This is an illustrative
-            concept—not a final technical assessment or binding quote.
+            concept, not a final technical assessment or binding quote.
           </p>
         </Reveal>
 
@@ -306,7 +308,7 @@ export function SystemDesigner() {
                       }
                       className={`rounded-xl border p-4 text-left transition-colors ${
                         config.deployment === opt.id
-                          ? "border-crimson/45 bg-crimson/[0.08]"
+                          ? "border-crimson/45 bg-crimson/8"
                           : "border-white/10 hover:border-white/25"
                       }`}
                     >
@@ -435,6 +437,7 @@ export function SystemDesigner() {
                       <Field
                         label="Name"
                         required
+                        autoComplete="name"
                         value={contact.name}
                         error={fieldErrors.name}
                         onChange={(v) => setContact((c) => ({ ...c, name: v }))}
@@ -442,6 +445,7 @@ export function SystemDesigner() {
                       <Field
                         label="Business name"
                         required
+                        autoComplete="organization"
                         value={contact.businessName}
                         error={fieldErrors.businessName}
                         onChange={(v) =>
@@ -451,6 +455,8 @@ export function SystemDesigner() {
                       <Field
                         label="Email"
                         type="email"
+                        autoComplete="email"
+                        inputMode="email"
                         required
                         value={contact.email}
                         error={fieldErrors.email}
@@ -458,6 +464,9 @@ export function SystemDesigner() {
                       />
                       <Field
                         label="Phone"
+                        type="tel"
+                        autoComplete="tel"
+                        inputMode="tel"
                         required
                         value={contact.phone}
                         error={fieldErrors.phone}
@@ -472,6 +481,7 @@ export function SystemDesigner() {
                       />
                       <Field
                         label="Number of employees"
+                        inputMode="numeric"
                         value={contact.employees}
                         onChange={(v) =>
                           setContact((c) => ({ ...c, employees: v }))
@@ -479,6 +489,7 @@ export function SystemDesigner() {
                       />
                       <Field
                         label="Number of locations"
+                        inputMode="numeric"
                         value={contact.locations}
                         onChange={(v) =>
                           setContact((c) => ({ ...c, locations: v }))
@@ -571,14 +582,17 @@ export function SystemDesigner() {
 
             {step < 5 && (
               <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-                <button
-                  type="button"
-                  className="btn-ghost px-5 py-3 disabled:opacity-40"
-                  disabled={step === 0}
-                  onClick={() => setStep((s) => Math.max(0, s - 1))}
-                >
-                  Back
-                </button>
+                {step > 0 ? (
+                  <button
+                    type="button"
+                    className="btn-ghost px-5 py-3"
+                    onClick={() => setStep((s) => Math.max(0, s - 1))}
+                  >
+                    Back
+                  </button>
+                ) : (
+                  <span />
+                )}
                 {step < 4 ? (
                   <button
                     type="button"
@@ -609,7 +623,7 @@ export function SystemDesigner() {
 
 function ArchBlock({ title, body }: { title: string; body: string }) {
   return (
-    <div className="border border-white/10 bg-white/[0.02] p-4">
+    <div className="border border-white/10 bg-white/2 p-4">
       <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
         {title}
       </p>
@@ -620,14 +634,14 @@ function ArchBlock({ title, body }: { title: string; body: string }) {
 
 function ArchList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="border border-white/10 bg-white/[0.02] p-4">
+    <div className="border border-white/10 bg-white/2 p-4">
       <p className="font-mono text-[0.7rem] sm:text-[0.52rem] uppercase tracking-label text-white/35">
         {title}
       </p>
       <ul className="mt-2 space-y-1.5">
         {items.map((item) => (
           <li key={item} className="text-sm text-white/65">
-            <span className="mr-2 text-crimson-light">—</span>
+            <span className="mr-2 text-crimson-light">-</span>
             {item}
           </li>
         ))}
@@ -643,6 +657,8 @@ function Field({
   required,
   multiline,
   type = "text",
+  autoComplete,
+  inputMode,
   error,
 }: {
   label: string;
@@ -651,14 +667,24 @@ function Field({
   required?: boolean;
   multiline?: boolean;
   type?: string;
+  /** Browser autofill token (name, email, tel, organization…). */
+  autoComplete?: string;
+  /** Mobile keyboard hint where `type` alone is not enough. */
+  inputMode?: "text" | "numeric" | "tel" | "email" | "decimal";
   error?: string;
 }) {
   const id = label.toLowerCase().replace(/\s+/g, "-");
+  const errorId = `${id}-error`;
   const cls =
-    "w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm text-white outline-none focus:border-crimson/40";
+    "w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5 text-sm text-white outline-hidden focus:border-crimson/40";
+  const a11y = {
+    "aria-invalid": error ? true : undefined,
+    "aria-describedby": error ? errorId : undefined,
+  };
   return (
     <label className="block" htmlFor={id}>
-      <span className="mb-1.5 block text-[0.6rem] font-medium uppercase tracking-[0.18em] text-white/45">
+      {/* 0.7rem on phones, the site-wide micro-label size; 0.6rem was 9.6px. */}
+      <span className="mb-1.5 block text-[0.7rem] font-medium uppercase tracking-[0.18em] text-white/45 sm:text-[0.6rem]">
         {label}
         {required ? " *" : ""}
       </span>
@@ -670,18 +696,26 @@ function Field({
           className={cls}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          {...a11y}
         />
       ) : (
         <input
           id={id}
           type={type}
           required={required}
+          autoComplete={autoComplete}
+          inputMode={inputMode}
           className={cls}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          {...a11y}
         />
       )}
-      {error ? <span className="mt-1 block text-xs text-red-300">{error}</span> : null}
+      {error ? (
+        <span id={errorId} role="alert" className="mt-1 block text-xs text-red-300">
+          {error}
+        </span>
+      ) : null}
     </label>
   );
 }

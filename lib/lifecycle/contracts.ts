@@ -1,5 +1,5 @@
 /**
- * Electronic contracts + signatures — data access.
+ * Electronic contracts + signatures: data access.
  *
  * Owns the contracts, contract_signatures, and contract_events tables.
  * Contracts are created from the plain-English templates in
@@ -228,7 +228,7 @@ export async function createContract(input: {
       kind: input.kind,
       title:
         input.title?.trim() ||
-        `${CONTRACT_KIND_LABELS[input.kind]} — ${input.vars.client_business || input.signerName}`,
+        `${CONTRACT_KIND_LABELS[input.kind]}: ${input.vars.client_business || input.signerName}`,
       status: "draft",
       content,
       content_hash: hashContractContent(content),

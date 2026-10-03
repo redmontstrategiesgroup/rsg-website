@@ -170,7 +170,7 @@ export async function GET(request: Request) {
 
 /* --------------------------------- POST -------------------------------- */
 
-/** Each action maps to the permission it needs — fail closed on unmapped. */
+/** Each action maps to the permission it needs; fail closed on unmapped. */
 const ACTION_PERMISSION: Record<string, SchedulingPermission> = {
   create_incident: "manage_incidents",
   update_incident: "manage_incidents",
@@ -391,7 +391,7 @@ export async function POST(request: Request) {
           title: str(body.title, 300) || "Draft follow-up email to a lead (sample)",
           content:
             str(body.content, 20_000) ||
-            "Hi there — thanks for reaching out to Redmont Strategies Group. Based on what you shared, a Business Systems Audit is the right next step. Would Thursday work for a short strategy call?\n\n[Sample content queued for approval — not sent until approved.]",
+            "Hi there: thanks for reaching out to Redmont Strategies Group. Based on what you shared, a Business Systems Audit is the right next step. Would Thursday work for a short strategy call?\n\n[Sample content queued for approval; not sent until approved.]",
           reason:
             str(body.reason, 2000) ||
             "AI drafted a follow-up after a qualified lead submitted the contact form.",

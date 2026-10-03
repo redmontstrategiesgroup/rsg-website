@@ -1,8 +1,8 @@
 /**
  * Data model for RSG's industry verticals.
  *
- * Three primary verticals (home services, dental & specialty healthcare,
- * retail & multi-location) each carry deeply industry-specific content:
+ * Three primary verticals (home services, health & wellness, real estate)
+ * each carry deeply industry-specific content:
  * problems, workflow stages, named systems, integrations, compliance
  * items, an illustrative case study, CTAs, and an assessment.
  *
@@ -12,17 +12,30 @@
  * page, the JSON-LD, and the assessment form, so none of them can drift
  * apart.
  *
- * Systems quote "Custom quote" rather than a number — every engagement is
+ * Systems quote "Custom quote" rather than a number: every engagement is
  * scoped and priced individually, and no page projects a dollar outcome.
  */
 
-export type VerticalSlug = "home-services" | "dental-practices" | "retail";
+export type VerticalSlug = "home-services" | "health-wellness" | "real-estate";
 
 export const VERTICAL_SLUGS: VerticalSlug[] = [
   "home-services",
-  "dental-practices",
-  "retail",
+  "health-wellness",
+  "real-estate",
 ];
+
+/**
+ * Data slug → live route path. The two deliberately differ: slugs stayed
+ * hyphenated while the routes were de-hyphenated in Jul 2026, and the old
+ * hyphenated paths now 301 (see next.config.mjs). Canonicals, OG urls, and
+ * JSON-LD must build from this map, never from the slug, or a page ends up
+ * canonicalizing to a URL that redirects away from it.
+ */
+export const VERTICAL_ROUTES: Record<VerticalSlug, string> = {
+  "home-services": "/industries/homeservices",
+  "health-wellness": "/industries/healthwellness",
+  "real-estate": "/industries/realestate",
+};
 
 export type VerticalStatus = "draft" | "published";
 
@@ -30,10 +43,10 @@ export type VerticalCta = { label: string; href: string };
 
 export type VerticalHero = {
   eyebrow: string;
-  /** Outcome-driven — never "AI Solutions for X". */
+  /** Outcome-driven, never "AI Solutions for X". */
   headline: string;
   subheadline: string;
-  primaryCta: VerticalCta;
+  primaryCta?: VerticalCta;
   /** Always points at the vertical's interactive demo. */
   demoCta: VerticalCta;
   /** Plain statement of who the system is designed for. */
@@ -84,7 +97,7 @@ export type RsgSystem = {
 export type VerticalIntegration = {
   name: string;
   category: string;
-  /** What information or workflow it connects — never a bare logo. */
+  /** What information or workflow it connects, never a bare logo. */
   connects: string;
 };
 
@@ -160,8 +173,6 @@ export type IndustryVertical = {
   name: string;
   /** Short name for nav/breadcrumbs, e.g. "Home Services". */
   shortName: string;
-  /** Sub-segments served, e.g. HVAC, plumbing, electrical… */
-  audience: string[];
   /** Micro-copy dictionary so page copy uses the industry's own words. */
   terminology: {
     customer: string;

@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, ChevronLeft, Lock, Send, Sparkles, Zap } from "lucide-react";
+import { IconButton } from "@/components/ui/IconButton";
 import { renderTemplate, templateVars, uid } from "../engine";
 import type { Conversation } from "../types";
 import { ChannelBadge, EmptyState, PanelHeading, StatusPill } from "./primitives";
 import { SmallButton } from "./fields";
 import { applyNow, type ViewProps } from "./shared";
+import { isFresh, Spotlight } from "./Spotlight";
 
 /**
- * Deterministic draft helpers — clearly labeled simulations built from the
+ * Deterministic draft helpers: clearly labeled simulations built from the
  * actual thread contents. No live model is called from the demo.
  */
 function simulatedSummary(convo: Conversation): string {
@@ -32,19 +34,19 @@ function simulatedReply(convo: Conversation, businessName: string): string {
   const first = convo.contact.split(" ")[0];
   const lastContact = [...convo.messages].reverse().find((m) => m.from === "contact");
   if (!lastContact) {
-    return `Hi ${first}, just checking in from ${businessName} — happy to answer any questions whenever you're ready.`;
+    return `Hi ${first}, just checking in from ${businessName}, happy to answer any questions whenever you're ready.`;
   }
   const t = lastContact.text.toLowerCase();
   if (t.includes("price") || t.includes("cost") || t.includes("how much") || t.includes("$")) {
-    return `Great question, ${first} — pricing depends on a couple of details, and we'd rather give you a real number than a range. Want me to grab you a quick call time, or text over the two things we'd need to quote it exactly?`;
+    return `Great question, ${first}, pricing depends on a couple of details, and we'd rather give you a real number than a range. Want me to grab you a quick call time, or text over the two things we'd need to quote it exactly?`;
   }
   if (t.includes("resched") || t.includes("cancel") || t.includes("move")) {
-    return `No problem at all, ${first} — we can move that for you. What days work best this week or next? I'll send a couple of open times.`;
+    return `No problem at all, ${first}; we can move that for you. What days work best this week or next? I'll send a couple of open times.`;
   }
   if (t.includes("book") || t.includes("time") || t.includes("schedule") || t.includes("when")) {
-    return `Perfect, ${first}! I have a few openings this week — want me to send the booking link so you can grab whichever works best?`;
+    return `Perfect, ${first}! I have a few openings this week, want me to send the booking link so you can grab whichever works best?`;
   }
-  return `Thanks for the note, ${first}! Happy to help with that — want me to send over the details, or would a quick call be easier?`;
+  return `Thanks for the note, ${first}! Happy to help with that, want me to send over the details, or would a quick call be easier?`;
 }
 
 export function ConversationsView({ state, config, dispatch, track }: ViewProps) {
@@ -53,6 +55,28 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
   const [internal, setInternal] = useState(false);
   const [aiOutput, setAiOutput] = useState<{ kind: "summary" | "reply"; text: string } | null>(null);
   const [templateOpen, setTemplateOpen] = useState(false);
+
+  /* A tour step, scenario, or sim that adds a message opens that thread so the
+     visitor sees it land, on desktop and on phones (where the list hides). */
+  const latestFreshConversation = useMemo(() => {
+    let best: { id: string; at: number } | null = null;
+    for (const [id, entry] of Object.entries(state.fresh)) {
+      if (entry.kind !== "message") continue;
+      const convId = entry.parent ?? id;
+      if (!state.conversations.some((c) => c.id === convId)) continue;
+      if (!best || entry.at > best.at) best = { id: convId, at: entry.at };
+    }
+    return best;
+  }, [state.fresh, state.conversations]);
+
+  const freshId = latestFreshConversation?.id;
+  const freshAt = latestFreshConversation?.at;
+
+  useEffect(() => {
+    if (!freshId || freshAt === undefined || !isFresh({ kind: "message", at: freshAt })) return;
+    setSelectedId((cur) => (cur === freshId ? cur : freshId));
+    setAiOutput(null);
+  }, [freshId, freshAt]);
 
   const selected =
     state.conversations.find((c) => c.id === selectedId) ?? state.conversations[0];
@@ -110,24 +134,30 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
   };
 
   return (
-    <div className="grid overflow-hidden rounded-lg border border-white/[0.07] bg-white/[0.02] lg:grid-cols-5">
+    /*
+      grid-cols-1 + min-w-0 are load-bearing on phones: with no column
+      template the implicit `auto` track sized itself to the longest
+      nowrap preview line (~900px), so `truncate` never engaged and the
+      overflow-hidden frame clipped every row's right edge instead.
+    */
+    <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-white/[0.07] bg-white/2 lg:grid-cols-5">
       {/* Contact list */}
-      <div className={`border-white/[0.07] lg:col-span-2 lg:block lg:border-r ${showThreadMobile ? "hidden" : "block"}`}>
+      <div className={`min-w-0 border-white/[0.07] lg:col-span-2 lg:block lg:border-r ${showThreadMobile ? "hidden" : "block"}`}>
         <PanelHeading title={`Unified inbox · ${state.conversations.length}`} />
-        <ul className="max-h-[28rem] divide-y divide-white/[0.05] overflow-y-auto no-scrollbar">
+        <ul className="max-h-112 divide-y divide-white/5 overflow-y-auto overscroll-contain">
           {state.conversations.map((c) => {
             const last = c.messages[c.messages.length - 1];
             const active = selected?.id === c.id;
             return (
-              <li key={c.id}>
+              <Spotlight as="li" pill={false} id={c.id} fresh={state.fresh} kind="message" key={c.id}>
                 <button
                   type="button"
                   onClick={() => {
                     setSelectedId(c.id);
                     setAiOutput(null);
                   }}
-                  className={`w-full px-4 py-3 text-left transition-colors focus:outline-none focus-visible:bg-white/[0.05] ${
-                    active ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
+                  className={`w-full px-4 py-3 text-left transition-colors focus:outline-hidden focus-visible:bg-white/5 ${
+                    active ? "bg-white/4" : "hover:bg-white/2"
                   } ${c.resolved ? "opacity-50" : ""}`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -145,25 +175,24 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                     </p>
                   )}
                 </button>
-              </li>
+              </Spotlight>
             );
           })}
         </ul>
       </div>
 
       {/* Thread */}
-      <div className={`flex flex-col lg:col-span-3 ${showThreadMobile ? "flex" : "hidden lg:flex"}`}>
+      <div className={`flex min-w-0 flex-col lg:col-span-3 ${showThreadMobile ? "flex" : "hidden lg:flex"}`}>
         {selected ? (
           <>
             <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.07] px-4 py-3">
-              <button
-                type="button"
+              <IconButton
                 onClick={() => setSelectedId(null)}
-                className="inline-flex h-6 w-6 items-center justify-center rounded border border-white/10 text-white/50 hover:text-white lg:hidden"
+                className="-ml-2 rounded-sm text-white/50 hover:text-white lg:hidden"
                 aria-label="Back to inbox"
               >
-                <ChevronLeft size={13} />
-              </button>
+                <ChevronLeft size={16} />
+              </IconButton>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium text-white/85">{selected.contact}</p>
                 {selected.topic && <p className="text-[0.62rem] text-white/40">{selected.topic}</p>}
@@ -178,7 +207,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                   ]);
                   track("assigned conversations");
                 }}
-                className="rounded border border-white/10 bg-base-900 px-1.5 py-1 text-[0.62rem] text-white/60 focus:border-crimson/60 focus:outline-none"
+                className="rounded-sm border border-white/10 bg-base-900 px-1.5 py-1 text-[0.62rem] text-white/60 focus:border-crimson/60 focus:outline-hidden"
               >
                 <option value="">Unassigned</option>
                 {state.settings.staff.map((s) => (
@@ -200,18 +229,25 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
               <ChannelBadge channel={selected.channel} />
             </div>
 
-            <div className="flex max-h-[19rem] min-h-[13rem] flex-1 flex-col gap-3 overflow-y-auto p-4 no-scrollbar">
+            <div className="flex max-h-76 min-h-52 flex-1 flex-col gap-3 overflow-y-auto p-4 no-scrollbar">
               {selected.messages.map((m) => (
-                <div key={m.id} className={`max-w-[85%] sm:max-w-[75%] ${m.from === "contact" ? "self-start" : "self-end"}`}>
+                <Spotlight
+                  as="div"
+                  id={m.id}
+                  fresh={state.fresh}
+                  kind="message"
+                  key={m.id}
+                  className={`max-w-[85%] sm:max-w-[75%] ${m.from === "contact" ? "self-start" : "self-end"}`}
+                >
                   <div
                     className={`rounded-lg px-3.5 py-2.5 text-xs leading-relaxed ${
                       m.internal
-                        ? "border border-dashed border-amber-400/40 bg-amber-500/[0.06] text-amber-100/85"
+                        ? "border border-dashed border-amber-400/40 bg-amber-500/6 text-amber-100/85"
                         : m.from === "contact"
-                          ? "border border-white/[0.08] bg-white/[0.05] text-white/80"
+                          ? "border border-white/8 bg-white/5 text-white/80"
                           : m.from === "system"
-                            ? "border border-crimson/25 bg-crimson/[0.09] text-white/85"
-                            : "border border-white/[0.08] bg-base-700 text-white/85"
+                            ? "border border-crimson/25 bg-crimson/9 text-white/85"
+                            : "border border-white/8 bg-base-700 text-white/85"
                     }`}
                   >
                     {m.text}
@@ -230,7 +266,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                     {!m.internal && m.from === "staff" && <span className="mr-1">{m.meta ?? "Staff"}</span>}
                     {m.time}
                   </p>
-                </div>
+                </Spotlight>
               ))}
             </div>
 
@@ -239,7 +275,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
               <div className="mx-4 mb-2 rounded-lg border border-white/12 bg-base-700/70 p-3">
                 <p className="flex items-center gap-1.5 text-[0.6rem] font-medium uppercase tracking-[0.14em] text-white/45">
                   <Sparkles size={10} className="text-crimson-light" aria-hidden />
-                  Suggested draft — review and edit before use
+                  Suggested draft: review and edit before use
                 </p>
                 <p className="mt-1.5 text-xs leading-relaxed text-white/75">{aiOutput.text}</p>
                 {aiOutput.kind === "reply" && (
@@ -271,7 +307,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                           key={t.id}
                           type="button"
                           onClick={() => insertTemplate(t.id)}
-                          className="block w-full border-b border-white/[0.06] px-3 py-2 text-left text-[0.68rem] text-white/70 last:border-0 hover:bg-white/[0.04]"
+                          className="block w-full border-b border-white/6 px-3 py-2 text-left text-[0.68rem] text-white/70 last:border-0 hover:bg-white/4"
                         >
                           {t.name}
                           <span className="ml-1.5 text-[0.58rem] uppercase text-white/30">{t.channel}</span>
@@ -301,7 +337,7 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                     type="checkbox"
                     checked={internal}
                     onChange={(e) => setInternal(e.target.checked)}
-                    className="h-3.5 w-3.5 accent-[#b3243a]"
+                    className="h-3.5 w-3.5 accent-crimson"
                   />
                   Internal note
                 </label>
@@ -315,8 +351,8 @@ export function ConversationsView({ state, config, dispatch, track }: ViewProps)
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   rows={2}
-                  placeholder={internal ? "Add a note only your team can see…" : `Reply to ${selected.contact.split(" ")[0]}… (simulated — nothing is really sent)`}
-                  className="min-h-[2.5rem] flex-1 resize-y rounded border border-white/12 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-none"
+                  placeholder={internal ? "Add a note only your team can see…" : `Reply to ${selected.contact.split(" ")[0]}… (simulated: nothing is really sent)`}
+                  className="min-h-10 flex-1 resize-y rounded-sm border border-white/35 bg-base-900 px-3 py-2 text-xs text-white/85 placeholder:text-white/25 focus:border-crimson/60 focus:outline-hidden"
                 />
                 <button
                   type="button"

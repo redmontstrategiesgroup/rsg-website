@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Integration health — the endpoint that answers "is anything quietly broken"
+ * Integration health: the endpoint that answers "is anything quietly broken"
  * WITHOUT waiting for an error to be thrown.
  *
  * The failures that hurt produce no errors at all: a sync that stopped three
@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
  * and never crosses an alert line.
  *
  * Auth: admin session, or `Authorization: Bearer $CRON_SECRET` so an uptime
- * monitor can poll it. Never public — it names providers and failure detail.
+ * monitor can poll it. Never public, it names providers and failure detail.
  */
 
 type HealthRow = {
@@ -49,7 +49,7 @@ function authorizedBySecret(request: Request): boolean {
   return timingSafeEqual(a, b);
 }
 
-/** Window for the recent-failure rollup — long enough to see a slow burn. */
+/** Window for the recent-failure rollup: long enough to see a slow burn. */
 const RECENT_WINDOW_MINUTES = 60;
 
 export async function GET(request: Request) {
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
     }[];
 
     // Per-connection failure counts. Deliberately not divided into a single
-    // system-wide rate — that number is the one that never alerts.
+    // system-wide rate: that number is the one that never alerts.
     const perConnection = new Map<
       string,
       { total: number; failed: number; deadLettered: number }
@@ -144,7 +144,7 @@ export async function GET(request: Request) {
         kind: "needs_reauth" as const,
         provider: d.provider,
         connection: d.connection,
-        message: `${d.provider}/${d.connection} needs re-authorization — ${d.lastErrorClass}.`,
+        message: `${d.provider}/${d.connection} needs re-authorization: ${d.lastErrorClass}.`,
       })),
       ...down.map((d) => ({
         severity: "critical" as const,
@@ -165,14 +165,14 @@ export async function GET(request: Request) {
             )} minutes.`
           : `${d.provider}/${d.connection} has never recorded a success.`,
       })),
-      // Sustained non-zero DLQ arrivals is its own alert — these are the
+      // Sustained non-zero DLQ arrivals is its own alert, these are the
       // operations that gave up entirely and need a human.
       ...deadLettered.map((d) => ({
         severity: "critical" as const,
         kind: "dead_lettered" as const,
         provider: d.provider,
         connection: d.connection,
-        message: `${d.provider}/${d.connection} dead-lettered ${d.recentDeadLettered} operation(s) in the last ${RECENT_WINDOW_MINUTES}m — needs manual reconciliation.`,
+        message: `${d.provider}/${d.connection} dead-lettered ${d.recentDeadLettered} operation(s) in the last ${RECENT_WINDOW_MINUTES}m; needs manual reconciliation.`,
       })),
     ];
 

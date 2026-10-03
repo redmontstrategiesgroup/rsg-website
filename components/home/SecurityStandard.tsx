@@ -67,7 +67,7 @@ export function SecurityStandard({
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {HOMEPAGE_CONTROL_GRID.map((c, i) => (
                   <Reveal key={c} y={10} delay={(i % 4) * 0.03}>
-                    <div className="flex items-center gap-2.5 border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-sm text-white/65">
+                    <div className="flex items-center gap-2.5 border border-white/8 bg-white/2 px-4 py-3 text-sm text-white/65">
                       <Check size={14} className="shrink-0 text-crimson-light" />
                       {c}
                     </div>
@@ -76,7 +76,7 @@ export function SecurityStandard({
               </div>
               <p className="mt-5 text-sm leading-relaxed text-white/40">
                 Controls are selected to fit each project. Informed by NIST and
-                OWASP guidance — never sold as a compliance badge.
+                OWASP guidance, never sold as a compliance badge.
               </p>
             </Reveal>
           </div>

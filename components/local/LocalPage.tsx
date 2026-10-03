@@ -189,7 +189,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
             Prefer to call?{" "}
             <a
               href={`tel:${PHONE_TEL}`}
-              className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+              className="inline-flex min-h-11 items-center align-middle text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white lg:min-h-0"
             >
               {PHONE_DISPLAY}
             </a>
@@ -198,7 +198,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
       </section>
 
       {/* Problem */}
-      <section className="border-y border-white/[0.08] bg-base-900">
+      <section className="border-y border-white/8 bg-base-900">
         <div className="container-px section-y">
           <div className="section-grid">
             <div className="lg:col-span-5">
@@ -244,7 +244,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
       </section>
 
       {/* Includes + who it's for */}
-      <section className="border-y border-white/[0.08] bg-base-900">
+      <section className="border-y border-white/8 bg-base-900">
         <div className="container-px section-y">
           <div className="grid gap-14 lg:grid-cols-2 lg:gap-8">
             <Reveal y={12}>
@@ -256,7 +256,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
                   {c.includes.map((item) => (
                     <div
                       key={item}
-                      className="border-t border-white/[0.08] py-4 text-[0.95rem] text-white/70 last:border-b"
+                      className="border-t border-white/8 py-4 text-[0.95rem] text-white/70 last:border-b"
                     >
                       {item}
                     </div>
@@ -273,7 +273,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
                   {c.who.map((item) => (
                     <div
                       key={item}
-                      className="border-t border-white/[0.08] py-4 text-[0.95rem] text-white/70 last:border-b"
+                      className="border-t border-white/8 py-4 text-[0.95rem] text-white/70 last:border-b"
                     >
                       {item}
                     </div>
@@ -308,7 +308,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
           </div>
         </Reveal>
         <Reveal y={12} delay={0.1}>
-          <div className="mt-8 sm:mt-12 grid gap-x-8 border-t border-white/[0.08] sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-8 sm:mt-12 grid gap-x-8 border-t border-white/8 sm:grid-cols-2 lg:grid-cols-5">
             {PROCESS_STEPS.map((step, i) => (
               <div key={step.name} className="py-6">
                 <span className="font-mono text-[0.72rem] sm:text-[0.62rem] text-white/25">
@@ -329,7 +329,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
       {/* Managed services (ongoing partnership) */}
 
       {/* FAQ */}
-      <section className="border-y border-white/[0.08] bg-base-900">
+      <section className="border-y border-white/8 bg-base-900">
         <div className="container-px section-y">
           <div className="section-grid">
             <div className="lg:col-span-5">
@@ -344,7 +344,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
             <div className="lg:col-span-6 lg:col-start-7">
               {c.faqs.map((item, i) => (
                 <Reveal key={item.q} y={12} delay={i * 0.04}>
-                  <details className="group border-t border-white/[0.08] last:border-b">
+                  <details className="group border-t border-white/8 last:border-b">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 [&::-webkit-details-marker]:hidden">
                       <h3 className="display text-[1.08rem] font-normal leading-snug text-white">
                         {item.q}
@@ -391,7 +391,7 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
                 Or call{" "}
                 <a
                   href={`tel:${PHONE_TEL}`}
-                  className="text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white"
+                  className="inline-flex min-h-11 items-center align-middle text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white lg:min-h-0"
                 >
                   {PHONE_DISPLAY}
                 </a>
@@ -402,11 +402,11 @@ export function LocalPage({ content }: { content: LocalPageContent }) {
 
         {/* Related pages */}
         <Reveal y={12} delay={0.08}>
-          <div className="mt-10 sm:mt-16 border-t border-white/[0.08] pt-8">
+          <div className="mt-10 sm:mt-16 border-t border-white/8 pt-8">
             <p className="text-[0.72rem] sm:text-[0.62rem] font-medium uppercase tracking-[0.24em] text-white/35">
               Related
             </p>
-            <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3">
+            <ul className="link-list mt-5 flex flex-wrap gap-x-8 gap-y-0 lg:gap-y-3">
               {c.related.map((link) => (
                 <li key={link.href}>
                   <Link

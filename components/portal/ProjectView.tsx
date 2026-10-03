@@ -88,7 +88,7 @@ export function ProjectView({
               href={`/portal/project?id=${p.id}`}
               className={`border px-3.5 py-2 text-xs transition ${
                 p.id === project.id
-                  ? "border-crimson/60 bg-crimson/[0.08] text-white"
+                  ? "border-crimson/60 bg-crimson/8 text-white"
                   : "border-white/10 text-white/50 hover:border-white/30"
               }`}
             >
@@ -130,7 +130,7 @@ export function ProjectView({
           value={clientTasks.length + approvals.length}
           sub={
             clientTasks.length + approvals.length === 0
-              ? "Nothing — we're on it"
+              ? "Nothing: we're on it"
               : "Items below need your input"
           }
           tone={clientTasks.length + approvals.length > 0 ? "warning" : "success"}
@@ -143,7 +143,7 @@ export function ProjectView({
             {approvals.map((a) => (
               <div
                 key={a.id}
-                className="flex flex-wrap items-center justify-between gap-3 border border-amber-400/20 bg-amber-400/[0.04] px-4 py-3.5"
+                className="flex flex-wrap items-center justify-between gap-3 border border-amber-400/20 bg-amber-400/4 px-4 py-3.5"
               >
                 <div className="min-w-0">
                   <p className="text-sm text-white/85">{a.title}</p>
@@ -249,7 +249,7 @@ export function ProjectView({
                   </div>
                   {m.status === "delayed" && (
                     <p className="mt-2 text-amber-300/80">
-                      Running behind its target — the dates above are current and honest.
+                      Running behind its target: the dates above are current and honest.
                     </p>
                   )}
                   {m.client_action && !DONE.has(m.status) && (
@@ -264,7 +264,7 @@ export function ProjectView({
                         <li key={j} className="flex gap-2 text-white/55">
                           <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-white/25" />
                           {d.title}
-                          {d.detail ? ` — ${d.detail}` : ""}
+                          {d.detail ? `: ${d.detail}` : ""}
                         </li>
                       ))}
                     </ul>
@@ -305,7 +305,7 @@ export function ProjectView({
             </a>
           }
         >
-          <ul className="divide-y divide-white/[0.06]">
+          <ul className="divide-y divide-white/6">
             {files.slice(0, 6).map((f) => (
               <li key={f.id} className="flex items-center justify-between gap-3 py-2.5">
                 <span className="min-w-0 truncate text-sm text-white/75">{f.name}</span>
@@ -336,7 +336,7 @@ export function ProjectView({
               onClick={() => {
                 if (!decision) return;
                 if (decision.mode === "changes" && note.trim().length === 0) {
-                  setError("A short note helps us get it right — what should change?");
+                  setError("A short note helps us get it right, what should change?");
                   return;
                 }
                 void act(
@@ -370,7 +370,7 @@ export function ProjectView({
           </p>
         ) : (
           <p className="text-sm leading-relaxed text-white/55">
-            Tell us what needs adjusting — we&rsquo;ll revise and bring it back
+            Tell us what needs adjusting: we&rsquo;ll revise and bring it back
             for another look.
           </p>
         )}

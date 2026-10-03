@@ -1,5 +1,5 @@
 /**
- * Client Lifecycle Platform — domain types.
+ * Client Lifecycle Platform: domain types.
  *
  * Row types mirror supabase/migrations/20260717090000_client_lifecycle.sql
  * exactly (snake_case, matching the lib/scheduling convention). Status unions
@@ -1254,7 +1254,7 @@ export type JourneyStep = {
 // ---------------------------------------------------------------------------
 
 export function formatCents(cents: number | null | undefined, currency = "usd"): string {
-  if (cents == null) return "—";
+  if (cents == null) return "-";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency.toUpperCase(),

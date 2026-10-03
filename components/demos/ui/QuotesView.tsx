@@ -7,6 +7,7 @@ import type { QuoteRecord } from "../types";
 import { EmptyState, PanelHeading, SampleDataTag, StatusPill } from "./primitives";
 import { SelectInput, SmallButton, TextInput } from "./fields";
 import { applyNow, type ViewProps } from "./shared";
+import { Spotlight } from "./Spotlight";
 
 /**
  * Instant-quote / estimate builder. The left panel is the same calculator a
@@ -58,7 +59,7 @@ export function QuotesView(props: ViewProps) {
           item: {
             id: uid("act"),
             icon: "automation",
-            text: `${q.documentLabel} drafted for ${contactName} — $${total.toLocaleString()}.`,
+            text: `${q.documentLabel} drafted for ${contactName}: $${total.toLocaleString()}.`,
             time: "Just now",
           },
         },
@@ -73,7 +74,7 @@ export function QuotesView(props: ViewProps) {
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-5">
         {/* Builder */}
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-3">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-3">
           <PanelHeading title={q.title} right={<SampleDataTag className="hidden sm:inline-flex" />} />
           <div className="space-y-3 p-4">
             <p className="text-xs leading-relaxed text-white/50">{q.description}</p>
@@ -97,20 +98,20 @@ export function QuotesView(props: ViewProps) {
             </div>
 
             {/* Live line items */}
-            <div className="rounded border border-white/[0.08] bg-base-900/50">
-              <ul className="divide-y divide-white/[0.05]">
+            <div className="rounded-sm border border-white/8 bg-base-900/50">
+              <ul className="divide-y divide-white/5">
                 {lines.map((l) => (
                   <li key={l.label} className="flex items-center justify-between px-3 py-2 text-xs">
                     <span className="text-white/60">{l.label}</span>
-                    <span className={`tabular-nums ${l.amount < 0 ? "text-emerald-400/80" : "text-white/75"}`}>
+                    <span className={`tabular-nums ${l.amount < 0 ? "text-white/60" : "text-white/75"}`}>
                       {l.amount < 0 ? "−" : ""}${Math.abs(l.amount).toLocaleString()}
                     </span>
                   </li>
                 ))}
               </ul>
-              <div className="flex items-center justify-between border-t border-white/[0.1] px-3 py-2.5">
+              <div className="flex items-center justify-between border-t border-white/10 px-3 py-2.5">
                 <span className="text-[0.64rem] font-medium uppercase tracking-[0.14em] text-white/45">
-                  Estimated total
+                  {q.totalLabel ?? "Estimated total"}
                 </span>
                 <span className="text-base font-medium tabular-nums text-white">
                   ${total.toLocaleString()}
@@ -126,14 +127,14 @@ export function QuotesView(props: ViewProps) {
                   setLeadId(v);
                   if (v) setContact("");
                 }}
-                options={state.leads.map((l) => ({ value: l.id, label: `${l.name} — ${l.service}` }))}
-                placeholder="No — type a name instead"
+                options={state.leads.map((l) => ({ value: l.id, label: `${l.name}: ${l.service}` }))}
+                placeholder="No: type a name instead"
               />
               {!linkedLead && (
                 <TextInput label="Customer name" value={contact} onChange={setContact} placeholder="Jordan Ellis" required />
               )}
             </div>
-            <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-[18rem] text-[0.62rem] leading-relaxed text-white/35">{q.disclaimer}</p>
               <button
                 type="button"
@@ -149,14 +150,14 @@ export function QuotesView(props: ViewProps) {
         </div>
 
         {/* Records */}
-        <div className="rounded-lg border border-white/[0.07] bg-white/[0.02] lg:col-span-2">
+        <div className="rounded-lg border border-white/[0.07] bg-white/2 lg:col-span-2">
           <PanelHeading title={`${q.documentLabel}s · ${state.quotes.length}`} />
           {state.quotes.length === 0 ? (
-            <EmptyState text={`No ${q.documentLabel.toLowerCase()}s yet — build one with the calculator.`} />
+            <EmptyState text={`No ${q.documentLabel.toLowerCase()}s yet: build one with the calculator.`} />
           ) : (
-            <ul className="divide-y divide-white/[0.05]">
+            <ul className="divide-y divide-white/5">
               {state.quotes.map((quote) => (
-                <li key={quote.id} className="px-4 py-3">
+                <Spotlight as="li" id={quote.id} fresh={state.fresh} kind="record" key={quote.id} className="px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-xs font-medium text-white/85">{quote.contact}</p>
@@ -191,15 +192,15 @@ export function QuotesView(props: ViewProps) {
                       </SmallButton>
                     )}
                   </div>
-                </li>
+                </Spotlight>
               ))}
             </ul>
           )}
-          <div className="border-t border-white/[0.06] px-4 py-3">
+          <div className="border-t border-white/6 px-4 py-3">
             <button
               type="button"
               onClick={() => openRequest({ feature: "Instant quotes & estimate follow-up", source: "quotes_view" })}
-              className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson"
+              className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-crimson-light transition-colors hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson"
             >
               See what this would cost for my business
               <ArrowRight size={11} aria-hidden />

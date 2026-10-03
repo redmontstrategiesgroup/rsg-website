@@ -1,7 +1,7 @@
 /**
  * Managed-services content: comparison categories, FAQs, process copy, and
  * per-service plan recommendations. Also carries the default plan definitions
- * used as a read-only fallback when Supabase is not configured (local dev) —
+ * used as a read-only fallback when Supabase is not configured (local dev),
  * the database row, editable in the admin portal, is always the source of
  * truth for pricing in production.
  *
@@ -63,7 +63,7 @@ export const DEFAULT_PLANS: ManagedServicePlan[] = [
     tagline: "Keep your systems secure, updated, backed up, and working properly.",
     bestFit: "Businesses that need their systems kept secure, functional, and reliable.",
     description:
-      "Your website and systems stay fast, protected, and dependable — without you thinking about them.",
+      "Your website and systems stay fast, protected, and dependable; without you thinking about them.",
     monthlyPriceCents: 39500,
     annualPriceCents: null,
     annualDiscountPct: 10,
@@ -115,7 +115,7 @@ export const DEFAULT_PLANS: ManagedServicePlan[] = [
       private_ai_management: false,
       knowledge_base_updates: false,
       incident_response: "Standard",
-      support_priority: "Standard — 2 business days",
+      support_priority: "Standard: 2 business days",
     },
     recommended: false,
     businessCritical: false,
@@ -188,7 +188,7 @@ export const DEFAULT_PLANS: ManagedServicePlan[] = [
       private_ai_management: false,
       knowledge_base_updates: false,
       incident_response: "Priority",
-      support_priority: "Priority — 1 business day",
+      support_priority: "Priority: 1 business day",
     },
     recommended: true,
     businessCritical: false,
@@ -265,7 +265,7 @@ export const DEFAULT_PLANS: ManagedServicePlan[] = [
       private_ai_management: false,
       knowledge_base_updates: "With AI improvements",
       incident_response: "Priority",
-      support_priority: "High priority — same business day",
+      support_priority: "High priority, same business day",
     },
     recommended: false,
     businessCritical: false,
@@ -284,7 +284,7 @@ export const DEFAULT_PLANS: ManagedServicePlan[] = [
     bestFit:
       "Organizations running private AI, sensitive data, advanced integrations, or business-critical infrastructure.",
     description:
-      "RSG operates your private AI and infrastructure end to end — deployment, security, model management, testing, and priority incident response.",
+      "RSG operates your private AI and infrastructure end to end, deployment, security, model management, testing, and priority incident response.",
     monthlyPriceCents: null,
     annualPriceCents: null,
     annualDiscountPct: 0,
@@ -293,7 +293,7 @@ export const DEFAULT_PLANS: ManagedServicePlan[] = [
     includedHours: null,
     additionalHourlyRateCents: null,
     supportLevel: "Business-critical support",
-    responseTime: "Priority incident response — 4 business hours",
+    responseTime: "Priority incident response: 4 business hours",
     minimumCommitmentMonths: 6,
     cancellationTerms: "60-day written notice with a managed transition plan.",
     features: [
@@ -347,7 +347,7 @@ export const DEFAULT_PLANS: ManagedServicePlan[] = [
       strategy_consulting: "Regular infrastructure reviews",
       private_ai_management: true,
       knowledge_base_updates: "Included",
-      incident_response: "Priority — 4 business hours",
+      incident_response: "Priority: 4 business hours",
       support_priority: "Business-critical",
     },
     recommended: false,
@@ -431,7 +431,7 @@ export const WHY_ONGOING: { title: string; body: string }[] = [
   },
   {
     title: "Security is a process, not a feature",
-    body: "New vulnerabilities are disclosed constantly. Patching, monitoring, backups, and access reviews are ongoing work — the cost of skipping them shows up at the worst possible time.",
+    body: "New vulnerabilities are disclosed constantly. Patching, monitoring, backups, and access reviews are ongoing work; the cost of skipping them shows up at the worst possible time.",
   },
   {
     title: "Performance compounds",
@@ -447,7 +447,7 @@ export const HOW_IT_WORKS: { step: string; title: string; body: string }[] = [
   {
     step: "01",
     title: "Systems review",
-    body: "We start with a review of everything you run — website, funnels, CRM, automations, AI — and establish a baseline for health, security, and performance.",
+    body: "We start with a review of everything you run (website, funnels, CRM, automations, AI) and establish a baseline for health, security, and performance.",
   },
   {
     step: "02",
@@ -462,7 +462,7 @@ export const HOW_IT_WORKS: { step: string; title: string; body: string }[] = [
   {
     step: "04",
     title: "Ongoing management",
-    body: "Work happens every month — maintenance, improvements, development — logged in your client portal with hours tracked against your plan.",
+    body: "Work happens every month (maintenance, improvements, development), logged in your client portal with hours tracked against your plan.",
   },
   {
     step: "05",
@@ -474,7 +474,7 @@ export const HOW_IT_WORKS: { step: string; title: string; body: string }[] = [
 export const MANAGED_SERVICES_FAQS: { q: string; a: string }[] = [
   {
     q: "What's the difference between the four plans?",
-    a: "Maintain keeps your systems secure, updated, backed up, and working. Optimize adds active monthly improvement — conversion, speed, funnels, and analytics reporting. Scale adds new development every month: automations, AI improvements, integrations, and strategy consulting. Managed Infrastructure is our enterprise tier for private AI, sensitive data, and business-critical systems, fully operated by RSG.",
+    a: "Maintain keeps your systems secure, updated, backed up, and working. Optimize adds active monthly improvement, conversion, speed, funnels, and analytics reporting. Scale adds new development every month: automations, AI improvements, integrations, and strategy consulting. Managed Infrastructure is our enterprise tier for private AI, sensitive data, and business-critical systems, fully operated by RSG.",
   },
   {
     q: "Do I have to be an existing RSG client?",
@@ -486,11 +486,11 @@ export const MANAGED_SERVICES_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What are 'included service hours'?",
-    a: "Each plan includes a monthly allocation of hands-on work — changes, fixes, and improvements. Routine monitoring, backups, and updates don't consume your hours. If a request exceeds your remaining hours we'll tell you before any work starts, and unused monitoring never rolls into surprise invoices.",
+    a: "Each plan includes a monthly allocation of hands-on work, changes, fixes, and improvements. Routine monitoring, backups, and updates don't consume your hours. If a request exceeds your remaining hours we'll tell you before any work starts, and unused monitoring never rolls into surprise invoices.",
   },
   {
     q: "How does billing work?",
-    a: "Plans bill monthly or annually — annual billing carries a discount. Payment runs on secure card billing with automatic invoices, and your billing history and invoices are always available in your client portal.",
+    a: "Plans bill monthly or annually: annual billing carries a discount. Payment runs on secure card billing with automatic invoices, and your billing history and invoices are always available in your client portal.",
   },
   {
     q: "Can I upgrade or downgrade?",
@@ -498,7 +498,7 @@ export const MANAGED_SERVICES_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What if I want to cancel?",
-    a: "Standard plans require 30-day written notice after the initial commitment. Managed Infrastructure requires 60 days with a managed transition plan — we never leave a business-critical system unattended. You keep everything: code, content, data, and documentation.",
+    a: "Standard plans require 30-day written notice after the initial commitment. Managed Infrastructure requires 60 days with a managed transition plan; we never leave a business-critical system unattended. You keep everything: code, content, data, and documentation.",
   },
   {
     q: "Is there a minimum commitment?",
@@ -506,7 +506,7 @@ export const MANAGED_SERVICES_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Who does the work?",
-    a: "RSG — the same team that designs and builds these systems. Nothing is outsourced. Every managed client has a named account manager and a technical owner responsible for their systems.",
+    a: "RSG: the same team that designs and builds these systems. Nothing is outsourced. Every managed client has a named account manager and a technical owner responsible for their systems.",
   },
   {
     q: "What does 'business-critical support' mean on Managed Infrastructure?",
@@ -534,7 +534,7 @@ export const SERVICE_PLAN_RECOMMENDATIONS: Record<string, ServiceRecommendation>
     primary: "maintain",
     secondary: "optimize",
     required: false,
-    note: "A new website needs hosting, updates, backups, and monitoring from day one — and converts better when it's improved monthly.",
+    note: "A new website needs hosting, updates, backups, and monitoring from day one; and converts better when it's improved monthly.",
   },
   growth_system: {
     primary: "optimize",
@@ -546,7 +546,7 @@ export const SERVICE_PLAN_RECOMMENDATIONS: Record<string, ServiceRecommendation>
     primary: "optimize",
     secondary: "scale",
     required: false,
-    note: "Operational systems evolve with your process — ongoing workflow adjustments keep them matched to how your team actually works.",
+    note: "Operational systems evolve with your process, ongoing workflow adjustments keep them matched to how your team actually works.",
   },
   crm_automation: {
     primary: "optimize",
