@@ -30,7 +30,10 @@ import {
   Route,
   Mic,
   ChevronDown,
+  Menu,
+  X,
 } from "lucide-react";
+import { IconButton } from "@/components/ui/IconButton";
 import type { AdminRole, ClientPublic, Lead, LeadStatus, Subscriber } from "@/lib/types";
 import { ADMIN_ROLE_LABELS, LEAD_STATUSES } from "@/lib/types";
 import type { AnalyticsSummary } from "@/lib/analytics";
@@ -46,7 +49,6 @@ import { ManagedServicesAdminPanel } from "@/components/admin/ManagedServicesAdm
 import { LifecycleAdminPanel } from "@/components/admin/LifecycleAdminPanel";
 import { PocketAdminPanel } from "@/components/admin/PocketAdminPanel";
 import { LeadAiPanel } from "@/components/admin/LeadAiPanel";
-import { ScrollRail } from "@/components/ui/ScrollRail";
 
 type Tab =
   | "clients"
@@ -240,6 +242,8 @@ export function AdminConsole({
   const [selectedId, setSelectedId] = useState(initialClients[0]?.id ?? "");
   const [creating, setCreating] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  // Section drawer below lg, matching the intelligence dashboard.
+  const [drawer, setDrawer] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const newLeadCount = leads.filter((l) => (l.status ?? "new") === "new").length;
 
@@ -273,6 +277,7 @@ export function AdminConsole({
    */
   function setTab(next: Tab) {
     setTabState(next);
+    setDrawer(false);
     window.history.replaceState(null, "", `#${next}`);
     requestAnimationFrame(() => headingRef.current?.focus({ preventScroll: true }));
     if (window.scrollY > 0) {
@@ -280,6 +285,28 @@ export function AdminConsole({
       window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
     }
   }
+
+  // Escape closes the drawer; body scroll locks while it is open. The drawer
+  // only exists below lg, so close it if the viewport grows past that.
+  useEffect(() => {
+    if (!drawer) return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawer(false);
+    };
+    const onResize = () => {
+      if (mq.matches) setDrawer(false);
+    };
+    document.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onResize);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onResize);
+      document.body.style.overflow = prev;
+    };
+  }, [drawer]);
 
   // Sliding-session keepalive while the console is open.
   useEffect(() => {
@@ -333,6 +360,58 @@ export function AdminConsole({
     );
   }
 
+  /** Grouped section list, shared by the desktop sidebar and the mobile drawer. */
+  function navGroups(animated: boolean) {
+    return groups.map((g) => (
+      <div key={g.label}>
+        <p className="px-3 text-xs font-semibold uppercase tracking-wider text-white/55">
+          {g.label}
+        </p>
+        <ul className="mt-2 space-y-0.5">
+          {g.items.map((item) => {
+            const active = tab === item.id;
+            const Icon = item.icon;
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => setTab(item.id)}
+                  aria-current={active ? "page" : undefined}
+                  className={`group relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light ${
+                    active
+                      ? "bg-white/[0.07] font-medium text-white"
+                      : "text-white/70 hover:bg-white/4 hover:text-white"
+                  }`}
+                >
+                  {active &&
+                    (animated ? (
+                      <motion.span
+                        layoutId="admin-nav-indicator"
+                        aria-hidden="true"
+                        className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-crimson-light"
+                      />
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-crimson-light"
+                      />
+                    ))}
+                  <Icon
+                    size={16}
+                    aria-hidden="true"
+                    className={active ? "text-crimson-light" : "text-white/55 group-hover:text-white/80"}
+                  />
+                  <span className="truncate">{item.label}</span>
+                  {navBadge(item.id, active)}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    ));
+  }
+
   return (
     <div className="min-h-dvh bg-base">
       <a
@@ -347,10 +426,82 @@ export function AdminConsole({
         <div className="absolute left-1/2 top-[-10%] h-[440px] w-[760px] -translate-x-1/2 rounded-full bg-crimson/6 blur-[130px]" />
       </div>
 
+      {/* Section drawer (below lg), same pattern as the intelligence
+          dashboard. Translated off-screen when closed, so it must also be
+          inert or its buttons stay in the tab order and the a11y tree. */}
+      <aside
+        id="admin-drawer"
+        inert={!drawer ? true : undefined}
+        aria-hidden={!drawer ? true : undefined}
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(270px,85vw)] flex-col border-r border-white/10 bg-base-900/95 backdrop-blur-xl transition-transform lg:hidden ${drawer ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-crimson-light">
+            <ShieldCheck size={14} aria-hidden="true" />
+            Admin console
+          </span>
+          <IconButton
+            onClick={() => setDrawer(false)}
+            className="-mr-2 rounded-lg text-white/50 hover:text-white"
+            aria-label="Close navigation"
+          >
+            <X size={18} />
+          </IconButton>
+        </div>
+        <nav
+          aria-label="Admin sections"
+          className="flex-1 space-y-6 overflow-y-auto overscroll-contain p-3"
+        >
+          {navGroups(false)}
+        </nav>
+        <div className="border-t border-white/10 p-4">
+          <Link
+            href="/dashboard"
+            className="mb-3 flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/60 hover:bg-white/4 hover:text-white"
+          >
+            <LayoutDashboard size={15} aria-hidden="true" /> Intelligence dashboard
+          </Link>
+          <div className="mb-3 px-3 text-xs leading-tight text-white/55">
+            <p className="truncate">{adminEmail}</p>
+            <p className="mt-0.5">{ADMIN_ROLE_LABELS[role] ?? role}</p>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            disabled={loggingOut}
+            className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/60 hover:bg-white/4 hover:text-white disabled:opacity-50"
+          >
+            {loggingOut ? (
+              <Loader2 size={15} className="animate-spin" aria-hidden="true" />
+            ) : (
+              <LogOut size={15} aria-hidden="true" />
+            )}
+            Sign out
+          </button>
+        </div>
+      </aside>
+      {drawer && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
+          aria-label="Close navigation"
+          onClick={() => setDrawer(false)}
+        />
+      )}
+
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-white/10 bg-base/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-app items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
+            <IconButton
+              onClick={() => setDrawer(true)}
+              className="-ml-2 rounded-lg text-white/60 hover:text-white lg:hidden"
+              aria-label="Open navigation"
+              aria-expanded={drawer}
+              aria-controls="admin-drawer"
+            >
+              <Menu size={20} />
+            </IconButton>
             <Link
               href="/"
               aria-label="Redmont Strategies Group home"
@@ -397,84 +548,11 @@ export function AdminConsole({
         {/* Sidebar (desktop) */}
         <nav aria-label="Admin sections" className="hidden lg:block">
           <div className="sticky top-16 max-h-[calc(100dvh-4rem)] space-y-6 overflow-y-auto py-8 pr-1">
-            {groups.map((g) => (
-              <div key={g.label}>
-                <p className="px-3 text-xs font-semibold uppercase tracking-wider text-white/55">
-                  {g.label}
-                </p>
-                <ul className="mt-2 space-y-0.5">
-                  {g.items.map((item) => {
-                    const active = tab === item.id;
-                    const Icon = item.icon;
-                    return (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => setTab(item.id)}
-                          aria-current={active ? "page" : undefined}
-                          className={`group relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light ${
-                            active
-                              ? "bg-white/[0.07] font-medium text-white"
-                              : "text-white/70 hover:bg-white/4 hover:text-white"
-                          }`}
-                        >
-                          {active && (
-                            <motion.span
-                              layoutId="admin-nav-indicator"
-                              aria-hidden="true"
-                              className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-crimson-light"
-                            />
-                          )}
-                          <Icon
-                            size={16}
-                            aria-hidden="true"
-                            className={active ? "text-crimson-light" : "text-white/55 group-hover:text-white/80"}
-                          />
-                          <span className="truncate">{item.label}</span>
-                          {navBadge(item.id, active)}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
+            {navGroups(true)}
           </div>
         </nav>
 
         <main id="admin-main" className="min-w-0 py-6 lg:py-8">
-          {/* Section rail (mobile / tablet) */}
-          <ScrollRail
-            as="nav"
-            aria-label="Admin sections"
-            activeKey={tab}
-            snap="start"
-            hideScrollbar
-            className="-mx-4 mb-6 flex gap-2 px-4 pb-1 sm:-mx-6 sm:px-6 lg:hidden"
-          >
-            {groups.flatMap((g) => g.items).map((item) => {
-              const active = tab === item.id;
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setTab(item.id)}
-                  aria-current={active ? "page" : undefined}
-                  className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-crimson-light ${
-                    active
-                      ? "border-crimson/50 bg-crimson/12 font-medium text-white"
-                      : "border-white/12 bg-white/3 text-white/70 hover:border-white/30 hover:text-white"
-                  }`}
-                >
-                  <Icon size={15} aria-hidden="true" />
-                  {item.label}
-                  {navBadge(item.id, active)}
-                </button>
-              );
-            })}
-          </ScrollRail>
-
           {/* Section heading */}
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-6">
             <div className="min-w-0">
@@ -497,10 +575,6 @@ export function AdminConsole({
                 </p>
               )}
             </div>
-            <Link href="/dashboard" className={`${quietButton} sm:hidden`}>
-              <LayoutDashboard size={15} aria-hidden="true" />
-              Intelligence dashboard
-            </Link>
           </div>
 
           {mfaSetupRequired && tab !== "security" && (
